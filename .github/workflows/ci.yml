@@ -52,9 +52,18 @@ jobs:
           cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache
           cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache,mode=max
 
-      - name: Trigger remote deployment
-        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+  deploy:
+    needs: build
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+    runs-on: [self-hosted, infra]
+    steps:
+      - name: Deploy container
         run: |
-          curl -X POST ${{ secrets.DEPLOY_WEBHOOK_URL }} \
-            -H "Content-Type: application/json" \
-            -d "{\"image\": \"${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest\"}"
+          docker pull ghcr.io/${{ env.IMAGE_NAME }}:latest
+          docker stop albatroz-frontend || true
+          docker rm albatroz-frontend || true
+          docker run -d \
+            --name albatroz-frontend \
+            --restart unless-stopped \
+            -p 8080:80 \
+            ghcr.io/${{ env.IMAGE_NAME }}:latest

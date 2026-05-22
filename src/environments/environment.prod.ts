@@ -1,5 +1,5 @@
 export const environment = {
   production: true,
-  apiUrl: 'http://192.168.0.190:5100',
-  apiIaUrl: 'http://192.168.0.190:5200'
+  apiUrl: 'https://erp.albatrozpapelaria.com.br/api-erp',
+  apiIaUrl: 'https://erp.albatrozpapelaria.com.br/api-ia'
 };

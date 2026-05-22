@@ -1,5 +1,5 @@
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:5100',
-  apiIaUrl: 'http://localhost:5200'
+  apiUrl: 'http://192.168.0.190:5100',
+  apiIaUrl: 'http://192.168.0.190:5200'
 };

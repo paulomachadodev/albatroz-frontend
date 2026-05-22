@@ -1,27 +1,37 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/auth/auth.guard';
-import { PRODUTOS_ROUTES } from './contextos/produtos/produtos.routes';
-import { ALBIA_ROUTES } from './contextos/albia/albia.routes';
+import { AUTENTICACAO_ROUTES } from './contextos/autenticacao/autenticacao.routes';
 
 export const routes: Routes = [
-  // {
-  //   path: '',
-  //   redirectTo: '/dashboard',
-  //   pathMatch: 'full'
-  // },
-  // {
-  //   path: 'login',
-  //   component: LoginComponent
-  // },
+  { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
+
+  // Autenticação (público)
+  ...AUTENTICACAO_ROUTES,
+
+  // Área autenticada — envolvida pelo Shell (sidebar + header)
   {
-    path: 'produtos',
+    path: '',
     canActivate: [authGuard],
-    children: PRODUTOS_ROUTES
+    loadComponent: () =>
+      import('./layout/shell/shell.component').then(m => m.ShellComponent),
+    children: [
+      {
+        path: 'dashboard',
+        loadChildren: () =>
+          import('./contextos/dashboard/dashboard.routes').then(m => m.DASHBOARD_ROUTES)
+      },
+      {
+        path: 'produtos',
+        loadChildren: () =>
+          import('./contextos/produtos/produtos.routes').then(m => m.PRODUTOS_ROUTES)
+      },
+      {
+        path: 'albia',
+        loadChildren: () =>
+          import('./contextos/albia/albia.routes').then(m => m.ALBIA_ROUTES)
+      }
+    ]
   },
-  {
-    path: 'albia',
-    canActivate: [authGuard],
-    children: ALBIA_ROUTES
-  }
-  // Adicionar mais rotas conforme necessário
+
+  { path: '**', redirectTo: 'dashboard' }
 ];

@@ -1,0 +1,157 @@
+<div class="space-y-6 max-w-[1400px] mx-auto">
+
+  <!-- Cabeçalho -->
+  <div class="flex items-end justify-between flex-wrap gap-4">
+    <div>
+      <h1 class="text-2xl font-semibold text-slate-900 tracking-tight">
+        {{ saudacao() }}, <span class="brand-gradient">{{ primeiroNome() }}</span> 👋
+      </h1>
+      <p class="text-slate-500 mt-1 text-sm">
+        Aqui está o resumo geral do seu ERP em tempo real.
+      </p>
+    </div>
+    <div class="flex items-center gap-2">
+      <button class="btn-ghost text-sm">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+        Hoje
+      </button>
+      <button class="btn-primary text-sm py-2 px-3">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Nova cotação
+      </button>
+    </div>
+  </div>
+
+  <!-- KPI cards -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+    @for (k of kpis; track k.titulo) {
+      <div class="card p-5 relative overflow-hidden group hover:-translate-y-0.5
+                  hover:shadow-lg hover:shadow-slate-900/5 transition-all">
+        <div class="flex items-start justify-between">
+          <div>
+            <div class="text-xs font-medium text-slate-400 uppercase tracking-wide">{{ k.titulo }}</div>
+            <div class="text-2xl font-semibold text-slate-900 mt-1.5">{{ k.valor }}</div>
+            <div class="flex items-center gap-1 mt-2 text-xs font-medium"
+                 [class.text-emerald-600]="k.positivo" [class.text-rose-600]="!k.positivo">
+              <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                @if (k.positivo) { <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/> }
+                @else            { <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/> }
+              </svg>
+              {{ k.delta }}
+              <span class="text-slate-400 font-normal">vs mês anterior</span>
+            </div>
+          </div>
+          <div class="w-11 h-11 rounded-xl bg-gradient-to-br shadow-md
+                      flex items-center justify-center text-white shrink-0"
+               [ngClass]="k.cor">
+            <ng-container [ngSwitch]="k.icone">
+              <svg *ngSwitchCase="'dollar'" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              <svg *ngSwitchCase="'file'"   class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              <svg *ngSwitchCase="'box'"    class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+              <svg *ngSwitchCase="'alert'"  class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </ng-container>
+          </div>
+        </div>
+        <div class="absolute -bottom-6 -right-6 w-24 h-24 rounded-full opacity-10
+                    bg-gradient-to-br" [ngClass]="k.cor"></div>
+      </div>
+    }
+  </div>
+
+  <!-- Gráfico + Atividades -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+    <!-- Gráfico -->
+    <div class="card p-6 lg:col-span-2">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h3 class="font-semibold text-slate-900">Receita anual</h3>
+          <p class="text-xs text-slate-400 mt-0.5">Total faturado por mês (em milhares)</p>
+        </div>
+        <div class="flex gap-1 text-xs">
+          @for (p of ['7d','30d','12m']; track p) {
+            <button class="px-3 py-1.5 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors"
+                    [class.bg-sky-50]="p === '12m'"
+                    [class.text-sky-700]="p === '12m'"
+                    [class.font-semibold]="p === '12m'">{{ p }}</button>
+          }
+        </div>
+      </div>
+
+      <svg viewBox="0 0 600 200" class="w-full h-48" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="grad-area" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%"   stop-color="#0ea5e9" stop-opacity="0.35"/>
+            <stop offset="100%" stop-color="#0ea5e9" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <!-- grid -->
+        @for (y of [0.25, 0.5, 0.75]; track y) {
+          <line [attr.x1]="20" [attr.x2]="580"
+                [attr.y1]="20 + y * 160" [attr.y2]="20 + y * 160"
+                stroke="#e2e8f0" stroke-dasharray="3 4"/>
+        }
+        <!-- area -->
+        <path [attr.d]="pathLinha().area" fill="url(#grad-area)"/>
+        <!-- linha -->
+        <path [attr.d]="pathLinha().linha" fill="none"
+              stroke="#0284c7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <!-- pontos -->
+        @for (p of pathLinha().pontos; track $index) {
+          <circle [attr.cx]="p[0]" [attr.cy]="p[1]" r="4" fill="white" stroke="#0284c7" stroke-width="2"/>
+        }
+      </svg>
+
+      <div class="grid grid-cols-12 mt-2 text-[10px] text-slate-400 text-center font-medium">
+        @for (m of serieMeses; track m) { <div>{{ m }}</div> }
+      </div>
+    </div>
+
+    <!-- Atividades -->
+    <div class="card p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-semibold text-slate-900">Atividade recente</h3>
+        <button class="text-xs font-medium text-sky-600 hover:text-sky-700">Ver tudo</button>
+      </div>
+      <ul class="space-y-3">
+        @for (a of atividades; track $index) {
+          <li class="flex items-start gap-3 p-2 -mx-2 rounded-xl hover:bg-slate-50 transition-colors">
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center text-[11px] font-semibold
+                        shrink-0" [ngClass]="corTipo(a.tipo)">
+              {{ a.quem.split(' ')[0][0] }}{{ a.quem.split(' ')[1]?.[0] ?? '' }}
+            </div>
+            <div class="min-w-0 flex-1">
+              <p class="text-sm text-slate-700 leading-snug">
+                <span class="font-medium">{{ a.quem }}</span>
+                <span class="text-slate-500"> {{ a.acao }} </span>
+                <span class="font-medium">{{ a.alvo }}</span>
+              </p>
+              <p class="text-[11px] text-slate-400 mt-0.5">{{ a.quando }}</p>
+            </div>
+          </li>
+        }
+      </ul>
+    </div>
+  </div>
+
+  <!-- Linha inferior: status sistema -->
+  <div class="card p-5 flex items-center gap-4 flex-wrap">
+    <div class="flex items-center gap-2 text-sm">
+      <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+      <span class="text-slate-600">Todos os serviços operacionais</span>
+    </div>
+    <span class="h-4 w-px bg-slate-200"></span>
+    <div class="text-xs text-slate-400">
+      API ERP <span class="text-emerald-600 font-medium">●</span> &nbsp;
+      Albia IA <span class="text-emerald-600 font-medium">●</span> &nbsp;
+      Banco de dados <span class="text-emerald-600 font-medium">●</span> &nbsp;
+      Hangfire <span class="text-amber-500 font-medium">●</span>
+    </div>
+    <div class="flex-1"></div>
+    <div class="text-xs text-slate-400">Última sincronização há 12s</div>
+  </div>
+</div>

@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 64" fill="none">
+  <defs>
+    <linearGradient id="lg" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0%"  stop-color="#0EA5E9"/>
+      <stop offset="50%" stop-color="#6366F1"/>
+      <stop offset="100%" stop-color="#8B5CF6"/>
+    </linearGradient>
+  </defs>
+  <!-- símbolo: estilizado "asa" / albatroz -->
+  <g transform="translate(4 8)">
+    <rect width="48" height="48" rx="12" fill="url(#lg)"/>
+    <path d="M10 36c8-2 14-6 18-12 4 8 10 12 16 12-6 0-12 2-16 4-4-2-10-4-18-4z"
+          fill="white" fill-opacity="0.95"/>
+    <circle cx="34" cy="20" r="2" fill="#0C2D6B"/>
+  </g>
+  <!-- wordmark -->
+  <g transform="translate(64 0)" fill="currentColor" style="color:#ffffff">
+    <text x="0" y="32" font-family="Inter, system-ui, sans-serif" font-size="22"
+          font-weight="700" letter-spacing="-0.5" fill="#ffffff">Albatroz</text>
+    <text x="0" y="52" font-family="Inter, system-ui, sans-serif" font-size="11"
+          letter-spacing="3" fill="#BAE6FD">TECNOLOGIA</text>
+  </g>
+</svg>

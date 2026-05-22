@@ -3,15 +3,104 @@
 @tailwind utilities;
 
 :root {
-  --primary: #0284c7;
-  --surface: #ffffff;
-  --text: #1f2937;
+  --albatroz-50:  #f0f9ff;
+  --albatroz-100: #e0f2fe;
+  --albatroz-400: #38bdf8;
+  --albatroz-500: #0ea5e9;
+  --albatroz-600: #0284c7;
+  --albatroz-700: #0369a1;
+  --albatroz-900: #0c2d6b;
+  --albatroz-950: #061a3b;
+  --surface:      #ffffff;
+  --surface-alt:  #f8fafc;
+  --text:         #0f172a;
+  --text-muted:   #64748b;
+  --border:       #e2e8f0;
+}
+
+html, body {
+  height: 100%;
 }
 
 html {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
-  @apply bg-white text-gray-900 m-0 p-0;
+  @apply bg-slate-50 text-slate-900 m-0 p-0;
+}
+
+/* Scrollbar slim */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+/* Reusable card */
+.card {
+  @apply bg-white rounded-2xl border border-slate-200/70 shadow-sm;
+}
+
+/* Buttons */
+.btn-primary {
+  @apply inline-flex items-center justify-center gap-2 px-4 py-2.5
+         rounded-xl bg-gradient-to-br from-sky-500 to-blue-700
+         text-white font-medium shadow-lg shadow-sky-600/20
+         transition-all hover:shadow-xl hover:shadow-sky-600/30
+         hover:-translate-y-0.5 active:translate-y-0
+         disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0;
+}
+
+.btn-ghost {
+  @apply inline-flex items-center justify-center gap-2 px-4 py-2.5
+         rounded-xl text-slate-600 font-medium transition-colors
+         hover:bg-slate-100 hover:text-slate-900;
+}
+
+/* Inputs */
+.input-modern {
+  @apply w-full px-4 py-3 rounded-xl border border-slate-200
+         bg-white/80 backdrop-blur-sm text-slate-900 placeholder:text-slate-400
+         transition-all
+         focus:outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100;
+}
+
+.input-icon-wrap {
+  @apply relative;
+}
+.input-icon-wrap > svg {
+  @apply pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400;
+}
+.input-icon-wrap > input { padding-left: 2.75rem; }
+
+/* Glass panel */
+.glass {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+/* Gradient brand text */
+.brand-gradient {
+  background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 50%, #8b5cf6 100%);
+  -webkit-background-clip: text;
+          background-clip: text;
+  color: transparent;
+}
+
+/* Subtle animated background blob */
+@keyframes blob-float {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%      { transform: translate(40px, -30px) scale(1.05); }
+  66%      { transform: translate(-30px, 30px) scale(0.97); }
+}
+.blob {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(60px);
+  opacity: 0.5;
+  animation: blob-float 16s ease-in-out infinite;
 }

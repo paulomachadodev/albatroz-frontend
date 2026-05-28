@@ -57,6 +57,17 @@ body {
          hover:bg-slate-50 dark:hover:bg-slate-700;
 }
 
+/* Remove spinners from number inputs globally */
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+}
+
 /* Inputs */
 .input-modern {
   @apply w-full px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700

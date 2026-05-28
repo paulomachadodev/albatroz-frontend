@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
@@ -18,7 +18,7 @@ import { CategoriaSelectComponent } from '../categoria-select/categoria-select.c
   templateUrl: './fatura-upload.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
-export class FaturaUploadComponent implements OnInit {
+export class FaturaUploadComponent implements OnInit, OnDestroy {
   protected Math = Math;
   cartoes     = signal<Cartao[]>([]);
   categorias  = signal<CategoriaDespesa[]>([]);
@@ -29,11 +29,15 @@ export class FaturaUploadComponent implements OnInit {
   arquivo           = signal<File | null>(null);
   arrastando        = signal(false);
   extraindo         = signal(false);
+  statusExtracao    = signal<'idle' | 'enviando' | 'processando' | 'concluido' | 'erro'>('idle');
   salvando          = signal(false);
   erro              = signal<string | null>(null);
 
   mostrarProjecao   = signal(false);
   parcelasNovas     = signal<ParcelaProjetada[]>([]);
+
+  private jobId: string | null = null;
+  private pollingInterval: ReturnType<typeof setInterval> | null = null;
 
   totalGrid = computed(() =>
     this.despesas().reduce((s, d) => s + (d.valor ?? 0), 0)
@@ -58,6 +62,10 @@ export class FaturaUploadComponent implements OnInit {
     this.cartoesService.listarCategorias().subscribe({ next: r => this.categorias.set(r.dados ?? []) });
   }
 
+  ngOnDestroy() {
+    this.pararPolling();
+  }
+
   onDragOver(e: DragEvent) { e.preventDefault(); this.arrastando.set(true); }
   onDragLeave()            { this.arrastando.set(false); }
 
@@ -79,21 +87,59 @@ export class FaturaUploadComponent implements OnInit {
     const arq      = this.arquivo();
     if (!cartaoId || !arq) { this.erro.set('Selecione o cartão e o arquivo PDF.'); return; }
 
+    this.statusExtracao.set('enviando');
     this.extraindo.set(true);
     this.erro.set(null);
 
-    this.faturasService.extrairPdf(cartaoId, arq).subscribe({
+    this.faturasService.enfileirarExtracao(cartaoId, arq).subscribe({
       next: res => {
-        const dados = res.dados!;
-        this.cabecalho.set(dados);
-        this.despesas.set(dados.despesas.map(d => ({ ...d, idFatura: 0 })));
-        this.extraindo.set(false);
+        this.jobId = res.dados!.jobId;
+        this.statusExtracao.set('processando');
+        this.iniciarPolling();
       },
       error: err => {
-        this.erro.set(err?.error?.mensagem ?? 'Erro ao extrair PDF.');
+        this.erro.set(err?.error?.mensagem ?? 'Erro ao enviar PDF.');
+        this.statusExtracao.set('idle');
         this.extraindo.set(false);
       }
     });
+  }
+
+  private iniciarPolling() {
+    this.pollingInterval = setInterval(() => {
+      if (!this.jobId) return;
+      this.faturasService.consultarExtracao(this.jobId).subscribe({
+        next: res => {
+          const status = res.dados!;
+          if (status.status === 'concluido') {
+            this.pararPolling();
+            const dados = status.resultado!;
+            this.cabecalho.set(dados);
+            this.despesas.set(dados.despesas.map(d => ({ ...d, idFatura: 0 })));
+            this.statusExtracao.set('concluido');
+            this.extraindo.set(false);
+          } else if (status.status === 'erro') {
+            this.pararPolling();
+            this.erro.set(status.erro ?? 'Erro na extração via Albia.');
+            this.statusExtracao.set('erro');
+            this.extraindo.set(false);
+          }
+        },
+        error: () => {
+          this.pararPolling();
+          this.erro.set('Erro ao consultar status da extração.');
+          this.statusExtracao.set('erro');
+          this.extraindo.set(false);
+        }
+      });
+    }, 3000);
+  }
+
+  private pararPolling() {
+    if (this.pollingInterval !== null) {
+      clearInterval(this.pollingInterval);
+      this.pollingInterval = null;
+    }
   }
 
   adicionarLinha() {

@@ -8,6 +8,17 @@ import { Fatura } from '../models/fatura.model';
 import { DespesaCartao } from '../models/despesa-cartao.model';
 import { DespesaCartaoSalvarRequisicao, ExtrairFaturaResposta } from '../dtos/despesa-cartao-salvar.dto';
 
+export interface ExtracaoEnfileiradaResposta {
+  jobId: string;
+}
+
+export interface ExtracaoStatusResposta {
+  jobId: string;
+  status: 'processando' | 'concluido' | 'erro';
+  resultado?: ExtrairFaturaResposta;
+  erro?: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class FaturasService {
   private readonly base = '/v1/financeiro/faturas';
@@ -29,13 +40,19 @@ export class FaturasService {
     return this.api.put<void>(`${this.base}/${faturaId}/status`, { status });
   }
 
-  extrairPdf(cartaoId: number, arquivo: File): Observable<Resultado<ExtrairFaturaResposta>> {
+  enfileirarExtracao(cartaoId: number, arquivo: File): Observable<Resultado<ExtracaoEnfileiradaResposta>> {
     const form = new FormData();
     form.append('arquivo', arquivo);
     form.append('cartaoId', String(cartaoId));
-    return this.http.post<Resultado<ExtrairFaturaResposta>>(
+    return this.http.post<Resultado<ExtracaoEnfileiradaResposta>>(
       `${environment.apiUrl}${this.base}/extrair`,
       form
+    );
+  }
+
+  consultarExtracao(jobId: string): Observable<Resultado<ExtracaoStatusResposta>> {
+    return this.http.get<Resultado<ExtracaoStatusResposta>>(
+      `${environment.apiUrl}${this.base}/extrair/${jobId}`
     );
   }
 

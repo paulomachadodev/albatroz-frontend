@@ -36,6 +36,12 @@ export class SidebarComponent {
       ]
     },
     {
+      titulo: 'Financeiro',
+      itens: [
+        { label: 'Cartões', rota: '/financeiro/cartoes', icone: 'credit-card' }
+      ]
+    },
+    {
       titulo: 'Administração',
       itens: [
         { label: 'Usuários',     rota: '/usuarios',     icone: 'users' },

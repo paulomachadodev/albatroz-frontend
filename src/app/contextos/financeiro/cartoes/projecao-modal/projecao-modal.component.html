@@ -1,0 +1,62 @@
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"></div>
+
+  <div class="relative glass rounded-2xl shadow-2xl w-full max-w-2xl p-6 z-10 max-h-[90vh] flex flex-col">
+
+    <!-- Header -->
+    <div class="mb-6">
+      <h2 class="text-lg font-semibold text-slate-900">Projeção de parcelas futuras</h2>
+      <p class="text-sm text-slate-500 mt-1">
+        Compras parceladas encontradas. Selecione quais terão os meses futuros projetados no banco.
+      </p>
+    </div>
+
+    <!-- Lista parcelas -->
+    <div class="flex-1 overflow-y-auto space-y-4">
+      @for (p of lista(); track $index; let i = $index) {
+        <div class="border border-slate-200 rounded-xl overflow-hidden">
+
+          <!-- Header item -->
+          <div class="flex items-center gap-3 p-4 bg-slate-50">
+            <input type="checkbox" class="w-4 h-4 rounded accent-sky-600"
+                   [(ngModel)]="p.selecionada" [id]="'proj-' + i" />
+            <label [for]="'proj-' + i" class="flex-1 cursor-pointer">
+              <div class="font-medium text-slate-900 text-sm">{{ p.descricaoOriginal }}</div>
+              <div class="text-xs text-slate-500 mt-0.5">
+                Parcela {{ p.parcelaAtual }}/{{ p.totalParcelas }} —
+                {{ p.totalParcelas - p.parcelaAtual }} meses restantes a projetar
+              </div>
+            </label>
+          </div>
+
+          <!-- Meses projetados (só se selecionada) -->
+          @if (p.selecionada && p.parcelas.length > 0) {
+            <div class="p-4 grid grid-cols-2 sm:grid-cols-3 gap-2">
+              @for (m of p.parcelas; track $index; let j = $index) {
+                <div class="flex items-center gap-2 p-2 bg-white rounded-lg border border-slate-200">
+                  <div class="text-xs text-slate-500 flex-1">{{ formatarMes(m.mes, m.ano) }}</div>
+                  <input type="number" class="input-modern py-1 text-xs w-20 text-right"
+                         [(ngModel)]="p.parcelas[j].valor" min="0" step="0.01" />
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Actions -->
+    <div class="flex gap-3 mt-6 pt-4 border-t border-slate-100">
+      <button class="btn-ghost flex-1 text-sm" (click)="cancelar.emit()">
+        Salvar sem projetar
+      </button>
+      <button class="btn-primary flex-1 text-sm" (click)="confirmarProjecoes()">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        Confirmar e projetar
+      </button>
+    </div>
+
+  </div>
+</div>

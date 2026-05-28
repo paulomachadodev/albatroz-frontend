@@ -1,0 +1,155 @@
+import { Component, OnInit, signal, computed } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Router, ActivatedRoute, RouterLink } from '@angular/router';
+import { CartoesService } from '../services/cartoes.service';
+import { FaturasService } from '../services/faturas.service';
+import { Cartao } from '../models/cartao.model';
+import { CategoriaDespesa } from '../models/categoria-despesa.model';
+import { DespesaCartao, ParcelaProjetada } from '../models/despesa-cartao.model';
+import { ExtrairFaturaResposta } from '../dtos/despesa-cartao-salvar.dto';
+import { ProjecaoModalComponent } from '../projecao-modal/projecao-modal.component';
+
+@Component({
+  selector: 'app-fatura-upload',
+  standalone: true,
+  imports: [CommonModule, FormsModule, RouterLink, ProjecaoModalComponent],
+  templateUrl: './fatura-upload.component.html'
+})
+export class FaturaUploadComponent implements OnInit {
+  protected Math = Math;
+  cartoes     = signal<Cartao[]>([]);
+  categorias  = signal<CategoriaDespesa[]>([]);
+  despesas    = signal<DespesaCartao[]>([]);
+  cabecalho   = signal<Partial<ExtrairFaturaResposta> | null>(null);
+
+  cartaoSelecionado = signal<number | null>(null);
+  arquivo           = signal<File | null>(null);
+  arrastando        = signal(false);
+  extraindo         = signal(false);
+  salvando          = signal(false);
+  erro              = signal<string | null>(null);
+
+  mostrarProjecao   = signal(false);
+  parcelasNovas     = signal<ParcelaProjetada[]>([]);
+
+  totalGrid = computed(() =>
+    this.despesas().reduce((s, d) => s + (d.valor ?? 0), 0)
+  );
+
+  divergencia = computed(() => {
+    const cab = this.cabecalho();
+    if (!cab?.valorTotal) return null;
+    const diff = cab.valorTotal - this.totalGrid();
+    return Math.abs(diff) > 0.01 ? diff : null;
+  });
+
+  constructor(
+    private cartoesService: CartoesService,
+    private faturasService: FaturasService,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {}
+
+  ngOnInit() {
+    this.cartoesService.listar().subscribe({ next: r => this.cartoes.set(r.dados ?? []) });
+    this.cartoesService.listarCategorias().subscribe({ next: r => this.categorias.set(r.dados ?? []) });
+  }
+
+  onDragOver(e: DragEvent) { e.preventDefault(); this.arrastando.set(true); }
+  onDragLeave()            { this.arrastando.set(false); }
+
+  onDrop(e: DragEvent) {
+    e.preventDefault();
+    this.arrastando.set(false);
+    const f = e.dataTransfer?.files[0];
+    if (f && f.type === 'application/pdf') this.arquivo.set(f);
+    else this.erro.set('Apenas arquivos PDF são aceitos.');
+  }
+
+  onFileInput(e: Event) {
+    const f = (e.target as HTMLInputElement).files?.[0];
+    if (f) this.arquivo.set(f);
+  }
+
+  extrair() {
+    const cartaoId = this.cartaoSelecionado();
+    const arq      = this.arquivo();
+    if (!cartaoId || !arq) { this.erro.set('Selecione o cartão e o arquivo PDF.'); return; }
+
+    this.extraindo.set(true);
+    this.erro.set(null);
+
+    this.faturasService.extrairPdf(cartaoId, arq).subscribe({
+      next: res => {
+        const dados = res.dados!;
+        this.cabecalho.set(dados);
+        this.despesas.set(dados.despesas.map(d => ({ ...d, idFatura: 0 })));
+        this.extraindo.set(false);
+      },
+      error: err => {
+        this.erro.set(err?.error?.mensagem ?? 'Erro ao extrair PDF.');
+        this.extraindo.set(false);
+      }
+    });
+  }
+
+  adicionarLinha() {
+    const cartaoId = this.cartaoSelecionado() ?? 0;
+    this.despesas.update(list => [...list, {
+      idFatura: 0,
+      dataCompra: new Date().toISOString().split('T')[0],
+      descricaoOriginal: '',
+      valor: 0,
+      parcelaAtual: 1,
+      totalParcelas: 1,
+      origem: 3,
+      status: 1
+    }]);
+  }
+
+  removerLinha(i: number) {
+    this.despesas.update(list => list.filter((_, idx) => idx !== i));
+  }
+
+  salvar() {
+    const parceladas = this.despesas().filter(d => d.totalParcelas > 1 && d.parcelaAtual === 1);
+    if (parceladas.length > 0) {
+      this.parcelasNovas.set(parceladas.map(d => ({
+        descricaoOriginal: d.descricaoOriginal,
+        valor: d.valor,
+        parcelaAtual: d.parcelaAtual,
+        totalParcelas: d.totalParcelas,
+        selecionada: true,
+        parcelas: []
+      })));
+      this.mostrarProjecao.set(true);
+      return;
+    }
+    this.executarSalvamento([]);
+  }
+
+  confirmarProjecao(projecoes: ParcelaProjetada[]) {
+    this.mostrarProjecao.set(false);
+    this.executarSalvamento(projecoes);
+  }
+
+  private executarSalvamento(projecoes: ParcelaProjetada[]) {
+    this.salvando.set(true);
+    this.faturasService.salvarDespesas(0, { despesas: this.despesas(), projecoes }).subscribe({
+      next: () => { this.salvando.set(false); this.router.navigate(['..'], { relativeTo: this.route }); },
+      error: err => {
+        this.erro.set(err?.error?.mensagem ?? 'Erro ao salvar despesas.');
+        this.salvando.set(false);
+      }
+    });
+  }
+
+  formatarReais(v: number): string {
+    return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  }
+
+  nomeCat(id?: number): string {
+    return this.categorias().find(c => c.id === id)?.nome ?? '—';
+  }
+}

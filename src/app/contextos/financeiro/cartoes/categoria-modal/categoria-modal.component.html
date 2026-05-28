@@ -1,0 +1,51 @@
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" (click)="fechar.emit()"></div>
+
+  <div class="relative glass rounded-2xl shadow-2xl w-full max-w-sm p-6 z-10">
+
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="text-lg font-semibold text-slate-900">Categorias de despesa</h2>
+      <button class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400
+                     hover:text-slate-700 hover:bg-slate-100 transition-colors"
+              (click)="fechar.emit()">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Nova categoria -->
+    <div class="flex gap-2 mb-4">
+      <input class="input-modern text-sm flex-1" [(ngModel)]="novaCategoria"
+             placeholder="Nova categoria..." (keydown.enter)="adicionar()" />
+      <button class="btn-primary text-sm px-3 py-2" (click)="adicionar()" [disabled]="salvando()">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+      </button>
+    </div>
+
+    @if (erro()) {
+      <div class="mb-3 p-3 bg-rose-50 border border-rose-200 rounded-xl text-sm text-rose-700">
+        {{ erro() }}
+      </div>
+    }
+
+    <!-- Lista -->
+    <ul class="space-y-1 max-h-64 overflow-y-auto">
+      @for (cat of categorias(); track cat.id) {
+        <li class="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-slate-50">
+          <div class="w-2 h-2 rounded-full bg-sky-400 shrink-0"></div>
+          <span class="text-sm text-slate-700">{{ cat.nome }}</span>
+        </li>
+      } @empty {
+        <li class="text-center text-sm text-slate-400 py-6">Nenhuma categoria cadastrada.</li>
+      }
+    </ul>
+
+    <div class="mt-6">
+      <button class="btn-ghost w-full text-sm" (click)="fechar.emit()">Fechar</button>
+    </div>
+
+  </div>
+</div>

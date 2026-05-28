@@ -1,0 +1,88 @@
+<!-- Backdrop -->
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" (click)="cancelar()"></div>
+
+  <div class="relative glass rounded-2xl shadow-2xl w-full max-w-md p-6 z-10">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-6">
+      <h2 class="text-lg font-semibold text-slate-900">{{ titulo }}</h2>
+      <button class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400
+                     hover:text-slate-700 hover:bg-slate-100 transition-colors"
+              (click)="cancelar()">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Form -->
+    <div class="space-y-4">
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="text-xs font-medium text-slate-600 mb-1 block">Apelido *</label>
+          <input class="input-modern text-sm" [(ngModel)]="form.apelido" placeholder="Ex: Nubank pessoal" />
+        </div>
+        <div>
+          <label class="text-xs font-medium text-slate-600 mb-1 block">Bandeira</label>
+          <select class="input-modern text-sm" [(ngModel)]="form.bandeira">
+            <option value="">Selecionar</option>
+            <option value="Visa">Visa</option>
+            <option value="Mastercard">Mastercard</option>
+            <option value="Elo">Elo</option>
+            <option value="Amex">American Express</option>
+            <option value="Hipercard">Hipercard</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label class="text-xs font-medium text-slate-600 mb-1 block">Últimos 4 dígitos *</label>
+        <input class="input-modern text-sm tracking-widest" [(ngModel)]="form.ultimos4Digitos"
+               maxlength="4" placeholder="0000" />
+      </div>
+
+      <div>
+        <label class="text-xs font-medium text-slate-600 mb-1 block">Limite total (R$) *</label>
+        <input class="input-modern text-sm" type="number" min="0" step="100"
+               [(ngModel)]="form.limiteTotal" placeholder="5000.00" />
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="text-xs font-medium text-slate-600 mb-1 block">Dia fechamento *</label>
+          <input class="input-modern text-sm" type="number" min="1" max="31"
+                 [(ngModel)]="form.diaFechamento" placeholder="3" />
+        </div>
+        <div>
+          <label class="text-xs font-medium text-slate-600 mb-1 block">Dia vencimento *</label>
+          <input class="input-modern text-sm" type="number" min="1" max="31"
+                 [(ngModel)]="form.diaVencimento" placeholder="10" />
+        </div>
+      </div>
+
+    </div>
+
+    @if (erro()) {
+      <div class="mt-4 p-3 bg-rose-50 border border-rose-200 rounded-xl text-sm text-rose-700">
+        {{ erro() }}
+      </div>
+    }
+
+    <!-- Actions -->
+    <div class="flex gap-3 mt-6">
+      <button class="btn-ghost flex-1 text-sm" (click)="cancelar()" [disabled]="salvando()">
+        Cancelar
+      </button>
+      <button class="btn-primary flex-1 text-sm" (click)="salvar()" [disabled]="salvando()">
+        @if (salvando()) {
+          <div class="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin"></div>
+        } @else {
+          {{ modoEdicao ? 'Salvar alterações' : 'Criar cartão' }}
+        }
+      </button>
+    </div>
+
+  </div>
+</div>

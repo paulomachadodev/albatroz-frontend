@@ -1,0 +1,261 @@
+<div class="space-y-6 max-w-[1400px] mx-auto">
+
+  <!-- Header -->
+  <div class="flex items-center gap-4">
+    <a routerLink=".." class="btn-ghost text-sm p-2">
+      <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+    </a>
+    <div>
+      <h1 class="text-2xl font-semibold text-slate-900 tracking-tight">
+        Processar <span class="brand-gradient">Fatura</span>
+      </h1>
+      <p class="text-slate-500 mt-1 text-sm">Selecione o cartão e faça upload do PDF para extração via Albia.</p>
+    </div>
+  </div>
+
+  @if (erro()) {
+    <div class="p-4 bg-rose-50 border border-rose-200 rounded-xl text-sm text-rose-700 flex items-center gap-2">
+      <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      {{ erro() }}
+    </div>
+  }
+
+  <!-- Seleção de cartão -->
+  <div class="card p-6">
+    <h2 class="font-semibold text-slate-900 mb-4">1. Selecione o cartão</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+      @for (c of cartoes(); track c.id) {
+        <button class="flex items-center gap-3 p-4 rounded-xl border-2 text-left transition-all"
+                [class.border-sky-500]="cartaoSelecionado() === c.id"
+                [class.bg-sky-50]="cartaoSelecionado() === c.id"
+                [class.border-slate-200]="cartaoSelecionado() !== c.id"
+                [class.hover:border-slate-300]="cartaoSelecionado() !== c.id"
+                (click)="cartaoSelecionado.set(c.id)">
+          <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center shrink-0">
+            <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/>
+            </svg>
+          </div>
+          <div class="min-w-0">
+            <div class="font-medium text-slate-900 text-sm truncate">{{ c.apelido }}</div>
+            <div class="text-xs text-slate-400">•••• {{ c.ultimos4Digitos }}</div>
+          </div>
+          @if (cartaoSelecionado() === c.id) {
+            <svg class="w-4 h-4 text-sky-600 ml-auto shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          }
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- Upload PDF (só aparece com cartão selecionado) -->
+  @if (cartaoSelecionado()) {
+    <div class="card p-6">
+      <h2 class="font-semibold text-slate-900 mb-4">2. Upload da fatura PDF</h2>
+
+      @if (!despesas().length) {
+        <!-- Drop zone -->
+        <div class="border-2 border-dashed rounded-2xl p-12 text-center transition-all cursor-pointer relative"
+             [class.border-sky-400]="arrastando()"
+             [class.bg-sky-50]="arrastando()"
+             [class.border-slate-300]="!arrastando()"
+             (dragover)="onDragOver($event)"
+             (dragleave)="onDragLeave()"
+             (drop)="onDrop($event)">
+          <input type="file" accept=".pdf" class="absolute inset-0 opacity-0 cursor-pointer"
+                 (change)="onFileInput($event)" />
+
+          @if (arquivo()) {
+            <div class="flex flex-col items-center gap-3">
+              <div class="w-14 h-14 rounded-2xl bg-emerald-100 flex items-center justify-center">
+                <svg class="w-7 h-7 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+              </div>
+              <div class="font-medium text-slate-900">{{ arquivo()!.name }}</div>
+              <div class="text-sm text-slate-400">{{ (arquivo()!.size / 1024).toFixed(0) }} KB</div>
+            </div>
+          } @else {
+            <div class="flex flex-col items-center gap-3">
+              <div class="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center">
+                <svg class="w-7 h-7 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/>
+                  <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
+                </svg>
+              </div>
+              <div class="font-medium text-slate-700">Arraste o PDF aqui ou clique para selecionar</div>
+              <div class="text-sm text-slate-400">Apenas arquivos .pdf</div>
+            </div>
+          }
+        </div>
+
+        @if (arquivo()) {
+          <div class="mt-4 flex justify-end">
+            <button class="btn-primary text-sm" (click)="extrair()" [disabled]="extraindo()">
+              @if (extraindo()) {
+                <div class="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin"></div>
+                Extraindo via Albia...
+              } @else {
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 3v3M12 18v3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M3 12h3M18 12h3M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/>
+                </svg>
+                Extrair com Albia
+              }
+            </button>
+          </div>
+        }
+      }
+
+      <!-- Grid de despesas -->
+      @if (despesas().length) {
+        <div>
+          <!-- Cabeçalho fatura -->
+          @if (cabecalho()) {
+            <div class="flex flex-wrap gap-4 mb-4 p-4 bg-slate-50 rounded-xl text-sm">
+              <div><span class="text-slate-400">Valor total fatura:</span>
+                <span class="font-semibold text-slate-900 ml-1">{{ formatarReais(cabecalho()!.valorTotal ?? 0) }}</span>
+              </div>
+              <div><span class="text-slate-400">Vencimento:</span>
+                <span class="font-semibold text-slate-900 ml-1">{{ cabecalho()!.dataVencimento | date:'dd/MM/yyyy' }}</span>
+              </div>
+              @if (cabecalho()!.taxasAnuidades) {
+                <div><span class="text-slate-400">Taxas/Anuidades:</span>
+                  <span class="font-semibold text-slate-900 ml-1">{{ formatarReais(cabecalho()!.taxasAnuidades!) }}</span>
+                </div>
+              }
+            </div>
+          }
+
+          <div class="overflow-x-auto rounded-xl border border-slate-200">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="bg-slate-50 border-b border-slate-200">
+                  <th class="px-3 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Data</th>
+                  <th class="px-3 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Descrição original</th>
+                  <th class="px-3 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Descrição editada</th>
+                  <th class="px-3 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Portador</th>
+                  <th class="px-3 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Categoria</th>
+                  <th class="px-3 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wide">Valor</th>
+                  <th class="px-3 py-3 text-center text-xs font-semibold text-slate-500 uppercase tracking-wide">Parcela</th>
+                  <th class="px-3 py-3"></th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                @for (d of despesas(); track $index; let i = $index) {
+                  <tr [class.bg-sky-50]="d.previsaoEncontrada">
+                    <td class="px-3 py-2">
+                      <input type="date" class="input-modern py-1.5 text-xs w-32"
+                             [(ngModel)]="d.dataCompra" />
+                    </td>
+                    <td class="px-3 py-2">
+                      <div class="text-xs text-slate-400 truncate max-w-[160px]" [title]="d.descricaoOriginal">
+                        {{ d.descricaoOriginal || '—' }}
+                        @if (d.previsaoEncontrada) {
+                          <span class="ml-1 px-1.5 py-0.5 bg-sky-100 text-sky-700 rounded text-[10px] font-medium">Prev.</span>
+                        }
+                      </div>
+                    </td>
+                    <td class="px-3 py-2">
+                      <input class="input-modern py-1.5 text-xs w-40"
+                             [(ngModel)]="d.descricaoEditada" placeholder="Descrição..." />
+                    </td>
+                    <td class="px-3 py-2">
+                      <input class="input-modern py-1.5 text-xs w-28"
+                             [(ngModel)]="d.portadorNome" placeholder="Portador..." />
+                    </td>
+                    <td class="px-3 py-2">
+                      <select class="input-modern py-1.5 text-xs w-32"
+                              [(ngModel)]="d.idCategoriaDespesa">
+                        <option [ngValue]="undefined">—</option>
+                        @for (cat of categorias(); track cat.id) {
+                          <option [ngValue]="cat.id">{{ cat.nome }}</option>
+                        }
+                      </select>
+                    </td>
+                    <td class="px-3 py-2">
+                      <input type="number" class="input-modern py-1.5 text-xs w-24 text-right"
+                             [(ngModel)]="d.valor" step="0.01" min="0" />
+                    </td>
+                    <td class="px-3 py-2">
+                      <div class="flex items-center gap-1 justify-center">
+                        <input type="number" class="input-modern py-1.5 text-xs w-12 text-center"
+                               [(ngModel)]="d.parcelaAtual" min="1" />
+                        <span class="text-slate-400 text-xs">/</span>
+                        <input type="number" class="input-modern py-1.5 text-xs w-12 text-center"
+                               [(ngModel)]="d.totalParcelas" min="1" />
+                      </div>
+                    </td>
+                    <td class="px-3 py-2">
+                      <button class="text-slate-300 hover:text-rose-500 transition-colors"
+                              (click)="removerLinha(i)">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
+                        </svg>
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+              <!-- Rodapé totalizador -->
+              <tfoot>
+                <tr class="border-t-2 border-slate-200 bg-slate-50">
+                  <td colspan="5" class="px-3 py-3 text-xs font-semibold text-slate-600 text-right">Total grid:</td>
+                  <td class="px-3 py-3 text-right font-bold text-slate-900">{{ formatarReais(totalGrid()) }}</td>
+                  <td colspan="2" class="px-3 py-3">
+                    @if (divergencia() !== null) {
+                      <span class="text-xs font-medium px-2 py-1 rounded-lg"
+                            [class.bg-rose-100]="(divergencia() ?? 0) > 0"
+                            [class.text-rose-700]="(divergencia() ?? 0) > 0"
+                            [class.bg-amber-100]="(divergencia() ?? 0) < 0"
+                            [class.text-amber-700]="(divergencia() ?? 0) < 0">
+                        Dif: {{ formatarReais(Math.abs(divergencia()!)) }}
+                      </span>
+                    } @else {
+                      <span class="text-xs font-medium px-2 py-1 rounded-lg bg-emerald-100 text-emerald-700">OK</span>
+                    }
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+          <!-- Ações grid -->
+          <div class="flex items-center justify-between mt-4">
+            <button class="btn-ghost text-sm" (click)="adicionarLinha()">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              Adicionar linha
+            </button>
+            <button class="btn-primary text-sm" (click)="salvar()" [disabled]="salvando()">
+              @if (salvando()) {
+                <div class="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin"></div>
+                Salvando...
+              } @else {
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
+                </svg>
+                Salvar fatura
+              }
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+</div>
+
+@if (mostrarProjecao()) {
+  <app-projecao-modal
+    [parcelas]="parcelasNovas()"
+    (confirmar)="confirmarProjecao($event)"
+    (cancelar)="mostrarProjecao.set(false)">
+  </app-projecao-modal>
+}

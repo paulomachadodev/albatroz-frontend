@@ -1,247 +1,233 @@
-<div class="space-y-6 max-w-[1400px] mx-auto">
+<div class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark px-4 sm:px-6 lg:px-8 xl:px-10 py-6 lg:py-8">
+  <div class="w-full space-y-8">
 
-  <!-- Cabeçalho -->
-  <div class="flex items-end justify-between flex-wrap gap-4">
-    <div>
-      <h1 class="text-2xl font-semibold text-slate-900 tracking-tight">
-        Cartões de <span class="brand-gradient">Crédito</span>
-      </h1>
-      <p class="text-slate-500 mt-1 text-sm">Controle de faturas, despesas e limites.</p>
-    </div>
-    <div class="flex items-center gap-2">
-      <button class="btn-ghost text-sm" (click)="mostrarModalCategoria.set(true)">
-        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/>
-        </svg>
-        Categorias
-      </button>
-      <button class="btn-ghost text-sm" (click)="abrirModalCartao()">
-        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/>
-        </svg>
-        Novo cartão
-      </button>
-      <a routerLink="upload" class="btn-primary text-sm py-2 px-3">
-        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/>
-          <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
-        </svg>
-        Processar fatura
-      </a>
-    </div>
-  </div>
+    <!-- breadcrumb -->
+    <nav class="flex items-center gap-2 text-sm text-slate-500">
+      <a class="hover:text-primary" routerLink="/dashboard">Início</a>
+      <span class="material-symbols-outlined text-xs">chevron_right</span>
+      <span class="text-slate-900 dark:text-slate-100 font-medium">Cartões</span>
+    </nav>
 
-  @if (carregando()) {
-    <div class="flex items-center justify-center py-24">
-      <div class="w-8 h-8 border-4 border-sky-200 border-t-sky-600 rounded-full animate-spin"></div>
-    </div>
-  } @else {
-
-    <!-- KPI cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-
-      <div class="card p-5 relative overflow-hidden group hover:-translate-y-0.5 hover:shadow-lg hover:shadow-slate-900/5 transition-all">
-        <div class="flex items-start justify-between">
-          <div>
-            <div class="text-xs font-medium text-slate-400 uppercase tracking-wide">Gasto em aberto</div>
-            <div class="text-2xl font-semibold text-slate-900 mt-1.5">{{ formatarReais(totalGasto()) }}</div>
-            <div class="text-xs text-slate-400 mt-2">{{ totalCompras() }} fatura(s) ativa(s)</div>
-          </div>
-          <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center text-white shrink-0 shadow-md">
-            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/>
-            </svg>
-          </div>
-        </div>
-        <div class="absolute -bottom-6 -right-6 w-24 h-24 rounded-full opacity-10 bg-gradient-to-br from-rose-500 to-pink-600"></div>
-      </div>
-
-      <div class="card p-5 relative overflow-hidden hover:-translate-y-0.5 hover:shadow-lg hover:shadow-slate-900/5 transition-all">
-        <div class="flex items-start justify-between">
-          <div>
-            <div class="text-xs font-medium text-slate-400 uppercase tracking-wide">Limite global</div>
-            <div class="text-2xl font-semibold text-slate-900 mt-1.5">{{ formatarReais(limiteTotalGlobal()) }}</div>
-            <div class="text-xs text-slate-400 mt-2">{{ formatarReais(limiteUsadoGlobal()) }} utilizado</div>
-          </div>
-          <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-sky-500 to-blue-700 flex items-center justify-center text-white shrink-0 shadow-md">
-            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-            </svg>
-          </div>
-        </div>
-        <div class="mt-3">
-          <div class="flex justify-between text-[11px] text-slate-500 mb-1">
-            <span>Uso do limite</span><span>{{ percentualUso() | number:'1.0-0' }}%</span>
-          </div>
-          <div class="h-1.5 bg-slate-100 rounded-full overflow-hidden">
-            <div class="h-full rounded-full bg-gradient-to-r transition-all duration-500"
-                 [class]="corBarra(percentualUso())"
-                 [style.width.%]="percentualUso()"></div>
-          </div>
-        </div>
-        <div class="absolute -bottom-6 -right-6 w-24 h-24 rounded-full opacity-10 bg-gradient-to-br from-sky-500 to-blue-700"></div>
-      </div>
-
-      <div class="card p-5 relative overflow-hidden hover:-translate-y-0.5 hover:shadow-lg hover:shadow-slate-900/5 transition-all">
-        <div class="flex items-start justify-between">
-          <div>
-            <div class="text-xs font-medium text-slate-400 uppercase tracking-wide">Faturas abertas</div>
-            <div class="text-2xl font-semibold text-slate-900 mt-1.5">{{ faturasPorStatus().abertas }}</div>
-            <div class="text-xs text-slate-400 mt-2">{{ faturasPorStatus().processadas }} processadas</div>
-          </div>
-          <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white shrink-0 shadow-md">
-            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
-            </svg>
-          </div>
-        </div>
-        <div class="absolute -bottom-6 -right-6 w-24 h-24 rounded-full opacity-10 bg-gradient-to-br from-amber-400 to-orange-500"></div>
-      </div>
-
-      <div class="card p-5 relative overflow-hidden hover:-translate-y-0.5 hover:shadow-lg hover:shadow-slate-900/5 transition-all">
-        <div class="flex items-start justify-between">
-          <div>
-            <div class="text-xs font-medium text-slate-400 uppercase tracking-wide">Cartões ativos</div>
-            <div class="text-2xl font-semibold text-slate-900 mt-1.5">{{ cartoes().length }}</div>
-            <div class="text-xs text-slate-400 mt-2">{{ faturasPorStatus().pagas }} faturas pagas</div>
-          </div>
-          <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center text-white shrink-0 shadow-md">
-            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="20 6 9 17 4 12"/>
-            </svg>
-          </div>
-        </div>
-        <div class="absolute -bottom-6 -right-6 w-24 h-24 rounded-full opacity-10 bg-gradient-to-br from-emerald-400 to-teal-600"></div>
-      </div>
-
-    </div>
-
-    <!-- Cartões — barras de limite -->
-    @if (cartoes().length) {
+    <!-- hero -->
+    <div class="flex flex-wrap items-end justify-between gap-4">
       <div>
-        <h2 class="text-sm font-semibold text-slate-700 mb-3">Controle de limite por cartão</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          @for (c of cartoes(); track c.id) {
-            <div class="card p-5 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-slate-900/5 transition-all">
-              <div class="flex items-start justify-between mb-3">
-                <div class="flex items-center gap-3">
-                  <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center shrink-0">
-                    <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                      <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/>
-                    </svg>
-                  </div>
-                  <div>
-                    <div class="font-semibold text-slate-900 text-sm">{{ c.apelido }}</div>
-                    <div class="text-xs text-slate-400">
-                      {{ c.bandeira ?? 'Cartão' }} •••• {{ c.ultimos4Digitos }}
+        <h1 class="text-3xl font-black tracking-tight text-slate-900 dark:text-slate-100">Cartões de Crédito</h1>
+        <p class="text-slate-500 dark:text-slate-400">Controle de faturas, despesas e limites.</p>
+      </div>
+      <div class="flex flex-wrap items-center gap-3">
+        <button class="btn-ghost text-sm flex items-center gap-2" (click)="mostrarModalCategoria.set(true)">
+          <span class="material-symbols-outlined text-sm">sell</span> Categorias
+        </button>
+        <button class="btn-ghost text-sm flex items-center gap-2" (click)="abrirModalCartao()">
+          <span class="material-symbols-outlined text-sm">add_card</span> Novo cartão
+        </button>
+        <a routerLink="upload" class="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all">
+          <span class="material-symbols-outlined text-sm">upload_file</span> Processar fatura
+        </a>
+      </div>
+    </div>
+
+    @if (carregando()) {
+      <div class="flex items-center justify-center py-24">
+        <div class="size-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+      </div>
+    } @else {
+
+      <!-- KPIs -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+        <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <div class="flex justify-between items-start mb-4">
+            <span class="material-symbols-outlined text-rose-600 bg-rose-100 dark:bg-rose-900/40 p-2 rounded-lg">credit_card</span>
+          </div>
+          <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Gasto em aberto</p>
+          <p class="text-2xl font-black mt-1">{{ formatarReais(totalGasto()) }}</p>
+          <p class="text-xs text-slate-400 mt-2">{{ totalCompras() }} fatura(s) ativa(s)</p>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <div class="flex justify-between items-start mb-4">
+            <span class="material-symbols-outlined text-primary bg-primary/10 p-2 rounded-lg">account_balance</span>
+          </div>
+          <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Limite global</p>
+          <p class="text-2xl font-black mt-1">{{ formatarReais(limiteTotalGlobal()) }}</p>
+          <div class="mt-3">
+            <div class="flex justify-between text-[11px] text-slate-500 mb-1">
+              <span>{{ formatarReais(limiteUsadoGlobal()) }} utilizado</span><span>{{ percentualUso() | number:'1.0-0' }}%</span>
+            </div>
+            <div class="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+              <div class="h-full rounded-full transition-all duration-500" [class]="corBarra(percentualUso())" [style.width.%]="percentualUso()"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <div class="flex justify-between items-start mb-4">
+            <span class="material-symbols-outlined text-amber-600 bg-amber-100 dark:bg-amber-900/40 p-2 rounded-lg">receipt_long</span>
+          </div>
+          <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Faturas abertas</p>
+          <p class="text-2xl font-black mt-1">{{ faturasPorStatus().abertas }}</p>
+          <p class="text-xs text-slate-400 mt-2">{{ faturasPorStatus().processadas }} processadas</p>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <div class="flex justify-between items-start mb-4">
+            <span class="material-symbols-outlined text-emerald-600 bg-emerald-100 dark:bg-emerald-900/40 p-2 rounded-lg">check_circle</span>
+          </div>
+          <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Cartões ativos</p>
+          <p class="text-2xl font-black mt-1">{{ todosCartoes().length }}</p>
+          <p class="text-xs text-slate-400 mt-2">{{ faturasPorStatus().pagas }} faturas pagas</p>
+        </div>
+      </div>
+
+      <!-- Cartões — limite por cartão (principal + adicionais aninhados) -->
+      @if (cartoes().length) {
+        <div>
+          <h2 class="text-sm font-bold text-slate-700 dark:text-slate-300 mb-3">Controle de limite por cartão</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
+            @for (c of cartoes(); track c.id) {
+              <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                <div class="flex items-start justify-between mb-3">
+                  <div class="flex items-center gap-3">
+                    <div class="size-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                      <span class="material-symbols-outlined">credit_card</span>
+                    </div>
+                    <div>
+                      <div class="flex items-center gap-2">
+                        <span class="font-bold text-slate-900 dark:text-slate-100 text-sm">{{ c.apelido }}</span>
+                        <span class="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-primary/10 text-primary uppercase tracking-wide">Principal</span>
+                      </div>
+                      <div class="text-xs text-slate-400">{{ c.bandeira ?? 'Cartão' }} •••• {{ c.ultimos4Digitos }}</div>
                     </div>
                   </div>
+                  <div class="flex items-center gap-1">
+                    <button class="text-slate-400 hover:text-primary transition-colors" (click)="abrirModalAdicional(c)" title="Adicionar cartão adicional">
+                      <span class="material-symbols-outlined text-base">add_card</span>
+                    </button>
+                    <button class="text-slate-400 hover:text-primary transition-colors" (click)="abrirModalCartao(c)" title="Editar">
+                      <span class="material-symbols-outlined text-base">edit</span>
+                    </button>
+                  </div>
                 </div>
-                <button class="text-slate-400 hover:text-slate-700 transition-colors"
-                        (click)="abrirModalCartao(c)" title="Editar">
-                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                  </svg>
-                </button>
-              </div>
 
-              <div class="flex justify-between text-xs text-slate-500 mb-1.5">
-                <span>{{ formatarReais(c.limiteUsado) }} usado</span>
-                <span class="font-medium" [class.text-rose-600]="percCartao(c) >= 90"
-                                          [class.text-amber-600]="percCartao(c) >= 70 && percCartao(c) < 90">
-                  {{ percCartao(c) | number:'1.0-0' }}%
-                </span>
-              </div>
-              <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
-                <div class="h-full rounded-full bg-gradient-to-r transition-all duration-700"
-                     [class]="corBarra(percCartao(c))"
-                     [style.width.%]="percCartao(c)"></div>
-              </div>
-              <div class="flex justify-between text-[11px] text-slate-400 mt-1.5">
-                <span>{{ formatarReais(c.limiteTotal - c.limiteUsado) }} disponível</span>
-                <span>Limite: {{ formatarReais(c.limiteTotal) }}</span>
-              </div>
+                <div class="flex justify-between text-xs text-slate-500 mb-1.5">
+                  <span>{{ formatarReais(c.limiteUsado) }} usado</span>
+                  <span class="font-medium"
+                        [class.text-rose-600]="percCartao(c) >= 90"
+                        [class.text-amber-600]="percCartao(c) >= 70 && percCartao(c) < 90">
+                    {{ percCartao(c) | number:'1.0-0' }}%
+                  </span>
+                </div>
+                <div class="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                  <div class="h-full rounded-full transition-all duration-700" [class]="corBarra(percCartao(c))" [style.width.%]="percCartao(c)"></div>
+                </div>
+                <div class="flex justify-between text-[11px] text-slate-400 mt-1.5">
+                  <span>{{ formatarReais(c.limiteTotal - c.limiteUsado) }} disponível</span>
+                  <span>Limite: {{ formatarReais(c.limiteTotal) }}</span>
+                </div>
 
-              <div class="mt-3 pt-3 border-t border-slate-100 flex gap-3 text-[11px] text-slate-500">
-                <span>Fecha dia {{ c.diaFechamento }}</span>
-                <span class="text-slate-200">|</span>
-                <span>Vence dia {{ c.diaVencimento }}</span>
-                @if (c.portadorNome) {
-                  <span class="text-slate-200">|</span>
-                  <span>{{ c.portadorNome }}</span>
+                <div class="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 flex flex-wrap gap-2 text-[11px] text-slate-500">
+                  <span>Fecha dia {{ c.diaFechamento }}</span>
+                  <span class="text-slate-300 dark:text-slate-600">|</span>
+                  <span>Vence dia {{ c.diaVencimento }}</span>
+                  @if (c.portadorNome) {
+                    <span class="text-slate-300 dark:text-slate-600">|</span>
+                    <span>{{ c.portadorNome }}</span>
+                  }
+                </div>
+
+                <!-- adicionais -->
+                @if (c.adicionais?.length) {
+                  <div class="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 space-y-2">
+                    <p class="text-[10px] font-bold uppercase tracking-wide text-slate-400">Adicionais</p>
+                    @for (a of c.adicionais; track a.id) {
+                      <div class="flex items-center justify-between gap-2 rounded-lg bg-slate-50 dark:bg-slate-800/50 px-3 py-2">
+                        <div class="flex items-center gap-2 min-w-0">
+                          <span class="material-symbols-outlined text-slate-400 text-base shrink-0">add_card</span>
+                          <div class="min-w-0">
+                            <p class="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">{{ a.apelido }}</p>
+                            <p class="text-[11px] text-slate-400">•••• {{ a.ultimos4Digitos }}@if (a.portadorNome) { · {{ a.portadorNome }}}</p>
+                          </div>
+                        </div>
+                        <div class="flex items-center gap-2 shrink-0">
+                          <span class="text-[11px] text-slate-500">{{ formatarReais(a.limiteUsado) }}</span>
+                          <button class="text-slate-400 hover:text-primary transition-colors" (click)="abrirModalCartao(a)" title="Editar adicional">
+                            <span class="material-symbols-outlined text-sm">edit</span>
+                          </button>
+                        </div>
+                      </div>
+                    }
+                  </div>
                 }
               </div>
-            </div>
-          }
-        </div>
-      </div>
-    }
-
-    <!-- Listagem de faturas -->
-    <div class="card overflow-hidden">
-      <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-        <h2 class="font-semibold text-slate-900">Faturas</h2>
-        <span class="text-xs text-slate-400">{{ faturas().length }} registro(s)</span>
-      </div>
-
-      @if (faturas().length === 0) {
-        <div class="py-16 text-center">
-          <p class="text-slate-400 text-sm">Nenhuma fatura encontrada.</p>
-          <a routerLink="upload" class="btn-primary mt-4 inline-flex text-sm py-2 px-4">
-            Processar primeira fatura
-          </a>
-        </div>
-      } @else {
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm">
-            <thead>
-              <tr class="border-b border-slate-100 text-left">
-                <th class="px-6 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">Cartão</th>
-                <th class="px-6 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">Referência</th>
-                <th class="px-6 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">Vencimento</th>
-                <th class="px-6 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide text-right">Valor</th>
-                <th class="px-6 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wide">Status</th>
-                <th class="px-6 py-3"></th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-50">
-              @for (f of faturas(); track f.id) {
-                <tr class="hover:bg-slate-50 transition-colors">
-                  <td class="px-6 py-4 font-medium text-slate-800">{{ f.cartaoApelido ?? '—' }}</td>
-                  <td class="px-6 py-4 text-slate-600">{{ formatarMes(f.mesReferencia, f.anoReferencia) }}</td>
-                  <td class="px-6 py-4 text-slate-600">
-                    {{ f.dataVencimento | date:'dd/MM/yyyy' }}
-                  </td>
-                  <td class="px-6 py-4 text-right font-semibold text-slate-900">{{ formatarReais(f.valorTotal) }}</td>
-                  <td class="px-6 py-4">
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                          [ngClass]="classeStatus(f.status)">
-                      {{ labelStatus(f.status) }}
-                    </span>
-                  </td>
-                  <td class="px-6 py-4">
-                    <a [routerLink]="['upload']" [queryParams]="{ faturaId: f.id }"
-                       class="text-xs text-sky-600 hover:text-sky-800 font-medium transition-colors">
-                      Ver detalhes
-                    </a>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
+            }
+          </div>
         </div>
       }
-    </div>
 
-  }
+      <!-- Listagem de faturas -->
+      <section class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+          <h2 class="font-bold text-slate-900 dark:text-slate-100">Faturas</h2>
+          <span class="text-xs text-slate-400">{{ faturas().length }} registro(s)</span>
+        </div>
 
+        @if (faturas().length === 0) {
+          <div class="py-16 text-center">
+            <p class="text-slate-400 text-sm">Nenhuma fatura encontrada.</p>
+            <a routerLink="upload" class="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all">
+              <span class="material-symbols-outlined text-sm">upload_file</span> Processar primeira fatura
+            </a>
+          </div>
+        } @else {
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-sm">
+              <thead class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 text-xs uppercase tracking-wider font-bold">
+                <tr>
+                  <th class="px-6 py-4">Cartão</th>
+                  <th class="px-6 py-4">Referência</th>
+                  <th class="px-6 py-4">Vencimento</th>
+                  <th class="px-6 py-4 text-right">Valor</th>
+                  <th class="px-6 py-4 text-center">Status</th>
+                  <th class="px-6 py-4 text-center">Ações</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                @for (f of faturas(); track f.id) {
+                  <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                    <td class="px-6 py-4 font-bold text-slate-800 dark:text-slate-100">{{ f.cartaoApelido ?? '—' }}</td>
+                    <td class="px-6 py-4 text-slate-600 dark:text-slate-400">{{ formatarMes(f.mesReferencia, f.anoReferencia) }}</td>
+                    <td class="px-6 py-4 text-slate-600 dark:text-slate-400">{{ f.dataVencimento | date:'dd/MM/yyyy' }}</td>
+                    <td class="px-6 py-4 text-right font-bold text-slate-900 dark:text-slate-100">{{ formatarReais(f.valorTotal) }}</td>
+                    <td class="px-6 py-4 text-center">
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold" [ngClass]="classeStatus(f.status)">
+                        {{ labelStatus(f.status) }}
+                      </span>
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                      <a [routerLink]="['upload']" [queryParams]="{ faturaId: f.id }"
+                         class="text-xs text-primary hover:underline font-bold transition-colors">
+                        Ver detalhes
+                      </a>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </section>
+
+    }
+
+  </div>
 </div>
 
 <!-- Modais -->
 @if (mostrarModalCartao()) {
   <app-cartao-modal
     [cartao]="cartaoEmEdicao()"
+    [principais]="cartoes()"
+    [principalPre]="principalPreSelecionado()"
     (fechar)="fecharModalCartao($event)">
   </app-cartao-modal>
 }

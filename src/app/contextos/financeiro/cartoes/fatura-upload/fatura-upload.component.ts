@@ -9,12 +9,14 @@ import { CategoriaDespesa } from '../models/categoria-despesa.model';
 import { DespesaCartao, ParcelaProjetada } from '../models/despesa-cartao.model';
 import { ExtrairFaturaResposta } from '../dtos/despesa-cartao-salvar.dto';
 import { ProjecaoModalComponent } from '../projecao-modal/projecao-modal.component';
+import { CategoriaSelectComponent } from '../categoria-select/categoria-select.component';
 
 @Component({
   selector: 'app-fatura-upload',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, ProjecaoModalComponent],
-  templateUrl: './fatura-upload.component.html'
+  imports: [CommonModule, FormsModule, RouterLink, ProjecaoModalComponent, CategoriaSelectComponent],
+  templateUrl: './fatura-upload.component.html',
+  host: { class: 'flex-1 flex flex-col min-h-0' }
 })
 export class FaturaUploadComponent implements OnInit {
   protected Math = Math;
@@ -110,6 +112,18 @@ export class FaturaUploadComponent implements OnInit {
 
   removerLinha(i: number) {
     this.despesas.update(list => list.filter((_, idx) => idx !== i));
+  }
+
+  criarCategoria(nome: string, d: DespesaCartao) {
+    this.cartoesService.criarCategoria(nome).subscribe({
+      next: res => {
+        const cat = res.dados!;
+        this.categorias.update(list => [...list, cat]);
+        d.idCategoriaDespesa = cat.id;
+        this.despesas.update(list => [...list]);
+      },
+      error: err => this.erro.set(err?.error?.mensagem ?? 'Erro ao criar categoria.')
+    });
   }
 
   salvar() {

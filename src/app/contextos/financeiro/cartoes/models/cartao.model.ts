@@ -1,6 +1,7 @@
 export interface Cartao {
   id: number;
   empresaId: number;
+  idCartaoPrincipal?: number | null;
   idContatoPortador?: number;
   portadorNome?: string;
   ultimos4Digitos: string;
@@ -13,4 +14,6 @@ export interface Cartao {
   limiteDisponivel: number;
   ativo: number;
   criadoEm: string;
+  ehAdicional?: boolean;
+  adicionais?: Cartao[];
 }

@@ -1,0 +1,45 @@
+<div class="relative">
+  <button type="button"
+          class="input-modern py-1.5 text-xs w-full flex items-center justify-between gap-1 text-left"
+          (click)="aberto() ? fechar() : abrir()">
+    <span class="truncate" [class.text-slate-400]="!selecionada()">
+      {{ selecionada()?.nome ?? '—' }}
+    </span>
+    <span class="material-symbols-outlined text-sm text-slate-400 shrink-0">expand_more</span>
+  </button>
+
+  @if (aberto()) {
+    <div class="absolute z-30 mt-1 w-56 max-w-[80vw] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl p-2">
+      <input class="input-modern text-xs w-full py-1.5 mb-2" [(ngModel)]="busca"
+             placeholder="Buscar ou criar..." (keydown.enter)="podeCriar() ? criarNova() : null" autofocus />
+
+      <ul class="max-h-48 overflow-y-auto space-y-0.5">
+        <li>
+          <button type="button" class="w-full text-left px-2 py-1.5 rounded-lg text-xs text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
+                  (click)="limpar()">— Sem categoria</button>
+        </li>
+        @for (cat of filtradas(); track cat.id) {
+          <li>
+            <button type="button"
+                    class="w-full text-left px-2 py-1.5 rounded-lg text-xs hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2"
+                    [class.bg-primary]="cat.id === value()"
+                    [class.text-white]="cat.id === value()"
+                    (click)="selecionar(cat)">
+              <span class="truncate">{{ cat.nome }}</span>
+            </button>
+          </li>
+        }
+        @if (podeCriar()) {
+          <li>
+            <button type="button"
+                    class="w-full text-left px-2 py-1.5 rounded-lg text-xs text-primary hover:bg-primary/5 flex items-center gap-1.5"
+                    (click)="criarNova()">
+              <span class="material-symbols-outlined text-sm">add</span>
+              Criar "{{ busca().trim() }}"
+            </button>
+          </li>
+        }
+      </ul>
+    </div>
+  }
+</div>

@@ -12,11 +12,14 @@ import { CartaoRequisicao } from '../dtos/cartao-requisicao.dto';
   templateUrl: './cartao-modal.component.html'
 })
 export class CartaoModalComponent implements OnInit {
-  cartao    = input<Cartao | null>(null);
-  fechar    = output<boolean>();
+  cartao        = input<Cartao | null>(null);
+  principais    = input<Cartao[]>([]);
+  principalPre  = input<number | null>(null);
+  fechar        = output<boolean>();
 
-  salvando  = signal(false);
-  erro      = signal<string | null>(null);
+  salvando    = signal(false);
+  erro        = signal<string | null>(null);
+  ehAdicional = signal(false);
 
   form: CartaoRequisicao = {
     ultimos4Digitos: '',
@@ -24,7 +27,8 @@ export class CartaoModalComponent implements OnInit {
     bandeira: '',
     diaVencimento: 10,
     diaFechamento: 3,
-    limiteTotal: 0
+    limiteTotal: 0,
+    idCartaoPrincipal: null
   };
 
   constructor(private service: CartoesService) {}
@@ -33,6 +37,7 @@ export class CartaoModalComponent implements OnInit {
     const c = this.cartao();
     if (c) {
       this.form = {
+        idCartaoPrincipal: c.idCartaoPrincipal ?? null,
         idContatoPortador: c.idContatoPortador,
         ultimos4Digitos:   c.ultimos4Digitos,
         apelido:           c.apelido,
@@ -41,17 +46,37 @@ export class CartaoModalComponent implements OnInit {
         diaFechamento:     c.diaFechamento,
         limiteTotal:       c.limiteTotal
       };
+      this.ehAdicional.set(c.idCartaoPrincipal != null);
+    } else if (this.principalPre() != null) {
+      this.form.idCartaoPrincipal = this.principalPre();
+      this.ehAdicional.set(true);
     }
+  }
+
+  // só cartões principais podem ser pai; exclui o próprio em edição
+  get opcoesPrincipais(): Cartao[] {
+    const atualId = this.cartao()?.id;
+    return this.principais().filter(p => p.idCartaoPrincipal == null && p.id !== atualId);
   }
 
   get titulo(): string { return this.cartao() ? 'Editar cartão' : 'Novo cartão'; }
   get modoEdicao(): boolean { return !!this.cartao(); }
+
+  alternarAdicional(valor: boolean) {
+    this.ehAdicional.set(valor);
+    if (!valor) this.form.idCartaoPrincipal = null;
+  }
 
   salvar() {
     if (!this.form.ultimos4Digitos || !this.form.apelido) {
       this.erro.set('Preencha os campos obrigatórios.');
       return;
     }
+    if (this.ehAdicional() && !this.form.idCartaoPrincipal) {
+      this.erro.set('Selecione o cartão principal vinculado.');
+      return;
+    }
+    if (!this.ehAdicional()) this.form.idCartaoPrincipal = null;
     this.salvando.set(true);
     this.erro.set(null);
 

@@ -1,94 +1,68 @@
-<header class="h-16 px-6 flex items-center gap-4 bg-white/80 backdrop-blur-md
-               border-b border-slate-200/70 sticky top-0 z-30">
+<header class="h-16 px-6 flex items-center gap-4 bg-white dark:bg-background-dark
+               border-b border-slate-200 dark:border-slate-800 sticky top-0 z-30">
 
   <!-- Busca global -->
   <div class="relative flex-1 max-w-xl">
-    <svg class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
-         viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-    </svg>
+    <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xl">search</span>
     <input type="text"
            placeholder="Buscar produtos, cotações, usuários..."
-           class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200/80
-                  bg-slate-50/60 text-sm placeholder:text-slate-400
-                  focus:outline-none focus:bg-white focus:border-sky-300
-                  focus:ring-4 focus:ring-sky-100 transition-all" />
+           class="w-full pl-11 pr-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700
+                  bg-slate-50 dark:bg-slate-800 text-sm placeholder:text-slate-400 text-slate-900 dark:text-slate-100
+                  focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all" />
   </div>
 
   <div class="flex-1"></div>
 
   <!-- Ações -->
-  <button class="relative w-10 h-10 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-slate-800
+  <button class="relative size-10 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-slate-100
                  transition-colors flex items-center justify-center"
           aria-label="Notificações">
-    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-         stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-      <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-    </svg>
-    <span class="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full ring-2 ring-white"></span>
+    <span class="material-symbols-outlined">notifications</span>
+    <span class="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full ring-2 ring-white dark:ring-background-dark"></span>
   </button>
 
   <!-- User -->
   <div class="relative">
     <button (click)="toggleMenu()"
-            class="flex items-center gap-2.5 pl-2 pr-3 py-1.5 rounded-xl
-                   hover:bg-slate-100 transition-colors">
-      <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-sky-500 to-indigo-600
-                  text-white text-sm font-semibold flex items-center justify-center
-                  shadow-sm">
+            class="flex items-center gap-2.5 pl-2 pr-3 py-1.5 rounded-lg
+                   hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+      <div class="size-9 rounded-lg bg-primary text-white text-sm font-semibold flex items-center justify-center shadow-sm">
         {{ iniciais() }}
       </div>
       <div class="text-left hidden md:block">
-        <div class="text-sm font-medium text-slate-800 leading-tight">
+        <div class="text-sm font-medium text-slate-800 dark:text-slate-100 leading-tight">
           {{ usuario()?.nome ?? 'Visitante' }}
         </div>
         <div class="text-xs text-slate-400 leading-tight">
           {{ usuario()?.perfis?.[0] ?? '—' }}
         </div>
       </div>
-      <svg class="w-4 h-4 text-slate-400 transition-transform"
-           [class.rotate-180]="menuAberto()"
-           viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="6 9 12 15 18 9"/>
-      </svg>
+      <span class="material-symbols-outlined text-slate-400 text-xl transition-transform"
+            [class.rotate-180]="menuAberto()">expand_more</span>
     </button>
 
     @if (menuAberto()) {
       <div class="fixed inset-0 z-30" (click)="fechar()"></div>
       <div class="absolute right-0 mt-2 w-56 card p-1.5 z-40">
-        <div class="px-3 py-2 border-b border-slate-100">
-          <div class="text-sm font-semibold text-slate-800">{{ usuario()?.nome }}</div>
+        <div class="px-3 py-2 border-b border-slate-100 dark:border-slate-800">
+          <div class="text-sm font-semibold text-slate-800 dark:text-slate-100">{{ usuario()?.nome }}</div>
           <div class="text-xs text-slate-400 truncate">{{ usuario()?.email }}</div>
         </div>
         <button class="w-full text-left px-3 py-2 rounded-lg text-sm
-                       text-slate-600 hover:bg-slate-50 flex items-center gap-2">
-          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-               stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-            <circle cx="12" cy="7" r="4"/>
-          </svg>
+                       text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2">
+          <span class="material-symbols-outlined text-lg">person</span>
           Meu perfil
         </button>
         <button class="w-full text-left px-3 py-2 rounded-lg text-sm
-                       text-slate-600 hover:bg-slate-50 flex items-center gap-2">
-          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-               stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="3"/>
-            <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.9 2.9l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5"/>
-          </svg>
+                       text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2">
+          <span class="material-symbols-outlined text-lg">settings</span>
           Configurações
         </button>
-        <div class="h-px bg-slate-100 my-1"></div>
+        <div class="h-px bg-slate-100 dark:bg-slate-800 my-1"></div>
         <button (click)="sair()"
                 class="w-full text-left px-3 py-2 rounded-lg text-sm
-                       text-rose-600 hover:bg-rose-50 flex items-center gap-2">
-          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-               stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-            <polyline points="16 17 21 12 16 7"/>
-            <line x1="21" y1="12" x2="9" y2="12"/>
-          </svg>
+                       text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 flex items-center gap-2">
+          <span class="material-symbols-outlined text-lg">logout</span>
           Sair
         </button>
       </div>

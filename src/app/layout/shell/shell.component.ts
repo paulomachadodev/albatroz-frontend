@@ -2,21 +2,21 @@ import { Component, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { HeaderComponent } from '../header/header.component';
 import { SidebarComponent } from '../sidebar/sidebar.component';
+import { ToastContainerComponent } from '../../core/feedback/toast-container.component';
 
 @Component({
   selector: 'app-shell',
   standalone: true,
-  imports: [RouterOutlet, SidebarComponent, HeaderComponent],
+  imports: [RouterOutlet, SidebarComponent, HeaderComponent, ToastContainerComponent],
   template: `
-    <div class="flex min-h-screen bg-slate-50">
+    <div class="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark">
       <app-sidebar [colapsada]="colapsada()" (toggle)="alternar()"></app-sidebar>
       <div class="flex-1 flex flex-col min-w-0">
         <app-header></app-header>
-        <main class="flex-1 p-6 lg:p-8">
-          <router-outlet></router-outlet>
-        </main>
+        <router-outlet></router-outlet>
       </div>
     </div>
+    <app-toast-container></app-toast-container>
   `
 })
 export class ShellComponent {

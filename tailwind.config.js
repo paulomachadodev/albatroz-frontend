@@ -1,19 +1,25 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  darkMode: 'class',
   content: [
     "./src/**/*.{html,ts}",
   ],
   theme: {
     extend: {
       colors: {
-        'albatroz': {
-          50: '#f0f9ff',
-          100: '#e0f2fe',
-          500: '#0ea5e9',
-          600: '#0284c7',
-          900: '#0c2d6b',
-        }
-      }
+        primary: '#1754cf',
+        'background-light': '#f6f6f8',
+        'background-dark': '#111621',
+      },
+      fontFamily: {
+        display: ['Inter', 'sans-serif'],
+      },
+      borderRadius: {
+        DEFAULT: '0.25rem',
+        lg: '0.5rem',
+        xl: '0.75rem',
+        full: '9999px',
+      },
     },
   },
   plugins: [

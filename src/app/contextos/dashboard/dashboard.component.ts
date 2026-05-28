@@ -23,7 +23,8 @@ interface Atividade {
   selector: 'app-dashboard',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './dashboard.component.html'
+  templateUrl: './dashboard.component.html',
+  host: { class: 'flex-1 flex flex-col min-h-0' }
 })
 export class DashboardComponent {
   private auth = inject(AuthService);
@@ -39,10 +40,10 @@ export class DashboardComponent {
   primeiroNome = computed(() => this.auth.usuario()?.nome?.split(' ')[0] ?? 'Visitante');
 
   kpis: Kpi[] = [
-    { titulo: 'Receita do mês',     valor: 'R$ 284.530', delta: '+12,4%',   positivo: true,  icone: 'dollar', cor: 'from-emerald-500 to-teal-600' },
-    { titulo: 'Cotações abertas',   valor: '47',         delta: '+8 novas', positivo: true,  icone: 'file',   cor: 'from-sky-500 to-blue-600' },
-    { titulo: 'Produtos ativos',    valor: '1.284',      delta: '+23',      positivo: true,  icone: 'box',    cor: 'from-violet-500 to-purple-600' },
-    { titulo: 'Estoque crítico',    valor: '12 itens',   delta: '−3',       positivo: false, icone: 'alert',  cor: 'from-rose-500 to-orange-500' }
+    { titulo: 'Receita do mês',     valor: 'R$ 284.530', delta: '+12,4%',   positivo: true,  icone: 'payments',      cor: 'text-emerald-600 bg-emerald-100 dark:bg-emerald-900/40' },
+    { titulo: 'Cotações abertas',   valor: '47',         delta: '+8 novas', positivo: true,  icone: 'request_quote', cor: 'text-primary bg-primary/10' },
+    { titulo: 'Produtos ativos',    valor: '1.284',      delta: '+23',      positivo: true,  icone: 'inventory_2',   cor: 'text-violet-600 bg-violet-100 dark:bg-violet-900/40' },
+    { titulo: 'Estoque crítico',    valor: '12 itens',   delta: '−3',       positivo: false, icone: 'warning',       cor: 'text-rose-600 bg-rose-100 dark:bg-rose-900/40' }
   ];
 
   // Vendas últimos 12 meses (mock)
@@ -74,10 +75,17 @@ export class DashboardComponent {
 
   corTipo(tipo: Atividade['tipo']): string {
     return ({
-      criou:    'bg-sky-100 text-sky-700',
-      editou:   'bg-amber-100 text-amber-700',
-      aprovou:  'bg-emerald-100 text-emerald-700',
-      cancelou: 'bg-rose-100 text-rose-700'
+      criou:    'bg-primary/10 text-primary',
+      editou:   'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400',
+      aprovou:  'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400',
+      cancelou: 'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-400'
     } as const)[tipo];
+  }
+
+  iniciais(nome: string): string {
+    const partes = nome.trim().split(/\s+/);
+    const a = partes[0]?.[0] ?? '';
+    const b = partes.length > 1 ? partes[partes.length - 1][0] : '';
+    return (a + b).toUpperCase();
   }
 }

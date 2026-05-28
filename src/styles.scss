@@ -3,19 +3,9 @@
 @tailwind utilities;
 
 :root {
-  --albatroz-50:  #f0f9ff;
-  --albatroz-100: #e0f2fe;
-  --albatroz-400: #38bdf8;
-  --albatroz-500: #0ea5e9;
-  --albatroz-600: #0284c7;
-  --albatroz-700: #0369a1;
-  --albatroz-900: #0c2d6b;
-  --albatroz-950: #061a3b;
-  --surface:      #ffffff;
-  --surface-alt:  #f8fafc;
-  --text:         #0f172a;
-  --text-muted:   #64748b;
-  --border:       #e2e8f0;
+  --primary:        #1754cf;
+  --bg-light:       #f6f6f8;
+  --bg-dark:        #111621;
 }
 
 html, body {
@@ -29,7 +19,15 @@ html {
 }
 
 body {
-  @apply bg-slate-50 text-slate-900 m-0 p-0;
+  @apply bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 m-0 p-0;
+}
+
+/* Material Symbols */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+.material-symbols-outlined.fill-1 {
+  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
 
 /* Scrollbar slim */
@@ -38,33 +36,33 @@ body {
 ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-/* Reusable card */
+/* Card */
 .card {
-  @apply bg-white rounded-2xl border border-slate-200/70 shadow-sm;
+  @apply bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm;
 }
 
 /* Buttons */
 .btn-primary {
-  @apply inline-flex items-center justify-center gap-2 px-4 py-2.5
-         rounded-xl bg-gradient-to-br from-sky-500 to-blue-700
-         text-white font-medium shadow-lg shadow-sky-600/20
-         transition-all hover:shadow-xl hover:shadow-sky-600/30
-         hover:-translate-y-0.5 active:translate-y-0
-         disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0;
+  @apply inline-flex items-center justify-center gap-2 px-5 py-2.5
+         rounded-lg bg-primary text-white font-bold text-sm
+         shadow-lg shadow-primary/20 transition-all hover:bg-primary/90
+         disabled:opacity-60 disabled:cursor-not-allowed;
 }
 
 .btn-ghost {
-  @apply inline-flex items-center justify-center gap-2 px-4 py-2.5
-         rounded-xl text-slate-600 font-medium transition-colors
-         hover:bg-slate-100 hover:text-slate-900;
+  @apply inline-flex items-center justify-center gap-2 px-5 py-2.5
+         rounded-lg border border-slate-200 dark:border-slate-700
+         bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200
+         font-bold text-sm transition-colors
+         hover:bg-slate-50 dark:hover:bg-slate-700;
 }
 
 /* Inputs */
 .input-modern {
-  @apply w-full px-4 py-3 rounded-xl border border-slate-200
-         bg-white/80 backdrop-blur-sm text-slate-900 placeholder:text-slate-400
-         transition-all
-         focus:outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100;
+  @apply w-full px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700
+         bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400
+         transition-all outline-none
+         focus:border-primary focus:ring-2 focus:ring-primary/20;
 }
 
 .input-icon-wrap {
@@ -73,9 +71,13 @@ body {
 .input-icon-wrap > svg {
   @apply pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400;
 }
+.input-icon-wrap > .material-symbols-outlined {
+  @apply pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400;
+  font-size: 1.25rem;
+}
 .input-icon-wrap > input { padding-left: 2.75rem; }
 
-/* Glass panel */
+/* Glass panel (modais legados) */
 .glass {
   background: rgba(255, 255, 255, 0.72);
   backdrop-filter: blur(20px) saturate(180%);
@@ -83,15 +85,15 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.5);
 }
 
-/* Gradient brand text */
+/* Texto gradiente de marca */
 .brand-gradient {
-  background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 50%, #8b5cf6 100%);
+  background: linear-gradient(135deg, #1754cf 0%, #3b82f6 50%, #6366f1 100%);
   -webkit-background-clip: text;
           background-clip: text;
   color: transparent;
 }
 
-/* Subtle animated background blob */
+/* Blob animado de fundo (telas de auth) */
 @keyframes blob-float {
   0%, 100% { transform: translate(0, 0) scale(1); }
   33%      { transform: translate(40px, -30px) scale(1.05); }

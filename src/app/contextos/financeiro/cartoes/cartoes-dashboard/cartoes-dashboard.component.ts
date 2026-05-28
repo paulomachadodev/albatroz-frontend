@@ -12,7 +12,8 @@ import { CategoriaModalComponent } from '../categoria-modal/categoria-modal.comp
   selector: 'app-cartoes-dashboard',
   standalone: true,
   imports: [CommonModule, RouterLink, CartaoModalComponent, CategoriaModalComponent],
-  templateUrl: './cartoes-dashboard.component.html'
+  templateUrl: './cartoes-dashboard.component.html',
+  host: { class: 'flex-1 flex flex-col min-h-0' }
 })
 export class CartoesDashboardComponent implements OnInit {
   cartoes   = signal<Cartao[]>([]);
@@ -22,6 +23,12 @@ export class CartoesDashboardComponent implements OnInit {
   mostrarModalCartao    = signal(false);
   mostrarModalCategoria = signal(false);
   cartaoEmEdicao        = signal<Cartao | null>(null);
+  principalPreSelecionado = signal<number | null>(null);
+
+  // API retorna só principais com adicionais aninhados; achatado p/ contagens e faturas
+  todosCartoes = computed<Cartao[]>(() =>
+    this.cartoes().flatMap(c => [c, ...(c.adicionais ?? [])])
+  );
 
   totalGasto = computed(() =>
     this.faturas().filter(f => f.status !== 3).reduce((s, f) => s + f.valorTotal, 0)
@@ -30,11 +37,11 @@ export class CartoesDashboardComponent implements OnInit {
   totalCompras = computed(() => this.faturas().filter(f => f.status !== 3).length);
 
   limiteTotalGlobal = computed(() =>
-    this.cartoes().reduce((s, c) => s + c.limiteTotal, 0)
+    this.todosCartoes().reduce((s, c) => s + c.limiteTotal, 0)
   );
 
   limiteUsadoGlobal = computed(() =>
-    this.cartoes().reduce((s, c) => s + c.limiteUsado, 0)
+    this.todosCartoes().reduce((s, c) => s + c.limiteUsado, 0)
   );
 
   percentualUso = computed(() => {
@@ -69,7 +76,7 @@ export class CartoesDashboardComponent implements OnInit {
   }
 
   private carregarFaturas() {
-    const ids = this.cartoes().map(c => c.id);
+    const ids = this.todosCartoes().map(c => c.id);
     if (!ids.length) { this.carregando.set(false); return; }
 
     const faturasTodas: Fatura[] = [];
@@ -95,11 +102,19 @@ export class CartoesDashboardComponent implements OnInit {
 
   abrirModalCartao(cartao?: Cartao) {
     this.cartaoEmEdicao.set(cartao ?? null);
+    this.principalPreSelecionado.set(null);
+    this.mostrarModalCartao.set(true);
+  }
+
+  abrirModalAdicional(principal: Cartao) {
+    this.cartaoEmEdicao.set(null);
+    this.principalPreSelecionado.set(principal.id);
     this.mostrarModalCartao.set(true);
   }
 
   fecharModalCartao(recarregar: boolean) {
     this.mostrarModalCartao.set(false);
+    this.principalPreSelecionado.set(null);
     if (recarregar) this.carregarDados();
   }
 
@@ -114,9 +129,9 @@ export class CartoesDashboardComponent implements OnInit {
   }
 
   corBarra(perc: number): string {
-    if (perc >= 90) return 'from-rose-500 to-red-600';
-    if (perc >= 70) return 'from-amber-400 to-orange-500';
-    return 'from-sky-500 to-blue-600';
+    if (perc >= 90) return 'bg-rose-500';
+    if (perc >= 70) return 'bg-amber-500';
+    return 'bg-primary';
   }
 
   labelStatus(status: number): string {
@@ -125,9 +140,9 @@ export class CartoesDashboardComponent implements OnInit {
 
   classeStatus(status: number): string {
     const mapa: Record<number, string> = {
-      1: 'bg-amber-50 text-amber-700 ring-1 ring-amber-200',
-      2: 'bg-sky-50 text-sky-700 ring-1 ring-sky-200',
-      3: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200'
+      1: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400',
+      2: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400',
+      3: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400'
     };
     return mapa[status] ?? '';
   }

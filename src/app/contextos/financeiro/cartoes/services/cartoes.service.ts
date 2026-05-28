@@ -36,4 +36,12 @@ export class CartoesService {
   criarCategoria(nome: string): Observable<Resultado<CategoriaDespesa>> {
     return this.api.post<CategoriaDespesa>(this.catBase, { nome });
   }
+
+  atualizarCategoria(id: number, nome: string): Observable<Resultado<CategoriaDespesa>> {
+    return this.api.put<CategoriaDespesa>(`${this.catBase}/${id}`, { nome });
+  }
+
+  excluirCategoria(id: number): Observable<Resultado<void>> {
+    return this.api.delete<void>(`${this.catBase}/${id}`);
+  }
 }

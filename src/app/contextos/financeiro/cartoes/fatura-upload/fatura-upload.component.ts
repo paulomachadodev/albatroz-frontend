@@ -115,7 +115,11 @@ export class FaturaUploadComponent implements OnInit, OnDestroy {
             this.pararPolling();
             const dados = status.resultado!;
             this.cabecalho.set(dados);
-            this.despesas.set(dados.despesas.map(d => ({ ...d, idFatura: 0 })));
+            this.despesas.set(dados.despesas.map(d => ({
+              ...d,
+              idFatura: 0,
+              valor: parseFloat((d.valor ?? 0).toFixed(2))
+            })));
             this.statusExtracao.set('concluido');
             this.extraindo.set(false);
           } else if (status.status === 'erro') {
@@ -203,6 +207,10 @@ export class FaturaUploadComponent implements OnInit, OnDestroy {
         this.salvando.set(false);
       }
     });
+  }
+
+  normalizarValor(d: DespesaCartao) {
+    d.valor = parseFloat(((d.valor ?? 0)).toFixed(2));
   }
 
   formatarReais(v: number): string {

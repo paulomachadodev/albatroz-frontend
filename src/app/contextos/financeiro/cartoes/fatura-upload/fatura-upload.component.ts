@@ -118,7 +118,10 @@ export class FaturaUploadComponent implements OnInit, OnDestroy {
             this.despesas.set(dados.despesas.map(d => ({
               ...d,
               idFatura: 0,
-              valor: parseFloat((d.valor ?? 0).toFixed(2))
+              idCategoriaDespesa: d.idCategoriaDespesa ?? undefined,
+              valor: parseFloat((d.valor ?? 0).toFixed(2)),
+              origem: 1,
+              status: 1
             })));
             this.statusExtracao.set('concluido');
             this.extraindo.set(false);

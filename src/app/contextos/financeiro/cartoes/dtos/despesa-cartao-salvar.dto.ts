@@ -5,9 +5,15 @@ export interface DespesaCartaoSalvarRequisicao {
   projecoes: ParcelaProjetada[];
 }
 
+export interface CartaoNaoEncontrado {
+  portadorNome: string | null;
+  finalCartao: string;
+}
+
 export interface ExtrairFaturaResposta {
   despesas: DespesaCartao[];
   valorTotal: number;
   dataVencimento: string;
   taxasAnuidades: number;
+  cartoesNaoEncontrados: CartaoNaoEncontrado[];
 }

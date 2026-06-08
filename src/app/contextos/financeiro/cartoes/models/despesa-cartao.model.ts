@@ -14,6 +14,8 @@ export interface DespesaCartao {
   origem: number; // 1=Fatura, 2=Projetada, 3=Manual
   status: number; // 1=Pendente, 2=Confirmada, 3=Paga
   previsaoEncontrada?: boolean; // flag UI — reconciliada com projeção
+  cartaoId?: number | null;
+  finalCartao?: string | null;
 }
 
 export interface ParcelaProjetada {

@@ -60,6 +60,13 @@ npm run lint               # ESLint
 
 ---
 
+## Spec externa — Extração Fatura v2
+
+Ver spec completa em:
+`D:\GIT\albatroz-backend\.claude\specs\extracao-fatura-v2-frontend.md`
+
+---
+
 ## Docker
 
 ```bash

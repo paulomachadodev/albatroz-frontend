@@ -1,0 +1,198 @@
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+  <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+
+    <!-- Header -->
+    <div class="px-6 py-5 border-b border-slate-200 dark:border-slate-800 shrink-0">
+      <div class="flex items-center gap-3">
+        <div class="size-10 rounded-xl bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center shrink-0">
+          <span class="material-symbols-outlined text-amber-600 dark:text-amber-400">credit_card_off</span>
+        </div>
+        <div>
+          <h2 class="text-lg font-bold text-slate-900 dark:text-slate-100">Cartões não cadastrados na fatura</h2>
+          <p class="text-sm text-slate-500 dark:text-slate-400">Foram encontrados cartões na fatura que não estão cadastrados. Cadastre-os para continuar.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Body -->
+    <div class="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+      @for (item of itens(); track item.finalCartao) {
+
+        <div class="rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+
+          <!-- Item header -->
+          <div class="flex items-center gap-3 px-4 py-3 bg-slate-50 dark:bg-slate-800/50">
+            <span class="material-symbols-outlined text-slate-400 text-base">credit_card</span>
+            <div class="flex items-center gap-2 min-w-0">
+              @if (item.portadorNome) {
+                <span class="font-semibold text-slate-800 dark:text-slate-200 text-sm truncate">{{ item.portadorNome }}</span>
+                <span class="text-slate-400 text-sm shrink-0">•</span>
+              }
+              <span class="text-sm text-slate-500 dark:text-slate-400 shrink-0">final <span class="font-mono font-bold text-slate-700 dark:text-slate-300">{{ item.finalCartao }}</span></span>
+            </div>
+            @if (item.salvo && item.tipo !== 'pular') {
+              <span class="ml-auto flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-emerald-400 shrink-0">
+                <span class="material-symbols-outlined text-sm">check_circle</span>
+                Cadastrado
+              </span>
+            }
+            @if (item.tipo === 'pular' && item.salvo) {
+              <span class="ml-auto flex items-center gap-1 text-xs font-bold text-amber-600 dark:text-amber-400 shrink-0">
+                <span class="material-symbols-outlined text-sm">warning</span>
+                Será ignorado
+              </span>
+            }
+          </div>
+
+          @if (!item.salvo) {
+            <div class="px-4 py-4 space-y-4">
+
+              <!-- Tipo selector -->
+              <div class="flex gap-2">
+                <button class="flex-1 py-2 px-3 rounded-lg border-2 text-sm font-medium transition-all"
+                        [ngClass]="item.tipo === 'principal'
+                          ? 'border-primary bg-primary/5 text-primary'
+                          : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-600'"
+                        (click)="setTipo(item, 'principal')">
+                  <span class="material-symbols-outlined text-base align-middle mr-1">credit_card</span>
+                  Principal
+                </button>
+                <button class="flex-1 py-2 px-3 rounded-lg border-2 text-sm font-medium transition-all"
+                        [ngClass]="item.tipo === 'adicional'
+                          ? 'border-primary bg-primary/5 text-primary'
+                          : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-600'"
+                        (click)="setTipo(item, 'adicional')">
+                  <span class="material-symbols-outlined text-base align-middle mr-1">add_card</span>
+                  Adicional
+                </button>
+                <button class="flex-1 py-2 px-3 rounded-lg border-2 text-sm font-medium transition-all"
+                        [ngClass]="item.tipo === 'pular'
+                          ? 'border-amber-400 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400'
+                          : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-600'"
+                        (click)="setTipo(item, 'pular')">
+                  <span class="material-symbols-outlined text-base align-middle mr-1">skip_next</span>
+                  Pular
+                </button>
+              </div>
+
+              <!-- Form fields -->
+              @if (item.tipo === 'principal' || item.tipo === 'adicional') {
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+
+                  <div class="sm:col-span-2">
+                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Apelido <span class="text-rose-500">*</span></label>
+                    <input class="input-modern py-2 text-sm w-full"
+                           [(ngModel)]="item.apelido"
+                           placeholder="Ex: Nubank Paulo"
+                           (ngModelChange)="refreshItens()" />
+                  </div>
+
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Dia vencimento <span class="text-rose-500">*</span></label>
+                    <input type="number" class="input-modern py-2 text-sm w-full"
+                           [(ngModel)]="item.diaVencimento"
+                           placeholder="Ex: 10"
+                           min="1" max="31"
+                           (ngModelChange)="refreshItens()" />
+                  </div>
+
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Dia fechamento <span class="text-rose-500">*</span></label>
+                    <input type="number" class="input-modern py-2 text-sm w-full"
+                           [(ngModel)]="item.diaFechamento"
+                           placeholder="Ex: 3"
+                           min="1" max="31"
+                           (ngModelChange)="refreshItens()" />
+                  </div>
+
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Limite total (R$) <span class="text-rose-500">*</span></label>
+                    <input type="number" class="input-modern py-2 text-sm w-full"
+                           [(ngModel)]="item.limiteTotal"
+                           placeholder="Ex: 5000"
+                           min="0" step="0.01"
+                           (ngModelChange)="refreshItens()" />
+                  </div>
+
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Bandeira <span class="text-slate-400 font-normal">(opcional)</span></label>
+                    <input class="input-modern py-2 text-sm w-full"
+                           [(ngModel)]="item.bandeira"
+                           placeholder="Ex: Visa, Mastercard"
+                           (ngModelChange)="refreshItens()" />
+                  </div>
+
+                  @if (item.tipo === 'adicional') {
+                    <div class="sm:col-span-2">
+                      <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Cartão principal <span class="text-rose-500">*</span></label>
+                      <select class="input-modern py-2 text-sm w-full"
+                              [(ngModel)]="item.idCartaoPrincipal"
+                              (ngModelChange)="refreshItens()">
+                        <option [ngValue]="null">Selecione...</option>
+                        @for (cp of cartoesPrincipais(); track cp.id) {
+                          <option [ngValue]="cp.id">{{ cp.apelido }} — •••• {{ cp.ultimos4Digitos }}</option>
+                        }
+                      </select>
+                    </div>
+                  }
+                </div>
+
+                @if (item.erro) {
+                  <div class="flex items-center gap-2 text-xs text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/20 px-3 py-2 rounded-lg">
+                    <span class="material-symbols-outlined text-sm shrink-0">error</span>
+                    {{ item.erro }}
+                  </div>
+                }
+
+                <div class="flex justify-end">
+                  <button class="btn-primary text-sm flex items-center gap-2"
+                          (click)="salvarItem(item)"
+                          [disabled]="item.salvando">
+                    @if (item.salvando) {
+                      <div class="size-4 border-2 border-white/40 border-t-white rounded-full animate-spin"></div>
+                      Salvando...
+                    } @else {
+                      <span class="material-symbols-outlined text-base">save</span>
+                      Salvar este cartão
+                    }
+                  </button>
+                </div>
+              }
+
+              @if (item.tipo === 'pular') {
+                <div class="flex items-center gap-2 text-sm text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-4 py-3 rounded-lg">
+                  <span class="material-symbols-outlined text-base shrink-0">warning</span>
+                  Os lançamentos deste cartão serão ignorados ao salvar a fatura.
+                </div>
+                <div class="flex justify-end">
+                  <button class="btn-ghost text-sm flex items-center gap-2 text-amber-600 dark:text-amber-400"
+                          (click)="salvarItem(item)">
+                    <span class="material-symbols-outlined text-base">check</span>
+                    Confirmar e pular
+                  </button>
+                </div>
+              }
+
+            </div>
+          }
+
+        </div>
+
+      }
+    </div>
+
+    <!-- Footer -->
+    <div class="px-6 py-4 border-t border-slate-200 dark:border-slate-800 shrink-0 flex items-center justify-between gap-3">
+      <p class="text-xs text-slate-400">
+        {{ itens().length }} cartão(ões) a resolver
+      </p>
+      <button class="btn-primary text-sm flex items-center gap-2"
+              (click)="concluir()"
+              [disabled]="!todosResolvidos()">
+        <span class="material-symbols-outlined text-base">check_circle</span>
+        Continuar
+      </button>
+    </div>
+
+  </div>
+</div>

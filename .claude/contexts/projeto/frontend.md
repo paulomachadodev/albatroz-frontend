@@ -88,3 +88,28 @@ Nginx: SPA routing (`try_files`), assets cache 1 ano, health check `/health`
 - [ ] Shared: componente erro-display
 - [ ] Testes unitários (Jasmine/Karma)
 - [ ] E2E (Cypress ou Playwright)
+
+---
+
+## Env Vars
+
+Angular não tem secrets em runtime. Config em `src/environments/`:
+
+| Var | Dev | Prod |
+|-----|-----|------|
+| `apiUrl` | `http://localhost:5100` | `https://api-erp.albatrozpapelaria.com.br` |
+| `apiIaUrl` | `http://localhost:5200` | `https://api-ia.albatrozpapelaria.com.br` |
+
+Para adicionar nova config: atualizar `environment.ts` + `environment.prod.ts`. Ver `.claude/standards/env-vars.md`.
+
+## Deploy
+
+Push main → GitHub Actions (runner infra-sv01 em 192.168.0.190) → `ng build --configuration production` → Docker build → nginx.
+
+Ver `.claude/standards/deploy.md` para workflow completo.
+
+## Cross-Project
+
+Backend (ERP + IA APIs): repo `albatroz-backend`
+Site público: repo `albatroz-site`
+Infra cross-project: `albatroz-backend/.claude/contexts/proyecto/infra.md`

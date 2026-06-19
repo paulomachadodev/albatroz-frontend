@@ -39,6 +39,11 @@ export const routes: Routes = [
         path: 'financeiro/cartoes',
         loadChildren: () =>
           import('./contextos/financeiro/cartoes/cartoes.routes').then(m => m.CARTOES_ROUTES)
+      },
+      {
+        path: 'etl',
+        loadChildren: () =>
+          import('./contextos/etl/etl.routes').then(m => m.ETL_ROUTES)
       }
     ]
   },

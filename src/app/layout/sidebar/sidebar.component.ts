@@ -47,7 +47,8 @@ export class SidebarComponent {
         { label: 'Usuários',     rota: '/usuarios',     icone: 'group' },
         { label: 'Perfis',       rota: '/perfis',       icone: 'shield' },
         { label: 'Relatórios',   rota: '/relatorios',   icone: 'bar_chart' },
-        { label: 'Configurações',rota: '/configuracoes',icone: 'settings' }
+        { label: 'Configurações',rota: '/configuracoes',icone: 'settings' },
+        { label: 'ETL Pedidos',  rota: '/etl',          icone: 'sync_alt' }
       ]
     }
   ];

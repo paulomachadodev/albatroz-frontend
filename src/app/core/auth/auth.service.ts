@@ -77,6 +77,17 @@ export class AuthService {
     return localStorage.getItem(TOKEN_KEY);
   }
 
+  getRefreshToken(): string | null {
+    return localStorage.getItem(REFRESH_KEY);
+  }
+
+  renovar(): Observable<AutenticacaoResposta> {
+    const refreshToken = this.getRefreshToken();
+    return this.http.post<AutenticacaoResposta>(`${this.endpoint}/renovar`, { refreshToken }).pipe(
+      tap(resp => this.persistirSessao(resp))
+    );
+  }
+
   empresaIdAtual(): number | null {
     const payload = this.decodeToken();
     if (!payload?.empresa_id) return null;

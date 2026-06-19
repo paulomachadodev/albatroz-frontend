@@ -55,8 +55,23 @@ npm run lint               # ESLint
 
 ## Ambientes
 
-- **Dev:** `localhost:4200` (Angular), API @ `localhost:5100` (ERP) / `5200` (IA)
-- **Prod:** Nginx SPA routing, API @ `192.168.0.180:8080` (ERP) / `8081` (IA)
+**Dev (local):**
+```typescript
+// src/environments/environment.ts
+apiUrl: 'http://localhost:5100'        // ERP
+apiIaUrl: 'http://localhost:5200'      // IA
+etlApiUrl: 'http://localhost:5500'     // ETL
+```
+
+**Prod (containers @ 192.168.0.190):**
+```typescript
+// src/environments/environment.prod.ts
+apiUrl: 'http://192.168.0.190:5100'    // ERP
+apiIaUrl: 'http://192.168.0.190:5200'  // IA (quando online)
+etlApiUrl: 'http://192.168.0.190:5302' // ETL
+```
+
+Status: ERP ✅ | IA ❌ | Site ✅ | ETL ✅
 
 ---
 

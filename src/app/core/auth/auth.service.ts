@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { Observable, tap } from 'rxjs';
+import { Observable, finalize, shareReplay, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
 export interface LoginRequisicao {
@@ -48,6 +48,8 @@ export class AuthService {
   usuario = this._usuario.asReadonly();
   isAuthenticated = computed(() => this._usuario() !== null && this.tokenValido());
 
+  private _renovandoToken$: Observable<AutenticacaoResposta> | null = null;
+
   login(req: LoginRequisicao): Observable<AutenticacaoResposta> {
     const body = { email: req.email, senha: req.senha, empresaId: req.empresaId };
     return this.http.post<AutenticacaoResposta>(`${this.endpoint}/login`, body).pipe(
@@ -82,10 +84,17 @@ export class AuthService {
   }
 
   renovar(): Observable<AutenticacaoResposta> {
+    if (this._renovandoToken$) return this._renovandoToken$;
+
     const refreshToken = this.getRefreshToken();
-    return this.http.post<AutenticacaoResposta>(`${this.endpoint}/renovar`, { refreshToken }).pipe(
-      tap(resp => this.persistirSessao(resp))
-    );
+    this._renovandoToken$ = this.http
+      .post<AutenticacaoResposta>(`${this.endpoint}/renovar`, { refreshToken })
+      .pipe(
+        tap(resp => this.persistirSessao(resp)),
+        finalize(() => (this._renovandoToken$ = null)),
+        shareReplay(1)
+      );
+    return this._renovandoToken$;
   }
 
   empresaIdAtual(): number | null {

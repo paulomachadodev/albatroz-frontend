@@ -10,10 +10,12 @@ import { EtlPipelineEntidadeResposta } from '../../dtos/etl-pipeline-entidade.re
   selector: 'app-etl-visao-geral-page',
   standalone: true,
   imports: [CommonModule],
+  host: { class: 'flex-1 flex flex-col min-h-0' },
   template: `
-    <div class="p-6">
+    <div class="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 xl:px-10 py-6 lg:py-8">
+      <div class="w-full space-y-8">
       <!-- Breadcrumb -->
-      <nav class="mb-6">
+      <nav>
         <ol class="flex items-center gap-2 text-sm">
           <li class="text-slate-600">Início</li>
           <li class="text-slate-400">/</li>
@@ -24,11 +26,13 @@ import { EtlPipelineEntidadeResposta } from '../../dtos/etl-pipeline-entidade.re
       </nav>
 
       <!-- Header -->
-      <h1 class="text-3xl font-bold text-slate-900 mb-2">ERP Tiny — Visão Geral</h1>
-      <p class="text-slate-600 mb-8">Monitoramento em tempo real de todos os pipelines ETL</p>
+      <div>
+        <h1 class="text-3xl font-bold text-slate-900 mb-2">ERP Tiny — Visão Geral</h1>
+        <p class="text-slate-600">Monitoramento em tempo real de todos os pipelines ETL</p>
+      </div>
 
       <!-- KPI Cards —6 entidades -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         @for (pipeline of pipelines(); track pipeline.entidade) {
           <div class="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-4">
             <div class="text-sm font-semibold text-slate-600 dark:text-slate-400 capitalize mb-3">
@@ -129,6 +133,7 @@ import { EtlPipelineEntidadeResposta } from '../../dtos/etl-pipeline-entidade.re
             </tbody>
           </table>
         </div>
+      </div>
       </div>
     </div>
   `

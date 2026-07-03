@@ -8,7 +8,7 @@ export const ETL_ROUTES: Routes = [
         path: '',
         loadComponent: () =>
           import('./pages/etl-visao-geral-page/etl-visao-geral-page.component').then(m => m.EtlVisaoGeralPageComponent),
-        title: 'ETL — Visão Geral'
+        title: 'ERP Tiny'
       },
       {
         path: ':entidade',

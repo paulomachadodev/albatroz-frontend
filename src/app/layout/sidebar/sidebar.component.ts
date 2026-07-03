@@ -64,13 +64,7 @@ export class SidebarComponent {
       icone: 'integration_instructions',
       colapsavel: true,
       itens: [
-        { label: 'Visão Geral',     rota: '/integracoes/tiny',                 icone: 'dashboard' },
-        { label: 'Produtos',        rota: '/integracoes/tiny/produtos',         icone: 'inventory_2' },
-        { label: 'Estoque',         rota: '/integracoes/tiny/estoque',          icone: 'package_2' },
-        { label: 'Pedidos',         rota: '/integracoes/tiny/pedidos',          icone: 'receipt_long' },
-        { label: 'Contatos',        rota: '/integracoes/tiny/contatos',         icone: 'contacts' },
-        { label: 'Notas Fiscais',   rota: '/integracoes/tiny/notas-fiscais',    icone: 'description' },
-        { label: 'Contas a Pagar',  rota: '/integracoes/tiny/contas-pagar',     icone: 'payments' }
+        { label: 'ERP Tiny', rota: '/integracoes/tiny', icone: 'dashboard' }
       ]
     }
   ];

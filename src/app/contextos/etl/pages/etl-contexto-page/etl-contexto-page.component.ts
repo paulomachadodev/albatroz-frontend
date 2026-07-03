@@ -91,10 +91,10 @@ import { EtlPipelineEntidadeResposta } from '../../dtos/etl-pipeline-entidade.re
                     }
                   </td>
                   <td class="px-4 py-3 text-slate-600 dark:text-slate-400 text-xs">
-                    {{ job.ultimaExecucao ? (job.ultimaExecucao | date: 'short') : '—' }}
+                    {{ job.ultimaExecucao ? (job.ultimaExecucao | date: 'dd/MM/yy, HH:mm') : '—' }}
                   </td>
                   <td class="px-4 py-3 text-slate-600 dark:text-slate-400 text-xs">
-                    {{ job.proximaExecucao ? (job.proximaExecucao | date: 'short') : '—' }}
+                    {{ job.proximaExecucao ? (job.proximaExecucao | date: 'dd/MM/yy, HH:mm') : '—' }}
                   </td>
                   <td class="px-4 py-3 text-center">
                     <div class="flex justify-center gap-2">

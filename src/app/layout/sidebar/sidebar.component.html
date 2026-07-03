@@ -22,38 +22,83 @@
   <!-- Menu -->
   <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-6">
     @for (grupo of grupos; track grupo.titulo) {
-      <div>
-        @if (!colapsada()) {
-          <div class="px-3 mb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-            {{ grupo.titulo }}
+      @if (grupo.colapsavel) {
+        <!-- Grupo colapsável (Integrações) -->
+        <div (mouseenter)="expandirGrupo(grupo.titulo)"
+             (mouseleave)="recolherGrupo(grupo.titulo)"
+             class="relative">
+          <!-- Cabeçalho do grupo -->
+          <div class="px-3 mb-2 flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+            @if (!colapsada()) {
+              <span>{{ grupo.titulo }}</span>
+            } @else {
+              <span class="material-symbols-outlined text-sm" [title]="grupo.titulo">{{ grupo.icone }}</span>
+            }
           </div>
-        } @else {
-          <div class="mx-3 mb-2 h-px bg-slate-200 dark:bg-slate-800"></div>
-        }
-        <ul class="space-y-1">
-          @for (item of grupo.itens; track item.rota) {
-            <li>
-              <a [routerLink]="item.rota"
-                 routerLinkActive="bg-primary/10 text-primary font-semibold"
-                 class="group flex items-center gap-3 px-3 py-2.5 rounded-lg
-                        text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100
-                        transition-colors relative"
-                 [class.justify-center]="colapsada()"
-                 [title]="colapsada() ? item.label : ''">
-                <span class="material-symbols-outlined shrink-0">{{ item.icone }}</span>
-                @if (!colapsada()) {
-                  <span class="text-sm flex-1 truncate">{{ item.label }}</span>
-                  @if (item.badge) {
-                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-primary text-white">
-                      {{ item.badge }}
-                    </span>
-                  }
-                }
-              </a>
-            </li>
+
+          <!-- Itens do grupo (com transição de altura) -->
+          <div [class.hidden]="!grupoExpandido(grupo.titulo) && colapsada()"
+               class="overflow-hidden transition-all duration-200">
+            <ul class="space-y-1">
+              @for (item of grupo.itens; track item.rota) {
+                <li>
+                  <a [routerLink]="item.rota"
+                     routerLinkActive="bg-primary/10 text-primary font-semibold"
+                     class="group flex items-center gap-3 px-3 py-2.5 rounded-lg
+                            text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100
+                            transition-colors relative"
+                     [class.justify-center]="colapsada()"
+                     [title]="colapsada() ? item.label : ''">
+                    <span class="material-symbols-outlined shrink-0">{{ item.icone }}</span>
+                    @if (!colapsada()) {
+                      <span class="text-sm flex-1 truncate">{{ item.label }}</span>
+                      @if (item.badge) {
+                        <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-primary text-white">
+                          {{ item.badge }}
+                        </span>
+                      }
+                    }
+                  </a>
+                </li>
+              }
+            </ul>
+          </div>
+        </div>
+      } @else {
+        <!-- Grupo normal (não colapsável) -->
+        <div>
+          @if (!colapsada()) {
+            <div class="px-3 mb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+              {{ grupo.titulo }}
+            </div>
+          } @else {
+            <div class="mx-3 mb-2 h-px bg-slate-200 dark:bg-slate-800"></div>
           }
-        </ul>
-      </div>
+          <ul class="space-y-1">
+            @for (item of grupo.itens; track item.rota) {
+              <li>
+                <a [routerLink]="item.rota"
+                   routerLinkActive="bg-primary/10 text-primary font-semibold"
+                   class="group flex items-center gap-3 px-3 py-2.5 rounded-lg
+                          text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100
+                          transition-colors relative"
+                   [class.justify-center]="colapsada()"
+                   [title]="colapsada() ? item.label : ''">
+                  <span class="material-symbols-outlined shrink-0">{{ item.icone }}</span>
+                  @if (!colapsada()) {
+                    <span class="text-sm flex-1 truncate">{{ item.label }}</span>
+                    @if (item.badge) {
+                      <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-primary text-white">
+                        {{ item.badge }}
+                      </span>
+                    }
+                  }
+                </a>
+              </li>
+            }
+          </ul>
+        </div>
+      }
     }
   </nav>
 

@@ -1,4 +1,4 @@
-import { Component, input, output } from '@angular/core';
+import { Component, input, output, signal, computed } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 
 export interface ItemMenu {
@@ -6,6 +6,13 @@ export interface ItemMenu {
   rota:  string;
   icone: string; // nome Material Symbol
   badge?: string;
+}
+
+export interface GrupoMenu {
+  titulo: string;
+  icone?: string;        // ícone do grupo (para hover compacto)
+  colapsavel?: boolean;  // habilita hover-expand
+  itens: ItemMenu[];
 }
 
 @Component({
@@ -18,7 +25,9 @@ export class SidebarComponent {
   colapsada = input<boolean>(false);
   toggle    = output<void>();
 
-  grupos: { titulo: string; itens: ItemMenu[] }[] = [
+  private expandidosPorGrupo = new Map<string, ReturnType<typeof signal<boolean>>>();
+
+  grupos: GrupoMenu[] = [
     {
       titulo: 'Visão geral',
       itens: [
@@ -47,9 +56,46 @@ export class SidebarComponent {
         { label: 'Usuários',     rota: '/usuarios',     icone: 'group' },
         { label: 'Perfis',       rota: '/perfis',       icone: 'shield' },
         { label: 'Relatórios',   rota: '/relatorios',   icone: 'bar_chart' },
-        { label: 'Configurações',rota: '/configuracoes',icone: 'settings' },
-        { label: 'ETL Pedidos',  rota: '/etl',          icone: 'sync_alt' }
+        { label: 'Configurações',rota: '/configuracoes',icone: 'settings' }
+      ]
+    },
+    {
+      titulo: 'Integrações',
+      icone: 'integration_instructions',
+      colapsavel: true,
+      itens: [
+        { label: 'Visão Geral',     rota: '/integracoes/tiny',                 icone: 'dashboard' },
+        { label: 'Produtos',        rota: '/integracoes/tiny/produtos',         icone: 'inventory_2' },
+        { label: 'Estoque',         rota: '/integracoes/tiny/estoque',          icone: 'package_2' },
+        { label: 'Pedidos',         rota: '/integracoes/tiny/pedidos',          icone: 'receipt_long' },
+        { label: 'Contatos',        rota: '/integracoes/tiny/contatos',         icone: 'contacts' },
+        { label: 'Notas Fiscais',   rota: '/integracoes/tiny/notas-fiscais',    icone: 'description' },
+        { label: 'Contas a Pagar',  rota: '/integracoes/tiny/contas-pagar',     icone: 'payments' }
       ]
     }
   ];
+
+  constructor() {
+    // Inicializar signals de expandido para cada grupo colapsável
+    this.grupos.forEach(grupo => {
+      if (grupo.colapsavel) {
+        this.expandidosPorGrupo.set(grupo.titulo, signal(false));
+      }
+    });
+  }
+
+  expandirGrupo(titulo: string): void {
+    const sig = this.expandidosPorGrupo.get(titulo);
+    if (sig) sig.set(true);
+  }
+
+  recolherGrupo(titulo: string): void {
+    const sig = this.expandidosPorGrupo.get(titulo);
+    if (sig) sig.set(false);
+  }
+
+  grupoExpandido(titulo: string): boolean {
+    const sig = this.expandidosPorGrupo.get(titulo);
+    return sig ? sig() : true;
+  }
 }

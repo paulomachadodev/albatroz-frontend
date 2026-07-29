@@ -95,11 +95,7 @@ docker run -p 80:80 albatroz-frontend:latest
 
 ## GitHub Actions
 
-**ci.yml:** build on push (master/develop), upload artefato.
-
-**deploy stub:** comentado. Descomentar quando servidor estiver pronto.
-- SSH deploy via `appleboy/ssh-action`
-- Secrets: `DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_SSH_KEY`
+**ci.yml:** deploy automático já ativo (2026-07-29, doc anterior estava desatualizada) — push na `master` builda, publica imagem no GHCR e redeploya o container via runner self-hosted (`docker pull` + `docker run` na porta 8080). Não precisa de passo manual — commit + push já é suficiente. Mesmo padrão em `albatroz-backend` e `albatroz-site`.
 
 ---
 

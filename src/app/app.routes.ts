@@ -36,6 +36,16 @@ export const routes: Routes = [
           import('./contextos/fornecedores/fornecedores.routes').then(m => m.FORNECEDORES_ROUTES)
       },
       {
+        path: 'cotacoes/listas-escolares',
+        loadChildren: () =>
+          import('./contextos/cotacao/listas-escolares/listas-escolares.routes').then(m => m.LISTAS_ESCOLARES_ROUTES)
+      },
+      {
+        path: 'whatsapp/atendimentos',
+        loadChildren: () =>
+          import('./contextos/whatsapp/atendimentos/atendimentos.routes').then(m => m.ATENDIMENTOS_ROUTES)
+      },
+      {
         path: 'financeiro/cartoes',
         loadChildren: () =>
           import('./contextos/financeiro/cartoes/cartoes.routes').then(m => m.CARTOES_ROUTES)

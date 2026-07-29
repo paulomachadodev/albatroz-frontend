@@ -1,0 +1,116 @@
+<div class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark px-4 sm:px-6 lg:px-8 xl:px-10 py-6 lg:py-8">
+  <div class="w-full space-y-8">
+
+    <nav class="flex items-center gap-2 text-sm text-slate-500">
+      <a class="hover:text-primary" routerLink="/dashboard">Início</a>
+      <span class="material-symbols-outlined text-xs">chevron_right</span>
+      <span class="text-slate-900 dark:text-slate-100 font-medium">Cotação</span>
+      <span class="material-symbols-outlined text-xs">chevron_right</span>
+      <span class="text-slate-900 dark:text-slate-100 font-medium">Lista Escolar</span>
+    </nav>
+
+    <div>
+      <h1 class="text-3xl font-black tracking-tight text-slate-900 dark:text-slate-100">Gestão de Listas Cotadas</h1>
+      <p class="text-slate-500 dark:text-slate-400">Revise, corrija o match de produto e libere listas escolares cotadas pela Albia.</p>
+    </div>
+
+    <!-- filtros -->
+    <section class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div>
+          <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Escola</label>
+          <input type="text" [(ngModel)]="filtro.escolaNome" placeholder="Nome da escola"
+                 class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+        </div>
+        <div>
+          <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Turma</label>
+          <input type="text" [(ngModel)]="filtro.turma" placeholder="Turma"
+                 class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+        </div>
+        <div>
+          <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Período/Turno</label>
+          <input type="text" [(ngModel)]="filtro.turno" placeholder="Manhã, tarde..."
+                 class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+        </div>
+        <div>
+          <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Status</label>
+          <select [(ngModel)]="filtro.status"
+                  class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none">
+            <option [ngValue]="undefined">Todos</option>
+            <option value="cotada">Cotada</option>
+            <option value="re-cotada">Re-cotada</option>
+            <option value="liberada">Liberada</option>
+          </select>
+        </div>
+        <div class="flex items-end gap-2">
+          <button (click)="aplicarFiltros()"
+                  class="flex-1 px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all">
+            Filtrar
+          </button>
+          <button (click)="limparFiltros()"
+                  class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
+            Limpar
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- listagem -->
+    <section class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 text-xs uppercase tracking-wider font-bold">
+            <tr>
+              <th class="px-6 py-4">Escola</th>
+              <th class="px-6 py-4">Turma / Série</th>
+              <th class="px-6 py-4 text-center">Itens</th>
+              <th class="px-6 py-4 text-center">Liberados</th>
+              <th class="px-6 py-4 text-right">Total</th>
+              <th class="px-6 py-4 text-center">Status</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+            @if (carregando()) {
+              <tr><td colspan="6" class="px-6 py-8 text-center text-slate-400">Carregando...</td></tr>
+            } @else {
+              @for (item of itens(); track item.id) {
+                <tr [routerLink]="[item.id]"
+                    class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors cursor-pointer">
+                  <td class="px-6 py-4">
+                    <p class="text-sm font-bold text-slate-900 dark:text-slate-100">{{ item.escolaNome || 'Lista avulsa' }}</p>
+                    <p class="text-xs text-slate-400">{{ item.criadoEm | date:'dd/MM/yyyy HH:mm' }}</p>
+                  </td>
+                  <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
+                    {{ item.turma || '-' }} @if (item.serie) { <span>· {{ item.serie }}</span> }
+                  </td>
+                  <td class="px-6 py-4 text-center text-sm font-medium">{{ item.totalItens }}</td>
+                  <td class="px-6 py-4 text-center text-sm font-medium">{{ item.itensLiberados }}/{{ item.totalItens }}</td>
+                  <td class="px-6 py-4 text-right text-sm font-bold">{{ formatarReais(item.totalEstimado) }}</td>
+                  <td class="px-6 py-4 text-center">
+                    <span class="px-2 py-0.5 rounded-full text-xs font-bold" [class]="classeStatus(item.status)">{{ item.status }}</span>
+                  </td>
+                </tr>
+              } @empty {
+                <tr><td colspan="6" class="px-6 py-8 text-center text-slate-400">Nenhuma lista encontrada</td></tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+      <div class="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 flex justify-between items-center">
+        <p class="text-xs text-slate-500">Página {{ paginaAtual() }} de {{ totalPaginas() }} · {{ totalRegistros() }} listas</p>
+        <div class="flex gap-2">
+          <button (click)="paginaAnterior()" [disabled]="paginaAtual() <= 1"
+                  class="p-1 rounded bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 disabled:opacity-40">
+            <span class="material-symbols-outlined text-sm">chevron_left</span>
+          </button>
+          <button (click)="proximaPagina()" [disabled]="paginaAtual() >= totalPaginas()"
+                  class="p-1 rounded bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 disabled:opacity-40">
+            <span class="material-symbols-outlined text-sm">chevron_right</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>

@@ -3,9 +3,10 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 
 export interface ItemMenu {
   label: string;
-  rota:  string;
+  rota?:  string;
   icone: string; // nome Material Symbol
   badge?: string;
+  subItens?: ItemMenu[]; // torna o item um pai expansível — rota fica opcional nesse caso
 }
 
 export interface GrupoMenu {
@@ -26,6 +27,7 @@ export class SidebarComponent {
   toggle    = output<void>();
 
   private expandidosPorGrupo = new Map<string, ReturnType<typeof signal<boolean>>>();
+  private expandidosPorItem  = new Map<string, ReturnType<typeof signal<boolean>>>();
 
   grupos: GrupoMenu[] = [
     {
@@ -38,10 +40,26 @@ export class SidebarComponent {
       titulo: 'Operacional',
       itens: [
         { label: 'Produtos',   rota: '/produtos',  icone: 'inventory_2' },
-        { label: 'Cotações',   rota: '/cotacoes',  icone: 'request_quote' },
+        {
+          label: 'Cotações', icone: 'request_quote',
+          subItens: [
+            { label: 'Lista Escolar', rota: '/cotacoes/listas-escolares', icone: 'school' }
+          ]
+        },
         { label: 'Estoque',    rota: '/estoque',   icone: 'package_2' },
         { label: 'Fornecedores', rota: '/fornecedores', icone: 'local_shipping' },
         { label: 'Albia IA',   rota: '/albia',     icone: 'auto_awesome', badge: 'NOVO' }
+      ]
+    },
+    {
+      titulo: 'WhatsApp',
+      itens: [
+        {
+          label: 'WhatsApp', icone: 'forum',
+          subItens: [
+            { label: 'Atendimentos', rota: '/whatsapp/atendimentos', icone: 'support_agent' }
+          ]
+        }
       ]
     },
     {
@@ -90,6 +108,17 @@ export class SidebarComponent {
 
   grupoExpandido(titulo: string): boolean {
     const sig = this.expandidosPorGrupo.get(titulo);
+    return sig ? sig() : true;
+  }
+
+  toggleItem(label: string): void {
+    const sig = this.expandidosPorItem.get(label) ?? signal(true);
+    sig.set(!sig());
+    this.expandidosPorItem.set(label, sig);
+  }
+
+  itemExpandido(label: string): boolean {
+    const sig = this.expandidosPorItem.get(label);
     return sig ? sig() : true;
   }
 }

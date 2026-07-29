@@ -121,7 +121,7 @@
                       </span>
                     } @else { <span class="text-slate-300">0</span> }
                   </td>
-                  <td class="px-6 py-4 text-sm text-slate-500">{{ item.ultimaMensagem | date:'dd/MM/yyyy HH:mm' }}</td>
+                  <td class="px-6 py-4 text-sm text-slate-500">{{ item.ultimaMensagem | date:'dd/MM/yyyy HH:mm':'America/Sao_Paulo' }}</td>
                   <td class="px-6 py-4 text-center">
                     @if (item.idContato) {
                       <button (click)="abrirVinculoManual(item)" class="text-xs text-emerald-600 hover:underline flex items-center gap-1 justify-center">

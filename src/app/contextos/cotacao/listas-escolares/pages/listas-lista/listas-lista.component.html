@@ -78,7 +78,7 @@
                     class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors cursor-pointer">
                   <td class="px-6 py-4">
                     <p class="text-sm font-bold text-slate-900 dark:text-slate-100">{{ item.escolaNome || 'Lista avulsa' }}</p>
-                    <p class="text-xs text-slate-400">{{ item.criadoEm | date:'dd/MM/yyyy HH:mm' }}</p>
+                    <p class="text-xs text-slate-400">{{ item.criadoEm | date:'dd/MM/yyyy HH:mm':'America/Sao_Paulo' }}</p>
                   </td>
                   <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
                     {{ item.turma || '-' }} @if (item.serie) { <span>· {{ item.serie }}</span> }

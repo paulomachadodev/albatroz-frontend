@@ -88,6 +88,11 @@ export class ListaDetalheComponent implements OnInit {
   }
 
   liberarLista() {
+    const confirmado = window.confirm(
+      'Liberar essa lista? A cotação passa a valer pra qualquer cliente que perguntar por ela, e quem já solicitou é notificado automaticamente.'
+    );
+    if (!confirmado) return;
+
     this.liberandoLista.set(true);
     this.listasService.liberarLista(this.idLista).subscribe({
       next: res => {

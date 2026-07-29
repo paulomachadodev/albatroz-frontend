@@ -162,12 +162,28 @@
       <div class="bg-white dark:bg-slate-900 rounded-xl shadow-2xl w-full max-w-sm p-6" (click)="$event.stopPropagation()">
         <h3 class="font-bold text-slate-900 dark:text-slate-100 mb-1">Vincular contato</h3>
         <p class="text-xs text-slate-400 mb-4">{{ vinculandoWhatsappId() }}</p>
-        <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">ID do cliente cadastrado</label>
-        <input type="number" [(ngModel)]="idContatoManual" placeholder="Id do contato"
-               class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+        <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Cliente cadastrado</label>
+        <div class="relative">
+          <input type="text" [ngModel]="termoContato" (ngModelChange)="aoDigitarContato($event)"
+                 placeholder="Buscar por nome, telefone ou CPF/CNPJ..."
+                 class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+          @if (buscandoContato()) {
+            <p class="text-xs text-slate-400 mt-1">Buscando...</p>
+          } @else if (resultadosContato().length > 0) {
+            <ul class="mt-1 max-h-40 overflow-y-auto rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg">
+              @for (contato of resultadosContato(); track contato.id) {
+                <li (click)="selecionarContato(contato)"
+                    class="px-3 py-2 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer">
+                  <p class="font-medium">{{ contato.nome }}</p>
+                  <p class="text-xs text-slate-400">{{ contato.telefone || contato.celular || contato.cpfCnpj }}</p>
+                </li>
+              }
+            </ul>
+          }
+        </div>
         <div class="flex gap-2 mt-4">
-          <button (click)="confirmarVinculoManual()"
-                  class="flex-1 px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all">
+          <button (click)="confirmarVinculoManual()" [disabled]="!contatoSelecionado()"
+                  class="flex-1 px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all disabled:opacity-50">
             Vincular
           </button>
           <button (click)="fecharVinculoManual()"

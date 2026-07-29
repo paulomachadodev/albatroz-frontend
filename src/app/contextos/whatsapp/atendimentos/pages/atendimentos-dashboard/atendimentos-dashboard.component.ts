@@ -5,6 +5,8 @@ import { FormsModule } from '@angular/forms';
 import { AtendimentosWhatsappService, AtendimentoWhatsappFiltro } from '../../services/atendimentos-whatsapp.service';
 import { AtendimentoWhatsappResumo, AtendimentoWhatsappMensal } from '../../models/atendimento-whatsapp.model';
 import { ToastService } from '../../../../../core/feedback/toast.service';
+import { ContatosService } from '../../../../contatos/services/contatos.service';
+import { ContatoBusca } from '../../../../contatos/models/contato-busca.model';
 
 const MESES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 
@@ -26,7 +28,11 @@ export class AtendimentosDashboardComponent implements OnInit {
   mensal = signal<AtendimentoWhatsappMensal[]>([]);
   processandoVinculo = signal(false);
   vinculandoWhatsappId = signal<string | null>(null);
-  idContatoManual = '';
+  contatoSelecionado = signal<ContatoBusca | null>(null);
+  termoContato = '';
+  resultadosContato = signal<ContatoBusca[]>([]);
+  buscandoContato = signal(false);
+  private debounceContato?: ReturnType<typeof setTimeout>;
 
   anoAtual = new Date().getFullYear();
   filtro: AtendimentoWhatsappFiltro = { ano: this.anoAtual };
@@ -35,6 +41,7 @@ export class AtendimentosDashboardComponent implements OnInit {
 
   constructor(
     private atendimentosService: AtendimentosWhatsappService,
+    private contatosService: ContatosService,
     private toast: ToastService
   ) {}
 
@@ -102,19 +109,48 @@ export class AtendimentosDashboardComponent implements OnInit {
 
   abrirVinculoManual(item: AtendimentoWhatsappResumo) {
     this.vinculandoWhatsappId.set(item.whatsappId);
-    this.idContatoManual = item.idContato ? String(item.idContato) : '';
+    this.contatoSelecionado.set(
+      item.idContato && item.nomeContato ? { id: item.idContato, nome: item.nomeContato } : null
+    );
+    this.termoContato = '';
+    this.resultadosContato.set([]);
   }
 
   fecharVinculoManual() {
     this.vinculandoWhatsappId.set(null);
+    this.contatoSelecionado.set(null);
+  }
+
+  aoDigitarContato(valor: string) {
+    this.termoContato = valor;
+    this.contatoSelecionado.set(null);
+    if (this.debounceContato) clearTimeout(this.debounceContato);
+    if (valor.trim().length < 2) { this.resultadosContato.set([]); return; }
+
+    this.debounceContato = setTimeout(() => {
+      this.buscandoContato.set(true);
+      this.contatosService.buscar(valor.trim()).subscribe({
+        next: res => {
+          this.resultadosContato.set(res.dados ?? []);
+          this.buscandoContato.set(false);
+        },
+        error: () => this.buscandoContato.set(false)
+      });
+    }, 300);
+  }
+
+  selecionarContato(contato: ContatoBusca) {
+    this.contatoSelecionado.set(contato);
+    this.termoContato = contato.nome;
+    this.resultadosContato.set([]);
   }
 
   confirmarVinculoManual() {
     const whatsappId = this.vinculandoWhatsappId();
-    const idContato = Number(this.idContatoManual);
-    if (!whatsappId || !idContato) return;
+    const contato = this.contatoSelecionado();
+    if (!whatsappId || !contato) return;
 
-    this.atendimentosService.vincular(whatsappId, idContato).subscribe({
+    this.atendimentosService.vincular(whatsappId, contato.id).subscribe({
       next: () => {
         this.toast.sucesso('Vínculo salvo.');
         this.fecharVinculoManual();

@@ -36,6 +36,7 @@ export interface ListaEscolarDetalhe {
   anoLetivo?: number;
   status: string;
   totalEstimado?: number;
+  pdfCotacaoUrl?: string;
   itens: ListaEscolarItem[];
 }
 
@@ -44,4 +45,5 @@ export interface ProdutoBusca {
   codigo: string;
   nome: string;
   preco?: number;
+  estoque?: number;
 }

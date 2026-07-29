@@ -139,4 +139,11 @@ export class AuthService {
     if (!payload) return false;
     return payload.exp * 1000 > Date.now();
   }
+
+  /** Verdadeiro se o access token expira dentro dos próximos `segundos` (ou já expirou). */
+  expiraEmBreve(segundos: number): boolean {
+    const payload = this.decodeToken();
+    if (!payload) return true;
+    return payload.exp * 1000 - Date.now() < segundos * 1000;
+  }
 }

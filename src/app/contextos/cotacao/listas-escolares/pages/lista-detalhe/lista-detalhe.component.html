@@ -14,66 +14,77 @@
     } @else if (!lista()) {
       <p class="text-slate-400 text-center py-12">Lista não encontrada.</p>
     } @else {
-      <div class="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 class="text-3xl font-black tracking-tight text-slate-900 dark:text-slate-100">
-            {{ lista()!.escolaNome || 'Lista avulsa' }}
-          </h1>
-          <p class="text-slate-500 dark:text-slate-400">
-            Total estimado: <span class="font-bold">{{ formatarReais(lista()!.totalEstimado) }}</span>
-          </p>
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <h1 class="text-3xl font-black tracking-tight text-slate-900 dark:text-slate-100">
+          {{ lista()!.escolaNome || 'Lista avulsa' }}
+        </h1>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <button (click)="cancelar()"
+                  class="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
+            Cancelar
+          </button>
+
+          <button (click)="exportarExcel()" [disabled]="lista()!.status !== 'liberada'"
+                  class="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-bold text-sm hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                  title="Exportar itens pra Excel (disponível depois de liberar)">
+            <span class="material-symbols-outlined text-sm">table_view</span> Excel
+          </button>
+
+          <button (click)="baixarPdf()" [disabled]="lista()!.status !== 'liberada' || !lista()!.pdfCotacaoUrl"
+                  class="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-rose-50 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 font-bold text-sm hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                  title="Baixar PDF da cotação (disponível depois de liberar)">
+            <span class="material-symbols-outlined text-sm">picture_as_pdf</span> PDF
+          </button>
+
+          @if (lista()!.status === 'liberada') {
+            <button (click)="editarLista()" [disabled]="reabrindoLista()"
+                    class="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-amber-500 text-white font-bold text-sm hover:bg-amber-600 shadow-lg shadow-amber-500/20 transition-all disabled:opacity-50">
+              <span class="material-symbols-outlined text-sm">edit</span>
+              {{ reabrindoLista() ? 'Reabrindo...' : 'Editar lista' }}
+            </button>
+          } @else {
+            <button (click)="liberarLista()" [disabled]="liberandoLista() || !todosItensResolvidos()"
+                    [title]="!todosItensResolvidos() ? 'Todos os itens precisam estar liberados ou marcados como não vendemos' : ''"
+                    class="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-emerald-600 text-white font-bold text-sm hover:bg-emerald-700 shadow-lg shadow-emerald-600/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+              <span class="material-symbols-outlined text-sm">check_circle</span>
+              {{ liberandoLista() ? 'Liberando...' : 'Liberar lista' }}
+            </button>
+          }
         </div>
-        <button (click)="liberarLista()" [disabled]="liberandoLista() || lista()!.status === 'liberada'"
-                class="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-emerald-600 text-white font-bold text-sm hover:bg-emerald-700 shadow-lg shadow-emerald-600/20 transition-all disabled:opacity-50">
-          <span class="material-symbols-outlined text-sm">check_circle</span>
-          {{ lista()!.status === 'liberada' ? 'Lista liberada' : (liberandoLista() ? 'Liberando...' : 'Liberar lista') }}
-        </button>
       </div>
 
       <!-- dados da lista -->
       <section class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-        <h3 class="font-bold text-slate-900 dark:text-slate-100 mb-4">Escola / Turma</h3>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <h3 class="font-bold text-slate-900 dark:text-slate-100 mb-4">Escola</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Escola</label>
-            <input type="text" [(ngModel)]="formLista.escolaNome"
+            <input type="text" [(ngModel)]="formLista.escolaNome" (change)="salvarCampoLista('escolaNome')"
                    class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
           </div>
           <div>
             <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Série</label>
-            <input type="text" [(ngModel)]="formLista.serie"
+            <input type="text" [(ngModel)]="formLista.serie" (change)="salvarCampoLista('serie')"
                    class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
-          </div>
-          <div>
-            <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Turma</label>
-            <input type="text" [(ngModel)]="formLista.turma"
-                   class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
-          </div>
-          <div>
-            <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Período/Turno</label>
-            <input type="text" [(ngModel)]="formLista.turno"
-                   class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
-          </div>
-          <div class="flex items-end">
-            <button (click)="salvarLista()" [disabled]="salvandoLista()"
-                    class="w-full px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all disabled:opacity-50">
-              {{ salvandoLista() ? 'Salvando...' : 'Salvar' }}
-            </button>
           </div>
         </div>
       </section>
 
       <!-- itens -->
-      <section class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-        <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+      <section class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col" style="max-height: 65vh;">
+        <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between shrink-0">
           <h3 class="font-bold text-slate-900 dark:text-slate-100">Itens ({{ lista()!.itens.length }})</h3>
+          <p class="text-slate-500 dark:text-slate-400">
+            Total estimado: <span class="font-bold text-slate-900 dark:text-slate-100">{{ formatarReais(lista()!.totalEstimado) }}</span>
+          </p>
         </div>
-        <div class="overflow-x-auto">
+        <div class="overflow-auto">
           <table class="w-full text-left border-collapse">
-            <thead class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 text-xs uppercase tracking-wider font-bold">
+            <thead class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 text-xs uppercase tracking-wider font-bold sticky top-0 z-10">
               <tr>
-                <th class="px-4 py-3">SKU</th>
                 <th class="px-4 py-3">Solicitado na lista</th>
+                <th class="px-4 py-3">SKU</th>
                 <th class="px-4 py-3">Produto na loja</th>
                 <th class="px-4 py-3 text-center">Qtd</th>
                 <th class="px-4 py-3 text-right">Preço</th>
@@ -84,28 +95,29 @@
             <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
               @for (item of lista()!.itens; track item.id) {
                 <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors align-top">
-                  <td class="px-4 py-3 text-sm text-slate-500">{{ item.codigoProduto || '-' }}</td>
                   <td class="px-4 py-3 text-sm">
                     <p class="font-medium text-slate-900 dark:text-slate-100">{{ item.descricaoNaLista }}</p>
                     @if (item.marcaNaLista) { <p class="text-xs text-slate-400">Marca: {{ item.marcaNaLista }}</p> }
                   </td>
+                  <td class="px-4 py-3 text-sm text-slate-500">{{ item.codigoProduto || '-' }}</td>
                   <td class="px-4 py-3 text-sm min-w-64">
                     @if (itemEmBusca() === item.id) {
                       <div class="relative">
                         <input type="text" [ngModel]="termoBusca" (ngModelChange)="aoDigitarBusca($event)"
                                placeholder="Buscar por código ou descrição..." autofocus
+                               (blur)="fecharBuscaProdutoComAtraso()"
                                class="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
-                        <button (click)="fecharBuscaProduto()" class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700">
-                          <span class="material-symbols-outlined text-sm">close</span>
-                        </button>
                         @if (buscandoProduto()) {
                           <p class="text-xs text-slate-400 mt-1">Buscando...</p>
                         } @else if (resultadosBusca().length > 0) {
-                          <ul class="mt-1 max-h-48 overflow-y-auto rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg">
+                          <ul class="mt-1 max-h-48 overflow-y-auto rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg absolute z-20 w-full">
                             @for (produto of resultadosBusca(); track produto.id) {
-                              <li (click)="selecionarProduto(item, produto)"
+                              <li (mousedown)="selecionarProduto(item, produto)"
                                   class="px-3 py-2 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer flex justify-between gap-2">
-                                <span><span class="text-slate-400">{{ produto.codigo }}</span> {{ produto.nome }}</span>
+                                <span>
+                                  <span class="text-slate-400">{{ produto.codigo }}</span> {{ produto.nome }}
+                                  <span class="text-xs text-slate-400">(estoque: {{ produto.estoque ?? 0 }})</span>
+                                </span>
                                 <span class="font-bold shrink-0">{{ formatarReais(produto.preco) }}</span>
                               </li>
                             }
@@ -113,10 +125,10 @@
                         }
                       </div>
                     } @else {
-                      <div class="flex items-center gap-2">
-                        <span [class.text-slate-400]="!item.nomeProduto">{{ item.nomeProduto || 'Sem produto casado' }}</span>
-                        <button (click)="abrirBuscaProduto(item)" class="text-primary hover:underline text-xs shrink-0">trocar</button>
-                      </div>
+                      <input type="text" [value]="item.nomeProduto || 'Sem produto casado'" readonly
+                             (focus)="abrirBuscaProduto(item)"
+                             [class.text-slate-400]="!item.nomeProduto"
+                             class="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm cursor-pointer focus:ring-2 focus:ring-primary/20 outline-none"/>
                     }
                   </td>
                   <td class="px-4 py-3 text-center">
@@ -130,16 +142,19 @@
                       {{ item.statusItem.replace('_', ' ') }}
                     </span>
                   </td>
-                  <td class="px-4 py-3 text-center">
-                    <div class="flex flex-col gap-1 items-center">
-                      <button (click)="marcarNaoVendemos(item)" class="text-xs text-rose-500 hover:underline">não vendemos</button>
-                      @if (item.liberado) {
-                        <span class="text-xs font-bold text-emerald-600 flex items-center gap-1">
-                          <span class="material-symbols-outlined text-xs">check_circle</span> liberado
-                        </span>
-                      } @else {
-                        <button (click)="liberarItem(item)" class="text-xs text-primary hover:underline">liberar item</button>
-                      }
+                  <td class="px-4 py-3">
+                    <div class="flex items-center justify-center gap-2">
+                      <button (click)="marcarNaoVendemos(item)" title="Não vendemos"
+                              class="w-8 h-8 flex items-center justify-center rounded-lg bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-all">
+                        <span class="material-symbols-outlined text-base">remove_shopping_cart</span>
+                      </button>
+                      <button (click)="liberarItem(item)" [disabled]="item.liberado" title="Liberado"
+                              class="w-8 h-8 flex items-center justify-center rounded-lg transition-all"
+                              [class]="item.liberado
+                                ? 'bg-emerald-600 text-white'
+                                : 'bg-slate-100 dark:bg-slate-800 text-slate-400 hover:bg-emerald-50 hover:text-emerald-600 dark:hover:bg-emerald-900/30 dark:hover:text-emerald-400'">
+                        <span class="material-symbols-outlined text-base">check</span>
+                      </button>
                     </div>
                   </td>
                 </tr>

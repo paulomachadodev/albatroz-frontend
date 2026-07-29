@@ -1,7 +1,8 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import * as XLSX from 'xlsx';
 import { ListasEscolaresService } from '../../services/listas-escolares.service';
 import { ListaEscolarDetalhe, ListaEscolarItem, ProdutoBusca } from '../../models/lista-escolar.model';
 import { ToastService } from '../../../../../core/feedback/toast.service';
@@ -17,8 +18,8 @@ export class ListaDetalheComponent implements OnInit {
   idLista!: number;
   carregando = signal(true);
   lista = signal<ListaEscolarDetalhe | null>(null);
-  salvandoLista = signal(false);
   liberandoLista = signal(false);
+  reabrindoLista = signal(false);
 
   // busca de produto por item — indexado por idItem
   itemEmBusca = signal<number | null>(null);
@@ -27,10 +28,17 @@ export class ListaDetalheComponent implements OnInit {
   buscandoProduto = signal(false);
   private debounce?: ReturnType<typeof setTimeout>;
 
-  formLista = { escolaNome: '', turma: '', turno: '', serie: '' };
+  formLista = { escolaNome: '', serie: '' };
+
+  todosItensResolvidos = computed(() => {
+    const l = this.lista();
+    if (!l || l.itens.length === 0) return false;
+    return l.itens.every(i => i.liberado || i.statusItem === 'nao_encontrado');
+  });
 
   constructor(
     private route: ActivatedRoute,
+    private router: Router,
     private listasService: ListasEscolaresService,
     private toast: ToastService
   ) {}
@@ -49,8 +57,6 @@ export class ListaDetalheComponent implements OnInit {
         if (dados) {
           this.formLista = {
             escolaNome: dados.escolaNome ?? '',
-            turma: dados.turma ?? '',
-            turno: dados.turno ?? '',
             serie: dados.serie ?? ''
           };
         }
@@ -63,19 +69,14 @@ export class ListaDetalheComponent implements OnInit {
     });
   }
 
-  salvarLista() {
-    this.salvandoLista.set(true);
-    this.listasService.atualizarLista(this.idLista, this.formLista).subscribe({
-      next: () => {
-        this.toast.sucesso('Lista atualizada.');
-        this.salvandoLista.set(false);
-        this.carregar();
-      },
-      error: err => {
-        this.toast.erroServidor(err, 'Não foi possível salvar.');
-        this.salvandoLista.set(false);
-      }
+  salvarCampoLista(campo: 'escolaNome' | 'serie') {
+    this.listasService.atualizarLista(this.idLista, { [campo]: this.formLista[campo] }).subscribe({
+      error: err => this.toast.erroServidor(err, 'Não foi possível salvar.')
     });
+  }
+
+  cancelar() {
+    this.router.navigate(['/cotacoes/listas-escolares']);
   }
 
   liberarLista() {
@@ -85,9 +86,7 @@ export class ListaDetalheComponent implements OnInit {
         const qtd = res.dados?.whatsappIdsParaNotificar?.length ?? 0;
         this.toast.sucesso(
           'Lista liberada.',
-          qtd > 0
-            ? `${qtd} contato(s) pediram essa lista — envio automático via WhatsApp ainda não implementado, avisar manualmente.`
-            : undefined
+          qtd > 0 ? `${qtd} contato(s) serão notificados automaticamente.` : undefined
         );
         this.liberandoLista.set(false);
         this.carregar();
@@ -99,6 +98,48 @@ export class ListaDetalheComponent implements OnInit {
     });
   }
 
+  editarLista() {
+    this.reabrindoLista.set(true);
+    this.listasService.reabrirEdicao(this.idLista).subscribe({
+      next: () => {
+        this.toast.sucesso('Lista reaberta pra edição — cliente só recebe de novo quando você liberar.');
+        this.reabrindoLista.set(false);
+        this.carregar();
+      },
+      error: err => {
+        this.toast.erroServidor(err, 'Não foi possível reabrir a lista.');
+        this.reabrindoLista.set(false);
+      }
+    });
+  }
+
+  exportarExcel() {
+    const l = this.lista();
+    if (!l) return;
+
+    const linhas = l.itens.map(i => ({
+      'Solicitado na lista': i.descricaoNaLista,
+      'Marca': i.marcaNaLista ?? '',
+      'SKU': i.codigoProduto ?? '',
+      'Produto na loja': i.nomeProduto ?? '',
+      'Qtd': i.quantidade,
+      'Preço unit.': i.precoUnitario ?? 0,
+      'Subtotal': i.subtotal ?? 0,
+      'Status': i.statusItem,
+      'Liberado': i.liberado ? 'Sim' : 'Não'
+    }));
+
+    const planilha = XLSX.utils.json_to_sheet(linhas);
+    const livro = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(livro, planilha, 'Itens');
+    XLSX.writeFile(livro, `lista-escolar-${l.id}.xlsx`);
+  }
+
+  baixarPdf() {
+    const url = this.lista()?.pdfCotacaoUrl;
+    if (url) window.open(url, '_blank');
+  }
+
   abrirBuscaProduto(item: ListaEscolarItem) {
     this.itemEmBusca.set(item.id);
     this.termoBusca = '';
@@ -108,6 +149,11 @@ export class ListaDetalheComponent implements OnInit {
   fecharBuscaProduto() {
     this.itemEmBusca.set(null);
     this.resultadosBusca.set([]);
+  }
+
+  /** Chamado no (blur) do input de busca — atraso pra deixar o (mousedown) do item da lista disparar antes. */
+  fecharBuscaProdutoComAtraso() {
+    setTimeout(() => this.fecharBuscaProduto(), 150);
   }
 
   aoDigitarBusca(valor: string) {

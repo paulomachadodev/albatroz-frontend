@@ -22,6 +22,7 @@ export class ListasListaComponent implements OnInit {
   readonly tamanho = 20;
 
   filtro: ListaEscolarFiltro = {};
+  enviandoArquivo = signal(false);
 
   constructor(
     private listasService: ListasEscolaresService,
@@ -64,6 +65,27 @@ export class ListasListaComponent implements OnInit {
 
   proximaPagina() {
     if (this.paginaAtual() < this.totalPaginas()) this.carregar(this.paginaAtual() + 1);
+  }
+
+  aoSelecionarArquivo(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const arquivo = input.files?.[0];
+    if (!arquivo) return;
+
+    this.enviandoArquivo.set(true);
+    this.listasService.enviarArquivo(arquivo).subscribe({
+      next: () => {
+        this.toast.sucesso('Lista enviada pra Albia cotar — aparece na listagem assim que terminar.');
+        this.enviandoArquivo.set(false);
+        input.value = '';
+        this.carregar(1);
+      },
+      error: err => {
+        this.toast.erroServidor(err, 'Não foi possível enviar o arquivo.');
+        this.enviandoArquivo.set(false);
+        input.value = '';
+      }
+    });
   }
 
   classeStatus(status: string): string {

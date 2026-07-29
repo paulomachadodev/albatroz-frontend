@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { SessaoInatividadeService } from './core/auth/sessao-inatividade.service';
 
 @Component({
   selector: 'app-root',
@@ -9,4 +10,8 @@ import { RouterOutlet } from '@angular/router';
 })
 export class AppComponent {
   title = 'albatroz-frontend';
+
+  constructor() {
+    inject(SessaoInatividadeService).iniciar();
+  }
 }

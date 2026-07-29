@@ -45,7 +45,17 @@ export class ListasEscolaresService {
     return this.api.post<{ whatsappIdsParaNotificar: string[] }>(`${this.endpoint}/${idLista}/liberar`, {});
   }
 
+  reabrirEdicao(idLista: number): Observable<Resultado<void>> {
+    return this.api.post<void>(`${this.endpoint}/${idLista}/reabrir`, {});
+  }
+
   buscarProdutos(termo: string): Observable<Resultado<ProdutoBusca[]>> {
     return this.api.get<ProdutoBusca[]>(`${this.endpoint}/produtos/busca`, { termo });
+  }
+
+  enviarArquivo(arquivo: File): Observable<Resultado<{ idLista: number | null; status: string }>> {
+    const formData = new FormData();
+    formData.append('arquivo', arquivo);
+    return this.api.post<{ idLista: number | null; status: string }>(`${this.endpoint}/enviar-arquivo`, formData);
   }
 }

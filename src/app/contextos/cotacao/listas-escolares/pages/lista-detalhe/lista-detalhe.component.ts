@@ -69,6 +69,14 @@ export class ListaDetalheComponent implements OnInit {
     });
   }
 
+  /** Atualiza os dados sem passar por carregando() — evita esconder a tela e perder o scroll a cada ação num item. */
+  private recarregarSilencioso() {
+    this.listasService.obter(this.idLista).subscribe({
+      next: res => this.lista.set(res.dados ?? null),
+      error: err => this.toast.erroServidor(err, 'Não foi possível atualizar a lista.')
+    });
+  }
+
   salvarCampoLista(campo: 'escolaNome' | 'serie') {
     this.listasService.atualizarLista(this.idLista, { [campo]: this.formLista[campo] }).subscribe({
       error: err => this.toast.erroServidor(err, 'Não foi possível salvar.')
@@ -182,7 +190,7 @@ export class ListaDetalheComponent implements OnInit {
       next: () => {
         this.toast.sucesso('Produto atualizado.');
         this.fecharBuscaProduto();
-        this.carregar();
+        this.recarregarSilencioso();
       },
       error: err => this.toast.erroServidor(err, 'Não foi possível trocar o produto.')
     });
@@ -194,7 +202,7 @@ export class ListaDetalheComponent implements OnInit {
       quantidade: novaQtd,
       naoVendemos: false
     }).subscribe({
-      next: () => this.carregar(),
+      next: () => this.recarregarSilencioso(),
       error: err => this.toast.erroServidor(err, 'Não foi possível ajustar a quantidade.')
     });
   }
@@ -205,7 +213,7 @@ export class ListaDetalheComponent implements OnInit {
     }).subscribe({
       next: () => {
         this.toast.sucesso('Item marcado como "não vendemos".');
-        this.carregar();
+        this.recarregarSilencioso();
       },
       error: err => this.toast.erroServidor(err, 'Não foi possível atualizar o item.')
     });
@@ -213,7 +221,7 @@ export class ListaDetalheComponent implements OnInit {
 
   liberarItem(item: ListaEscolarItem) {
     this.listasService.liberarItem(this.idLista, item.id).subscribe({
-      next: () => this.carregar(),
+      next: () => this.recarregarSilencioso(),
       error: err => this.toast.erroServidor(err, 'Não foi possível liberar o item.')
     });
   }

@@ -144,19 +144,23 @@
                   </td>
                   <td class="px-4 py-3">
                     <div class="flex items-center justify-center gap-2">
-                      <button (click)="marcarNaoVendemos(item)" [disabled]="item.statusItem === 'nao_encontrado'" title="Não vendemos"
-                              class="w-8 h-8 flex items-center justify-center rounded-lg transition-all"
+                      <button (click)="marcarNaoVendemos(item)" [disabled]="item.liberado || item.statusItem === 'nao_encontrado'" title="Não vendemos"
+                              class="w-8 h-8 flex items-center justify-center rounded-lg transition-all disabled:opacity-50"
                               [class]="item.statusItem === 'nao_encontrado'
                                 ? 'bg-rose-600 text-white'
                                 : 'bg-slate-100 dark:bg-slate-800 text-slate-400 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-900/30 dark:hover:text-rose-400'">
                         <span class="material-symbols-outlined text-base">close</span>
                       </button>
-                      <button (click)="liberarItem(item)" [disabled]="item.liberado" title="Liberado"
-                              class="w-8 h-8 flex items-center justify-center rounded-lg transition-all"
+                      <button (click)="item.liberado ? desliberarItem(item) : liberarItem(item)" [disabled]="item.statusItem === 'nao_encontrado'" title="Liberado"
+                              class="w-8 h-8 flex items-center justify-center rounded-lg transition-all disabled:opacity-50"
                               [class]="item.liberado
                                 ? 'bg-emerald-600 text-white'
                                 : 'bg-slate-100 dark:bg-slate-800 text-slate-400 hover:bg-emerald-50 hover:text-emerald-600 dark:hover:bg-emerald-900/30 dark:hover:text-emerald-400'">
                         <span class="material-symbols-outlined text-base">check</span>
+                      </button>
+                      <button (click)="excluirItem(item)" title="Excluir item"
+                              class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-400 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-900/30 dark:hover:text-rose-400 transition-all">
+                        <span class="material-symbols-outlined text-base">delete</span>
                       </button>
                     </div>
                   </td>
@@ -164,6 +168,22 @@
               }
             </tbody>
           </table>
+        </div>
+        <div class="px-6 py-4 border-t border-slate-200 dark:border-slate-800 shrink-0 flex flex-wrap items-end gap-3">
+          <div class="flex-1 min-w-48">
+            <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Adicionar item (a Albia não achou na foto)</label>
+            <input type="text" [(ngModel)]="novoItem.descricaoNaLista" placeholder="Descrição do item"
+                   class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+          </div>
+          <div>
+            <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Qtd</label>
+            <input type="number" min="1" [(ngModel)]="novoItem.quantidade"
+                   class="mt-1 w-20 px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm text-center focus:ring-2 focus:ring-primary/20 outline-none"/>
+          </div>
+          <button (click)="adicionarItem()" [disabled]="adicionandoItem() || !novoItem.descricaoNaLista.trim()"
+                  class="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all disabled:opacity-50">
+            <span class="material-symbols-outlined text-sm">add</span> Adicionar
+          </button>
         </div>
       </section>
     }

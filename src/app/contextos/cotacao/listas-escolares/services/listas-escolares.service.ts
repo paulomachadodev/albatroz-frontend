@@ -4,7 +4,7 @@ import { ApiService } from '../../../../core/http/api.service';
 import { Resultado, Paginacao } from '../../../../core/models';
 import { ParametrosPaginacao } from '../../../../core/models/paginacao.model';
 import { ListaEscolarResumo, ListaEscolarDetalhe, ProdutoBusca } from '../models/lista-escolar.model';
-import { ListaEscolarAtualizarRequisicao, ListaEscolarItemAtualizarRequisicao } from '../dtos/lista-escolar-item-atualizar.dto';
+import { ListaEscolarAtualizarRequisicao, ListaEscolarItemAtualizarRequisicao, ListaEscolarItemAdicionarRequisicao } from '../dtos/lista-escolar-item-atualizar.dto';
 
 export interface ListaEscolarFiltro {
   escolaNome?: string;
@@ -39,6 +39,18 @@ export class ListasEscolaresService {
 
   liberarItem(idLista: number, idItem: number): Observable<Resultado<void>> {
     return this.api.post<void>(`${this.endpoint}/${idLista}/itens/${idItem}/liberar`, {});
+  }
+
+  desliberarItem(idLista: number, idItem: number): Observable<Resultado<void>> {
+    return this.api.post<void>(`${this.endpoint}/${idLista}/itens/${idItem}/desliberar`, {});
+  }
+
+  excluirItem(idLista: number, idItem: number): Observable<Resultado<void>> {
+    return this.api.delete<void>(`${this.endpoint}/${idLista}/itens/${idItem}`);
+  }
+
+  adicionarItem(idLista: number, requisicao: ListaEscolarItemAdicionarRequisicao): Observable<Resultado<{ id: number }>> {
+    return this.api.post<{ id: number }>(`${this.endpoint}/${idLista}/itens`, requisicao);
   }
 
   liberarLista(idLista: number): Observable<Resultado<{ whatsappIdsParaNotificar: string[] }>> {

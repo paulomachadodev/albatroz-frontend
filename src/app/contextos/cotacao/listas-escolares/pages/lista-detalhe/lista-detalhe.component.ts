@@ -30,6 +30,9 @@ export class ListaDetalheComponent implements OnInit {
 
   formLista = { escolaNome: '', serie: '' };
 
+  novoItem = { descricaoNaLista: '', quantidade: 1 };
+  adicionandoItem = signal(false);
+
   todosItensResolvidos = computed(() => {
     const l = this.lista();
     if (!l || l.itens.length === 0) return false;
@@ -228,6 +231,44 @@ export class ListaDetalheComponent implements OnInit {
     this.listasService.liberarItem(this.idLista, item.id).subscribe({
       next: () => this.recarregarSilencioso(),
       error: err => this.toast.erroServidor(err, 'Não foi possível liberar o item.')
+    });
+  }
+
+  desliberarItem(item: ListaEscolarItem) {
+    this.listasService.desliberarItem(this.idLista, item.id).subscribe({
+      next: () => this.recarregarSilencioso(),
+      error: err => this.toast.erroServidor(err, 'Não foi possível desfazer a liberação do item.')
+    });
+  }
+
+  excluirItem(item: ListaEscolarItem) {
+    const confirmado = window.confirm(`Excluir "${item.descricaoNaLista}" da lista? Essa ação não pode ser desfeita.`);
+    if (!confirmado) return;
+
+    this.listasService.excluirItem(this.idLista, item.id).subscribe({
+      next: () => {
+        this.toast.sucesso('Item excluído.');
+        this.recarregarSilencioso();
+      },
+      error: err => this.toast.erroServidor(err, 'Não foi possível excluir o item.')
+    });
+  }
+
+  adicionarItem() {
+    if (!this.novoItem.descricaoNaLista.trim()) return;
+
+    this.adicionandoItem.set(true);
+    this.listasService.adicionarItem(this.idLista, this.novoItem).subscribe({
+      next: () => {
+        this.toast.sucesso('Item adicionado.');
+        this.novoItem = { descricaoNaLista: '', quantidade: 1 };
+        this.adicionandoItem.set(false);
+        this.recarregarSilencioso();
+      },
+      error: err => {
+        this.toast.erroServidor(err, 'Não foi possível adicionar o item.');
+        this.adicionandoItem.set(false);
+      }
     });
   }
 

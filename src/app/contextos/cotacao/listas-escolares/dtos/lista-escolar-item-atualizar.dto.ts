@@ -11,3 +11,9 @@ export interface ListaEscolarAtualizarRequisicao {
   turma?: string;
   turno?: string;
 }
+
+export interface ListaEscolarItemAdicionarRequisicao {
+  descricaoNaLista: string;
+  quantidade: number;
+  idProduto?: number;
+}

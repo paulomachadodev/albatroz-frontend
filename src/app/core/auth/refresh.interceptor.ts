@@ -4,12 +4,6 @@ import { Router } from '@angular/router';
 import { catchError, switchMap, throwError } from 'rxjs';
 import { AuthService } from './auth.service';
 
-// TEMP 2026-07-28 — redirect automático pro /login desligado enquanto a auth do
-// backend está bypassada (ver ServiceExtensions.cs). Sem isso, um token velho/expirado
-// sobrando no localStorage do navegador força logout+redirect mesmo com o backend
-// aceitando anônimo. Reverter junto com o resto do débito técnico de auth.
-const REDIRECT_NO_LOGIN_DESLIGADO = true;
-
 export const refreshInterceptor: HttpInterceptorFn = (req, next) => {
   const auth = inject(AuthService);
   const router = inject(Router);
@@ -29,10 +23,8 @@ export const refreshInterceptor: HttpInterceptorFn = (req, next) => {
           url: req.url,
           error: err.error?.erro
         });
-        if (!REDIRECT_NO_LOGIN_DESLIGADO) {
-          auth.logout();
-          router.navigate(['/login']);
-        }
+        auth.logout();
+        router.navigate(['/login']);
         return throwError(() => err);
       }
 
@@ -44,10 +36,6 @@ export const refreshInterceptor: HttpInterceptorFn = (req, next) => {
             error: err.error
           });
         }
-        return throwError(() => err);
-      }
-
-      if (REDIRECT_NO_LOGIN_DESLIGADO) {
         return throwError(() => err);
       }
 

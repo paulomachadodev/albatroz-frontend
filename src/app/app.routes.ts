@@ -9,10 +9,9 @@ export const routes: Routes = [
   ...AUTENTICACAO_ROUTES,
 
   // Área autenticada — envolvida pelo Shell (sidebar + header)
-  // TEMP 2026-07-28 — authGuard desligado a pedido do usuário pra testar telas novas
-  // sem precisar logar. Reverter (`canActivate: [authGuard]`) antes de deploy real.
   {
     path: '',
+    canActivate: [authGuard],
     loadComponent: () =>
       import('./layout/shell/shell.component').then(m => m.ShellComponent),
     children: [

@@ -6,6 +6,7 @@ import * as XLSX from 'xlsx';
 import { ListasEscolaresService } from '../../services/listas-escolares.service';
 import { ListaEscolarDetalhe, ListaEscolarItem, ProdutoBusca } from '../../models/lista-escolar.model';
 import { ToastService } from '../../../../../core/feedback/toast.service';
+import { ConfirmService } from '../../../../../core/feedback/confirm.service';
 
 @Component({
   selector: 'app-lista-detalhe',
@@ -43,7 +44,8 @@ export class ListaDetalheComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private listasService: ListasEscolaresService,
-    private toast: ToastService
+    private toast: ToastService,
+    private confirm: ConfirmService
   ) {}
 
   ngOnInit() {
@@ -90,9 +92,11 @@ export class ListaDetalheComponent implements OnInit {
     this.router.navigate(['/cotacoes/listas-escolares']);
   }
 
-  liberarLista() {
-    const confirmado = window.confirm(
-      'Liberar essa lista? A cotação passa a valer pra qualquer cliente que perguntar por ela, e quem já solicitou é notificado automaticamente.'
+  async liberarLista() {
+    const confirmado = await this.confirm.confirmar(
+      'Liberar essa lista?',
+      'A cotação passa a valer pra qualquer cliente que perguntar por ela, e quem já solicitou é notificado automaticamente.',
+      { textoConfirmar: 'Liberar' }
     );
     if (!confirmado) return;
 
@@ -241,8 +245,12 @@ export class ListaDetalheComponent implements OnInit {
     });
   }
 
-  excluirItem(item: ListaEscolarItem) {
-    const confirmado = window.confirm(`Excluir "${item.descricaoNaLista}" da lista? Essa ação não pode ser desfeita.`);
+  async excluirItem(item: ListaEscolarItem) {
+    const confirmado = await this.confirm.confirmar(
+      `Excluir "${item.descricaoNaLista}" da lista?`,
+      'Essa ação não pode ser desfeita.',
+      { textoConfirmar: 'Excluir' }
+    );
     if (!confirmado) return;
 
     this.listasService.excluirItem(this.idLista, item.id).subscribe({

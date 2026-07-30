@@ -49,5 +49,7 @@ model: opus
 - @standards/angular/conventions.md
 - @standards/angular/routing.md
 - @standards/angular/signals.md
+- @standards/angular/mensagens-feedback.md
+- @standards/angular/confirmacao-acao-critica.md
 - @contexts/projeto/frontend.md
 - @contexts/dominio/erp.md

@@ -11,14 +11,20 @@
 
 **Não conta** como crítico: salvar campo de formulário (auto-save on blur/change já é o padrão — ver `lista-detalhe.component.ts`), trocar filtro, navegação.
 
+Ver @standards/angular/mensagens-feedback.md pro padrão geral de toast/confirmação (o "como"). Este arquivo cobre só o "quando".
+
 ## Padrão de implementação
 
-Mais simples: `window.confirm(...)` com mensagem que explica a consequência, não só "tem certeza?":
+> Atualizado (2026-07-30): `window.confirm(...)` foi substituído — o popup nativo do navegador quebra o visual da tela e não segue o padrão de feedback do app. Usar `ConfirmService` (`core/feedback/confirm.service.ts`) + `ConfirmDialogComponent` (`core/feedback/confirm-dialog.component.ts`), montado uma vez no `ShellComponent` junto do `ToastContainerComponent`.
+
+Mensagem sempre explica a consequência, não só "tem certeza?":
 
 ```typescript
-liberarLista() {
-  const confirmado = window.confirm(
-    'Liberar essa lista? A cotação passa a valer pra qualquer cliente que perguntar por ela, e quem já solicitou é notificado automaticamente.'
+async liberarLista() {
+  const confirmado = await this.confirm.confirmar(
+    'Liberar essa lista?',
+    'A cotação passa a valer pra qualquer cliente que perguntar por ela, e quem já solicitou é notificado automaticamente.',
+    { textoConfirmar: 'Liberar' }
   );
   if (!confirmado) return;
 
@@ -26,4 +32,6 @@ liberarLista() {
 }
 ```
 
-Se o projeto adotar um modal de confirmação mais elaborado no futuro (design system), substituir `window.confirm` por ele — mas a regra de sempre confirmar antes de ação crítica continua valendo independente do componente usado.
+`ConfirmService.confirmar(titulo, mensagem?, opcoes?)` retorna uma `Promise<boolean>` — `true` se o usuário confirmou. `opcoes.textoConfirmar`/`textoCancelar` trocam o texto padrão dos botões ("Confirmar"/"Cancelar") quando a ação tem um verbo mais específico (ex: "Liberar", "Excluir").
+
+Injetar `ConfirmService` no construtor do componente (mesmo padrão do `ToastService`).

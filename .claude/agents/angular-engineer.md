@@ -49,6 +49,9 @@ model: sonnet
 - @standards/angular/routing.md
 - @standards/angular/http.md
 - @standards/angular/forms.md
+- @standards/angular/mensagens-feedback.md
+- @standards/angular/confirmacao-acao-critica.md
+- @standards/angular/timezone-exibicao.md
 - @contexts/projeto/frontend.md
 - @skills/angular-components
 - @skills/angular-pages

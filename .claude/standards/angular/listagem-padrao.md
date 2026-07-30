@@ -1,5 +1,41 @@
 # Listagem Padrão — Filtro + Tabela Paginada + Drawer
 
+## Regra geral — checar `shared/components/` antes de criar UI nova
+
+Antes de escrever markup de tabela, paginação, modal, drawer, cabeçalho de página ou spinner numa tela nova, checar `src/app/shared/components/` — se o padrão já existe lá, usar, nunca duplicar hand-rolled. Componentes disponíveis hoje: `listagem-paginada`, `drawer`, `modal`, `page-header`, `spinner`. Se a tela precisa de algo parecido mas não idêntico, preferir estender o componente existente (novo input) a criar um paralelo.
+
+## `app-page-header`
+
+`shared/components/page-header/` — substitui o bloco `<h1>título</h1><p>subtítulo</p>` + botão de ação que era copiado em toda tela de listagem.
+
+```html
+<app-page-header titulo="Cadastro de Escolas" subtitulo="Gerencie as escolas usadas nas listas.">
+  <button acoes (click)="abrirCriar()">Nova Escola</button>
+</app-page-header>
+```
+
+`acoes` é slot de projeção pro(s) botão(ões) de ação — cada tela é dona do próprio botão/lógica.
+
+**Atenção display:** componente Angular sem `host: { class: 'block' }` renderiza como `display: inline` por padrão — se ele for filho direto de um container `space-y-*` (Tailwind), o `margin-top` que o `space-y-*` aplica não tem efeito em inline, e os cards colam um no outro. Todo componente novo em `shared/components/` que vai ser usado como bloco (não inline, como o `spinner` que às vezes fica dentro de botão) precisa declarar `host: { class: 'block' }` no `@Component`.
+
+## `app-modal`
+
+`shared/components/modal/` — modal centralizado (backdrop + painel), substitui os backdrops hand-rolled que existiam em cada `*-modal.component.html` de `financeiro/cartoes/`.
+
+```html
+<app-modal [aberto]="true" titulo="Categorias de despesa" tamanho="sm" (fechar)="fechar.emit()">
+  <!-- conteúdo do modal -->
+</app-modal>
+```
+
+`tamanho`: `sm | md | lg | 2xl` (mapeia pra `max-w-*`). Se `titulo` não for passado, o componente não renderiza cabeçalho — a tela pode montar o próprio header customizado como conteúdo projetado. Clique no backdrop fecha (emite `fechar`); sem Escape-to-close (nenhum dos modais originais tinha).
+
+## `app-spinner`
+
+`shared/components/spinner/` — substitui os `<div class="animate-spin border-...">` hand-rolled. `tamanho`: `sm | md | lg`. `label` opcional (texto ao lado). `[claro]="true"` quando o spinner fica sobre fundo colorido (ex: dentro de botão primário) — troca a cor da borda pra branco em vez da cor padrão.
+
+Não migrar o padrão de ícone giratório (`<span class="material-symbols-outlined animate-spin">progress_activity</span>`, usado em `login`/`esqueci-senha`/`lista-detalhe`) pra esse componente — é um padrão visual diferente (ícone, não borda), documentado aqui só pra não confundir os dois na hora de escolher.
+
 ## `app-listagem-paginada`
 
 Componente genérico em `shared/components/listagem-paginada/` que substitui a listagem manual (filtro + tabela + paginação) hand-rolled em cada tela.

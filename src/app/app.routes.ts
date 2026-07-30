@@ -41,6 +41,11 @@ export const routes: Routes = [
           import('./contextos/cotacao/listas-escolares/listas-escolares.routes').then(m => m.LISTAS_ESCOLARES_ROUTES)
       },
       {
+        path: 'cadastros/escolas',
+        loadChildren: () =>
+          import('./contextos/cadastros/escolas/escolas.routes').then(m => m.ESCOLAS_ROUTES)
+      },
+      {
         path: 'whatsapp/atendimentos',
         loadChildren: () =>
           import('./contextos/whatsapp/atendimentos/atendimentos.routes').then(m => m.ATENDIMENTOS_ROUTES)

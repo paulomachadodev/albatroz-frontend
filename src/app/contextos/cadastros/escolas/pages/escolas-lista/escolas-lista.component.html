@@ -1,0 +1,120 @@
+<div class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark px-4 sm:px-6 lg:px-8 xl:px-10 py-6 lg:py-8">
+  <div class="w-full space-y-8">
+
+    <nav class="flex items-center gap-2 text-sm text-slate-500">
+      <a class="hover:text-primary" routerLink="/dashboard">Início</a>
+      <span class="material-symbols-outlined text-xs">chevron_right</span>
+      <span class="text-slate-900 dark:text-slate-100 font-medium">Cadastros</span>
+      <span class="material-symbols-outlined text-xs">chevron_right</span>
+      <span class="text-slate-900 dark:text-slate-100 font-medium">Escolas</span>
+    </nav>
+
+    <div class="flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <h1 class="text-3xl font-black tracking-tight text-slate-900 dark:text-slate-100">Cadastro de Escolas</h1>
+        <p class="text-slate-500 dark:text-slate-400">Gerencie as escolas usadas nas listas escolares cotadas.</p>
+      </div>
+
+      <button (click)="abrirCriar()"
+              class="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all">
+        <span class="material-symbols-outlined text-sm">add</span>
+        Nova Escola
+      </button>
+    </div>
+
+    <app-listagem-paginada
+      [itens]="itens()"
+      [carregando]="carregando()"
+      [totalRegistros]="totalRegistros()"
+      [paginaAtual]="paginaAtual()"
+      [totalPaginas]="totalPaginas()"
+      [tamanhoPagina]="tamanhoPagina()"
+      tituloVazio="Nenhuma escola encontrada"
+      (paginaMudou)="aoMudarPagina($event)"
+      (tamanhoPaginaMudou)="aoMudarTamanhoPagina($event)">
+
+      <div filtros class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div class="lg:col-span-3">
+          <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Nome</label>
+          <input type="text" [(ngModel)]="filtroNome" placeholder="Nome da escola"
+                 class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+        </div>
+        <div class="flex items-end gap-2 lg:col-span-2">
+          <button (click)="aplicarFiltros()"
+                  class="flex-1 px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all">
+            Filtrar
+          </button>
+          <button (click)="limparFiltros()"
+                  class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
+            Limpar
+          </button>
+        </div>
+      </div>
+
+      <ng-template #cabecalho>
+        <tr>
+          <th class="px-6 py-4">Nome</th>
+          <th class="px-6 py-4">Bairro</th>
+          <th class="px-6 py-4">Cidade</th>
+          <th class="px-6 py-4 text-center">Parceira</th>
+        </tr>
+      </ng-template>
+
+      <ng-template #linha let-item>
+        <tr (click)="abrirEditar(item)" class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors cursor-pointer">
+          <td class="px-6 py-4 text-sm font-bold text-slate-900 dark:text-slate-100">{{ item.nome }}</td>
+          <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{{ item.bairro || '-' }}</td>
+          <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{{ item.cidade || '-' }}</td>
+          <td class="px-6 py-4 text-center">
+            @if (item.parceira) {
+              <span class="px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400">Parceira</span>
+            } @else {
+              <span class="text-slate-400">—</span>
+            }
+          </td>
+        </tr>
+      </ng-template>
+
+    </app-listagem-paginada>
+
+  </div>
+</div>
+
+<app-drawer [aberto]="drawerAberto()"
+            [titulo]="modoDrawer() === 'criar' ? 'Nova Escola' : 'Editar Escola'"
+            (fechar)="cancelar()">
+
+  <div class="space-y-4">
+    <div>
+      <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Nome</label>
+      <input type="text" [ngModel]="nome" (ngModelChange)="aoDigitarNome($event)" placeholder="Nome da escola"
+             class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+    </div>
+
+    @if (modoDrawer() === 'editar') {
+      <div>
+        <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Bairro</label>
+        <input type="text" [ngModel]="bairro" (ngModelChange)="aoDigitarBairro($event)" placeholder="Bairro"
+               class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+      </div>
+      <div>
+        <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Cidade</label>
+        <input type="text" [ngModel]="cidade" (ngModelChange)="aoDigitarCidade($event)" placeholder="Cidade"
+               class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+      </div>
+      <div class="flex items-center gap-2">
+        <input type="checkbox" [ngModel]="parceira" (ngModelChange)="aoAlternarParceira($event)" id="parceira-toggle"
+               class="size-4 rounded border-slate-300 text-primary focus:ring-primary/20"/>
+        <label for="parceira-toggle" class="text-sm text-slate-700 dark:text-slate-300">Escola parceira</label>
+      </div>
+    }
+
+    <div class="pt-2">
+      <button type="button" (click)="cancelar()"
+              class="w-full px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
+        Cancelar
+      </button>
+    </div>
+  </div>
+
+</app-drawer>

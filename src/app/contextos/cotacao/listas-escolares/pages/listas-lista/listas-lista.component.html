@@ -23,9 +23,18 @@
       </label>
     </div>
 
-    <!-- filtros -->
-    <section class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+    <app-listagem-paginada
+      [itens]="itens()"
+      [carregando]="carregando()"
+      [totalRegistros]="totalRegistros()"
+      [paginaAtual]="paginaAtual()"
+      [totalPaginas]="totalPaginas()"
+      [tamanhoPagina]="tamanhoPagina()"
+      tituloVazio="Nenhuma lista encontrada"
+      (paginaMudou)="aoMudarPagina($event)"
+      (tamanhoPaginaMudou)="aoMudarTamanhoPagina($event)">
+
+      <div filtros class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <div>
           <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Escola</label>
           <input type="text" [(ngModel)]="filtro.escolaNome" placeholder="Nome da escola"
@@ -62,64 +71,38 @@
           </button>
         </div>
       </div>
-    </section>
 
-    <!-- listagem -->
-    <section class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse">
-          <thead class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 text-xs uppercase tracking-wider font-bold">
-            <tr>
-              <th class="px-6 py-4">Escola</th>
-              <th class="px-6 py-4">Turma / Série</th>
-              <th class="px-6 py-4 text-center">Itens</th>
-              <th class="px-6 py-4 text-center">Liberados</th>
-              <th class="px-6 py-4 text-right">Total</th>
-              <th class="px-6 py-4 text-center">Status</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-            @if (carregando()) {
-              <tr><td colspan="6" class="px-6 py-8 text-center text-slate-400">Carregando...</td></tr>
-            } @else {
-              @for (item of itens(); track item.id) {
-                <tr [routerLink]="[item.id]"
-                    class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors cursor-pointer">
-                  <td class="px-6 py-4">
-                    <p class="text-sm font-bold text-slate-900 dark:text-slate-100">{{ item.escolaNome || 'Lista avulsa' }}</p>
-                    <p class="text-xs text-slate-400">{{ item.criadoEm | date:'dd/MM/yyyy HH:mm':'America/Sao_Paulo' }}</p>
-                  </td>
-                  <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
-                    {{ item.turma || '-' }} @if (item.serie) { <span>· {{ item.serie }}</span> }
-                  </td>
-                  <td class="px-6 py-4 text-center text-sm font-medium">{{ item.totalItens }}</td>
-                  <td class="px-6 py-4 text-center text-sm font-medium">{{ item.itensLiberados }}/{{ item.totalItens }}</td>
-                  <td class="px-6 py-4 text-right text-sm font-bold">{{ formatarReais(item.totalEstimado) }}</td>
-                  <td class="px-6 py-4 text-center">
-                    <span class="px-2 py-0.5 rounded-full text-xs font-bold" [class]="classeStatus(item.status)">{{ item.status }}</span>
-                  </td>
-                </tr>
-              } @empty {
-                <tr><td colspan="6" class="px-6 py-8 text-center text-slate-400">Nenhuma lista encontrada</td></tr>
-              }
-            }
-          </tbody>
-        </table>
-      </div>
-      <div class="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 flex justify-between items-center">
-        <p class="text-xs text-slate-500">Página {{ paginaAtual() }} de {{ totalPaginas() }} · {{ totalRegistros() }} listas</p>
-        <div class="flex gap-2">
-          <button (click)="paginaAnterior()" [disabled]="paginaAtual() <= 1"
-                  class="p-1 rounded bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 disabled:opacity-40">
-            <span class="material-symbols-outlined text-sm">chevron_left</span>
-          </button>
-          <button (click)="proximaPagina()" [disabled]="paginaAtual() >= totalPaginas()"
-                  class="p-1 rounded bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 disabled:opacity-40">
-            <span class="material-symbols-outlined text-sm">chevron_right</span>
-          </button>
-        </div>
-      </div>
-    </section>
+      <ng-template #cabecalho>
+        <tr>
+          <th class="px-6 py-4">Escola</th>
+          <th class="px-6 py-4">Turma / Série</th>
+          <th class="px-6 py-4 text-center">Itens</th>
+          <th class="px-6 py-4 text-center">Liberados</th>
+          <th class="px-6 py-4 text-right">Total</th>
+          <th class="px-6 py-4 text-center">Status</th>
+        </tr>
+      </ng-template>
+
+      <ng-template #linha let-item>
+        <tr [routerLink]="[item.id]"
+            class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors cursor-pointer">
+          <td class="px-6 py-4">
+            <p class="text-sm font-bold text-slate-900 dark:text-slate-100">{{ item.escolaNome || 'Lista avulsa' }}</p>
+            <p class="text-xs text-slate-400">{{ item.criadoEm | date:'dd/MM/yyyy HH:mm':'America/Sao_Paulo' }}</p>
+          </td>
+          <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
+            {{ item.turma || '-' }} @if (item.serie) { <span>· {{ item.serie }}</span> }
+          </td>
+          <td class="px-6 py-4 text-center text-sm font-medium">{{ item.totalItens }}</td>
+          <td class="px-6 py-4 text-center text-sm font-medium">{{ item.itensLiberados }}/{{ item.totalItens }}</td>
+          <td class="px-6 py-4 text-right text-sm font-bold">{{ formatarReais(item.totalEstimado) }}</td>
+          <td class="px-6 py-4 text-center">
+            <span class="px-2 py-0.5 rounded-full text-xs font-bold" [class]="classeStatus(item.status)">{{ item.status }}</span>
+          </td>
+        </tr>
+      </ng-template>
+
+    </app-listagem-paginada>
 
   </div>
 </div>

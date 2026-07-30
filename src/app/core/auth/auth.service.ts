@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { Observable, finalize, shareReplay, tap } from 'rxjs';
+import { Observable, catchError, finalize, shareReplay, tap, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
 export interface LoginRequisicao {
@@ -38,6 +38,8 @@ interface JwtPayload {
 const TOKEN_KEY = 'albatroz.access';
 const REFRESH_KEY = 'albatroz.refresh';
 const USER_KEY = 'albatroz.user';
+const REFRESH_LOCK_KEY = 'albatroz.refresh.lock';
+const REFRESH_LOCK_TTL_MS = 10_000;
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -49,6 +51,15 @@ export class AuthService {
   isAuthenticated = computed(() => this._usuario() !== null && this.tokenValido());
 
   private _renovandoToken$: Observable<AutenticacaoResposta> | null = null;
+  private readonly canal = new BroadcastChannel('albatroz-auth');
+
+  constructor() {
+    this.canal.onmessage = (ev: MessageEvent) => {
+      if (ev.data?.tipo === 'logout') {
+        this._usuario.set(null);
+      }
+    };
+  }
 
   login(req: LoginRequisicao): Observable<AutenticacaoResposta> {
     const body = { email: req.email, senha: req.senha, empresaId: req.empresaId };
@@ -73,6 +84,7 @@ export class AuthService {
     localStorage.removeItem(REFRESH_KEY);
     localStorage.removeItem(USER_KEY);
     this._usuario.set(null);
+    this.canal.postMessage({ tipo: 'logout' });
   }
 
   getToken(): string | null {
@@ -86,15 +98,73 @@ export class AuthService {
   renovar(): Observable<AutenticacaoResposta> {
     if (this._renovandoToken$) return this._renovandoToken$;
 
+    const lock = this.lerLockRenovacao();
+    if (lock && Date.now() - lock.ts < REFRESH_LOCK_TTL_MS) {
+      this._renovandoToken$ = this.aguardarRenovacaoExterna().pipe(
+        catchError(() => {
+          localStorage.removeItem(REFRESH_LOCK_KEY);
+          return this.renovarDireto();
+        }),
+        finalize(() => (this._renovandoToken$ = null)),
+        shareReplay(1)
+      );
+      return this._renovandoToken$;
+    }
+
+    return this.renovarDireto();
+  }
+
+  private renovarDireto(): Observable<AutenticacaoResposta> {
+    localStorage.setItem(REFRESH_LOCK_KEY, JSON.stringify({ ts: Date.now() }));
+
     const refreshToken = this.getRefreshToken();
     this._renovandoToken$ = this.http
       .post<AutenticacaoResposta>(`${this.endpoint}/renovar`, { refreshToken })
       .pipe(
-        tap(resp => this.persistirSessao(resp)),
-        finalize(() => (this._renovandoToken$ = null)),
+        tap(resp => {
+          this.persistirSessao(resp);
+          this.canal.postMessage({ tipo: 'token-renovado', resposta: resp });
+        }),
+        catchError(err => {
+          this.canal.postMessage({ tipo: 'token-renovacao-falhou' });
+          return throwError(() => err);
+        }),
+        finalize(() => {
+          localStorage.removeItem(REFRESH_LOCK_KEY);
+          this._renovandoToken$ = null;
+        }),
         shareReplay(1)
       );
     return this._renovandoToken$;
+  }
+
+  private aguardarRenovacaoExterna(): Observable<AutenticacaoResposta> {
+    return new Observable<AutenticacaoResposta>(subscriber => {
+      const handler = (ev: MessageEvent) => {
+        if (ev.data?.tipo === 'token-renovado') {
+          subscriber.next(ev.data.resposta as AutenticacaoResposta);
+          subscriber.complete();
+        } else if (ev.data?.tipo === 'token-renovacao-falhou') {
+          subscriber.error(new Error('Renovação de token falhou em outra aba.'));
+        }
+      };
+      this.canal.addEventListener('message', handler);
+
+      const timeoutId = setTimeout(() => {
+        subscriber.error(new Error('Timeout esperando renovação de token de outra aba.'));
+      }, REFRESH_LOCK_TTL_MS);
+
+      return () => {
+        clearTimeout(timeoutId);
+        this.canal.removeEventListener('message', handler);
+      };
+    });
+  }
+
+  private lerLockRenovacao(): { ts: number } | null {
+    const raw = localStorage.getItem(REFRESH_LOCK_KEY);
+    if (!raw) return null;
+    try { return JSON.parse(raw) as { ts: number }; } catch { return null; }
   }
 
   empresaIdAtual(): number | null {

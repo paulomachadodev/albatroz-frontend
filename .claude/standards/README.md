@@ -11,6 +11,7 @@ Regras e convenções de código. Fonte de verdade para geração e revisão.
 | `angular/routing.md` | Rotas, lazy loading, guards, params como Signals |
 | `angular/http.md` | HTTP Services, Observable, tipagem, error handling |
 | `angular/forms.md` | Reactive Forms, validação, submissão |
+| `angular/listagem-padrao.md` | Listagem paginada (`app-listagem-paginada`), drawer (`app-drawer`), autosave por campo |
 
 ## Relação com Skills
 

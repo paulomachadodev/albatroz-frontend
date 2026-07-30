@@ -5,11 +5,12 @@ import { FormsModule } from '@angular/forms';
 import { ListasEscolaresService, ListaEscolarFiltro } from '../../services/listas-escolares.service';
 import { ListaEscolarResumo } from '../../models/lista-escolar.model';
 import { ToastService } from '../../../../../core/feedback/toast.service';
+import { ListagemPaginadaComponent } from '../../../../../shared/components/listagem-paginada/listagem-paginada.component';
 
 @Component({
   selector: 'app-listas-lista',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule],
+  imports: [CommonModule, RouterLink, FormsModule, ListagemPaginadaComponent],
   templateUrl: './listas-lista.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
@@ -19,7 +20,7 @@ export class ListasListaComponent implements OnInit {
   totalRegistros = signal(0);
   paginaAtual = signal(1);
   totalPaginas = signal(1);
-  readonly tamanho = 20;
+  tamanhoPagina = signal(20);
 
   filtro: ListaEscolarFiltro = {};
   enviandoArquivo = signal(false);
@@ -35,7 +36,7 @@ export class ListasListaComponent implements OnInit {
 
   carregar(pagina = 1) {
     this.carregando.set(true);
-    this.listasService.listar({ pagina, tamanho: this.tamanho }, this.filtro).subscribe({
+    this.listasService.listar({ pagina, tamanho: this.tamanhoPagina() }, this.filtro).subscribe({
       next: res => {
         this.itens.set(res.dados?.dados ?? []);
         this.totalRegistros.set(res.dados?.totalRegistros ?? 0);
@@ -59,12 +60,13 @@ export class ListasListaComponent implements OnInit {
     this.carregar(1);
   }
 
-  paginaAnterior() {
-    if (this.paginaAtual() > 1) this.carregar(this.paginaAtual() - 1);
+  aoMudarPagina(pagina: number) {
+    this.carregar(pagina);
   }
 
-  proximaPagina() {
-    if (this.paginaAtual() < this.totalPaginas()) this.carregar(this.paginaAtual() + 1);
+  aoMudarTamanhoPagina(tamanho: number) {
+    this.tamanhoPagina.set(tamanho);
+    this.carregar(1);
   }
 
   aoSelecionarArquivo(event: Event) {

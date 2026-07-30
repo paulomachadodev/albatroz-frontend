@@ -95,7 +95,7 @@ export class ListaDetalheComponent implements OnInit {
   async liberarLista() {
     const confirmado = await this.confirm.confirmar(
       'Liberar essa lista?',
-      'A cotação passa a valer pra qualquer cliente que perguntar por ela, e quem já solicitou é notificado automaticamente.',
+      'O orçamento passa a valer pra qualquer cliente que perguntar por ele, e quem já solicitou é notificado automaticamente.',
       { textoConfirmar: 'Liberar' }
     );
     if (!confirmado) return;
@@ -133,7 +133,7 @@ export class ListaDetalheComponent implements OnInit {
           } else if (dados?.status === 'liberando') {
             this.toast.erro('Liberação demorando demais', 'Ainda processando — atualize a página em alguns minutos pra conferir.');
           } else {
-            this.toast.erro('Falha ao liberar', 'Não foi possível gerar o PDF da cotação. Tente liberar de novo.');
+            this.toast.erro('Falha ao liberar', 'Não foi possível gerar o PDF do orçamento. Tente liberar de novo.');
           }
         },
         error: () => void 0

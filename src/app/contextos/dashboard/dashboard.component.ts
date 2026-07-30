@@ -41,7 +41,7 @@ export class DashboardComponent {
 
   kpis: Kpi[] = [
     { titulo: 'Receita do mês',     valor: 'R$ 284.530', delta: '+12,4%',   positivo: true,  icone: 'payments',      cor: 'text-emerald-600 bg-emerald-100 dark:bg-emerald-900/40' },
-    { titulo: 'Cotações abertas',   valor: '47',         delta: '+8 novas', positivo: true,  icone: 'request_quote', cor: 'text-primary bg-primary/10' },
+    { titulo: 'Orçamentos abertos', valor: '47',         delta: '+8 novos', positivo: true,  icone: 'request_quote', cor: 'text-primary bg-primary/10' },
     { titulo: 'Produtos ativos',    valor: '1.284',      delta: '+23',      positivo: true,  icone: 'inventory_2',   cor: 'text-violet-600 bg-violet-100 dark:bg-violet-900/40' },
     { titulo: 'Estoque crítico',    valor: '12 itens',   delta: '−3',       positivo: false, icone: 'warning',       cor: 'text-rose-600 bg-rose-100 dark:bg-rose-900/40' }
   ];
@@ -66,10 +66,10 @@ export class DashboardComponent {
   });
 
   atividades: Atividade[] = [
-    { quem: 'Maria Souza',  acao: 'aprovou',  alvo: 'Cotação #1248', quando: 'há 3 min',  tipo: 'aprovou' },
+    { quem: 'Maria Souza',  acao: 'aprovou',  alvo: 'Orçamento #1248', quando: 'há 3 min',  tipo: 'aprovou' },
     { quem: 'João Lima',    acao: 'criou',    alvo: 'Produto "Cabo HDMI 2.1"', quando: 'há 12 min', tipo: 'criou' },
     { quem: 'Ana Pereira',  acao: 'editou',   alvo: 'Estoque "Filial Centro"', quando: 'há 27 min', tipo: 'editou' },
-    { quem: 'Carlos Reis',  acao: 'cancelou', alvo: 'Cotação #1247', quando: 'há 1 h',   tipo: 'cancelou' },
+    { quem: 'Carlos Reis',  acao: 'cancelou', alvo: 'Orçamento #1247', quando: 'há 1 h',   tipo: 'cancelou' },
     { quem: 'Paulo Machado',acao: 'criou',    alvo: 'Perfil "Vendedor Sênior"', quando: 'há 2 h', tipo: 'criou' }
   ];
 

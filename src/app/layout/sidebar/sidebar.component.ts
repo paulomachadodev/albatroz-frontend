@@ -41,7 +41,7 @@ export class SidebarComponent {
       itens: [
         { label: 'Produtos',   rota: '/produtos',  icone: 'inventory_2' },
         {
-          label: 'Cotações', icone: 'request_quote',
+          label: 'Orçamentos', icone: 'request_quote',
           subItens: [
             { label: 'Lista Escolar', rota: '/cotacoes/listas-escolares', icone: 'school' }
           ]

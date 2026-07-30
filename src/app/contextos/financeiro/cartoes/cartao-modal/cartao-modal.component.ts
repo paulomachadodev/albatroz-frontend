@@ -4,11 +4,13 @@ import { FormsModule } from '@angular/forms';
 import { CartoesService } from '../services/cartoes.service';
 import { Cartao } from '../models/cartao.model';
 import { CartaoRequisicao } from '../dtos/cartao-requisicao.dto';
+import { ModalComponent } from '../../../../shared/components/modal/modal.component';
+import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
 
 @Component({
   selector: 'app-cartao-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ModalComponent, SpinnerComponent],
   templateUrl: './cartao-modal.component.html'
 })
 export class CartaoModalComponent implements OnInit {

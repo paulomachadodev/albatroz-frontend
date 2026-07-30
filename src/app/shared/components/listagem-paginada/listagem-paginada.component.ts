@@ -5,7 +5,8 @@ import { CommonModule, NgTemplateOutlet } from '@angular/common';
   selector: 'app-listagem-paginada',
   standalone: true,
   imports: [CommonModule, NgTemplateOutlet],
-  templateUrl: './listagem-paginada.component.html'
+  templateUrl: './listagem-paginada.component.html',
+  host: { class: 'block' }
 })
 export class ListagemPaginadaComponent<T> {
   itens = input.required<T[]>();

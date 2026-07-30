@@ -12,11 +12,12 @@ import { ExtrairFaturaResposta, CartaoNaoEncontrado } from '../dtos/despesa-cart
 import { ProjecaoModalComponent } from '../projecao-modal/projecao-modal.component';
 import { CategoriaSelectComponent } from '../categoria-select/categoria-select.component';
 import { CartaoNaoCadastradoModalComponent } from '../cartao-nao-cadastrado-modal/cartao-nao-cadastrado-modal.component';
+import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
 
 @Component({
   selector: 'app-fatura-upload',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, ProjecaoModalComponent, CategoriaSelectComponent, CartaoNaoCadastradoModalComponent],
+  imports: [CommonModule, FormsModule, RouterLink, ProjecaoModalComponent, CategoriaSelectComponent, CartaoNaoCadastradoModalComponent, SpinnerComponent],
   templateUrl: './fatura-upload.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })

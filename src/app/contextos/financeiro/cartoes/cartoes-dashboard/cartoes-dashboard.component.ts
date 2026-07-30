@@ -7,11 +7,13 @@ import { Cartao } from '../models/cartao.model';
 import { Fatura } from '../models/fatura.model';
 import { CartaoModalComponent } from '../cartao-modal/cartao-modal.component';
 import { CategoriaModalComponent } from '../categoria-modal/categoria-modal.component';
+import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
+import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
 
 @Component({
   selector: 'app-cartoes-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink, CartaoModalComponent, CategoriaModalComponent],
+  imports: [CommonModule, RouterLink, CartaoModalComponent, CategoriaModalComponent, PageHeaderComponent, SpinnerComponent],
   templateUrl: './cartoes-dashboard.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })

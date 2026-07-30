@@ -1,0 +1,9 @@
+<div class="flex flex-wrap items-end justify-between gap-4">
+  <div>
+    <h1 class="text-3xl font-black tracking-tight text-slate-900 dark:text-slate-100">{{ titulo() }}</h1>
+    @if (subtitulo()) {
+      <p class="text-slate-500 dark:text-slate-400">{{ subtitulo() }}</p>
+    }
+  </div>
+  <ng-content select="[acoes]"></ng-content>
+</div>

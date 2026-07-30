@@ -1,0 +1,22 @@
+@if (aberto()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" (click)="fechar.emit()"></div>
+
+    <div class="relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl w-full z-10 max-h-[90vh] flex flex-col overflow-hidden"
+         [class]="classeTamanho">
+
+      @if (titulo()) {
+        <div class="p-6 pb-6 flex items-center justify-between shrink-0">
+          <h2 class="text-lg font-bold text-slate-900 dark:text-slate-100">{{ titulo() }}</h2>
+          <button type="button" class="size-8 flex items-center justify-center rounded-lg text-slate-400
+                         hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                  (click)="fechar.emit()">
+            <span class="material-symbols-outlined text-base">close</span>
+          </button>
+        </div>
+      }
+
+      <ng-content></ng-content>
+    </div>
+  </div>
+}

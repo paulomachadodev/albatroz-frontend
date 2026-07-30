@@ -7,13 +7,14 @@ import { Escola } from '../../models/escola.model';
 import { ToastService } from '../../../../../core/feedback/toast.service';
 import { ListagemPaginadaComponent } from '../../../../../shared/components/listagem-paginada/listagem-paginada.component';
 import { DrawerComponent } from '../../../../../shared/components/drawer/drawer.component';
+import { PageHeaderComponent } from '../../../../../shared/components/page-header/page-header.component';
 
 type ModoDrawer = 'criar' | 'editar';
 
 @Component({
   selector: 'app-escolas-lista',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, ListagemPaginadaComponent, DrawerComponent],
+  imports: [CommonModule, RouterLink, FormsModule, ListagemPaginadaComponent, DrawerComponent, PageHeaderComponent],
   templateUrl: './escolas-lista.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })

@@ -1,7 +1,5 @@
-<div class="fixed inset-0 z-50 flex items-center justify-center p-4">
-  <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"></div>
-
-  <div class="relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl w-full max-w-2xl p-6 z-10 max-h-[90vh] flex flex-col">
+<app-modal [aberto]="true" tamanho="2xl" (fechar)="cancelar.emit()">
+  <div class="p-6 flex-1 min-h-0 flex flex-col">
 
     <!-- Header -->
     <div class="mb-6">
@@ -57,4 +55,4 @@
     </div>
 
   </div>
-</div>
+</app-modal>

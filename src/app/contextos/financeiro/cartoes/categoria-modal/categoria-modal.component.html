@@ -1,16 +1,5 @@
-<div class="fixed inset-0 z-50 flex items-center justify-center p-4">
-  <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" (click)="fechar.emit()"></div>
-
-  <div class="relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl w-full max-w-sm p-6 z-10">
-
-    <div class="flex items-center justify-between mb-6">
-      <h2 class="text-lg font-bold text-slate-900 dark:text-slate-100">Categorias de despesa</h2>
-      <button class="size-8 flex items-center justify-center rounded-lg text-slate-400
-                     hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-              (click)="fechar.emit()">
-        <span class="material-symbols-outlined text-base">close</span>
-      </button>
-    </div>
+<app-modal [aberto]="true" titulo="Categorias de despesa" tamanho="sm" (fechar)="fechar.emit()">
+  <div class="px-6 pb-6 flex-1 overflow-y-auto">
 
     <!-- Nova categoria -->
     <div class="flex gap-2 mb-4">
@@ -87,4 +76,4 @@
     </div>
 
   </div>
-</div>
+</app-modal>

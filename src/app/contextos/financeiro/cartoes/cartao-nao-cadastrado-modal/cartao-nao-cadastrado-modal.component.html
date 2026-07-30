@@ -1,5 +1,4 @@
-<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-  <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+<app-modal [aberto]="true" tamanho="2xl">
 
     <!-- Header -->
     <div class="px-6 py-5 border-b border-slate-200 dark:border-slate-800 shrink-0">
@@ -149,8 +148,7 @@
                           (click)="salvarItem(item)"
                           [disabled]="item.salvando">
                     @if (item.salvando) {
-                      <div class="size-4 border-2 border-white/40 border-t-white rounded-full animate-spin"></div>
-                      Salvando...
+                      <app-spinner tamanho="sm" [claro]="true" label="Salvando..."></app-spinner>
                     } @else {
                       <span class="material-symbols-outlined text-base">save</span>
                       Salvar este cartão
@@ -194,5 +192,4 @@
       </button>
     </div>
 
-  </div>
-</div>
+</app-modal>

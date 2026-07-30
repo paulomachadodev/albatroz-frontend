@@ -9,12 +9,8 @@
     </nav>
 
     <!-- hero -->
-    <div class="flex flex-wrap items-end justify-between gap-4">
-      <div>
-        <h1 class="text-3xl font-black tracking-tight text-slate-900 dark:text-slate-100">Cartões de Crédito</h1>
-        <p class="text-slate-500 dark:text-slate-400">Controle de faturas, despesas e limites.</p>
-      </div>
-      <div class="flex flex-wrap items-center gap-3">
+    <app-page-header titulo="Cartões de Crédito" subtitulo="Controle de faturas, despesas e limites.">
+      <div acoes class="flex flex-wrap items-center gap-3">
         <button class="btn-ghost text-sm flex items-center gap-2" (click)="mostrarModalCategoria.set(true)">
           <span class="material-symbols-outlined text-sm">sell</span> Categorias
         </button>
@@ -25,11 +21,11 @@
           <span class="material-symbols-outlined text-sm">upload_file</span> Processar fatura
         </a>
       </div>
-    </div>
+    </app-page-header>
 
     @if (carregando()) {
       <div class="flex items-center justify-center py-24">
-        <div class="size-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+        <app-spinner tamanho="lg"></app-spinner>
       </div>
     } @else {
 

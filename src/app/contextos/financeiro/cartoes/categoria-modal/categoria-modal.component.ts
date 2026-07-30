@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { CartoesService } from '../services/cartoes.service';
 import { CategoriaDespesa } from '../models/categoria-despesa.model';
 import { ToastService } from '../../../../core/feedback/toast.service';
+import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 
 @Component({
   selector: 'app-categoria-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ModalComponent],
   templateUrl: './categoria-modal.component.html'
 })
 export class CategoriaModalComponent implements OnInit {

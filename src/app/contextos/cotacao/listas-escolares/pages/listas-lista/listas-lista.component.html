@@ -9,19 +9,14 @@
       <span class="text-slate-900 dark:text-slate-100 font-medium">Lista Escolar</span>
     </nav>
 
-    <div class="flex flex-wrap items-end justify-between gap-4">
-      <div>
-        <h1 class="text-3xl font-black tracking-tight text-slate-900 dark:text-slate-100">Gestão de Listas Cotadas</h1>
-        <p class="text-slate-500 dark:text-slate-400">Revise, corrija o match de produto e libere listas escolares cotadas pela Albia.</p>
-      </div>
-
-      <label class="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all cursor-pointer"
+    <app-page-header titulo="Gestão de Listas Cotadas" subtitulo="Revise, corrija o match de produto e libere listas escolares cotadas pela Albia.">
+      <label acoes class="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all cursor-pointer"
              [class.opacity-50]="enviandoArquivo()">
         <span class="material-symbols-outlined text-sm">upload_file</span>
         {{ enviandoArquivo() ? 'Enviando...' : 'Enviar lista pra cotar' }}
         <input type="file" accept="image/*,.pdf" class="hidden" [disabled]="enviandoArquivo()" (change)="aoSelecionarArquivo($event)"/>
       </label>
-    </div>
+    </app-page-header>
 
     <app-listagem-paginada
       [itens]="itens()"

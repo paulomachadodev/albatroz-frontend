@@ -9,17 +9,13 @@
     </nav>
 
     <!-- hero -->
-    <div class="flex flex-wrap items-end justify-between gap-4">
-      <div>
-        <h1 class="text-3xl font-black tracking-tight text-slate-900 dark:text-slate-100">Fornecedores</h1>
-        <p class="text-slate-500 dark:text-slate-400">Gestão e performance dos parceiros de suprimentos.</p>
-      </div>
-      <div class="flex gap-3">
+    <app-page-header titulo="Fornecedores" subtitulo="Gestão e performance dos parceiros de suprimentos.">
+      <div acoes class="flex gap-3">
         <button class="flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all">
           <span class="material-symbols-outlined text-sm">add</span> Novo Fornecedor
         </button>
       </div>
-    </div>
+    </app-page-header>
 
     <!-- KPIs -->
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">

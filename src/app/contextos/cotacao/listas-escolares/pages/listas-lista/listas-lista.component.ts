@@ -6,11 +6,12 @@ import { ListasEscolaresService, ListaEscolarFiltro } from '../../services/lista
 import { ListaEscolarResumo } from '../../models/lista-escolar.model';
 import { ToastService } from '../../../../../core/feedback/toast.service';
 import { ListagemPaginadaComponent } from '../../../../../shared/components/listagem-paginada/listagem-paginada.component';
+import { PageHeaderComponent } from '../../../../../shared/components/page-header/page-header.component';
 
 @Component({
   selector: 'app-listas-lista',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, ListagemPaginadaComponent],
+  imports: [CommonModule, RouterLink, FormsModule, ListagemPaginadaComponent, PageHeaderComponent],
   templateUrl: './listas-lista.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })

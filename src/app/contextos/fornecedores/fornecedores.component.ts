@@ -1,5 +1,6 @@
 import { Component, computed, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
 
 interface FornecedorItem {
   Id: number;
@@ -13,7 +14,7 @@ interface FornecedorItem {
 @Component({
   selector: 'app-fornecedores',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, PageHeaderComponent],
   templateUrl: './fornecedores.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })

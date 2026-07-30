@@ -9,18 +9,13 @@
       <span class="text-slate-900 dark:text-slate-100 font-medium">Escolas</span>
     </nav>
 
-    <div class="flex flex-wrap items-end justify-between gap-4">
-      <div>
-        <h1 class="text-3xl font-black tracking-tight text-slate-900 dark:text-slate-100">Cadastro de Escolas</h1>
-        <p class="text-slate-500 dark:text-slate-400">Gerencie as escolas usadas nas listas escolares cotadas.</p>
-      </div>
-
-      <button (click)="abrirCriar()"
+    <app-page-header titulo="Cadastro de Escolas" subtitulo="Gerencie as escolas usadas nas listas escolares cotadas.">
+      <button acoes (click)="abrirCriar()"
               class="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all">
         <span class="material-symbols-outlined text-sm">add</span>
         Nova Escola
       </button>
-    </div>
+    </app-page-header>
 
     <app-listagem-paginada
       [itens]="itens()"

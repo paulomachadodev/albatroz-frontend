@@ -7,13 +7,16 @@ import { AtendimentoWhatsappResumo, AtendimentoWhatsappMensal } from '../../mode
 import { ToastService } from '../../../../../core/feedback/toast.service';
 import { ContatosService } from '../../../../contatos/services/contatos.service';
 import { ContatoBusca } from '../../../../contatos/models/contato-busca.model';
+import { ModalComponent } from '../../../../../shared/components/modal/modal.component';
+import { PageHeaderComponent } from '../../../../../shared/components/page-header/page-header.component';
+import { SpinnerComponent } from '../../../../../shared/components/spinner/spinner.component';
 
 const MESES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 
 @Component({
   selector: 'app-atendimentos-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule],
+  imports: [CommonModule, RouterLink, FormsModule, ModalComponent, PageHeaderComponent, SpinnerComponent],
   templateUrl: './atendimentos-dashboard.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })

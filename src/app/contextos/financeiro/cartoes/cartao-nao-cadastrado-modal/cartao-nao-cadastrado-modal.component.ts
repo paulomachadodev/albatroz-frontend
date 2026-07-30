@@ -5,6 +5,8 @@ import { firstValueFrom } from 'rxjs';
 import { CartaoNaoEncontrado } from '../dtos/despesa-cartao-salvar.dto';
 import { Cartao } from '../models/cartao.model';
 import { CartoesService } from '../services/cartoes.service';
+import { ModalComponent } from '../../../../shared/components/modal/modal.component';
+import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
 
 interface CartaoFormItem {
   portadorNome: string | null;
@@ -25,7 +27,7 @@ interface CartaoFormItem {
 @Component({
   selector: 'app-cartao-nao-cadastrado-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ModalComponent, SpinnerComponent],
   templateUrl: './cartao-nao-cadastrado-modal.component.html',
 })
 export class CartaoNaoCadastradoModalComponent implements OnInit {

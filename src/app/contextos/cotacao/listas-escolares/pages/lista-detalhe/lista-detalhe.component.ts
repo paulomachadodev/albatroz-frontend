@@ -102,20 +102,43 @@ export class ListaDetalheComponent implements OnInit {
 
     this.liberandoLista.set(true);
     this.listasService.liberarLista(this.idLista).subscribe({
-      next: res => {
-        const qtd = res.dados?.whatsappIdsParaNotificar?.length ?? 0;
-        this.toast.sucesso(
-          'Lista liberada.',
-          qtd > 0 ? `${qtd} contato(s) serão notificados automaticamente.` : undefined
-        );
+      next: () => {
+        this.toast.info('Liberando lista...', 'Gerando o PDF em segundo plano — a tela atualiza sozinha quando terminar.');
         this.liberandoLista.set(false);
         this.carregar();
+        this.aguardarLiberacao();
       },
       error: err => {
         this.toast.erroServidor(err, 'Não foi possível liberar a lista.');
         this.liberandoLista.set(false);
       }
     });
+  }
+
+  private aguardarLiberacao(tentativas = 0) {
+    const MAX_TENTATIVAS = 40;
+    setTimeout(() => {
+      this.listasService.obter(this.idLista).subscribe({
+        next: res => {
+          const dados = res.dados ?? null;
+          this.lista.set(dados);
+
+          if (dados?.status === 'liberando' && tentativas < MAX_TENTATIVAS) {
+            this.aguardarLiberacao(tentativas + 1);
+            return;
+          }
+
+          if (dados?.status === 'liberada') {
+            this.toast.sucesso('Lista liberada.', 'PDF gerado — contatos que já solicitaram serão notificados automaticamente.');
+          } else if (dados?.status === 'liberando') {
+            this.toast.erro('Liberação demorando demais', 'Ainda processando — atualize a página em alguns minutos pra conferir.');
+          } else {
+            this.toast.erro('Falha ao liberar', 'Não foi possível gerar o PDF da cotação. Tente liberar de novo.');
+          }
+        },
+        error: () => void 0
+      });
+    }, 3000);
   }
 
   editarLista() {

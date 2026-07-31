@@ -100,9 +100,17 @@ export class AuthService {
 
     const lock = this.lerLockRenovacao();
     if (lock && Date.now() - lock.ts < REFRESH_LOCK_TTL_MS) {
+      const refreshAntesDeEsperar = this.getRefreshToken();
       this._renovandoToken$ = this.aguardarRenovacaoExterna().pipe(
         catchError(() => {
           localStorage.removeItem(REFRESH_LOCK_KEY);
+          // outra aba pode ter renovado e persistido com sucesso mesmo sem
+          // o BroadcastChannel entregar a mensagem a tempo (timeout de rede,
+          // aba suspensa) — reler antes de reenviar o refresh token antigo,
+          // senão isso conta como reuse pro backend e derruba a família inteira.
+          if (this.getRefreshToken() !== refreshAntesDeEsperar) {
+            return this.aguardarTokenPersistido();
+          }
           return this.renovarDireto();
         }),
         finalize(() => (this._renovandoToken$ = null)),
@@ -112,6 +120,26 @@ export class AuthService {
     }
 
     return this.renovarDireto();
+  }
+
+  private aguardarTokenPersistido(): Observable<AutenticacaoResposta> {
+    const token = this.getToken();
+    const refreshToken = this.getRefreshToken();
+    const usuario = this._usuario();
+    if (!token || !refreshToken || !usuario) return this.renovarDireto();
+
+    return new Observable<AutenticacaoResposta>(subscriber => {
+      subscriber.next({
+        accessToken: token,
+        refreshToken,
+        expiracaoSegundos: 0,
+        usuarioId: usuario.id,
+        nome: usuario.nome,
+        email: usuario.email,
+        perfis: usuario.perfis
+      });
+      subscriber.complete();
+    });
   }
 
   private renovarDireto(): Observable<AutenticacaoResposta> {

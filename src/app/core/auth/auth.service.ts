@@ -104,10 +104,6 @@ export class AuthService {
       this._renovandoToken$ = this.aguardarRenovacaoExterna().pipe(
         catchError(() => {
           localStorage.removeItem(REFRESH_LOCK_KEY);
-          // outra aba pode ter renovado e persistido com sucesso mesmo sem
-          // o BroadcastChannel entregar a mensagem a tempo (timeout de rede,
-          // aba suspensa) — reler antes de reenviar o refresh token antigo,
-          // senão isso conta como reuse pro backend e derruba a família inteira.
           if (this.getRefreshToken() !== refreshAntesDeEsperar) {
             return this.aguardarTokenPersistido();
           }

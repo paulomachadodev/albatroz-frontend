@@ -4,7 +4,7 @@ import { AuthService } from './auth.service';
 import { ToastService } from '../feedback/toast.service';
 
 const LIMITE_INATIVIDADE_MS = 60 * 60 * 1000; // 1h sem interação
-const AVISO_ANTES_MS = 2 * 60 * 1000; // avisa 2min antes de derrubar
+const AVISO_ANTES_MS = 2 * 60 * 1000;
 const INTERVALO_VERIFICACAO_MS = 60 * 1000;
 const RENOVAR_SE_EXPIRA_EM_SEGUNDOS = 3 * 60;
 const EVENTOS_ATIVIDADE = ['click', 'keydown', 'mousemove', 'touchstart', 'scroll'] as const;

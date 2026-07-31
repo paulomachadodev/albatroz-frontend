@@ -13,3 +13,12 @@ export interface EscolaAtualizarRequisicao {
   parceira?: boolean;
   ativo?: boolean;
 }
+
+export interface SerieCriarRequisicao {
+  nome: string;
+}
+
+export interface SerieAtualizarRequisicao {
+  nome?: string;
+  ativo?: boolean;
+}

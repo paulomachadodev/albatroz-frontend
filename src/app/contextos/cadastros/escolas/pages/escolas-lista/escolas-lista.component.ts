@@ -8,13 +8,14 @@ import { ToastService } from '../../../../../core/feedback/toast.service';
 import { ListagemPaginadaComponent } from '../../../../../shared/components/listagem-paginada/listagem-paginada.component';
 import { DrawerComponent } from '../../../../../shared/components/drawer/drawer.component';
 import { PageHeaderComponent } from '../../../../../shared/components/page-header/page-header.component';
+import { ToggleComponent } from '../../../../../shared/components/toggle/toggle.component';
 
 type ModoDrawer = 'criar' | 'editar';
 
 @Component({
   selector: 'app-escolas-lista',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, ListagemPaginadaComponent, DrawerComponent, PageHeaderComponent],
+  imports: [CommonModule, RouterLink, FormsModule, ListagemPaginadaComponent, DrawerComponent, PageHeaderComponent, ToggleComponent],
   templateUrl: './escolas-lista.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
@@ -31,15 +32,13 @@ export class EscolasListaComponent implements OnInit {
   drawerAberto = signal(false);
   modoDrawer = signal<ModoDrawer>('criar');
   escolaEmEdicao = signal<Escola | null>(null);
+  salvando = signal(false);
 
   nome = '';
   bairro = '';
   cidade = '';
   parceira = false;
-
-  private debounceNome?: ReturnType<typeof setTimeout>;
-  private debounceBairro?: ReturnType<typeof setTimeout>;
-  private debounceCidade?: ReturnType<typeof setTimeout>;
+  ativo = true;
 
   constructor(
     private escolasService: EscolasService,
@@ -92,6 +91,7 @@ export class EscolasListaComponent implements OnInit {
     this.bairro = '';
     this.cidade = '';
     this.parceira = false;
+    this.ativo = true;
     this.drawerAberto.set(true);
   }
 
@@ -102,97 +102,57 @@ export class EscolasListaComponent implements OnInit {
     this.bairro = escola.bairro ?? '';
     this.cidade = escola.cidade ?? '';
     this.parceira = escola.parceira;
+    this.ativo = escola.ativo;
     this.drawerAberto.set(true);
   }
 
-  private limparDebounces() {
-    if (this.debounceNome) clearTimeout(this.debounceNome);
-    if (this.debounceBairro) clearTimeout(this.debounceBairro);
-    if (this.debounceCidade) clearTimeout(this.debounceCidade);
-  }
-
   fecharDrawer() {
-    this.limparDebounces();
     this.drawerAberto.set(false);
   }
 
   cancelar() {
-    this.limparDebounces();
     this.fecharDrawer();
-  }
-
-  aoDigitarNome(valor: string) {
-    this.nome = valor;
-    if (this.debounceNome) clearTimeout(this.debounceNome);
-
-    if (this.modoDrawer() === 'criar') {
-      this.debounceNome = setTimeout(() => {
-        const nome = this.nome.trim();
-        if (!nome) return;
-        this.escolasService.criar({ nome }).subscribe({
-          next: res => {
-            if (res.dados) {
-              this.escolaEmEdicao.set(res.dados);
-              this.modoDrawer.set('editar');
-              this.toast.sucesso('Escola criada.');
-              this.carregar(this.paginaAtual());
-            }
-          },
-          error: err => this.toast.erroServidor(err, 'Não foi possível criar a escola.')
-        });
-      }, 700);
-      return;
-    }
-
-    this.debounceNome = setTimeout(() => {
-      const escola = this.escolaEmEdicao();
-      const nome = this.nome.trim();
-      if (!escola || !nome) return;
-      this.escolasService.atualizar(escola.id, { nome }).subscribe({
-        next: () => this.carregar(this.paginaAtual()),
-        error: err => this.toast.erroServidor(err, 'Não foi possível salvar o nome.')
-      });
-    }, 700);
-  }
-
-  aoDigitarBairro(valor: string) {
-    this.bairro = valor;
-    if (this.modoDrawer() !== 'editar') return;
-    if (this.debounceBairro) clearTimeout(this.debounceBairro);
-
-    this.debounceBairro = setTimeout(() => {
-      const escola = this.escolaEmEdicao();
-      if (!escola) return;
-      this.escolasService.atualizar(escola.id, { bairro: this.bairro.trim() }).subscribe({
-        next: () => this.carregar(this.paginaAtual()),
-        error: err => this.toast.erroServidor(err, 'Não foi possível salvar o bairro.')
-      });
-    }, 700);
-  }
-
-  aoDigitarCidade(valor: string) {
-    this.cidade = valor;
-    if (this.modoDrawer() !== 'editar') return;
-    if (this.debounceCidade) clearTimeout(this.debounceCidade);
-
-    this.debounceCidade = setTimeout(() => {
-      const escola = this.escolaEmEdicao();
-      if (!escola) return;
-      this.escolasService.atualizar(escola.id, { cidade: this.cidade.trim() }).subscribe({
-        next: () => this.carregar(this.paginaAtual()),
-        error: err => this.toast.erroServidor(err, 'Não foi possível salvar a cidade.')
-      });
-    }, 700);
   }
 
   aoAlternarParceira(valor: boolean) {
     this.parceira = valor;
-    const escola = this.escolaEmEdicao();
-    if (this.modoDrawer() !== 'editar' || !escola) return;
+  }
 
-    this.escolasService.atualizar(escola.id, { parceira: valor }).subscribe({
-      next: () => this.carregar(this.paginaAtual()),
-      error: err => this.toast.erroServidor(err, 'Não foi possível salvar.')
+  aoAlternarAtivo(valor: boolean) {
+    this.ativo = valor;
+  }
+
+  salvar() {
+    const nome = this.nome.trim();
+    if (!nome) {
+      this.toast.erro('Nome da escola é obrigatório.');
+      return;
+    }
+
+    this.salvando.set(true);
+    const payload = {
+      nome,
+      bairro: this.bairro.trim() || undefined,
+      cidade: this.cidade.trim() || undefined,
+      parceira: this.parceira,
+      ativo: this.ativo
+    };
+
+    const request = this.modoDrawer() === 'criar'
+      ? this.escolasService.criar(payload)
+      : this.escolasService.atualizar(this.escolaEmEdicao()!.id, payload);
+
+    request.subscribe({
+      next: () => {
+        this.salvando.set(false);
+        this.toast.sucesso(this.modoDrawer() === 'criar' ? 'Escola criada.' : 'Escola atualizada.');
+        this.fecharDrawer();
+        this.carregar(this.paginaAtual());
+      },
+      error: err => {
+        this.salvando.set(false);
+        this.toast.erroServidor(err, 'Não foi possível salvar a escola.');
+      }
     });
   }
 }

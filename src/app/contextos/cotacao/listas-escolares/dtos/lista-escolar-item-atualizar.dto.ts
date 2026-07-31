@@ -6,10 +6,7 @@ export interface ListaEscolarItemAtualizarRequisicao {
 
 export interface ListaEscolarAtualizarRequisicao {
   idEscola?: number;
-  escolaNome?: string;
-  serie?: string;
-  turma?: string;
-  turno?: string;
+  idSerie?: number;
 }
 
 export interface ListaEscolarItemAdicionarRequisicao {

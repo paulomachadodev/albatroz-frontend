@@ -5,6 +5,7 @@ export interface Escola {
   bairro?: string;
   cidade: string;
   parceira: boolean;
+  ativo: boolean;
   criadoEm: string;
   atualizadoEm: string;
 }

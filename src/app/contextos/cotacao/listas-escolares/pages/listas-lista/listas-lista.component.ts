@@ -2,16 +2,18 @@ import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { map } from 'rxjs';
 import { ListasEscolaresService, ListaEscolarFiltro } from '../../services/listas-escolares.service';
 import { ListaEscolarResumo } from '../../models/lista-escolar.model';
 import { ToastService } from '../../../../../core/feedback/toast.service';
 import { ListagemPaginadaComponent } from '../../../../../shared/components/listagem-paginada/listagem-paginada.component';
 import { PageHeaderComponent } from '../../../../../shared/components/page-header/page-header.component';
+import { SelectBuscaComponent, OpcaoSelectBusca } from '../../../../../shared/components/select-busca/select-busca.component';
 
 @Component({
   selector: 'app-listas-lista',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, ListagemPaginadaComponent, PageHeaderComponent],
+  imports: [CommonModule, RouterLink, FormsModule, ListagemPaginadaComponent, PageHeaderComponent, SelectBuscaComponent],
   templateUrl: './listas-lista.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
@@ -24,7 +26,25 @@ export class ListasListaComponent implements OnInit {
   tamanhoPagina = signal(20);
 
   filtro: ListaEscolarFiltro = {};
+  escolaFiltro = signal<OpcaoSelectBusca | null>(null);
+  serieFiltro = signal<OpcaoSelectBusca | null>(null);
   enviandoArquivo = signal(false);
+
+  buscarEscolas = (termo: string) =>
+    this.listasService.buscarEscolasComCotacao(termo).pipe(map(res => res.dados ?? []));
+
+  buscarSeries = (termo: string) =>
+    this.listasService.buscarSeriesComCotacao(termo).pipe(map(res => res.dados ?? []));
+
+  aoSelecionarEscolaFiltro(opcao: OpcaoSelectBusca | null) {
+    this.escolaFiltro.set(opcao);
+    this.filtro.idEscola = opcao?.id;
+  }
+
+  aoSelecionarSerieFiltro(opcao: OpcaoSelectBusca | null) {
+    this.serieFiltro.set(opcao);
+    this.filtro.idSerie = opcao?.id;
+  }
 
   constructor(
     private listasService: ListasEscolaresService,
@@ -58,6 +78,8 @@ export class ListasListaComponent implements OnInit {
 
   limparFiltros() {
     this.filtro = {};
+    this.escolaFiltro.set(null);
+    this.serieFiltro.set(null);
     this.carregar(1);
   }
 

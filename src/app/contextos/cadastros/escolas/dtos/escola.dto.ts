@@ -2,6 +2,8 @@ export interface EscolaCriarRequisicao {
   nome: string;
   bairro?: string;
   cidade?: string;
+  parceira?: boolean;
+  ativo?: boolean;
 }
 
 export interface EscolaAtualizarRequisicao {
@@ -9,4 +11,5 @@ export interface EscolaAtualizarRequisicao {
   bairro?: string;
   cidade?: string;
   parceira?: boolean;
+  ativo?: boolean;
 }

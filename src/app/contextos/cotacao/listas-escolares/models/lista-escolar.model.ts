@@ -1,9 +1,8 @@
 export interface ListaEscolarResumo {
   id: number;
   escolaNome?: string;
+  idSerie?: number;
   serie?: string;
-  turma?: string;
-  turno?: string;
   anoLetivo?: number;
   status: string;
   totalEstimado?: number;
@@ -30,9 +29,8 @@ export interface ListaEscolarDetalhe {
   id: number;
   idEscola?: number;
   escolaNome?: string;
+  idSerie?: number;
   serie?: string;
-  turma?: string;
-  turno?: string;
   anoLetivo?: number;
   status: string;
   totalEstimado?: number;

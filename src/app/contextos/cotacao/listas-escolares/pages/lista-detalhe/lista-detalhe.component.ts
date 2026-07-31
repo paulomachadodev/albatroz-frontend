@@ -2,16 +2,19 @@ import { Component, OnInit, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { map, of } from 'rxjs';
 import * as XLSX from 'xlsx';
 import { ListasEscolaresService } from '../../services/listas-escolares.service';
+import { EscolasService } from '../../../../cadastros/escolas/services/escolas.service';
 import { ListaEscolarDetalhe, ListaEscolarItem, ProdutoBusca } from '../../models/lista-escolar.model';
 import { ToastService } from '../../../../../core/feedback/toast.service';
 import { ConfirmService } from '../../../../../core/feedback/confirm.service';
+import { SelectBuscaComponent, OpcaoSelectBusca } from '../../../../../shared/components/select-busca/select-busca.component';
 
 @Component({
   selector: 'app-lista-detalhe',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule],
+  imports: [CommonModule, RouterLink, FormsModule, SelectBuscaComponent],
   templateUrl: './lista-detalhe.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
@@ -29,7 +32,9 @@ export class ListaDetalheComponent implements OnInit {
   buscandoProduto = signal(false);
   private debounce?: ReturnType<typeof setTimeout>;
 
-  formLista = { escolaNome: '', serie: '' };
+  escolaSelecionada = signal<OpcaoSelectBusca | null>(null);
+  serieSelecionada = signal<OpcaoSelectBusca | null>(null);
+  salvandoEscolaSerie = signal(false);
 
   novoItem = { descricaoNaLista: '', quantidade: 1 };
   adicionandoItem = signal(false);
@@ -44,6 +49,7 @@ export class ListaDetalheComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private listasService: ListasEscolaresService,
+    private escolasService: EscolasService,
     private toast: ToastService,
     private confirm: ConfirmService
   ) {}
@@ -60,10 +66,10 @@ export class ListaDetalheComponent implements OnInit {
         const dados = res.dados ?? null;
         this.lista.set(dados);
         if (dados) {
-          this.formLista = {
-            escolaNome: dados.escolaNome ?? '',
-            serie: dados.serie ?? ''
-          };
+          this.escolaSelecionada.set(
+            dados.idEscola ? { id: dados.idEscola, nome: dados.escolaNome ?? '' } : null);
+          this.serieSelecionada.set(
+            dados.idSerie ? { id: dados.idSerie, nome: dados.serie ?? '' } : null);
         }
         this.carregando.set(false);
       },
@@ -82,9 +88,39 @@ export class ListaDetalheComponent implements OnInit {
     });
   }
 
-  salvarCampoLista(campo: 'escolaNome' | 'serie') {
-    this.listasService.atualizarLista(this.idLista, { [campo]: this.formLista[campo] }).subscribe({
-      error: err => this.toast.erroServidor(err, 'Não foi possível salvar.')
+  buscarEscolas = (termo: string) =>
+    this.escolasService.buscar(termo).pipe(map(res => res.dados ?? []));
+
+  buscarSeries = (termo: string) => {
+    const escolaId = this.escolaSelecionada()?.id;
+    if (!escolaId) return of([] as OpcaoSelectBusca[]);
+    return this.escolasService.buscarSeries(escolaId, termo).pipe(map(res => res.dados ?? []));
+  };
+
+  aoSelecionarEscola(opcao: OpcaoSelectBusca | null) {
+    this.escolaSelecionada.set(opcao);
+    this.serieSelecionada.set(null);
+  }
+
+  aoSelecionarSerie(opcao: OpcaoSelectBusca | null) {
+    this.serieSelecionada.set(opcao);
+  }
+
+  salvarEscolaSerie() {
+    this.salvandoEscolaSerie.set(true);
+    this.listasService.atualizarLista(this.idLista, {
+      idEscola: this.escolaSelecionada()?.id,
+      idSerie: this.serieSelecionada()?.id
+    }).subscribe({
+      next: () => {
+        this.salvandoEscolaSerie.set(false);
+        this.toast.sucesso('Escola/série atualizada.');
+        this.carregar();
+      },
+      error: err => {
+        this.salvandoEscolaSerie.set(false);
+        this.toast.erroServidor(err, 'Não foi possível salvar.');
+      }
     });
   }
 

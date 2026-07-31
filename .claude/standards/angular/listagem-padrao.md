@@ -86,32 +86,69 @@ Exceção documentada: `listas-lista` (Lista Escolar) mantém default `20` — t
 - **Use drawer** quando o registro editado é "flat" — poucos campos, sem sub-navegação ou coleções aninhadas (ex: Escola: nome/bairro/cidade/parceira).
 - **Use página separada** quando o registro tem coleções aninhadas que precisam de espaço de tela real (ex: Lista Escolar tem `itens`, por isso `lista-detalhe` continua sendo página, não drawer).
 
-## Autosave por campo
+## Botão Salvar explícito (padrão atual — 2026-07-31)
 
-Padrão usado nos formulários dentro do drawer (e em telas de edição em geral, ver `lista-detalhe.component.ts`'s `aoDigitarBusca`):
+Decisão do usuário: **nenhum CRUD novo/tocado usa autosave**. Formulário (drawer ou página) acumula as mudanças em memória e só grava no `POST`/`PATCH` quando o usuário clica em **Salvar**.
 
-- Debounce manual de ~600-800ms via `setTimeout`/`clearTimeout` — **nunca** RxJS `debounceTime` (idioma não usado nesse código-base).
-- Toggle/checkbox salva imediato, sem debounce.
-- Sem botão "Salvar" explícito — o autosave é o próprio salvamento.
-- Sempre um botão "Cancelar" que fecha o drawer/tela E limpa qualquer debounce pendente (evita salvar depois de fechado).
+- Botão "Salvar" sempre visível no rodapé do drawer/form, desabilitado enquanto o form for inválido ou uma request estiver em andamento.
+- Botão "Cancelar" descarta as mudanças em memória e fecha o drawer/tela — sem chamada de API.
+- Nada de `setTimeout`/`debounce` disparando save sozinho, nem toggle salvando imediato — toggle também só entra no payload do Salvar.
+- Vale para criar e editar igual — ver seção "Drawer único criar/editar" abaixo.
 
 ```typescript
-private debounceNome?: ReturnType<typeof setTimeout>;
+salvando = signal(false);
 
-aoDigitarNome(valor: string) {
-  this.nome = valor;
-  if (this.debounceNome) clearTimeout(this.debounceNome);
-  this.debounceNome = setTimeout(() => {
-    this.service.atualizar(this.id, { nome: valor.trim() }).subscribe(...);
-  }, 700);
+salvar() {
+  this.salvando.set(true);
+  const payload = { nome: this.nome, ativo: this.ativo, parceira: this.parceira };
+  const request = this.modo() === 'criar'
+    ? this.service.criar(payload)
+    : this.service.atualizar(this.id()!, payload);
+
+  request.subscribe({
+    next: () => { this.salvando.set(false); this.fecharDrawer(); this.recarregar(); },
+    error: () => this.salvando.set(false)
+  });
 }
 
 cancelar() {
-  if (this.debounceNome) clearTimeout(this.debounceNome);
-  this.fecharDrawer();
+  this.fecharDrawer(); // sem side-effect de rede
 }
 ```
 
-## Criação dentro de um drawer com autosave
+**Migração:** telas antigas construídas com autosave por campo (debounce `setTimeout`) continuam funcionando como estão — não é pra sair reescrevendo tudo de uma vez. Auditoria completa de migração está em backlog (`.claude/contexts/projeto/backlog-autosave.md`). Toda tela **nova** ou **tocada** por uma mudança não-trivial já nasce/migra pro botão Salvar.
 
-Padrão estabelecido por Escolas: ao abrir o drawer em modo "criar", mostrar só o campo obrigatório mínimo (ex: Nome). O debounce desse campo dispara o `POST` de criação — não um botão "Criar". Assim que o registro existe, revelar os demais campos e trocar para autosave por `PATCH` normal (modo "editar").
+## Drawer único criar/editar
+
+Reaproveitar o mesmo drawer/form pros modos "criar" e "editar" — não duplicar componente. O form mostra **todos os campos de uma vez** (nada de campo mínimo primeiro e revelar o resto depois, esse padrão de autosave-progressivo foi abandonado). O que muda entre os dois modos é só:
+
+- Título do drawer ("Nova Escola" vs "Editar Escola")
+- Estado inicial do form (vazio/default vs pré-preenchido com o registro)
+- A chamada feita no Salvar (`criar()` vs `atualizar(id)`)
+
+```typescript
+modo = signal<'criar' | 'editar'>('criar');
+registroEmEdicao = signal<Escola | null>(null);
+
+abrirCriar() {
+  this.modo.set('criar');
+  this.registroEmEdicao.set(null);
+  this.resetForm();
+  this.drawerAberto.set(true);
+}
+
+abrirEditar(escola: Escola) {
+  this.modo.set('editar');
+  this.registroEmEdicao.set(escola);
+  this.preencherForm(escola);
+  this.drawerAberto.set(true);
+}
+```
+
+## Filtros populados — dropdown com busca (padrão atual — 2026-07-31)
+
+Todo filtro cujo valor vem de uma lista de opções do backend (escola, série, status vindo de tabela, etc.) deve ser um **select com busca embutida** (searchable combobox/autocomplete) — nunca um `<input>` de texto livre torcendo pra bater com ILIKE no backend, e nunca um `<select>` HTML simples quando a lista de opções pode crescer (dezenas+).
+
+- Fonte das opções: endpoint dedicado do domínio (ex: `GET /cotacao/listas-escolares/filtros/escolas?termo=`), **não** o cadastro inteiro — o filtro só deve oferecer valores que realmente existem no recorte listado (ex: só escolas que têm ao menos 1 lista cotada), não todo o cadastro mestre.
+- Componente: usar/criar um `app-select-busca` genérico em `shared/components/` (mesma lógica de reuso do `app-listagem-paginada`) — digita, debounce ~300ms, chama o endpoint, mostra resultados num dropdown, seleciona um item, guarda o `id`.
+- Filtro de texto livre continua OK só quando o campo é realmente texto livre no domínio (não vem de uma lista fechada de opções).

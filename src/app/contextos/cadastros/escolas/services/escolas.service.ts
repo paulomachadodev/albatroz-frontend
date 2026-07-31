@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { ApiService } from '../../../../core/http/api.service';
 import { Resultado, Paginacao } from '../../../../core/models';
 import { Escola } from '../models/escola.model';
 import { EscolaCriarRequisicao, EscolaAtualizarRequisicao } from '../dtos/escola.dto';
+import { OpcaoSelectBusca } from '../../../../shared/components/select-busca/select-busca.component';
 
 @Injectable({ providedIn: 'root' })
 export class EscolasService {
@@ -25,5 +26,15 @@ export class EscolasService {
 
   excluir(id: number): Observable<Resultado<void>> {
     return this.api.delete<void>(`${this.endpoint}/${id}`);
+  }
+
+  buscar(termo: string): Observable<Resultado<OpcaoSelectBusca[]>> {
+    return this.api.getPaginado<Escola>(this.endpoint, { pagina: 1, tamanho: 20 }, termo ? { nome: termo } : undefined).pipe(
+      map(res => ({ ...res, dados: (res.dados?.dados ?? []).map(e => ({ id: e.id, nome: e.nome })) }))
+    );
+  }
+
+  buscarSeries(escolaId: number, termo: string): Observable<Resultado<OpcaoSelectBusca[]>> {
+    return this.api.get<OpcaoSelectBusca[]>(`${this.endpoint}/${escolaId}/series`, { termo });
   }
 }

@@ -44,7 +44,8 @@ export class SidebarComponent {
           label: 'Orçamentos', icone: 'request_quote',
           subItens: [
             { label: 'Lista Escolar', rota: '/cotacoes/listas-escolares', icone: 'school' },
-            { label: 'Cadastro de Escolas', rota: '/cadastros/escolas', icone: 'apartment' }
+            { label: 'Cadastro de Escolas', rota: '/cadastros/escolas', icone: 'apartment' },
+            { label: 'Cadastro de Séries', rota: '/cadastros/series', icone: 'auto_stories' }
           ]
         },
         { label: 'Estoque',    rota: '/estoque',   icone: 'package_2' },

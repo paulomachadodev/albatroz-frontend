@@ -9,9 +9,3 @@ export interface Escola {
   criadoEm: string;
   atualizadoEm: string;
 }
-
-export interface Serie {
-  id: number;
-  nome: string;
-  ativo: boolean;
-}

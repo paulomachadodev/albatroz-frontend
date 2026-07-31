@@ -2,8 +2,8 @@ import { Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { ApiService } from '../../../../core/http/api.service';
 import { Resultado, Paginacao } from '../../../../core/models';
-import { Escola, Serie } from '../models/escola.model';
-import { EscolaCriarRequisicao, EscolaAtualizarRequisicao, SerieCriarRequisicao, SerieAtualizarRequisicao } from '../dtos/escola.dto';
+import { Escola } from '../models/escola.model';
+import { EscolaCriarRequisicao, EscolaAtualizarRequisicao } from '../dtos/escola.dto';
 import { OpcaoSelectBusca } from '../../../../shared/components/select-busca/select-busca.component';
 
 @Injectable({ providedIn: 'root' })
@@ -36,17 +36,5 @@ export class EscolasService {
 
   buscarSeries(escolaId: number, termo: string): Observable<Resultado<OpcaoSelectBusca[]>> {
     return this.api.get<OpcaoSelectBusca[]>(`${this.endpoint}/${escolaId}/series`, { termo });
-  }
-
-  listarTodasSeries(escolaId: number): Observable<Resultado<Serie[]>> {
-    return this.api.get<Serie[]>(`${this.endpoint}/${escolaId}/series/todas`);
-  }
-
-  criarSerie(escolaId: number, requisicao: SerieCriarRequisicao): Observable<Resultado<Serie>> {
-    return this.api.post<Serie>(`${this.endpoint}/${escolaId}/series`, requisicao);
-  }
-
-  atualizarSerie(escolaId: number, serieId: number, requisicao: SerieAtualizarRequisicao): Observable<Resultado<Serie>> {
-    return this.api.patch<Serie>(`${this.endpoint}/${escolaId}/series/${serieId}`, requisicao);
   }
 }

@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { EscolasService } from '../../services/escolas.service';
-import { Escola, Serie } from '../../models/escola.model';
+import { Escola } from '../../models/escola.model';
 import { ToastService } from '../../../../../core/feedback/toast.service';
 import { ListagemPaginadaComponent } from '../../../../../shared/components/listagem-paginada/listagem-paginada.component';
 import { DrawerComponent } from '../../../../../shared/components/drawer/drawer.component';
@@ -39,13 +39,6 @@ export class EscolasListaComponent implements OnInit {
   cidade = '';
   parceira = false;
   ativo = true;
-
-  series = signal<Serie[]>([]);
-  carregandoSeries = signal(false);
-  novaSerie = '';
-  salvandoSerie = signal(false);
-  serieEmEdicaoId = signal<number | null>(null);
-  nomeSerieEmEdicao = '';
 
   constructor(
     private escolasService: EscolasService,
@@ -99,7 +92,6 @@ export class EscolasListaComponent implements OnInit {
     this.cidade = '';
     this.parceira = false;
     this.ativo = true;
-    this.series.set([]);
     this.drawerAberto.set(true);
   }
 
@@ -112,76 +104,6 @@ export class EscolasListaComponent implements OnInit {
     this.parceira = escola.parceira;
     this.ativo = escola.ativo;
     this.drawerAberto.set(true);
-    this.carregarSeries(escola.id);
-  }
-
-  carregarSeries(escolaId: number) {
-    this.carregandoSeries.set(true);
-    this.escolasService.listarTodasSeries(escolaId).subscribe({
-      next: res => {
-        this.series.set(res.dados ?? []);
-        this.carregandoSeries.set(false);
-      },
-      error: err => {
-        this.toast.erroServidor(err, 'Não foi possível carregar as séries.');
-        this.carregandoSeries.set(false);
-      }
-    });
-  }
-
-  adicionarSerie() {
-    const nome = this.novaSerie.trim();
-    const escola = this.escolaEmEdicao();
-    if (!nome || !escola) return;
-
-    this.salvandoSerie.set(true);
-    this.escolasService.criarSerie(escola.id, { nome }).subscribe({
-      next: () => {
-        this.salvandoSerie.set(false);
-        this.novaSerie = '';
-        this.toast.sucesso('Série adicionada.');
-        this.carregarSeries(escola.id);
-      },
-      error: err => {
-        this.salvandoSerie.set(false);
-        this.toast.erroServidor(err, 'Não foi possível adicionar a série.');
-      }
-    });
-  }
-
-  abrirEdicaoSerie(serie: Serie) {
-    this.serieEmEdicaoId.set(serie.id);
-    this.nomeSerieEmEdicao = serie.nome;
-  }
-
-  cancelarEdicaoSerie() {
-    this.serieEmEdicaoId.set(null);
-    this.nomeSerieEmEdicao = '';
-  }
-
-  salvarNomeSerie(serie: Serie) {
-    const nome = this.nomeSerieEmEdicao.trim();
-    const escola = this.escolaEmEdicao();
-    if (!nome || !escola) return;
-
-    this.escolasService.atualizarSerie(escola.id, serie.id, { nome }).subscribe({
-      next: () => {
-        this.toast.sucesso('Série atualizada.');
-        this.cancelarEdicaoSerie();
-        this.carregarSeries(escola.id);
-      },
-      error: err => this.toast.erroServidor(err, 'Não foi possível atualizar a série.')
-    });
-  }
-
-  aoAlternarAtivoSerie(serie: Serie, valor: boolean) {
-    const escola = this.escolaEmEdicao();
-    if (!escola) return;
-
-    this.escolasService.atualizarSerie(escola.id, serie.id, { ativo: valor }).subscribe({
-      next: () => this.carregarSeries(escola.id),
-      error: err => this.toast.erroServidor(err, 'Não foi possível atualizar a série.')
-    });
   }
 
   fecharDrawer() {

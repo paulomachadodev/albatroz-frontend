@@ -27,7 +27,6 @@ export class CartoesDashboardComponent implements OnInit {
   cartaoEmEdicao        = signal<Cartao | null>(null);
   principalPreSelecionado = signal<number | null>(null);
 
-  // API retorna só principais com adicionais aninhados; achatado p/ contagens e faturas
   todosCartoes = computed<Cartao[]>(() =>
     this.cartoes().flatMap(c => [c, ...(c.adicionais ?? [])])
   );

@@ -46,7 +46,6 @@ export class DashboardComponent {
     { titulo: 'Estoque crítico',    valor: '12 itens',   delta: '−3',       positivo: false, icone: 'warning',       cor: 'text-rose-600 bg-rose-100 dark:bg-rose-900/40' }
   ];
 
-  // Vendas últimos 12 meses (mock)
   serieMeses  = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
   serieValores = [142, 168, 155, 198, 212, 245, 232, 268, 281, 295, 312, 285];
   serieMax    = computed(() => Math.max(...this.serieValores));

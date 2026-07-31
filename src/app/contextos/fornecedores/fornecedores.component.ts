@@ -22,7 +22,6 @@ export class FornecedoresComponent {
   carregando = signal(false);
   filtro = signal('');
 
-  // mock — substituir por service HTTP (ver skill angular-services)
   private fornecedores = signal<FornecedorItem[]>([
     { Id: 1, Nome: 'Tilibra Produtos Escolares', Cnpj: '44.990.901/0001-43', Cidade: 'Bauru/SP', LeadTime: 3, Status: 'Ativo' },
     { Id: 2, Nome: 'Faber-Castell', Cnpj: '12.345.678/0001-90', Cidade: 'São Carlos/SP', LeadTime: 5, Status: 'Ativo' },

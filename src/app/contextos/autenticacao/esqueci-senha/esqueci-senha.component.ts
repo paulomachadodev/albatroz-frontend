@@ -38,8 +38,6 @@ export class EsqueciSenhaComponent {
         this.enviado.set(true);
       },
       error: () => {
-        // Mesmo se backend falhar, mostra confirmação genérica
-        // (não vazar se e-mail existe ou não)
         this.carregando.set(false);
         this.enviado.set(true);
       }

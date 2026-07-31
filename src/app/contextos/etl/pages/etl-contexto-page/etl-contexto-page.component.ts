@@ -13,7 +13,6 @@ import { EtlPipelineEntidadeResposta } from '../../dtos/etl-pipeline-entidade.re
   imports: [CommonModule, RouterLink],
   template: `
     <div class="p-6">
-      <!-- Breadcrumb -->
       <nav class="mb-6">
         <ol class="flex items-center gap-2 text-sm">
           <li class="text-slate-600">Início</li>
@@ -28,11 +27,9 @@ import { EtlPipelineEntidadeResposta } from '../../dtos/etl-pipeline-entidade.re
         </ol>
       </nav>
 
-      <!-- Header -->
       <h1 class="text-3xl font-bold text-slate-900 mb-2 capitalize">ETL — {{ entidade() }}</h1>
       <p class="text-slate-600 mb-8">Detalhes de processamento para {{ entidade() }}</p>
 
-      <!-- KPI Cards -->
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
         <div class="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-4">
           <div class="text-sm font-semibold text-slate-600 dark:text-slate-400 mb-2">Pendentes</div>
@@ -56,7 +53,6 @@ import { EtlPipelineEntidadeResposta } from '../../dtos/etl-pipeline-entidade.re
         </div>
       </div>
 
-      <!-- Jobs da entidade -->
       <div class="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden mb-8">
         <div class="p-4 border-b border-slate-200 dark:border-slate-700">
           <h2 class="font-semibold text-slate-900 dark:text-slate-100 capitalize">Jobs — {{ entidade() }}</h2>

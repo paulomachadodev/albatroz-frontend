@@ -20,7 +20,6 @@ export class ToastService {
   aviso(titulo: string, mensagem?: string)   { this.adicionar('aviso', titulo, mensagem); }
   info(titulo: string, mensagem?: string)    { this.adicionar('info', titulo, mensagem); }
 
-  /** Extrai a mensagem exata do servidor (ProblemDetails.detail) e exibe como toast de erro. */
   erroServidor(err: unknown, fallback = 'Ocorreu um erro inesperado.') {
     this.erro('Erro', this.mensagemServidor(err, fallback));
   }

@@ -8,9 +8,6 @@ export interface OpcaoSelectBusca {
   nome: string;
 }
 
-// Dropdown-com-busca genérico pra filtros/campos cujo valor vem de uma lista de
-// opções do backend (ver @standards/angular/listagem-padrao.md). Digita, debounce,
-// chama `buscar()`, escolhe um item da lista — nunca texto livre nem <select> gigante.
 @Component({
   selector: 'app-select-busca',
   standalone: true,

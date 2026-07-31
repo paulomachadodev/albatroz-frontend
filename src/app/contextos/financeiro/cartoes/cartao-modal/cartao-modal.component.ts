@@ -55,7 +55,6 @@ export class CartaoModalComponent implements OnInit {
     }
   }
 
-  // só cartões principais podem ser pai; exclui o próprio em edição
   get opcoesPrincipais(): Cartao[] {
     const atualId = this.cartao()?.id;
     return this.principais().filter(p => p.idCartaoPrincipal == null && p.id !== atualId);

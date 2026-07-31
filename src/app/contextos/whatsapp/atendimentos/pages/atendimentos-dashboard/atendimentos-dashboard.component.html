@@ -17,7 +17,6 @@
       </button>
     </app-page-header>
 
-    <!-- agregado mensal -->
     <section class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
       <div class="flex items-center justify-between mb-6">
         <h3 class="font-bold text-slate-900 dark:text-slate-100">Atendimentos por mês — {{ filtro.ano }}</h3>
@@ -42,7 +41,6 @@
       </div>
     </section>
 
-    <!-- filtros -->
     <section class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <div>
@@ -82,7 +80,6 @@
       </div>
     </section>
 
-    <!-- listagem -->
     <section class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse">
@@ -152,7 +149,6 @@
 
   </div>
 
-  <!-- modal vínculo manual -->
   <app-modal [aberto]="!!vinculandoWhatsappId()" tamanho="sm" (fechar)="fecharVinculoManual()">
       <div class="p-6">
         <h3 class="font-bold text-slate-900 dark:text-slate-100 mb-1">Vincular contato</h3>

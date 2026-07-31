@@ -14,7 +14,6 @@ import { EtlPipelineEntidadeResposta } from '../../dtos/etl-pipeline-entidade.re
   template: `
     <div class="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 xl:px-10 py-6 lg:py-8">
       <div class="w-full space-y-8">
-      <!-- Breadcrumb -->
       <nav>
         <ol class="flex items-center gap-2 text-sm">
           <li class="text-slate-600">Início</li>
@@ -25,13 +24,11 @@ import { EtlPipelineEntidadeResposta } from '../../dtos/etl-pipeline-entidade.re
         </ol>
       </nav>
 
-      <!-- Header -->
       <div>
         <h1 class="text-3xl font-bold text-slate-900 mb-2">ERP Tiny — Visão Geral</h1>
         <p class="text-slate-600">Monitoramento em tempo real de todos os pipelines ETL</p>
       </div>
 
-      <!-- KPI Cards —6 entidades -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         @for (pipeline of pipelines(); track pipeline.entidade) {
           <div class="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-4">
@@ -60,7 +57,6 @@ import { EtlPipelineEntidadeResposta } from '../../dtos/etl-pipeline-entidade.re
         }
       </div>
 
-      <!-- Jobs Table -->
       <div class="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
         <div class="p-4 border-b border-slate-200 dark:border-slate-700">
           <h2 class="font-semibold text-slate-900 dark:text-slate-100">Todos os Jobs (17)</h2>

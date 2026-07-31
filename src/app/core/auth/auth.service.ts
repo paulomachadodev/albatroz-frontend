@@ -69,7 +69,6 @@ export class AuthService {
   }
 
   esqueciSenha(email: string, empresaId: number): Observable<void> {
-    // Endpoint backend ainda não implementado — placeholder
     return this.http.post<void>(`${this.endpoint}/esqueci-senha`, { email, empresaId });
   }
 
@@ -234,7 +233,6 @@ export class AuthService {
     return payload.exp * 1000 > Date.now();
   }
 
-  /** Verdadeiro se o access token expira dentro dos próximos `segundos` (ou já expirou). */
   expiraEmBreve(segundos: number): boolean {
     const payload = this.decodeToken();
     if (!payload) return true;

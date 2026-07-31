@@ -1,10 +1,8 @@
 <app-modal [aberto]="true" [titulo]="titulo" tamanho="md" (fechar)="cancelar()">
   <div class="px-6 pb-6 flex-1 overflow-y-auto">
 
-    <!-- Form -->
     <div class="space-y-4">
 
-      <!-- Tipo: principal vs adicional -->
       <div class="flex gap-2 p-1 bg-slate-100 dark:bg-slate-800 rounded-lg">
         <button type="button"
                 class="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-md text-sm font-semibold transition-colors"
@@ -86,7 +84,6 @@
       </div>
     }
 
-    <!-- Actions -->
     <div class="flex gap-3 mt-6">
       <button class="btn-ghost flex-1 text-sm" (click)="cancelar()" [disabled]="salvando()">
         Cancelar

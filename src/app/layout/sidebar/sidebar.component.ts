@@ -4,15 +4,15 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 export interface ItemMenu {
   label: string;
   rota?:  string;
-  icone: string; // nome Material Symbol
+  icone: string;
   badge?: string;
-  subItens?: ItemMenu[]; // torna o item um pai expansível — rota fica opcional nesse caso
+  subItens?: ItemMenu[];
 }
 
 export interface GrupoMenu {
   titulo: string;
-  icone?: string;        // ícone do grupo (para hover compacto)
-  colapsavel?: boolean;  // habilita hover-expand
+  icone?: string;
+  colapsavel?: boolean;
   itens: ItemMenu[];
 }
 
@@ -89,7 +89,6 @@ export class SidebarComponent {
   ];
 
   constructor() {
-    // Inicializar signals de expandido para cada grupo colapsável
     this.grupos.forEach(grupo => {
       if (grupo.colapsavel) {
         this.expandidosPorGrupo.set(grupo.titulo, signal(false));

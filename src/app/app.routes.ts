@@ -5,10 +5,8 @@ import { AUTENTICACAO_ROUTES } from './contextos/autenticacao/autenticacao.route
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
 
-  // Autenticação (público)
   ...AUTENTICACAO_ROUTES,
 
-  // Área autenticada — envolvida pelo Shell (sidebar + header)
   {
     path: '',
     canActivate: [authGuard],

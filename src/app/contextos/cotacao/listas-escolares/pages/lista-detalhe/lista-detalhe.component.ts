@@ -25,7 +25,6 @@ export class ListaDetalheComponent implements OnInit {
   liberandoLista = signal(false);
   reabrindoLista = signal(false);
 
-  // busca de produto por item — indexado por idItem
   itemEmBusca = signal<number | null>(null);
   termoBusca = '';
   resultadosBusca = signal<ProdutoBusca[]>([]);
@@ -80,7 +79,6 @@ export class ListaDetalheComponent implements OnInit {
     });
   }
 
-  /** Atualiza os dados sem passar por carregando() — evita esconder a tela e perder o scroll a cada ação num item. */
   private recarregarSilencioso() {
     this.listasService.obter(this.idLista).subscribe({
       next: res => this.lista.set(res.dados ?? null),
@@ -230,7 +228,6 @@ export class ListaDetalheComponent implements OnInit {
     this.resultadosBusca.set([]);
   }
 
-  /** Chamado no (blur) do input de busca — atraso pra deixar o (mousedown) do item da lista disparar antes. */
   fecharBuscaProdutoComAtraso() {
     setTimeout(() => this.fecharBuscaProduto(), 150);
   }

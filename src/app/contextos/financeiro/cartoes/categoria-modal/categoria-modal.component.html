@@ -1,7 +1,6 @@
 <app-modal [aberto]="true" titulo="Categorias de despesa" tamanho="sm" (fechar)="fechar.emit()">
   <div class="px-6 pb-6 flex-1 overflow-y-auto">
 
-    <!-- Nova categoria -->
     <div class="flex gap-2 mb-4">
       <input class="input-modern text-sm flex-1" [(ngModel)]="novaCategoria"
              placeholder="Nova categoria..." (keydown.enter)="adicionar()" />
@@ -10,7 +9,6 @@
       </button>
     </div>
 
-    <!-- Lista -->
     <ul class="space-y-1 min-h-[18rem]">
       @for (cat of categoriasPagina(); track cat.id) {
         <li class="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 group">
@@ -52,7 +50,6 @@
       }
     </ul>
 
-    <!-- Paginação -->
     @if (totalPaginas() > 1) {
       <div class="flex items-center justify-between mt-4 px-1">
         <button class="size-8 flex items-center justify-center rounded-lg text-slate-400

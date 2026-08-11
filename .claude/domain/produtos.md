@@ -32,4 +32,4 @@ Ver domínio completo de produtos em: backend `.claude/domain/produtos.md`.
 |---|---|
 | SKU | Código identificador do produto no contexto de estoque |
 | Situação ativa/inativa | Determina se o produto aparece no catálogo e em seletores |
-| CDN | Rede de distribuição de imagens (Cloudflare R2 / cdn.albatroz.com.br) |
+| CDN | Rede de distribuição de imagens (Cloudflare R2 / cdn.albatrozpapelaria.com.br) |

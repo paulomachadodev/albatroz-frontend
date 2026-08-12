@@ -34,4 +34,12 @@ export class EtlJobsService {
   pipelineResumo(empresaId = 1): Observable<Resultado<EtlPipelineEntidadeResposta[]>> {
     return this.api.get<EtlPipelineEntidadeResposta[]>('/v1/etl/pipeline/resumo', { empresaId });
   }
+
+  reprocessarErros(entidade: string, empresaId = 1): Observable<Resultado<{ total: number }>> {
+    return this.api.post<{ total: number }>(`/v1/etl/pipeline/${entidade}/reprocessar-erros?empresaId=${empresaId}`);
+  }
+
+  reprocessarDeadLetter(entidade: string, empresaId = 1): Observable<Resultado<{ total: number }>> {
+    return this.api.post<{ total: number }>(`/v1/etl/pipeline/${entidade}/reprocessar-dead-letter?empresaId=${empresaId}`);
+  }
 }

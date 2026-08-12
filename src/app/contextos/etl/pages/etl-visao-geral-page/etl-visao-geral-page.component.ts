@@ -1,10 +1,13 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { toSignal, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { interval, startWith, switchMap } from 'rxjs';
 import { EtlJobsService } from '../../services/etl-jobs.service';
 import { EtlJobStatusResposta } from '../../dtos/etl-job-status.resposta';
 import { EtlPipelineEntidadeResposta } from '../../dtos/etl-pipeline-entidade.resposta';
+import { formatarCron } from '../../utils/cron-legivel';
+import { ConfirmService } from '../../../../core/feedback/confirm.service';
+import { ToastService } from '../../../../core/feedback/toast.service';
 
 @Component({
   selector: 'app-etl-visao-geral-page',
@@ -53,6 +56,26 @@ import { EtlPipelineEntidadeResposta } from '../../dtos/etl-pipeline-entidade.re
                 <div class="text-xs text-slate-500">Dead-letter</div>
               </div>
             </div>
+            <div class="flex gap-2 mt-3">
+              <button
+                (click)="reprocessarErros(pipeline.entidade)"
+                [disabled]="pipeline.erros === 0 || reprocessando() === pipeline.entidade + ':erros'"
+                class="flex-1 flex items-center justify-center gap-1 px-2 py-1 text-xs font-semibold rounded bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                <span class="material-symbols-outlined text-sm" [class.animate-spin]="reprocessando() === pipeline.entidade + ':erros'">
+                  {{ reprocessando() === pipeline.entidade + ':erros' ? 'progress_activity' : 'refresh' }}
+                </span>
+                Erros
+              </button>
+              <button
+                (click)="reprocessarDeadLetter(pipeline.entidade)"
+                [disabled]="pipeline.deadLetter === 0 || reprocessando() === pipeline.entidade + ':dead-letter'"
+                class="flex-1 flex items-center justify-center gap-1 px-2 py-1 text-xs font-semibold rounded bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                <span class="material-symbols-outlined text-sm" [class.animate-spin]="reprocessando() === pipeline.entidade + ':dead-letter'">
+                  {{ reprocessando() === pipeline.entidade + ':dead-letter' ? 'progress_activity' : 'restart_alt' }}
+                </span>
+                Dead-letter
+              </button>
+            </div>
           </div>
         }
       </div>
@@ -80,7 +103,7 @@ import { EtlPipelineEntidadeResposta } from '../../dtos/etl-pipeline-entidade.re
                 <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
                   <td class="px-4 py-3 text-slate-900 dark:text-slate-100">{{ job.displayName }}</td>
                   <td class="px-4 py-3 text-slate-600 dark:text-slate-400 capitalize">{{ job.entidade }}</td>
-                  <td class="px-4 py-3 text-slate-600 dark:text-slate-400 font-mono text-xs">{{ job.cronExpression }}</td>
+                  <td class="px-4 py-3 text-slate-600 dark:text-slate-400 text-xs" [title]="job.cronExpression">{{ formatarCron(job.cronExpression) }}</td>
                   <td class="px-4 py-3">
                     @if (!job.pausado) {
                       <span class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-semibold bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
@@ -136,6 +159,10 @@ import { EtlPipelineEntidadeResposta } from '../../dtos/etl-pipeline-entidade.re
 })
 export class EtlVisaoGeralPageComponent {
   private readonly jobsService = inject(EtlJobsService);
+  private readonly confirm = inject(ConfirmService);
+  private readonly toast = inject(ToastService);
+
+  readonly formatarCron = formatarCron;
 
   jobs = toSignal(
     interval(30000).pipe(
@@ -147,15 +174,20 @@ export class EtlVisaoGeralPageComponent {
     { initialValue: [] as EtlJobStatusResposta[] }
   );
 
-  pipelines = toSignal(
-    interval(30000).pipe(
-      startWith(0),
-      switchMap(() => this.jobsService.pipelineResumo()),
-    ).pipe(
-      switchMap(resultado => resultado.dados ? [resultado.dados] : [])
-    ),
-    { initialValue: [] as EtlPipelineEntidadeResposta[] }
-  );
+  pipelines = signal<EtlPipelineEntidadeResposta[]>([]);
+
+  /** chave "entidade:tipo" da ação em andamento, ou null */
+  reprocessando = signal<string | null>(null);
+
+  constructor() {
+    interval(30000).pipe(startWith(0), takeUntilDestroyed()).subscribe(() => this.carregarPipelines());
+  }
+
+  private carregarPipelines(): void {
+    this.jobsService.pipelineResumo().subscribe(resultado => {
+      if (resultado.dados) this.pipelines.set(resultado.dados);
+    });
+  }
 
   disparar(jobId: string): void {
     this.jobsService.disparar(jobId).subscribe();
@@ -167,5 +199,53 @@ export class EtlVisaoGeralPageComponent {
 
   retomar(jobId: string): void {
     this.jobsService.retomar(jobId).subscribe();
+  }
+
+  async reprocessarErros(entidade: string): Promise<void> {
+    const pipeline = this.pipelines().find(p => p.entidade === entidade);
+    const ok = await this.confirm.confirmar(
+      `Reprocessar ${pipeline?.erros ?? 0} erro(s) de ${entidade}?`,
+      'Os itens voltam para a fila e são reprocessados no próximo ciclo do job.',
+      { textoConfirmar: 'Reprocessar' }
+    );
+    if (!ok) return;
+
+    const chave = `${entidade}:erros`;
+    this.reprocessando.set(chave);
+    this.jobsService.reprocessarErros(entidade).subscribe({
+      next: r => {
+        this.toast.sucesso('Reprocessado', `${r.dados?.total ?? 0} item(ns) voltaram pra fila.`);
+        this.reprocessando.set(null);
+        this.carregarPipelines();
+      },
+      error: err => {
+        this.toast.erroServidor(err, 'Não foi possível reprocessar os erros.');
+        this.reprocessando.set(null);
+      }
+    });
+  }
+
+  async reprocessarDeadLetter(entidade: string): Promise<void> {
+    const pipeline = this.pipelines().find(p => p.entidade === entidade);
+    const ok = await this.confirm.confirmar(
+      `Reprocessar ${pipeline?.deadLetter ?? 0} item(ns) em dead-letter de ${entidade}?`,
+      'São falhas permanentes (esgotaram as tentativas). Voltam pra fila do zero — confirme se a causa raiz já foi corrigida.',
+      { textoConfirmar: 'Reprocessar' }
+    );
+    if (!ok) return;
+
+    const chave = `${entidade}:dead-letter`;
+    this.reprocessando.set(chave);
+    this.jobsService.reprocessarDeadLetter(entidade).subscribe({
+      next: r => {
+        this.toast.sucesso('Reprocessado', `${r.dados?.total ?? 0} item(ns) voltaram pra fila.`);
+        this.reprocessando.set(null);
+        this.carregarPipelines();
+      },
+      error: err => {
+        this.toast.erroServidor(err, 'Não foi possível reprocessar o dead-letter.');
+        this.reprocessando.set(null);
+      }
+    });
   }
 }

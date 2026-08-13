@@ -16,8 +16,10 @@ export interface AtendimentoWhatsappFiltro {
   mes?: number;
   de?: string;
   ate?: string;
-  tipo?: 'lista_escolar' | 'com_handoff';
+  tipo?: 'com_handoff';
   status?: AtendimentoWhatsappStatus;
+  ordenarPor?: string;
+  direcao?: 'asc' | 'desc';
 }
 
 @Injectable({ providedIn: 'root' })
@@ -38,8 +40,8 @@ export class AtendimentosWhatsappService {
     return this.api.get<AtendimentoWhatsappDiario[]>(`${this.endpoint}/por-dia`, { ano, mes });
   }
 
-  mensagens(whatsappId: string): Observable<Resultado<AtendimentoWhatsappMensagem[]>> {
-    return this.api.get<AtendimentoWhatsappMensagem[]>(`${this.endpoint}/${whatsappId}/mensagens`);
+  mensagens(atendimentoId: number): Observable<Resultado<AtendimentoWhatsappMensagem[]>> {
+    return this.api.get<AtendimentoWhatsappMensagem[]>(`${this.endpoint}/${atendimentoId}/mensagens`);
   }
 
   vincular(whatsappId: string, idContato: number): Observable<Resultado<void>> {

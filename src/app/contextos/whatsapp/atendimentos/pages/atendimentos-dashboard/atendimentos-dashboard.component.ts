@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, signal, computed, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -18,6 +18,7 @@ import { PageHeaderComponent } from '../../../../../shared/components/page-heade
 import { SpinnerComponent } from '../../../../../shared/components/spinner/spinner.component';
 import { ListagemPaginadaComponent } from '../../../../../shared/components/listagem-paginada/listagem-paginada.component';
 import { DrawerComponent } from '../../../../../shared/components/drawer/drawer.component';
+import { ThOrdenavelComponent, Ordenacao } from '../../../../../shared/components/th-ordenavel/th-ordenavel.component';
 
 const MESES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 
@@ -28,10 +29,18 @@ const STATUS_CLASSES: Record<AtendimentoWhatsappStatus, string> = {
   'Encerrado': 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300'
 };
 
-const REMETENTE_CLASSES: Record<string, string> = {
-  'Cliente': 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200',
-  'Albia': 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300',
-  'Atendente Humano': 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400'
+const REMETENTE_ROTULO_CLASSES: Record<string, string> = {
+  'Cliente': 'bg-slate-300 text-slate-700 dark:bg-slate-600 dark:text-slate-200',
+  'Albia': 'bg-amber-200 text-amber-800 dark:bg-amber-800/60 dark:text-amber-200',
+  'Atendente': 'bg-blue-200 text-blue-800 dark:bg-blue-800/60 dark:text-blue-200',
+  'Sistema': 'bg-slate-200 text-slate-500 dark:bg-slate-700 dark:text-slate-400'
+};
+
+const REMETENTE_BOLHA_CLASSES: Record<string, string> = {
+  'Cliente': 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-100',
+  'Albia': 'bg-amber-50 text-slate-800 dark:bg-amber-900/30 dark:text-amber-50',
+  'Atendente': 'bg-blue-50 text-slate-800 dark:bg-blue-900/30 dark:text-blue-50',
+  'Sistema': 'bg-slate-100 text-slate-500 dark:bg-slate-800/60 dark:text-slate-400'
 };
 
 @Component({
@@ -45,7 +54,8 @@ const REMETENTE_CLASSES: Record<string, string> = {
     PageHeaderComponent,
     SpinnerComponent,
     ListagemPaginadaComponent,
-    DrawerComponent
+    DrawerComponent,
+    ThOrdenavelComponent
   ],
   templateUrl: './atendimentos-dashboard.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
@@ -71,6 +81,8 @@ export class AtendimentosDashboardComponent implements OnInit {
   mesAtual = new Date().getMonth() + 1;
   filtro: AtendimentoWhatsappFiltro = { ano: this.anoAtual };
 
+  ordenacaoAtual = signal<Ordenacao | null>(null);
+
   // Gráfico diário
   diario = signal<AtendimentoWhatsappDiario[]>([]);
   anoDiario = this.anoAtual;
@@ -78,15 +90,30 @@ export class AtendimentosDashboardComponent implements OnInit {
 
   // Drawer de histórico de mensagens
   historicoAberto = signal(false);
-  whatsappIdHistorico = signal<string | null>(null);
+  atendimentoIdHistorico = signal<number | null>(null);
+  protocoloHistorico = signal<string | null>(null);
   nomeContatoHistorico = signal<string | null>(null);
   mensagens = signal<AtendimentoWhatsappMensagem[]>([]);
   carregandoMensagens = signal(false);
+  termoBuscaMensagem = signal('');
+
+  @ViewChild('fimMensagens') fimMensagens?: ElementRef<HTMLDivElement>;
 
   maxMensal = computed(() => Math.max(1, ...this.mensal().map(m => m.totalAtendimentos)));
   maxDiario = computed(() => Math.max(1, ...this.diario().map(d => d.totalAtendimentos)));
 
-  tituloHistorico = computed(() => `Histórico — ${this.nomeContatoHistorico() || this.whatsappIdHistorico() || ''}`);
+  mensagensFiltradas = computed(() => {
+    const termo = this.termoBuscaMensagem().trim().toLowerCase();
+    if (!termo) return this.mensagens();
+    return this.mensagens().filter(m => (m.mensagem ?? '').toLowerCase().includes(termo));
+  });
+
+  tituloHistorico = computed(() => {
+    const protocolo = this.protocoloHistorico();
+    const nome = this.nomeContatoHistorico();
+    if (!protocolo) return '';
+    return nome ? `Atendimento ${protocolo} — ${nome}` : `Atendimento ${protocolo}`;
+  });
 
   constructor(
     private atendimentosService: AtendimentosWhatsappService,
@@ -112,6 +139,12 @@ export class AtendimentosDashboardComponent implements OnInit {
     });
   }
 
+  aoClicarMesMensal(m: AtendimentoWhatsappMensal) {
+    this.anoDiario = m.ano;
+    this.mesDiario = m.mes;
+    this.carregarDiario();
+  }
+
   carregar(pagina = 1) {
     this.carregando.set(true);
     this.atendimentosService.listar({ pagina, tamanho: this.tamanhoPagina() }, this.filtro).subscribe({
@@ -129,6 +162,13 @@ export class AtendimentosDashboardComponent implements OnInit {
     });
   }
 
+  aoOrdenar(ordenacao: Ordenacao) {
+    this.ordenacaoAtual.set(ordenacao);
+    this.filtro.ordenarPor = ordenacao.campo;
+    this.filtro.direcao = ordenacao.direcao;
+    this.carregar(1);
+  }
+
   aplicarFiltros() {
     this.carregarMensal();
     this.carregar(1);
@@ -136,6 +176,7 @@ export class AtendimentosDashboardComponent implements OnInit {
 
   limparFiltros() {
     this.filtro = { ano: this.anoAtual };
+    this.ordenacaoAtual.set(null);
     this.carregarMensal();
     this.carregar(1);
   }
@@ -219,16 +260,19 @@ export class AtendimentosDashboardComponent implements OnInit {
   }
 
   abrirHistorico(item: AtendimentoWhatsappResumo) {
-    this.whatsappIdHistorico.set(item.whatsappId);
-    this.nomeContatoHistorico.set(item.nomeContato ?? null);
+    this.atendimentoIdHistorico.set(item.id);
+    this.protocoloHistorico.set(item.protocolo);
+    this.nomeContatoHistorico.set(item.nomeContato || item.nomeWhatsapp || null);
     this.mensagens.set([]);
+    this.termoBuscaMensagem.set('');
     this.historicoAberto.set(true);
     this.carregandoMensagens.set(true);
 
-    this.atendimentosService.mensagens(item.whatsappId).subscribe({
+    this.atendimentosService.mensagens(item.id).subscribe({
       next: res => {
         this.mensagens.set(res.dados ?? []);
         this.carregandoMensagens.set(false);
+        this.rolarParaFim();
       },
       error: err => {
         this.toast.erroServidor(err, 'Não foi possível carregar o histórico.');
@@ -237,11 +281,19 @@ export class AtendimentosDashboardComponent implements OnInit {
     });
   }
 
+  private rolarParaFim() {
+    setTimeout(() => {
+      this.fimMensagens?.nativeElement.scrollIntoView({ block: 'end' });
+    });
+  }
+
   fecharHistorico() {
     this.historicoAberto.set(false);
-    this.whatsappIdHistorico.set(null);
+    this.atendimentoIdHistorico.set(null);
+    this.protocoloHistorico.set(null);
     this.nomeContatoHistorico.set(null);
     this.mensagens.set([]);
+    this.termoBuscaMensagem.set('');
   }
 
   labelMes(mes: number): string {
@@ -260,7 +312,17 @@ export class AtendimentosDashboardComponent implements OnInit {
     return STATUS_CLASSES[status] ?? STATUS_CLASSES['Encerrado'];
   }
 
-  classeRemetente(quem: string): string {
-    return REMETENTE_CLASSES[quem] ?? REMETENTE_CLASSES['Cliente'];
+  classeRotuloRemetente(quem: string): string {
+    return REMETENTE_ROTULO_CLASSES[quem] ?? REMETENTE_ROTULO_CLASSES['Cliente'];
+  }
+
+  classeBolhaRemetente(quem: string): string {
+    return REMETENTE_BOLHA_CLASSES[quem] ?? REMETENTE_BOLHA_CLASSES['Cliente'];
+  }
+
+  alinhamentoRemetente(quem: string): 'esquerda' | 'direita' | 'centro' {
+    if (quem === 'Cliente') return 'esquerda';
+    if (quem === 'Sistema') return 'centro';
+    return 'direita';
   }
 }

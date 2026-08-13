@@ -1,15 +1,16 @@
 export type AtendimentoWhatsappStatus = 'Ativo' | 'Aguardando' | 'Com atendente' | 'Encerrado';
 
 export interface AtendimentoWhatsappResumo {
+  id: number;
+  protocolo: string;
   whatsappId: string;
   idContato?: number;
   nomeContato?: string;
+  nomeWhatsapp?: string;
   totalMensagens: number;
-  totalAtendimentos: number;
-  cotacoesLista: number;
   intervencoesHumanas: number;
-  primeiraMensagem: string;
-  ultimaMensagem: string;
+  inicio: string;
+  fim?: string;
   status: AtendimentoWhatsappStatus;
 }
 
@@ -24,7 +25,7 @@ export interface AtendimentoWhatsappDiario {
   totalAtendimentos: number;
 }
 
-export type AtendimentoWhatsappRemetente = 'Cliente' | 'Albia' | 'Atendente Humano';
+export type AtendimentoWhatsappRemetente = 'Cliente' | 'Albia' | 'Atendente' | 'Sistema';
 
 export interface AtendimentoWhatsappMensagem {
   quem: AtendimentoWhatsappRemetente;

@@ -73,6 +73,39 @@ Uso:
 - `#cabecalho` e `#linha` são `TemplateRef` projetados via `@ContentChild` — o componente cuida da estrutura `<table>`, do loading e do empty state.
 - Use sempre que a tela for uma listagem com filtro + tabela + paginação Prev/Next. Não recriar esse shell manualmente.
 
+## `app-th-ordenavel` — cabeçalho de coluna ordenável
+
+`shared/components/th-ordenavel/` — helper visual pra ordenação por coluna, pensado pra ser usado DENTRO do `<th>` que a própria tela já projeta em `#cabecalho` do `app-listagem-paginada`. O `app-listagem-paginada` em si não muda nada — ele não sabe (e não precisa saber) quais colunas são ordenáveis, isso é decisão de cada tela.
+
+```html
+<ng-template #cabecalho>
+  <tr>
+    <th>
+      <app-th-ordenavel campo="protocolo" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">
+        Protocolo
+      </app-th-ordenavel>
+    </th>
+    <th>Nome</th> <!-- coluna sem ordenação: th normal, sem o componente -->
+  </tr>
+</ng-template>
+```
+
+```typescript
+ordenacaoAtual = signal<Ordenacao | null>(null);
+
+aoOrdenar(ordenacao: Ordenacao) {
+  this.ordenacaoAtual.set(ordenacao);
+  this.paginaAtual.set(1);
+  this.carregar();
+}
+```
+
+- `campo`: chave lógica da coluna (nome do campo que o backend espera pra ordenar).
+- `ordenacaoAtual`: `{ campo, direcao: 'asc'|'desc' } | null` — a tela é dona do estado, o componente só reflete visualmente.
+- `(ordenar)`: emite a nova ordenação no clique; a tela decide o que fazer (geralmente recarregar a página 1 com o novo `sort`).
+- Ícone `material-symbols-outlined`: `unfold_more` (não ordenado), `arrow_upward`/`arrow_downward` (ordenado). Clique alterna asc → desc → asc (2 estados, sem voltar pra "não ordenado" depois do primeiro clique).
+- Colunas que não devem ser ordenáveis continuam `<th>` normal, sem o componente — 100% opt-in, não muda nenhuma tela existente que não usa.
+
 ## Tamanho de página
 
 Padrão: opções `[10, 50, 100]`, default `10`.

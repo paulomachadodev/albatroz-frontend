@@ -109,6 +109,7 @@
                   class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none">
             <option [ngValue]="undefined">Todos</option>
             <option value="com_handoff">Com intervenção humana</option>
+            <option value="lista_escolar">Cotação de lista escolar</option>
           </select>
         </div>
         <div>
@@ -149,6 +150,9 @@
           <th class="px-6 py-4 text-center">
             <app-th-ordenavel campo="intervencoesHumanas" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Intervenção humana</app-th-ordenavel>
           </th>
+          <th class="px-6 py-4 text-center">
+            <app-th-ordenavel campo="cotacoesLista" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Lista</app-th-ordenavel>
+          </th>
           <th class="px-6 py-4">
             <app-th-ordenavel campo="inicio" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Início</app-th-ordenavel>
           </th>
@@ -176,6 +180,13 @@
             @if (item.intervencoesHumanas > 0) {
               <span class="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400">
                 {{ item.intervencoesHumanas }}
+              </span>
+            } @else { <span class="text-slate-300">0</span> }
+          </td>
+          <td class="px-6 py-4 text-center text-sm font-medium">
+            @if (item.cotacoesLista > 0) {
+              <span class="px-2 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400">
+                {{ item.cotacoesLista }}
               </span>
             } @else { <span class="text-slate-300">0</span> }
           </td>

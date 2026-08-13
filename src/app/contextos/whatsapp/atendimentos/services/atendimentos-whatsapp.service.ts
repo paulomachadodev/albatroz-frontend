@@ -16,7 +16,7 @@ export interface AtendimentoWhatsappFiltro {
   mes?: number;
   de?: string;
   ate?: string;
-  tipo?: 'com_handoff';
+  tipo?: 'com_handoff' | 'lista_escolar';
   status?: AtendimentoWhatsappStatus;
   ordenarPor?: string;
   direcao?: 'asc' | 'desc';

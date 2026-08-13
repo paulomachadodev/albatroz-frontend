@@ -9,6 +9,7 @@ export interface AtendimentoWhatsappResumo {
   nomeWhatsapp?: string;
   totalMensagens: number;
   intervencoesHumanas: number;
+  cotacoesLista: number;
   inicio: string;
   fim?: string;
   status: AtendimentoWhatsappStatus;

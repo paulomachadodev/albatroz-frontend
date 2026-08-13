@@ -2,6 +2,7 @@ import { Component, OnInit, signal, computed, ViewChild, ElementRef } from '@ang
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { AtendimentosWhatsappService, AtendimentoWhatsappFiltro } from '../../services/atendimentos-whatsapp.service';
 import {
   AtendimentoWhatsappResumo,
@@ -110,15 +111,14 @@ export class AtendimentosDashboardComponent implements OnInit {
 
   tituloHistorico = computed(() => {
     const protocolo = this.protocoloHistorico();
-    const nome = this.nomeContatoHistorico();
-    if (!protocolo) return '';
-    return nome ? `Atendimento ${protocolo} — ${nome}` : `Atendimento ${protocolo}`;
+    return protocolo ? `Atendimento ${protocolo}` : '';
   });
 
   constructor(
     private atendimentosService: AtendimentosWhatsappService,
     private contatosService: ContatosService,
-    private toast: ToastService
+    private toast: ToastService,
+    private sanitizer: DomSanitizer
   ) {}
 
   ngOnInit() {
@@ -324,5 +324,28 @@ export class AtendimentosDashboardComponent implements OnInit {
     if (quem === 'Cliente') return 'esquerda';
     if (quem === 'Sistema') return 'centro';
     return 'direita';
+  }
+
+  rotuloRemetente(quem: string): string {
+    if (quem === 'Cliente') return this.nomeContatoHistorico() || 'Cliente';
+    return quem;
+  }
+
+  formatarMensagem(texto: string | null): SafeHtml {
+    const bruto = texto ?? '—';
+
+    const escapado = bruto
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+
+    const comLinks = escapado.replace(
+      /(https?:\/\/[^\s<]+)/g,
+      url => `<a href="${url}" target="_blank" rel="noopener noreferrer" class="underline text-primary">${url}</a>`
+    );
+
+    const comNegrito = comLinks.replace(/\*([^*\n]+)\*/g, '<strong>$1</strong>');
+
+    return this.sanitizer.bypassSecurityTrustHtml(comNegrito);
   }
 }

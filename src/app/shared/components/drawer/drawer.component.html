@@ -8,7 +8,7 @@
           <span class="material-symbols-outlined">close</span>
         </button>
       </div>
-      <div class="flex-1 overflow-y-auto p-4">
+      <div class="flex-1 overflow-y-auto" [class.p-4]="!conteudoSemPadding()">
         <ng-content></ng-content>
       </div>
     </div>

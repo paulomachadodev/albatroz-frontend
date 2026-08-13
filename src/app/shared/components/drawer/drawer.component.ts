@@ -10,6 +10,7 @@ import { CommonModule } from '@angular/common';
 export class DrawerComponent implements OnDestroy {
   aberto = input.required<boolean>();
   titulo = input<string>('');
+  conteudoSemPadding = input(false);
 
   fechar = output<void>();
 

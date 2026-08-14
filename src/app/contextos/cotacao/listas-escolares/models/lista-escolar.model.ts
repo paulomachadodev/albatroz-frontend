@@ -15,6 +15,7 @@ export interface ListaEscolarItem {
   id: number;
   descricaoNaLista: string;
   marcaNaLista?: string;
+  categoriaItem?: string;
   quantidade: number;
   idProduto?: number;
   codigoProduto?: string;

@@ -275,6 +275,18 @@ export class ListaDetalheComponent implements OnInit {
     });
   }
 
+  alterarCategoria(item: ListaEscolarItem, novaCategoria: string) {
+    const nome = novaCategoria.trim();
+    if (!nome || nome === item.categoriaItem) return;
+    this.listasService.atualizarItem(this.idLista, item.id, {
+      naoVendemos: false,
+      categoriaNome: nome
+    }).subscribe({
+      next: () => this.recarregarSilencioso(),
+      error: err => this.toast.erroServidor(err, 'Não foi possível alterar a categoria.')
+    });
+  }
+
   marcarNaoVendemos(item: ListaEscolarItem) {
     this.listasService.atualizarItem(this.idLista, item.id, {
       naoVendemos: true

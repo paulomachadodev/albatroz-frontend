@@ -2,6 +2,7 @@ export interface ListaEscolarItemAtualizarRequisicao {
   idProduto?: number;
   quantidade?: number;
   naoVendemos: boolean;
+  categoriaNome?: string;
 }
 
 export interface ListaEscolarAtualizarRequisicao {

@@ -75,6 +75,7 @@ export class SidebarComponent {
       itens: [
         { label: 'Usuários',     rota: '/usuarios',     icone: 'group' },
         { label: 'Perfis',       rota: '/perfis',       icone: 'shield' },
+        { label: 'Empresas',     rota: '/cadastros/empresas', icone: 'business' },
         { label: 'Relatórios',   rota: '/relatorios',   icone: 'bar_chart' },
         { label: 'Configurações',rota: '/configuracoes',icone: 'settings' }
       ]

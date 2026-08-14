@@ -1,0 +1,110 @@
+<div class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark px-4 sm:px-6 lg:px-8 xl:px-10 py-6 lg:py-8">
+  <div class="w-full space-y-8">
+
+    <nav class="flex items-center gap-2 text-sm text-slate-500">
+      <a class="hover:text-primary" routerLink="/dashboard">Início</a>
+      <span class="material-symbols-outlined text-xs">chevron_right</span>
+      <span class="text-slate-900 dark:text-slate-100 font-medium">Administração</span>
+      <span class="material-symbols-outlined text-xs">chevron_right</span>
+      <span class="text-slate-900 dark:text-slate-100 font-medium">Empresas</span>
+    </nav>
+
+    <app-page-header titulo="Cadastro de Empresas" subtitulo="Gerencie as empresas (tenants) do sistema.">
+      <button acoes (click)="abrirCriar()"
+              class="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all">
+        <span class="material-symbols-outlined text-sm">add</span>
+        Nova Empresa
+      </button>
+    </app-page-header>
+
+    <app-listagem-paginada
+      [itens]="itens()"
+      [carregando]="carregando()"
+      [totalRegistros]="totalRegistros()"
+      [paginaAtual]="paginaAtual()"
+      [totalPaginas]="totalPaginas()"
+      [tamanhoPagina]="tamanhoPagina()"
+      tituloVazio="Nenhuma empresa encontrada"
+      (paginaMudou)="aoMudarPagina($event)"
+      (tamanhoPaginaMudou)="aoMudarTamanhoPagina($event)">
+
+      <div filtros class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div class="lg:col-span-3">
+          <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Nome</label>
+          <input type="text" [(ngModel)]="filtroNome" placeholder="Nome da empresa"
+                 class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+        </div>
+        <div class="flex items-end gap-2 lg:col-span-2">
+          <button (click)="aplicarFiltros()"
+                  class="flex-1 px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all">
+            Filtrar
+          </button>
+          <button (click)="limparFiltros()"
+                  class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
+            Limpar
+          </button>
+        </div>
+      </div>
+
+      <ng-template #cabecalho>
+        <tr>
+          <th class="px-6 py-4">Nome</th>
+          <th class="px-6 py-4">CNPJ</th>
+          <th class="px-6 py-4 text-center">Ativo</th>
+        </tr>
+      </ng-template>
+
+      <ng-template #linha let-item>
+        <tr (click)="abrirEditar(item)" class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors cursor-pointer">
+          <td class="px-6 py-4 text-sm font-bold text-slate-900 dark:text-slate-100">{{ item.nome }}</td>
+          <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{{ item.cnpj || '-' }}</td>
+          <td class="px-6 py-4 text-center">
+            @if (item.ativo) {
+              <span class="px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400">Ativo</span>
+            } @else {
+              <span class="px-2 py-0.5 rounded-full text-xs font-bold bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300">Inativo</span>
+            }
+          </td>
+        </tr>
+      </ng-template>
+
+    </app-listagem-paginada>
+
+  </div>
+</div>
+
+<app-drawer [aberto]="drawerAberto()"
+            [titulo]="modoDrawer() === 'criar' ? 'Nova Empresa' : 'Editar Empresa'"
+            (fechar)="cancelar()">
+
+  <div class="space-y-4">
+    <div>
+      <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Nome</label>
+      <input type="text" [(ngModel)]="nome" placeholder="Razão social ou nome fantasia"
+             class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+    </div>
+
+    <div>
+      <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">CNPJ</label>
+      <input type="text" [(ngModel)]="cnpj" placeholder="Opcional"
+             class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+    </div>
+
+    <div class="flex items-center justify-between pt-2">
+      <span class="text-sm font-bold text-slate-700 dark:text-slate-300">Ativo</span>
+      <app-toggle [valor]="ativo" (valorMudou)="aoAlternarAtivo($event)"/>
+    </div>
+
+    <div class="pt-2 flex gap-2">
+      <button type="button" (click)="cancelar()"
+              class="flex-1 px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
+        Cancelar
+      </button>
+      <button type="button" (click)="salvar()" [disabled]="salvando()"
+              class="flex-1 px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all">
+        {{ salvando() ? 'Salvando...' : 'Salvar' }}
+      </button>
+    </div>
+  </div>
+
+</app-drawer>

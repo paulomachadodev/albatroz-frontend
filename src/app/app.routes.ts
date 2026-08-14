@@ -49,6 +49,11 @@ export const routes: Routes = [
           import('./contextos/cadastros/series/series.routes').then(m => m.SERIES_ROUTES)
       },
       {
+        path: 'cadastros/empresas',
+        loadChildren: () =>
+          import('./contextos/cadastros/empresas/empresas.routes').then(m => m.EMPRESAS_ROUTES)
+      },
+      {
         path: 'whatsapp/atendimentos',
         loadChildren: () =>
           import('./contextos/whatsapp/atendimentos/atendimentos.routes').then(m => m.ATENDIMENTOS_ROUTES)

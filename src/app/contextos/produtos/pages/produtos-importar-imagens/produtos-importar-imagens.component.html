@@ -15,10 +15,7 @@
 
     <div (drop)="aoSoltar($event)" (dragover)="aoArrastarSobre($event)" (dragleave)="aoSairDaZona()"
          class="border-2 border-dashed rounded-xl p-8 text-center transition-colors"
-         [class.border-primary]="arrastandoSobreZona()"
-         [class.bg-primary/5]="arrastandoSobreZona()"
-         [class.border-slate-300]="!arrastandoSobreZona()"
-         [class.dark:border-slate-700]="!arrastandoSobreZona()">
+         [class]="arrastandoSobreZona() ? 'border-primary bg-primary/5' : 'border-slate-300 dark:border-slate-700'">
       <span class="material-symbols-outlined text-3xl text-slate-400">cloud_upload</span>
       <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Arraste as imagens aqui ou</p>
       <label class="mt-2 inline-block px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 cursor-pointer transition-all">

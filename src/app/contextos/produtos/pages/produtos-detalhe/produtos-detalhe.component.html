@@ -172,10 +172,7 @@
         <div class="space-y-4">
           <div (drop)="aoSoltarArquivos($event)" (dragover)="aoArrastarArquivoSobre($event)" (dragleave)="aoSairArquivoDaZona()"
                class="border-2 border-dashed rounded-xl p-8 text-center transition-colors"
-               [class.border-primary]="arrastandoArquivoSobreZona()"
-               [class.bg-primary/5]="arrastandoArquivoSobreZona()"
-               [class.border-slate-300]="!arrastandoArquivoSobreZona()"
-               [class.dark:border-slate-700]="!arrastandoArquivoSobreZona()">
+               [class]="arrastandoArquivoSobreZona() ? 'border-primary bg-primary/5' : 'border-slate-300 dark:border-slate-700'">
             <span class="material-symbols-outlined text-3xl text-slate-400">cloud_upload</span>
             <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Arraste imagens aqui ou</p>
             <label class="mt-2 inline-block px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 cursor-pointer transition-all"

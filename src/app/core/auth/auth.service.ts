@@ -15,6 +15,7 @@ export interface UsuarioAutenticado {
   email: string;
   perfis: string[];
   permissoes: string[];
+  temaPreferido: 'light' | 'dark';
 }
 
 export interface AutenticacaoResposta {
@@ -26,6 +27,7 @@ export interface AutenticacaoResposta {
   email: string;
   perfis: string[];
   permissoes: string[];
+  temaPreferido: 'light' | 'dark';
 }
 
 interface JwtPayload {
@@ -138,7 +140,8 @@ export class AuthService {
         nome: usuario.nome,
         email: usuario.email,
         perfis: usuario.perfis,
-        permissoes: usuario.permissoes
+        permissoes: usuario.permissoes,
+        temaPreferido: usuario.temaPreferido
       });
       subscriber.complete();
     });
@@ -197,6 +200,14 @@ export class AuthService {
     try { return JSON.parse(raw) as { ts: number }; } catch { return null; }
   }
 
+  definirTemaLocal(tema: 'light' | 'dark'): void {
+    const atual = this._usuario();
+    if (!atual) return;
+    const atualizado: UsuarioAutenticado = { ...atual, temaPreferido: tema };
+    localStorage.setItem(USER_KEY, JSON.stringify(atualizado));
+    this._usuario.set(atualizado);
+  }
+
   temPermissao(chave: string): boolean {
     return this._usuario()?.permissoes.includes(chave) ?? false;
   }
@@ -216,7 +227,8 @@ export class AuthService {
       nome: resp.nome,
       email: resp.email,
       perfis: resp.perfis ?? [],
-      permissoes: resp.permissoes ?? []
+      permissoes: resp.permissoes ?? [],
+      temaPreferido: resp.temaPreferido ?? 'light'
     };
     localStorage.setItem(USER_KEY, JSON.stringify(u));
     this._usuario.set(u);

@@ -12,6 +12,13 @@
 
   <div class="flex-1"></div>
 
+  <button (click)="theme.alternar()"
+          class="size-10 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-slate-100
+                 transition-colors flex items-center justify-center"
+          [attr.aria-label]="theme.temaAtual() === 'dark' ? 'Ativar modo claro' : 'Ativar modo escuro'">
+    <span class="material-symbols-outlined">{{ theme.temaAtual() === 'dark' ? 'light_mode' : 'dark_mode' }}</span>
+  </button>
+
   <button class="relative size-10 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-slate-100
                  transition-colors flex items-center justify-center"
           aria-label="Notificações">
@@ -45,12 +52,14 @@
           <div class="text-sm font-semibold text-slate-800 dark:text-slate-100">{{ usuario()?.nome }}</div>
           <div class="text-xs text-slate-400 truncate">{{ usuario()?.email }}</div>
         </div>
-        <button class="w-full text-left px-3 py-2 rounded-lg text-sm
+        <button (click)="irParaMeuPerfil()"
+                class="w-full text-left px-3 py-2 rounded-lg text-sm
                        text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2">
           <span class="material-symbols-outlined text-lg">person</span>
           Meu perfil
         </button>
-        <button class="w-full text-left px-3 py-2 rounded-lg text-sm
+        <button (click)="irParaConfiguracoes()"
+                class="w-full text-left px-3 py-2 rounded-lg text-sm
                        text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2">
           <span class="material-symbols-outlined text-lg">settings</span>
           Configurações

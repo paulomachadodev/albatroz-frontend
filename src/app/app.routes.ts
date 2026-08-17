@@ -82,6 +82,11 @@ export const routes: Routes = [
         path: 'configuracoes',
         loadChildren: () =>
           import('./contextos/administracao/configuracoes/configuracoes.routes').then(m => m.CONFIGURACOES_ROUTES)
+      },
+      {
+        path: 'meu-perfil',
+        loadChildren: () =>
+          import('./contextos/administracao/meu-perfil/meu-perfil.routes').then(m => m.MEU_PERFIL_ROUTES)
       }
     ]
   },

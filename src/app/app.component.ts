@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { SessaoInatividadeService } from './core/auth/sessao-inatividade.service';
+import { ThemeService } from './core/theme/theme.service';
 
 @Component({
   selector: 'app-root',
@@ -13,5 +14,6 @@ export class AppComponent {
 
   constructor() {
     inject(SessaoInatividadeService).iniciar();
+    inject(ThemeService);
   }
 }

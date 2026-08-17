@@ -1,0 +1,57 @@
+<div class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark px-4 sm:px-6 lg:px-8 xl:px-10 py-6 lg:py-8">
+  <div class="w-full space-y-8">
+
+    <nav class="flex items-center gap-2 text-sm text-slate-500">
+      <a class="hover:text-primary" routerLink="/dashboard">Início</a>
+      <span class="material-symbols-outlined text-xs">chevron_right</span>
+      <span class="text-slate-900 dark:text-slate-100 font-medium">Meu perfil</span>
+    </nav>
+
+    <app-page-header titulo="Meu perfil" subtitulo="Seus dados e troca de senha."></app-page-header>
+
+    <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-4">
+      <div>
+        <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Nome</label>
+        <p class="mt-1 text-sm text-slate-800 dark:text-slate-200">{{ usuario()?.nome }}</p>
+      </div>
+      <div>
+        <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">E-mail</label>
+        <p class="mt-1 text-sm text-slate-800 dark:text-slate-200">{{ usuario()?.email }}</p>
+      </div>
+      <p class="text-xs text-slate-400">Nome e e-mail só podem ser alterados por um administrador, em Usuários.</p>
+    </div>
+
+    <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-4">
+      <h2 class="text-sm font-bold text-slate-800 dark:text-slate-100">Trocar senha</h2>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Senha atual</label>
+          <input type="password" [(ngModel)]="senhaAtual" placeholder="Senha atual"
+                 class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Nova senha</label>
+          <input type="password" [(ngModel)]="novaSenha" placeholder="Mín. 8 caracteres, maiúscula, número e símbolo"
+                 class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+        </div>
+        <div>
+          <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Confirmar nova senha</label>
+          <input type="password" [(ngModel)]="confirmarNovaSenha" placeholder="Repita a nova senha"
+                 class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+        </div>
+      </div>
+
+      <div class="pt-2">
+        <button type="button" (click)="salvarSenha()" [disabled]="salvando()"
+                class="px-5 py-2.5 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all">
+          {{ salvando() ? 'Salvando...' : 'Salvar' }}
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>

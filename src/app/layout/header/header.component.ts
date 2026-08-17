@@ -1,6 +1,7 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
+import { ThemeService } from '../../core/theme/theme.service';
 
 @Component({
   selector: 'app-header',
@@ -10,6 +11,7 @@ import { AuthService } from '../../core/auth/auth.service';
 export class HeaderComponent {
   private auth   = inject(AuthService);
   private router = inject(Router);
+  theme          = inject(ThemeService);
 
   menuAberto = signal(false);
   usuario    = this.auth.usuario;
@@ -30,6 +32,16 @@ export class HeaderComponent {
 
   fechar(): void {
     this.menuAberto.set(false);
+  }
+
+  irParaMeuPerfil(): void {
+    this.fechar();
+    this.router.navigate(['/meu-perfil']);
+  }
+
+  irParaConfiguracoes(): void {
+    this.fechar();
+    this.router.navigate(['/configuracoes']);
   }
 
   sair(): void {

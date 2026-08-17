@@ -106,6 +106,20 @@ aoOrdenar(ordenacao: Ordenacao) {
 - Ícone `material-symbols-outlined`: `unfold_more` (não ordenado), `arrow_upward`/`arrow_downward` (ordenado). Clique alterna asc → desc → asc (2 estados, sem voltar pra "não ordenado" depois do primeiro clique).
 - Colunas que não devem ser ordenáveis continuam `<th>` normal, sem o componente — 100% opt-in, não muda nenhuma tela existente que não usa.
 
+## Container de página — sempre `w-full`, nunca `max-w-*`
+
+O `<div>` logo abaixo do wrapper `flex-1 overflow-y-auto` (que segura breadcrumb + `app-page-header` + conteúdo) é sempre `class="w-full space-y-8"`. Nunca adicionar `max-w-3xl`/`max-w-*` nele — isso empurra o card pra esquerda e deixa a tela com sobra de espaço em branco, fora do padrão das outras telas de administração (`usuarios-lista`, `perfis-lista`). Se um formulário específico precisar de largura menor, limitar a largura no elemento do formulário em si (dentro do card), não no container da página.
+
+## Ações da linha (tabela de listagem)
+
+Botão de ação na última coluna (`text-right`) segue sempre o mesmo estilo, incluindo ações que desativam/bloqueiam (`Inativar`, `Bloquear`):
+
+```html
+<button (click)="acao(item)" class="text-xs font-bold text-primary hover:underline">Rótulo</button>
+```
+
+Cor vermelha (`text-red-600`/`text-rose-600`) é reservada só pra exclusão definitiva de registro (ver `lista-detalhe`/`categoria-modal`), nunca pra inativar/bloquear — essas são reversíveis e usam `text-primary`, igual `usuarios-lista` (`Bloquear`/`Desbloquear`).
+
 ## Tamanho de página
 
 Padrão: opções `[10, 50, 100]`, default `10`.

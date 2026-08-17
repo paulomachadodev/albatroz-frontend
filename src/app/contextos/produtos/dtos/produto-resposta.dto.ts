@@ -1,8 +1,20 @@
-import { Produto } from '../models/produto.model';
-
-export interface ProdutoResposta extends Produto {}
-
-export interface ProdutoUploadImagemResposta {
+export interface ProdutoImagemUploadResposta {
+  id: number;
   url: string;
-  caminho: string;
+  indice: number;
+}
+
+export interface ProdutoImportarImagensCorrespondido {
+  nomeArquivo: string;
+  idProduto: number;
+  codigoProduto: string;
+  nomeProduto: string;
+  indice: number;
+  urlResultante?: string;
+}
+
+export interface ProdutoImportarImagensResposta {
+  confirmado: boolean;
+  correspondidos: ProdutoImportarImagensCorrespondido[];
+  semCorrespondencia: string[];
 }

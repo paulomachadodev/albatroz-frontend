@@ -3,41 +3,64 @@ import { Observable } from 'rxjs';
 import { ApiService } from '../../../core/http/api.service';
 import { Resultado, Paginacao } from '../../../core/models';
 import { ParametrosPaginacao } from '../../../core/models/paginacao.model';
-import { Produto } from '../models/produto.model';
-import { ProdutoRequisicao, ProdutoUploadImagemRequisicao } from '../dtos/produto-requisicao.dto';
-import { ProdutoUploadImagemResposta } from '../dtos/produto-resposta.dto';
+import { ProdutoDetalhe, ProdutoResumo, ProdutoTipo } from '../models/produto.model';
+import {
+  ProdutoDadosErpRequisicao,
+  ProdutoFornecedorCorrecaoRequisicao,
+  ProdutoImagensReordenarRequisicao
+} from '../dtos/produto-requisicao.dto';
+import { ProdutoImagemUploadResposta, ProdutoImportarImagensResposta } from '../dtos/produto-resposta.dto';
 
-@Injectable({
-  providedIn: 'root'
-})
+export interface ProdutoFiltro {
+  texto?: string;
+  tipo?: ProdutoTipo;
+  situacao?: string;
+  temImagem?: boolean;
+  tinyIdFornecedor?: number;
+  idCategoria?: number;
+  idMarca?: number;
+}
+
+@Injectable({ providedIn: 'root' })
 export class ProdutosService {
-  private endpoint = '/interno/v1/produtos';
+  private endpoint = '/v1/produtos';
 
   constructor(private api: ApiService) {}
 
-  listar(paginacao: ParametrosPaginacao, filtros?: any): Observable<Resultado<Paginacao<Produto>>> {
-    return this.api.getPaginado<Produto>(this.endpoint, paginacao, filtros);
+  listar(paginacao: ParametrosPaginacao, filtros?: ProdutoFiltro): Observable<Resultado<Paginacao<ProdutoResumo>>> {
+    return this.api.getPaginado<ProdutoResumo>(this.endpoint, paginacao, filtros);
   }
 
-  obter(id: number): Observable<Resultado<Produto>> {
-    return this.api.get<Produto>(`${this.endpoint}/${id}`);
+  obter(id: number): Observable<Resultado<ProdutoDetalhe>> {
+    return this.api.get<ProdutoDetalhe>(`${this.endpoint}/${id}`);
   }
 
-  criar(requisicao: ProdutoRequisicao): Observable<Resultado<Produto>> {
-    return this.api.post<Produto>(this.endpoint, requisicao);
+  atualizarDadosErp(id: number, requisicao: ProdutoDadosErpRequisicao): Observable<Resultado<void>> {
+    return this.api.put<void>(`${this.endpoint}/${id}/dados-erp`, requisicao);
   }
 
-  atualizar(id: number, requisicao: ProdutoRequisicao): Observable<Resultado<Produto>> {
-    return this.api.put<Produto>(`${this.endpoint}/${id}`, requisicao);
+  corrigirFornecedor(id: number, tinyIdFornecedor: number, requisicao: ProdutoFornecedorCorrecaoRequisicao): Observable<Resultado<void>> {
+    return this.api.put<void>(`${this.endpoint}/${id}/fornecedores/${tinyIdFornecedor}/correcao`, requisicao);
   }
 
-  deletar(id: number): Observable<Resultado<void>> {
-    return this.api.delete<void>(`${this.endpoint}/${id}`);
-  }
-
-  uploadImagem(id: number, arquivo: File): Observable<Resultado<ProdutoUploadImagemResposta>> {
+  uploadImagem(id: number, arquivo: File): Observable<Resultado<ProdutoImagemUploadResposta>> {
     const formData = new FormData();
-    formData.append('arquivo', arquivo);
-    return this.api.post<ProdutoUploadImagemResposta>(`${this.endpoint}/${id}/imagens`, formData);
+    formData.append('file', arquivo);
+    return this.api.post<ProdutoImagemUploadResposta>(`${this.endpoint}/${id}/imagens`, formData);
+  }
+
+  reordenarImagens(id: number, requisicao: ProdutoImagensReordenarRequisicao): Observable<Resultado<void>> {
+    return this.api.put<void>(`${this.endpoint}/${id}/imagens/reordenar`, requisicao);
+  }
+
+  excluirImagem(id: number, imagemId: number): Observable<Resultado<void>> {
+    return this.api.delete<void>(`${this.endpoint}/${id}/imagens/${imagemId}`);
+  }
+
+  importarImagensLote(arquivos: File[], confirmar: boolean): Observable<Resultado<ProdutoImportarImagensResposta>> {
+    const formData = new FormData();
+    arquivos.forEach(arquivo => formData.append('files', arquivo));
+    formData.append('confirmar', String(confirmar));
+    return this.api.post<ProdutoImportarImagensResposta>(`${this.endpoint}/imagens/importar-lote`, formData);
   }
 }

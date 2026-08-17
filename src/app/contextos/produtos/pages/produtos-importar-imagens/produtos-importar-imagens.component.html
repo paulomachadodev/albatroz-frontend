@@ -1,0 +1,130 @@
+<div class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark px-4 sm:px-6 lg:px-8 xl:px-10 py-6 lg:py-8">
+  <div class="w-full space-y-8">
+
+    <nav class="flex items-center gap-2 text-sm text-slate-500">
+      <a class="hover:text-primary" routerLink="/dashboard">Início</a>
+      <span class="material-symbols-outlined text-xs">chevron_right</span>
+      <span class="text-slate-900 dark:text-slate-100 font-medium">Cadastros</span>
+      <span class="material-symbols-outlined text-xs">chevron_right</span>
+      <a class="hover:text-primary" routerLink="/produtos">Produtos</a>
+      <span class="material-symbols-outlined text-xs">chevron_right</span>
+      <span class="text-slate-900 dark:text-slate-100 font-medium">Importar Imagens</span>
+    </nav>
+
+    <app-page-header titulo="Importar Imagens em Lote" subtitulo="Envie arquivos nomeados como {código}-{índice}.jpg — o sistema casa automaticamente com o produto."></app-page-header>
+
+    <div (drop)="aoSoltar($event)" (dragover)="aoArrastarSobre($event)" (dragleave)="aoSairDaZona()"
+         class="border-2 border-dashed rounded-xl p-8 text-center transition-colors"
+         [class.border-primary]="arrastandoSobreZona()"
+         [class.bg-primary/5]="arrastandoSobreZona()"
+         [class.border-slate-300]="!arrastandoSobreZona()"
+         [class.dark:border-slate-700]="!arrastandoSobreZona()">
+      <span class="material-symbols-outlined text-3xl text-slate-400">cloud_upload</span>
+      <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">Arraste as imagens aqui ou</p>
+      <label class="mt-2 inline-block px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 cursor-pointer transition-all">
+        Selecionar arquivos
+        <input type="file" accept="image/*" multiple class="hidden" (change)="aoSelecionarArquivos($event)"/>
+      </label>
+      @if (arquivos().length > 0) {
+        <p class="mt-3 text-xs text-slate-400">{{ arquivos().length }} arquivo(s) selecionado(s)</p>
+      }
+    </div>
+
+    @if (processandoPreview()) {
+      <div class="text-sm text-slate-500">Processando preview...</div>
+    }
+
+    @if (resultadoPreview() && !resultadoFinal()) {
+      <div class="space-y-4">
+        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+          <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+            <p class="text-sm font-bold text-slate-900 dark:text-slate-100">
+              Correspondências encontradas ({{ resultadoPreview()!.correspondidos.length }})
+            </p>
+          </div>
+          <table class="w-full text-left">
+            <thead class="bg-slate-50 dark:bg-slate-800/50 text-xs font-bold text-slate-500 uppercase tracking-wide">
+              <tr>
+                <th class="px-6 py-4">Arquivo</th>
+                <th class="px-6 py-4">Produto</th>
+                <th class="px-6 py-4 text-center">Índice</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+              @if (resultadoPreview()!.correspondidos.length === 0) {
+                <tr><td colspan="3" class="px-6 py-8 text-center text-sm text-slate-500">Nenhum arquivo casou com um produto.</td></tr>
+              } @else {
+                @for (item of resultadoPreview()!.correspondidos; track item.nomeArquivo) {
+                  <tr>
+                    <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{{ item.nomeArquivo }}</td>
+                    <td class="px-6 py-4 text-sm">
+                      <p class="font-bold text-slate-900 dark:text-slate-100">{{ item.nomeProduto }}</p>
+                      <p class="text-xs text-slate-400">{{ item.codigoProduto }}</p>
+                    </td>
+                    <td class="px-6 py-4 text-center text-sm">{{ item.indice }}</td>
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+
+        @if (resultadoPreview()!.semCorrespondencia.length > 0) {
+          <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6">
+            <p class="text-sm font-bold text-red-600 mb-2">Sem correspondência ({{ resultadoPreview()!.semCorrespondencia.length }})</p>
+            <ul class="text-sm text-slate-500 dark:text-slate-400 list-disc list-inside space-y-1">
+              @for (nome of resultadoPreview()!.semCorrespondencia; track nome) {
+                <li>{{ nome }}</li>
+              }
+            </ul>
+          </div>
+        }
+
+        <div class="flex gap-2">
+          <button (click)="limpar()"
+                  class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
+            Cancelar
+          </button>
+          <button (click)="confirmarImportacao()" [disabled]="confirmandoImportacao() || resultadoPreview()!.correspondidos.length === 0"
+                  class="px-5 py-2.5 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all">
+            {{ confirmandoImportacao() ? 'Confirmando...' : 'Confirmar importação' }}
+          </button>
+        </div>
+      </div>
+    }
+
+    @if (resultadoFinal()) {
+      <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-4">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-emerald-500">check_circle</span>
+          <p class="text-sm font-bold text-slate-900 dark:text-slate-100">
+            {{ resultadoFinal()!.correspondidos.length }} imagem(ns) importada(s) com sucesso.
+          </p>
+        </div>
+
+        @if (resultadoFinal()!.semCorrespondencia.length > 0) {
+          <div>
+            <p class="text-sm font-bold text-red-600 mb-2">Sem correspondência ({{ resultadoFinal()!.semCorrespondencia.length }})</p>
+            <ul class="text-sm text-slate-500 dark:text-slate-400 list-disc list-inside space-y-1">
+              @for (nome of resultadoFinal()!.semCorrespondencia; track nome) {
+                <li>{{ nome }}</li>
+              }
+            </ul>
+          </div>
+        }
+
+        <div class="flex gap-2 pt-2">
+          <button (click)="limpar()"
+                  class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
+            Importar mais
+          </button>
+          <button (click)="voltar()"
+                  class="px-5 py-2.5 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all">
+            Voltar pra Produtos
+          </button>
+        </div>
+      </div>
+    }
+
+  </div>
+</div>

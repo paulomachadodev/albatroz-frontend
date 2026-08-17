@@ -1,11 +1,11 @@
-export interface ProdutoRequisicao {
-  nome: string;
-  descricao: string;
-  sku: string;
-  preco: number;
-  estoque: number;
+export interface ProdutoDadosErpRequisicao {
+  quantidadePorCaixa: number | null;
 }
 
-export interface ProdutoUploadImagemRequisicao {
-  arquivo: File;
+export interface ProdutoFornecedorCorrecaoRequisicao {
+  codigoProdutoFornecedorCorrigido: string | null;
+}
+
+export interface ProdutoImagensReordenarRequisicao {
+  imagemIds: number[];
 }

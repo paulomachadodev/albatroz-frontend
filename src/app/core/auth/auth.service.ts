@@ -14,6 +14,7 @@ export interface UsuarioAutenticado {
   nome: string;
   email: string;
   perfis: string[];
+  permissoes: string[];
 }
 
 export interface AutenticacaoResposta {
@@ -24,6 +25,7 @@ export interface AutenticacaoResposta {
   nome: string;
   email: string;
   perfis: string[];
+  permissoes: string[];
 }
 
 interface JwtPayload {
@@ -70,6 +72,10 @@ export class AuthService {
 
   esqueciSenha(email: string, empresaId: number): Observable<void> {
     return this.http.post<void>(`${this.endpoint}/esqueci-senha`, { email, empresaId });
+  }
+
+  redefinirSenha(token: string, novaSenha: string): Observable<void> {
+    return this.http.post<void>(`${this.endpoint}/redefinir-senha`, { token, novaSenha });
   }
 
   logout(): void {
@@ -131,7 +137,8 @@ export class AuthService {
         usuarioId: usuario.id,
         nome: usuario.nome,
         email: usuario.email,
-        perfis: usuario.perfis
+        perfis: usuario.perfis,
+        permissoes: usuario.permissoes
       });
       subscriber.complete();
     });
@@ -190,6 +197,10 @@ export class AuthService {
     try { return JSON.parse(raw) as { ts: number }; } catch { return null; }
   }
 
+  temPermissao(chave: string): boolean {
+    return this._usuario()?.permissoes.includes(chave) ?? false;
+  }
+
   empresaIdAtual(): number | null {
     const payload = this.decodeToken();
     if (!payload?.empresa_id) return null;
@@ -204,7 +215,8 @@ export class AuthService {
       id: resp.usuarioId,
       nome: resp.nome,
       email: resp.email,
-      perfis: resp.perfis ?? []
+      perfis: resp.perfis ?? [],
+      permissoes: resp.permissoes ?? []
     };
     localStorage.setItem(USER_KEY, JSON.stringify(u));
     this._usuario.set(u);

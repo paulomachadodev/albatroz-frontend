@@ -1,0 +1,111 @@
+<div class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark px-4 sm:px-6 lg:px-8 xl:px-10 py-6 lg:py-8">
+  <div class="w-full space-y-8">
+
+    <nav class="flex items-center gap-2 text-sm text-slate-500">
+      <a class="hover:text-primary" routerLink="/dashboard">Início</a>
+      <span class="material-symbols-outlined text-xs">chevron_right</span>
+      <span class="text-slate-900 dark:text-slate-100 font-medium">Administração</span>
+      <span class="material-symbols-outlined text-xs">chevron_right</span>
+      <span class="text-slate-900 dark:text-slate-100 font-medium">Perfis</span>
+    </nav>
+
+    <app-page-header titulo="Perfis" subtitulo="Defina níveis de acesso (Admin, Gerente, Vendedor...) e o que cada um pode ver ou fazer.">
+      <button acoes (click)="abrirCriar()"
+              class="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all">
+        <span class="material-symbols-outlined text-sm">add</span>
+        Novo Perfil
+      </button>
+    </app-page-header>
+
+    <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+      <table class="w-full text-left">
+        <thead class="bg-slate-50 dark:bg-slate-800/50 text-xs font-bold text-slate-500 uppercase tracking-wide">
+          <tr>
+            <th class="px-6 py-4">Nome</th>
+            <th class="px-6 py-4">Descrição</th>
+            <th class="px-6 py-4 text-center">Permissões</th>
+            <th class="px-6 py-4 text-right">Ações</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+          @if (carregando()) {
+            <tr><td colspan="4" class="px-6 py-8 text-center text-sm text-slate-500">Carregando...</td></tr>
+          } @else if (itens().length === 0) {
+            <tr><td colspan="4" class="px-6 py-8 text-center text-sm text-slate-500">Nenhum perfil cadastrado.</td></tr>
+          } @else {
+            @for (item of itens(); track item.id) {
+              <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                <td class="px-6 py-4 text-sm font-bold text-slate-900 dark:text-slate-100 cursor-pointer" (click)="abrirEditar(item)">{{ item.nome }}</td>
+                <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{{ item.descricao || '-' }}</td>
+                <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 text-center">{{ item.permissoes.length }}</td>
+                <td class="px-6 py-4 text-right">
+                  <button (click)="inativar(item)" class="text-xs font-bold text-red-600 hover:underline">Inativar</button>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<app-drawer [aberto]="drawerAberto()"
+            [titulo]="modoDrawer() === 'criar' ? 'Novo Perfil' : 'Editar Perfil'"
+            (fechar)="fecharDrawer()">
+
+  <div class="space-y-4">
+    <div>
+      <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Nome</label>
+      <input type="text" [(ngModel)]="nome" placeholder="Ex: Gerente"
+             class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+    </div>
+
+    <div>
+      <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Descrição</label>
+      <input type="text" [(ngModel)]="descricao" placeholder="Opcional"
+             class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+    </div>
+
+    <div>
+      <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">O que esse perfil pode acessar</label>
+      <div class="mt-2 space-y-3 max-h-96 overflow-y-auto pr-1">
+        @for (recurso of recursos(); track recurso) {
+          <div class="border border-slate-200 dark:border-slate-800 rounded-lg p-3">
+            <label class="flex items-center gap-2 text-sm font-bold text-slate-800 dark:text-slate-200 mb-2">
+              <input type="checkbox"
+                     [checked]="recursoTotalmenteMarcado(recurso)"
+                     (change)="alternarRecursoInteiro(recurso)"
+                     class="rounded border-slate-300 text-primary focus:ring-primary/20"/>
+              {{ recurso }}
+            </label>
+            <div class="grid grid-cols-2 gap-1.5 pl-6">
+              @for (permissao of permissoesDoRecurso(recurso); track permissao.id) {
+                <label class="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
+                  <input type="checkbox"
+                         [checked]="permissaoIdsSelecionadas.has(permissao.id)"
+                         (change)="alternarPermissao(permissao.id)"
+                         class="rounded border-slate-300 text-primary focus:ring-primary/20"/>
+                  {{ permissao.acao }}
+                </label>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="pt-2 flex gap-2">
+      <button type="button" (click)="fecharDrawer()"
+              class="flex-1 px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
+        Cancelar
+      </button>
+      <button type="button" (click)="salvar()" [disabled]="salvando()"
+              class="flex-1 px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all">
+        {{ salvando() ? 'Salvando...' : 'Salvar' }}
+      </button>
+    </div>
+  </div>
+
+</app-drawer>

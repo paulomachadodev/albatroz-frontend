@@ -67,6 +67,21 @@ export const routes: Routes = [
         path: 'integracoes',
         loadChildren: () =>
           import('./contextos/etl/etl.routes').then(m => m.ETL_ROUTES)
+      },
+      {
+        path: 'usuarios',
+        loadChildren: () =>
+          import('./contextos/administracao/usuarios/usuarios.routes').then(m => m.USUARIOS_ROUTES)
+      },
+      {
+        path: 'perfis',
+        loadChildren: () =>
+          import('./contextos/administracao/perfis/perfis.routes').then(m => m.PERFIS_ROUTES)
+      },
+      {
+        path: 'configuracoes',
+        loadChildren: () =>
+          import('./contextos/administracao/configuracoes/configuracoes.routes').then(m => m.CONFIGURACOES_ROUTES)
       }
     ]
   },

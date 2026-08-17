@@ -1,0 +1,119 @@
+<div class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark px-4 sm:px-6 lg:px-8 xl:px-10 py-6 lg:py-8">
+  <div class="w-full space-y-8">
+
+    <nav class="flex items-center gap-2 text-sm text-slate-500">
+      <a class="hover:text-primary" routerLink="/dashboard">Início</a>
+      <span class="material-symbols-outlined text-xs">chevron_right</span>
+      <span class="text-slate-900 dark:text-slate-100 font-medium">Administração</span>
+      <span class="material-symbols-outlined text-xs">chevron_right</span>
+      <span class="text-slate-900 dark:text-slate-100 font-medium">Usuários</span>
+    </nav>
+
+    <app-page-header titulo="Usuários" subtitulo="Cadastre quem pode acessar o sistema e qual perfil cada um tem.">
+      <button acoes (click)="abrirCriar()"
+              class="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all">
+        <span class="material-symbols-outlined text-sm">add</span>
+        Novo Usuário
+      </button>
+    </app-page-header>
+
+    <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+      <table class="w-full text-left">
+        <thead class="bg-slate-50 dark:bg-slate-800/50 text-xs font-bold text-slate-500 uppercase tracking-wide">
+          <tr>
+            <th class="px-6 py-4">Nome</th>
+            <th class="px-6 py-4">E-mail</th>
+            <th class="px-6 py-4">Perfis</th>
+            <th class="px-6 py-4 text-center">Situação</th>
+            <th class="px-6 py-4 text-right">Ações</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+          @if (carregando()) {
+            <tr><td colspan="5" class="px-6 py-8 text-center text-sm text-slate-500">Carregando...</td></tr>
+          } @else if (itens().length === 0) {
+            <tr><td colspan="5" class="px-6 py-8 text-center text-sm text-slate-500">Nenhum usuário cadastrado.</td></tr>
+          } @else {
+            @for (item of itens(); track item.id) {
+              <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                <td class="px-6 py-4 text-sm font-bold text-slate-900 dark:text-slate-100 cursor-pointer" (click)="abrirEditar(item)">{{ item.nome }}</td>
+                <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{{ item.email }}</td>
+                <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{{ item.perfis.join(', ') || '-' }}</td>
+                <td class="px-6 py-4 text-center">
+                  @if (item.situacao === 'Ativo') {
+                    <span class="px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400">Ativo</span>
+                  } @else if (item.situacao === 'Bloqueado') {
+                    <span class="px-2 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400">Bloqueado</span>
+                  } @else {
+                    <span class="px-2 py-0.5 rounded-full text-xs font-bold bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300">Inativo</span>
+                  }
+                </td>
+                <td class="px-6 py-4 text-right">
+                  <button (click)="alternarBloqueio(item)"
+                          class="text-xs font-bold text-primary hover:underline">
+                    {{ item.situacao === 'Bloqueado' ? 'Desbloquear' : 'Bloquear' }}
+                  </button>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<app-drawer [aberto]="drawerAberto()"
+            [titulo]="modoDrawer() === 'criar' ? 'Novo Usuário' : 'Editar Usuário'"
+            (fechar)="fecharDrawer()">
+
+  <div class="space-y-4">
+    <div>
+      <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Nome</label>
+      <input type="text" [(ngModel)]="nome" placeholder="Nome completo"
+             class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+    </div>
+
+    <div>
+      <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">E-mail</label>
+      <input type="email" [(ngModel)]="email" placeholder="email@albatrozpapelaria.com.br"
+             class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+    </div>
+
+    @if (modoDrawer() === 'criar') {
+      <div>
+        <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Senha inicial</label>
+        <input type="password" [(ngModel)]="senha" placeholder="Mín. 8 caracteres, maiúscula, número e símbolo"
+               class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+      </div>
+    }
+
+    <div>
+      <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Perfis</label>
+      <div class="mt-2 space-y-2">
+        @for (perfil of perfisDisponiveis(); track perfil.id) {
+          <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+            <input type="checkbox"
+                   [checked]="perfilIdsSelecionados.has(perfil.id)"
+                   (change)="alternarPerfil(perfil.id)"
+                   class="rounded border-slate-300 text-primary focus:ring-primary/20"/>
+            {{ perfil.nome }}
+          </label>
+        }
+      </div>
+    </div>
+
+    <div class="pt-2 flex gap-2">
+      <button type="button" (click)="fecharDrawer()"
+              class="flex-1 px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
+        Cancelar
+      </button>
+      <button type="button" (click)="salvar()" [disabled]="salvando()"
+              class="flex-1 px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all">
+        {{ salvando() ? 'Salvando...' : 'Salvar' }}
+      </button>
+    </div>
+  </div>
+
+</app-drawer>

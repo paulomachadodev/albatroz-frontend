@@ -1,11 +1,13 @@
-import { Component, input, output, signal, computed } from '@angular/core';
+import { Component, inject, input, output, signal, computed } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
+import { AuthService } from '../../core/auth/auth.service';
 
 export interface ItemMenu {
   label: string;
   rota?:  string;
   icone: string;
   badge?: string;
+  permissao?: string;
   subItens?: ItemMenu[];
 }
 
@@ -23,6 +25,8 @@ export interface GrupoMenu {
   templateUrl: './sidebar.component.html'
 })
 export class SidebarComponent {
+  private auth = inject(AuthService);
+
   colapsada = input<boolean>(false);
   toggle    = output<void>();
 
@@ -39,7 +43,7 @@ export class SidebarComponent {
     {
       titulo: 'Operacional',
       itens: [
-        { label: 'Produtos',   rota: '/produtos',  icone: 'inventory_2' },
+        { label: 'Produtos',   rota: '/produtos',  icone: 'inventory_2', permissao: 'produtos:ler' },
         {
           label: 'Orçamentos', icone: 'request_quote',
           subItens: [
@@ -48,7 +52,7 @@ export class SidebarComponent {
             { label: 'Cadastro de Séries', rota: '/cadastros/series', icone: 'auto_stories' }
           ]
         },
-        { label: 'Estoque',    rota: '/estoque',   icone: 'package_2' },
+        { label: 'Estoque',    rota: '/estoque',   icone: 'package_2', permissao: 'estoque:ler' },
         { label: 'Fornecedores', rota: '/fornecedores', icone: 'local_shipping' },
         { label: 'Albia IA',   rota: '/albia',     icone: 'auto_awesome', badge: 'NOVO' }
       ]
@@ -73,11 +77,11 @@ export class SidebarComponent {
     {
       titulo: 'Administração',
       itens: [
-        { label: 'Usuários',     rota: '/usuarios',     icone: 'group' },
-        { label: 'Perfis',       rota: '/perfis',       icone: 'shield' },
+        { label: 'Usuários',     rota: '/usuarios',     icone: 'group', permissao: 'usuarios:ler' },
+        { label: 'Perfis',       rota: '/perfis',       icone: 'shield', permissao: 'perfis:ler' },
         { label: 'Empresas',     rota: '/cadastros/empresas', icone: 'business' },
-        { label: 'Relatórios',   rota: '/relatorios',   icone: 'bar_chart' },
-        { label: 'Configurações',rota: '/configuracoes',icone: 'settings' }
+        { label: 'Relatórios',   rota: '/relatorios',   icone: 'bar_chart', permissao: 'relatorios:ler' },
+        { label: 'Configurações',rota: '/configuracoes',icone: 'settings', permissao: 'configuracoes:ler' }
       ]
     },
     {
@@ -123,4 +127,19 @@ export class SidebarComponent {
     const sig = this.expandidosPorItem.get(label);
     return sig ? sig() : true;
   }
+
+  gruposVisiveis = computed<GrupoMenu[]>(() => {
+    const permitido = (item: ItemMenu): boolean =>
+      !item.permissao || this.auth.temPermissao(item.permissao);
+
+    const filtrarItens = (itens: ItemMenu[]): ItemMenu[] =>
+      itens
+        .filter(permitido)
+        .map(item => item.subItens ? { ...item, subItens: filtrarItens(item.subItens) } : item)
+        .filter(item => !item.subItens || item.subItens.length > 0);
+
+    return this.grupos
+      .map(grupo => ({ ...grupo, itens: filtrarItens(grupo.itens) }))
+      .filter(grupo => grupo.itens.length > 0);
+  });
 }

@@ -13,5 +13,11 @@ export const AUTENTICACAO_ROUTES: Routes = [
     canActivate: [publicoGuard],
     loadComponent: () =>
       import('./esqueci-senha/esqueci-senha.component').then(m => m.EsqueciSenhaComponent)
+  },
+  {
+    path: 'redefinir-senha',
+    canActivate: [publicoGuard],
+    loadComponent: () =>
+      import('./redefinir-senha/redefinir-senha.component').then(m => m.RedefinirSenhaComponent)
   }
 ];

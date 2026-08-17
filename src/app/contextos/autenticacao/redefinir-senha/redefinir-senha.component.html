@@ -1,0 +1,76 @@
+<div class="min-h-screen w-full flex items-center justify-center
+            bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50
+            dark:from-background-dark dark:via-background-dark dark:to-background-dark p-6 relative overflow-hidden">
+
+  <div class="blob bg-blue-300/40 w-[400px] h-[400px] -top-32 -left-32"></div>
+  <div class="blob bg-indigo-300/40 w-[420px] h-[420px] bottom-0 right-0"
+       style="animation-delay: -7s;"></div>
+
+  <div class="card w-full max-w-md p-8 relative z-10">
+    <div class="flex items-center gap-2 mb-6">
+      <img src="/logo/albatroz-logo.svg" alt="Albatroz" class="h-9 w-auto" />
+      <span class="font-semibold text-slate-800 dark:text-slate-100">Albatroz</span>
+    </div>
+
+    @if (!concluido()) {
+      <h1 class="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">Nova senha</h1>
+      <p class="text-slate-500 dark:text-slate-400 text-sm mb-6">
+        Escolha uma nova senha para sua conta. Mínimo 8 caracteres, com maiúscula, minúscula, número e símbolo.
+      </p>
+
+      @if (erro()) {
+        <div class="mb-4 px-4 py-3 rounded-lg bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-sm">
+          {{ erro() }}
+        </div>
+      }
+
+      <form [formGroup]="form" (ngSubmit)="submeter()" class="space-y-5" novalidate>
+        <div>
+          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Nova senha</label>
+          <div class="input-icon-wrap">
+            <span class="material-symbols-outlined">lock</span>
+            <input type="password" class="input-modern" formControlName="novaSenha"
+                   placeholder="Mínimo 8 caracteres" autocomplete="new-password" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Confirmar senha</label>
+          <div class="input-icon-wrap">
+            <span class="material-symbols-outlined">lock</span>
+            <input type="password" class="input-modern" formControlName="confirmacao"
+                   placeholder="Repita a nova senha" autocomplete="new-password" />
+          </div>
+          @if (form.errors?.['senhasDiferentes'] && form.controls.confirmacao.touched) {
+            <p class="text-xs text-red-600 mt-1">As senhas não conferem.</p>
+          }
+        </div>
+
+        <button type="submit" class="btn-primary w-full py-3 flex items-center justify-center gap-2" [disabled]="carregando()">
+          @if (carregando()) {
+            <span class="material-symbols-outlined animate-spin">progress_activity</span>
+            Salvando...
+          } @else {
+            Redefinir senha
+          }
+        </button>
+
+        <a routerLink="/login"
+           class="block text-center text-sm text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-colors">
+          ← Voltar para o login
+        </a>
+      </form>
+    } @else {
+      <div class="text-center py-4">
+        <div class="mx-auto size-14 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600
+                    flex items-center justify-center mb-4">
+          <span class="material-symbols-outlined text-3xl">check</span>
+        </div>
+        <h1 class="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">Senha redefinida</h1>
+        <p class="text-slate-500 dark:text-slate-400 text-sm mb-6">
+          Sua senha foi alterada. Redirecionando para o login...
+        </p>
+      </div>
+    }
+  </div>
+</div>

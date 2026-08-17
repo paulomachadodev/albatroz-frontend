@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { ApiService } from '../../../core/http/api.service';
-import { Resultado } from '../../../core/models';
+import { ApiService } from '../../../../core/http/api.service';
+import { Resultado } from '../../../../core/models';
 import { CondicoesComerciais } from '../models/condicoes-comerciais.model';
 import { CondicoesComerciaisAtualizarRequisicao } from '../dtos/condicoes-comerciais.dto';
 

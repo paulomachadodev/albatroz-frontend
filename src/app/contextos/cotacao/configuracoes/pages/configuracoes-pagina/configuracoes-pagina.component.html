@@ -1,26 +1,43 @@
 <div class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark px-4 sm:px-6 lg:px-8 xl:px-10 py-6 lg:py-8">
-  <div class="w-full max-w-2xl space-y-8">
+  <div class="w-full space-y-8">
 
     <nav class="flex items-center gap-2 text-sm text-slate-500">
       <a class="hover:text-primary" routerLink="/dashboard">Início</a>
       <span class="material-symbols-outlined text-xs">chevron_right</span>
-      <span class="text-slate-900 dark:text-slate-100 font-medium">Albia IA</span>
+      <span class="text-slate-900 dark:text-slate-100 font-medium">Orçamentos</span>
       <span class="material-symbols-outlined text-xs">chevron_right</span>
       <span class="text-slate-900 dark:text-slate-100 font-medium">Configurações</span>
     </nav>
 
-    <app-page-header titulo="Condições Comerciais" subtitulo="Parâmetros usados pela Albia pra calcular parcelamento e desconto na cotação de lista escolar."/>
+    <app-page-header titulo="Configurações" subtitulo="Ajustes de cotação de lista escolar, organizados por contexto."></app-page-header>
+
+    <div class="border-b border-slate-200 dark:border-slate-800">
+      <nav class="flex gap-6">
+        <button (click)="abaAtiva.set('condicoes-comerciais')"
+                class="pb-3 text-sm font-bold border-b-2 transition-colors"
+                [class.border-primary]="abaAtiva() === 'condicoes-comerciais'"
+                [class.text-primary]="abaAtiva() === 'condicoes-comerciais'"
+                [class.border-transparent]="abaAtiva() !== 'condicoes-comerciais'"
+                [class.text-slate-500]="abaAtiva() !== 'condicoes-comerciais'">
+          Condições Comerciais
+        </button>
+      </nav>
+    </div>
 
     @if (carregando()) {
-      <p class="text-slate-400 text-center py-12">Carregando...</p>
-    } @else {
-      @if (!cadastrado()) {
-        <div class="px-4 py-3 rounded-lg bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-sm font-medium">
-          Ainda não cadastrado pra esta empresa — a geração de PDF de cotação fica bloqueada até salvar aqui.
-        </div>
-      }
+      <div class="text-sm text-slate-500">Carregando...</div>
+    } @else if (abaAtiva() === 'condicoes-comerciais') {
+      <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-4">
+        <p class="text-sm text-slate-500 dark:text-slate-400">
+          Parâmetros usados pra calcular parcelamento e desconto na cotação de lista escolar.
+        </p>
 
-      <section class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-5">
+        @if (!cadastrado()) {
+          <div class="px-4 py-3 rounded-lg bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-sm font-medium">
+            Ainda não cadastrado pra esta empresa — a geração de PDF de cotação fica bloqueada até salvar aqui.
+          </div>
+        }
+
         <div>
           <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Valor mínimo da parcela (cartão de crédito)</label>
           <div class="mt-1 relative">
@@ -56,7 +73,7 @@
             {{ salvando() ? 'Salvando...' : 'Salvar' }}
           </button>
         </div>
-      </section>
+      </div>
     }
 
   </div>

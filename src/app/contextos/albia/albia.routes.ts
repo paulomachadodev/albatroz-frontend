@@ -4,6 +4,6 @@ export const ALBIA_ROUTES: Routes = [
   {
     path: '',
     loadComponent: () =>
-      import('./pages/configuracoes/configuracoes.component').then(m => m.AlbiaConfiguracoesComponent)
+      import('./pages/chat/chat.component').then(m => m.AlbiaChatComponent)
   }
 ];

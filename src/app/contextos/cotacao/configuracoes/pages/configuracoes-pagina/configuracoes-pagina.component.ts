@@ -3,17 +3,21 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CondicoesComerciaisService } from '../../services/condicoes-comerciais.service';
-import { ToastService } from '../../../../core/feedback/toast.service';
-import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
+import { ToastService } from '../../../../../core/feedback/toast.service';
+import { PageHeaderComponent } from '../../../../../shared/components/page-header/page-header.component';
+
+type Aba = 'condicoes-comerciais';
 
 @Component({
-  selector: 'app-albia-configuracoes',
+  selector: 'app-cotacao-configuracoes-pagina',
   standalone: true,
   imports: [CommonModule, RouterLink, FormsModule, PageHeaderComponent],
-  templateUrl: './configuracoes.component.html',
+  templateUrl: './configuracoes-pagina.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
-export class AlbiaConfiguracoesComponent implements OnInit {
+export class CotacaoConfiguracoesPaginaComponent implements OnInit {
+  abaAtiva = signal<Aba>('condicoes-comerciais');
+
   carregando = signal(true);
   salvando = signal(false);
   cadastrado = signal(false);

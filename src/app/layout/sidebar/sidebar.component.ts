@@ -49,7 +49,8 @@ export class SidebarComponent {
           subItens: [
             { label: 'Lista Escolar', rota: '/cotacoes/listas-escolares', icone: 'school' },
             { label: 'Cadastro de Escolas', rota: '/cadastros/escolas', icone: 'apartment' },
-            { label: 'Cadastro de Séries', rota: '/cadastros/series', icone: 'auto_stories' }
+            { label: 'Cadastro de Séries', rota: '/cadastros/series', icone: 'auto_stories' },
+            { label: 'Configurações', rota: '/cotacoes/configuracoes', icone: 'tune' }
           ]
         },
         { label: 'Estoque',    rota: '/estoque',   icone: 'package_2', permissao: 'estoque:ler' },

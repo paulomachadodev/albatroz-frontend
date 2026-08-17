@@ -43,19 +43,25 @@ export class SidebarComponent {
     {
       titulo: 'Operacional',
       itens: [
-        { label: 'Produtos',   rota: '/produtos',  icone: 'inventory_2', permissao: 'produtos:ler' },
         {
           label: 'Orçamentos', icone: 'request_quote',
           subItens: [
             { label: 'Lista Escolar', rota: '/cotacoes/listas-escolares', icone: 'school' },
-            { label: 'Cadastro de Escolas', rota: '/cadastros/escolas', icone: 'apartment' },
-            { label: 'Cadastro de Séries', rota: '/cadastros/series', icone: 'auto_stories' },
             { label: 'Configurações', rota: '/cotacoes/configuracoes', icone: 'tune' }
           ]
         },
         { label: 'Estoque',    rota: '/estoque',   icone: 'package_2', permissao: 'estoque:ler' },
-        { label: 'Fornecedores', rota: '/fornecedores', icone: 'local_shipping' },
         { label: 'Albia IA',   rota: '/albia',     icone: 'auto_awesome', badge: 'NOVO' }
+      ]
+    },
+    {
+      titulo: 'Cadastros',
+      itens: [
+        { label: 'Produtos',     rota: '/produtos',            icone: 'inventory_2', permissao: 'produtos:ler' },
+        { label: 'Fornecedores', rota: '/fornecedores',        icone: 'local_shipping' },
+        { label: 'Escolas',      rota: '/cadastros/escolas',   icone: 'apartment' },
+        { label: 'Séries',       rota: '/cadastros/series',    icone: 'auto_stories' },
+        { label: 'Empresas',     rota: '/cadastros/empresas',  icone: 'business' }
       ]
     },
     {
@@ -80,7 +86,6 @@ export class SidebarComponent {
       itens: [
         { label: 'Usuários',     rota: '/usuarios',     icone: 'group', permissao: 'usuarios:ler' },
         { label: 'Perfis',       rota: '/perfis',       icone: 'shield', permissao: 'perfis:ler' },
-        { label: 'Empresas',     rota: '/cadastros/empresas', icone: 'business' },
         { label: 'Relatórios',   rota: '/relatorios',   icone: 'bar_chart', permissao: 'relatorios:ler' },
         { label: 'Configurações',rota: '/configuracoes',icone: 'settings', permissao: 'configuracoes:ler' }
       ]

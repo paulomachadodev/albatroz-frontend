@@ -11,7 +11,7 @@
       <span class="text-slate-900 dark:text-slate-100 font-medium">Importar Imagens</span>
     </nav>
 
-    <app-page-header titulo="Importar Imagens em Lote" subtitulo="Envie arquivos nomeados como {código}-{índice}.jpg — o sistema casa automaticamente com o produto."></app-page-header>
+    <app-page-header titulo="Importar Imagens em Lote" subtitulo="Envie arquivos nomeados como {código}_{índice}.jpg — o sistema casa automaticamente com o produto."></app-page-header>
 
     <div (drop)="aoSoltar($event)" (dragover)="aoArrastarSobre($event)" (dragleave)="aoSairDaZona()"
          class="border-2 border-dashed rounded-xl p-8 text-center transition-colors"

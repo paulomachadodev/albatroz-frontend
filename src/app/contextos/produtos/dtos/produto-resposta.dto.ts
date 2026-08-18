@@ -32,6 +32,22 @@ export interface ProdutoEstoqueResposta {
   historico: Paginacao<ProdutoEstoqueHistoricoItem>;
 }
 
+export interface AlterarProdutoEmMassaItem {
+  codigo: string;
+  marca?: string | null;
+  fornecedor?: string | null;
+}
+
+export interface AlterarProdutoEmMassaItemResposta {
+  codigo: string;
+  sucesso: boolean;
+  erro?: string;
+}
+
+export interface AlterarProdutosEmMassaResposta {
+  itens: AlterarProdutoEmMassaItemResposta[];
+}
+
 export interface ProdutoImportarImagensResposta {
   confirmado: boolean;
   correspondidos: ProdutoImportarImagensCorrespondido[];

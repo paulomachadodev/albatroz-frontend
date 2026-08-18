@@ -9,7 +9,10 @@ import {
   ProdutoFornecedorCorrecaoRequisicao,
   ProdutoImagensReordenarRequisicao
 } from '../dtos/produto-requisicao.dto';
-import { ProdutoImagemUploadResposta, ProdutoImportarImagensResposta, ProdutoEstoqueResposta } from '../dtos/produto-resposta.dto';
+import {
+  ProdutoImagemUploadResposta, ProdutoImportarImagensResposta, ProdutoEstoqueResposta,
+  AlterarProdutoEmMassaItem, AlterarProdutosEmMassaResposta
+} from '../dtos/produto-resposta.dto';
 
 export interface ProdutoFiltro {
   texto?: string;
@@ -71,6 +74,10 @@ export class ProdutosService {
 
   excluirImagem(id: number, imagemId: number): Observable<Resultado<void>> {
     return this.api.delete<void>(`${this.endpoint}/${id}/imagens/${imagemId}`);
+  }
+
+  alterarEmMassa(itens: AlterarProdutoEmMassaItem[]): Observable<Resultado<AlterarProdutosEmMassaResposta>> {
+    return this.api.post<AlterarProdutosEmMassaResposta>(`${this.endpoint}/alterar-em-massa`, { itens });
   }
 
   importarImagensLote(arquivos: File[], confirmar: boolean): Observable<Resultado<ProdutoImportarImagensResposta>> {

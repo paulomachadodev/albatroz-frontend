@@ -2,18 +2,28 @@ import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import * as XLSX from 'xlsx';
 import { ProdutosService, ProdutoFiltro } from '../../services/produtos.service';
 import { ProdutoResumo } from '../../models/produto.model';
+import { AlterarProdutoEmMassaItemResposta } from '../../dtos/produto-resposta.dto';
 import { ToastService } from '../../../../core/feedback/toast.service';
 import { ListagemPaginadaComponent } from '../../../../shared/components/listagem-paginada/listagem-paginada.component';
 import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 import { Ordenacao, ThOrdenavelComponent } from '../../../../shared/components/th-ordenavel/th-ordenavel.component';
 import { MenuDropdownComponent } from '../../../../shared/components/menu-dropdown/menu-dropdown.component';
+import { ModalComponent } from '../../../../shared/components/modal/modal.component';
+
+interface LinhaPlanilhaMassa {
+  Codigo: string;
+  Nome: string;
+  Marca: string;
+  Fornecedor: string;
+}
 
 @Component({
   selector: 'app-produtos-lista',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, ListagemPaginadaComponent, PageHeaderComponent, ThOrdenavelComponent, MenuDropdownComponent],
+  imports: [CommonModule, RouterLink, FormsModule, ListagemPaginadaComponent, PageHeaderComponent, ThOrdenavelComponent, MenuDropdownComponent, ModalComponent],
   templateUrl: './produtos-lista.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
@@ -27,6 +37,13 @@ export class ProdutosListaComponent implements OnInit {
   ordenacaoAtual = signal<Ordenacao | null>(null);
 
   filtro: ProdutoFiltro = {};
+
+  selecionados = new Map<number, ProdutoResumo>();
+  qtdSelecionados = signal(0);
+
+  modalMassaAberto = signal(false);
+  processandoMassa = signal(false);
+  resultadoMassa = signal<AlterarProdutoEmMassaItemResposta[] | null>(null);
 
   constructor(
     private produtosService: ProdutosService,
@@ -108,6 +125,91 @@ export class ProdutosListaComponent implements OnInit {
 
   irParaImportar() {
     this.router.navigate(['/produtos/importar-imagens']);
+  }
+
+  // ---- Seleção pra alteração em massa ----
+
+  estaSelecionado(item: ProdutoResumo): boolean {
+    return this.selecionados.has(item.id);
+  }
+
+  aoAlternarSelecao(item: ProdutoResumo, marcado: boolean) {
+    if (marcado) this.selecionados.set(item.id, item);
+    else this.selecionados.delete(item.id);
+    this.qtdSelecionados.set(this.selecionados.size);
+  }
+
+  limparSelecao() {
+    this.selecionados.clear();
+    this.qtdSelecionados.set(0);
+  }
+
+  abrirAlterarEmMassa() {
+    if (this.selecionados.size === 0) {
+      this.toast.erro('Selecione ao menos um produto na listagem.');
+      return;
+    }
+    this.resultadoMassa.set(null);
+    this.modalMassaAberto.set(true);
+  }
+
+  fecharModalMassa() {
+    this.modalMassaAberto.set(false);
+  }
+
+  baixarPlanilhaMassa() {
+    const linhas: LinhaPlanilhaMassa[] = Array.from(this.selecionados.values()).map(item => ({
+      Codigo: item.codigo,
+      Nome: item.nome,
+      Marca: item.marca ?? '',
+      Fornecedor: ''
+    }));
+    const planilha = XLSX.utils.json_to_sheet(linhas);
+    const livro = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(livro, planilha, 'Produtos');
+    XLSX.writeFile(livro, 'produtos-alterar-em-massa.xlsx');
+  }
+
+  aoSelecionarPlanilhaMassa(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const arquivo = input.files?.[0];
+    if (!arquivo) return;
+
+    arquivo.arrayBuffer().then(buffer => {
+      const livro = XLSX.read(buffer, { type: 'array' });
+      const aba = livro.Sheets[livro.SheetNames[0]];
+      const linhas = XLSX.utils.sheet_to_json<LinhaPlanilhaMassa>(aba);
+
+      const itens = linhas
+        .filter(l => (l.Codigo ?? '').toString().trim().length > 0)
+        .map(l => ({
+          codigo: l.Codigo.toString().trim(),
+          marca: l.Marca ? l.Marca.toString().trim() || null : null,
+          fornecedor: l.Fornecedor ? l.Fornecedor.toString().trim() || null : null
+        }));
+
+      if (itens.length === 0) {
+        this.toast.erro('Planilha vazia ou sem coluna Código.');
+        input.value = '';
+        return;
+      }
+
+      this.processandoMassa.set(true);
+      this.produtosService.alterarEmMassa(itens).subscribe({
+        next: res => {
+          this.processandoMassa.set(false);
+          this.resultadoMassa.set(res.dados?.itens ?? []);
+          this.limparSelecao();
+          this.carregar(this.paginaAtual());
+        },
+        error: err => {
+          this.processandoMassa.set(false);
+          this.toast.erroServidor(err, 'Não foi possível processar a planilha.');
+        }
+      });
+
+      input.value = '';
+    });
   }
 
   rotuloTipo(tipo: string): string {

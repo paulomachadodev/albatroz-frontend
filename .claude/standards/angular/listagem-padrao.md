@@ -160,6 +160,19 @@ Ainda não migrado (não é regressão, é lacuna): `produtos-lista` não tem co
 
 Não usar pra 1-2 ações — aí o botão único (padrão antigo, ver exemplo no topo do arquivo) continua mais direto.
 
+## `app-overlay-progresso` — bloqueio de tela em operação demorada
+
+`shared/components/overlay-progresso/` — tela toda escurecida (`fixed inset-0 bg-black/60 backdrop-blur-sm z-[100]`) com ícone giratório grande + mensagem, trava interação (nada por trás é clicável, cobre até o header). Usa em qualquer sequência de requests que demore (upload de várias imagens, confirmação de lote) — sem isso o usuário não sabe se a ação está rodando.
+
+```html
+<app-overlay-progresso [visivel]="enviando()" mensagem="Enviando imagens..."
+                        [concluidas]="feitas()" [total]="totalArquivos()"></app-overlay-progresso>
+```
+
+`concluidas`/`total` são opcionais — se `total` for 0 (padrão), some o contador "X/Y (Z%)" e mostra só o spinner+mensagem (bom pra operação de request único tipo confirmar um lote, sem sub-etapas pra contar).
+
+**Não confundir** com `app-spinner` (inline, pequeno, não bloqueia nada) nem com o ícone giratório usado em `login`/`lista-detalhe` (mesmo ícone `progress_activity`, mas sem o backdrop/bloqueio — aquele é decoração inline, este é modal de bloqueio).
+
 ## Tamanho de página
 
 Padrão: opções `[10, 50, 100]`, default `10`.

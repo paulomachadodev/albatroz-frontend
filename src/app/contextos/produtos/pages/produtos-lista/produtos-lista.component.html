@@ -147,16 +147,30 @@
                    class="rounded border-slate-300 text-primary focus:ring-primary/20"/>
           </td>
           <td class="px-6 py-4">
-            @if (item.urlImagemPrincipal) {
-              <img [src]="item.urlImagemPrincipal" [alt]="item.nome" class="w-10 h-10 rounded-lg object-cover"/>
-            } @else {
-              <div class="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                <span class="material-symbols-outlined text-slate-300 dark:text-slate-600 text-lg">image_not_supported</span>
-              </div>
-            }
+            <div class="w-10 h-10 relative overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-800">
+              @if (item.urlImagemPrincipal) {
+                <img [src]="item.urlImagemPrincipal" [alt]="item.nome" class="absolute inset-0 w-full h-full object-cover"/>
+              } @else {
+                <span class="material-symbols-outlined text-slate-300 dark:text-slate-600 text-lg absolute inset-0 flex items-center justify-center">image_not_supported</span>
+              }
+            </div>
           </td>
           <td class="px-6 py-4">
-            <p class="text-sm font-bold text-slate-900 dark:text-slate-100">{{ item.nome }}</p>
+            <p class="text-sm font-bold text-slate-900 dark:text-slate-100">
+              {{ item.nome }}
+              @if (item.quantidadeVariacoes > 0) {
+                <button type="button" (click)="$event.stopPropagation(); abrirDetalheAba(item, 'variacoes')"
+                        class="ml-1 text-xs font-bold text-primary hover:underline align-middle">
+                  {{ item.quantidadeVariacoes }} variaç{{ item.quantidadeVariacoes === 1 ? 'ão' : 'ões' }}
+                </button>
+              }
+              @if (item.quantidadeItensKit > 0) {
+                <button type="button" (click)="$event.stopPropagation(); abrirDetalheAba(item, 'variacoes')"
+                        class="ml-1 text-xs font-bold text-primary hover:underline align-middle">
+                  {{ item.quantidadeItensKit }} {{ item.quantidadeItensKit === 1 ? 'item' : 'itens' }}
+                </button>
+              }
+            </p>
             <p class="text-xs text-slate-400">{{ item.codigo }}</p>
           </td>
           <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{{ item.marca || '-' }}</td>

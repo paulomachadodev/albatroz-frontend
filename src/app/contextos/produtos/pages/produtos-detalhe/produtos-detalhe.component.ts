@@ -12,13 +12,14 @@ import { ConfirmService } from '../../../../core/feedback/confirm.service';
 import { BtnIconeComponent } from '../../../../shared/components/btn-icone/btn-icone.component';
 import { ListagemPaginadaComponent } from '../../../../shared/components/listagem-paginada/listagem-paginada.component';
 import { SelectBuscaComponent, OpcaoSelectBusca } from '../../../../shared/components/select-busca/select-busca.component';
+import { OverlayProgressoComponent } from '../../../../shared/components/overlay-progresso/overlay-progresso.component';
 
 type Aba = 'geral' | 'imagens' | 'fornecedores' | 'variacoes' | 'estoque';
 
 @Component({
   selector: 'app-produtos-detalhe',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, BtnIconeComponent, ListagemPaginadaComponent, SelectBuscaComponent],
+  imports: [CommonModule, RouterLink, FormsModule, BtnIconeComponent, ListagemPaginadaComponent, SelectBuscaComponent, OverlayProgressoComponent],
   templateUrl: './produtos-detalhe.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
@@ -39,6 +40,8 @@ export class ProdutosDetalheComponent implements OnInit {
   readonly slotsImagens = [0, 1, 2, 3, 4, 5, 6, 7];
 
   enviandoImagem = signal(false);
+  imagensConcluidas = signal(0);
+  imagensTotal = signal(0);
   excluindoImagemId = signal<number | null>(null);
   imagemArrastadaId = signal<number | null>(null);
   salvandoOrdem = signal(false);
@@ -64,7 +67,13 @@ export class ProdutosDetalheComponent implements OnInit {
 
   ngOnInit() {
     this.idProduto = Number(this.route.snapshot.paramMap.get('id'));
+    const abaQuery = this.route.snapshot.queryParamMap.get('aba') as Aba | null;
+    if (abaQuery) this.abaAtiva.set(abaQuery);
     this.carregar();
+  }
+
+  abrirSubProduto(id: number) {
+    this.router.navigate(['/produtos', id]);
   }
 
   carregar() {
@@ -84,6 +93,9 @@ export class ProdutosDetalheComponent implements OnInit {
 
         if (dados?.tipo === 'simples' && this.abaAtiva() === 'variacoes') {
           this.abaAtiva.set('geral');
+        }
+        if (this.abaAtiva() === 'estoque' && !this.estoque()) {
+          this.carregarEstoque();
         }
 
         this.carregando.set(false);
@@ -223,6 +235,8 @@ export class ProdutosDetalheComponent implements OnInit {
     if (aEnviar.length === 0) return;
 
     this.enviandoImagem.set(true);
+    this.imagensConcluidas.set(0);
+    this.imagensTotal.set(aEnviar.length);
     this.enviarSequencial(aEnviar, totalAtual + 1, 0);
   }
 
@@ -235,7 +249,10 @@ export class ProdutosDetalheComponent implements OnInit {
     }
 
     this.produtosService.uploadImagem(this.idProduto, arquivos[i], indiceInicial + i).subscribe({
-      next: () => this.enviarSequencial(arquivos, indiceInicial, i + 1),
+      next: () => {
+        this.imagensConcluidas.set(i + 1);
+        this.enviarSequencial(arquivos, indiceInicial, i + 1);
+      },
       error: err => {
         this.enviandoImagem.set(false);
         this.toast.erroServidor(err, 'Não foi possível enviar a imagem.');
@@ -246,10 +263,13 @@ export class ProdutosDetalheComponent implements OnInit {
 
   private substituirImagem(existente: ProdutoImagem, arquivo: File) {
     this.enviandoImagem.set(true);
+    this.imagensConcluidas.set(0);
+    this.imagensTotal.set(1);
     this.produtosService.excluirImagem(this.idProduto, existente.id).subscribe({
       next: () => {
         this.produtosService.uploadImagem(this.idProduto, arquivo, existente.indice).subscribe({
           next: () => {
+            this.imagensConcluidas.set(1);
             this.enviandoImagem.set(false);
             this.toast.sucesso('Imagem substituída.');
             this.recarregarSilencioso();

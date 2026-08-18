@@ -125,6 +125,10 @@ export class ProdutosListaComponent implements OnInit {
     this.router.navigate(['/produtos', item.id]);
   }
 
+  abrirDetalheAba(item: ProdutoResumo, aba: string) {
+    this.router.navigate(['/produtos', item.id], { queryParams: { aba } });
+  }
+
   irParaImportar() {
     this.router.navigate(['/produtos/importar-imagens']);
   }

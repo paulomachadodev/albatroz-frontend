@@ -27,10 +27,6 @@
       }
     </div>
 
-    @if (processandoPreview()) {
-      <div class="text-sm text-slate-500">Processando preview...</div>
-    }
-
     @if (resultadoPreview() && !resultadoFinal()) {
       <div class="space-y-4">
         <app-listagem-paginada
@@ -152,3 +148,6 @@
 
   </div>
 </div>
+
+<app-overlay-progresso [visivel]="processandoPreview() || confirmandoImportacao()"
+                        [mensagem]="confirmandoImportacao() ? 'Confirmando importação...' : 'Processando preview...'"></app-overlay-progresso>

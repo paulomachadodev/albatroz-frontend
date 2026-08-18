@@ -1,0 +1,9 @@
+@if (visivel()) {
+  <div class="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center gap-3">
+    <span class="material-symbols-outlined animate-spin text-5xl text-white">progress_activity</span>
+    <p class="text-white font-bold text-sm">{{ mensagem() }}</p>
+    @if (total() > 0) {
+      <p class="text-white/80 text-xs">{{ concluidas() }}/{{ total() }} ({{ percentual() }}%)</p>
+    }
+  </div>
+}

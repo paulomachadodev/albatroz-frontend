@@ -7,11 +7,12 @@ import { ToastService } from '../../../../core/feedback/toast.service';
 import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 import { ListagemPaginadaComponent } from '../../../../shared/components/listagem-paginada/listagem-paginada.component';
 import { BtnIconeComponent } from '../../../../shared/components/btn-icone/btn-icone.component';
+import { OverlayProgressoComponent } from '../../../../shared/components/overlay-progresso/overlay-progresso.component';
 
 @Component({
   selector: 'app-produtos-importar-imagens',
   standalone: true,
-  imports: [CommonModule, RouterLink, PageHeaderComponent, ListagemPaginadaComponent, BtnIconeComponent],
+  imports: [CommonModule, RouterLink, PageHeaderComponent, ListagemPaginadaComponent, BtnIconeComponent, OverlayProgressoComponent],
   templateUrl: './produtos-importar-imagens.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })

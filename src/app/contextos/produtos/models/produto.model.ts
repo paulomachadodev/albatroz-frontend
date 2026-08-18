@@ -9,6 +9,8 @@ export interface ProdutoResumo {
   gtin?: string;
   situacao: string;
   tipo: ProdutoTipo;
+  quantidadeVariacoes: number;
+  quantidadeItensKit: number;
   temImagem: boolean;
   urlImagemPrincipal?: string;
   estoqueAtual: number;
@@ -31,18 +33,20 @@ export interface ProdutoFornecedor {
 
 export interface ProdutoVariacao {
   id: number;
-  sku: string;
-  gtin?: string;
-  descricao: string;
+  codigo: string;
+  nome: string;
   preco?: number;
-  estoqueQuantidade?: number;
+  estoqueAtual: number;
+  urlImagemPrincipal?: string;
 }
 
 export interface ProdutoKitComponente {
   idComponente: number;
-  skuComponente: string;
-  descricaoComponente: string;
+  codigoComponente: string;
+  nomeComponente: string;
   quantidade: number;
+  estoqueAtual: number;
+  urlImagemPrincipal?: string;
 }
 
 export interface ProdutoDetalhe {

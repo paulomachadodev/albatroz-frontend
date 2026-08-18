@@ -272,27 +272,35 @@
         </div>
       }
 
-      <!-- Aba Variações / Kit -->
+      <!-- Aba Variações / Kit — cada linha é produto real, clicável, abre a própria página -->
       @if (abaAtiva() === 'variacoes' && produto()!.tipo === 'variacao') {
         <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
           <table class="w-full text-left">
             <thead class="bg-slate-50 dark:bg-slate-800/50 text-xs font-bold text-slate-500 uppercase tracking-wide">
               <tr>
-                <th class="px-6 py-4">SKU</th>
-                <th class="px-6 py-4">GTIN</th>
-                <th class="px-6 py-4">Descrição</th>
+                <th class="px-6 py-4 w-16"></th>
+                <th class="px-6 py-4">Código</th>
+                <th class="px-6 py-4">Nome</th>
                 <th class="px-6 py-4 text-right">Preço</th>
                 <th class="px-6 py-4 text-right">Estoque</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
               @for (variacao of produto()!.variacoes; track variacao.id) {
-                <tr>
-                  <td class="px-6 py-4 text-sm font-bold text-slate-900 dark:text-slate-100">{{ variacao.sku }}</td>
-                  <td class="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">{{ variacao.gtin || '-' }}</td>
-                  <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{{ variacao.descricao }}</td>
+                <tr (click)="abrirSubProduto(variacao.id)" class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors cursor-pointer">
+                  <td class="px-6 py-4">
+                    <div class="w-10 h-10 relative overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-800">
+                      @if (variacao.urlImagemPrincipal) {
+                        <img [src]="variacao.urlImagemPrincipal" [alt]="variacao.nome" class="absolute inset-0 w-full h-full object-cover"/>
+                      } @else {
+                        <span class="material-symbols-outlined text-slate-300 dark:text-slate-600 text-lg absolute inset-0 flex items-center justify-center">image_not_supported</span>
+                      }
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 text-sm font-bold text-slate-900 dark:text-slate-100">{{ variacao.codigo }}</td>
+                  <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{{ variacao.nome }}</td>
                   <td class="px-6 py-4 text-right text-sm font-bold">{{ formatarReais(variacao.preco) }}</td>
-                  <td class="px-6 py-4 text-right text-sm">{{ formatarNumero(variacao.estoqueQuantidade) }}</td>
+                  <td class="px-6 py-4 text-right text-sm">{{ formatarNumero(variacao.estoqueAtual) }}</td>
                 </tr>
               }
             </tbody>
@@ -305,17 +313,29 @@
           <table class="w-full text-left">
             <thead class="bg-slate-50 dark:bg-slate-800/50 text-xs font-bold text-slate-500 uppercase tracking-wide">
               <tr>
-                <th class="px-6 py-4">SKU</th>
-                <th class="px-6 py-4">Descrição</th>
+                <th class="px-6 py-4 w-16"></th>
+                <th class="px-6 py-4">Código</th>
+                <th class="px-6 py-4">Nome</th>
                 <th class="px-6 py-4 text-right">Quantidade</th>
+                <th class="px-6 py-4 text-right">Estoque</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
               @for (componente of produto()!.kitComponentes; track componente.idComponente) {
-                <tr>
-                  <td class="px-6 py-4 text-sm font-bold text-slate-900 dark:text-slate-100">{{ componente.skuComponente }}</td>
-                  <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{{ componente.descricaoComponente }}</td>
+                <tr (click)="abrirSubProduto(componente.idComponente)" class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors cursor-pointer">
+                  <td class="px-6 py-4">
+                    <div class="w-10 h-10 relative overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-800">
+                      @if (componente.urlImagemPrincipal) {
+                        <img [src]="componente.urlImagemPrincipal" [alt]="componente.nomeComponente" class="absolute inset-0 w-full h-full object-cover"/>
+                      } @else {
+                        <span class="material-symbols-outlined text-slate-300 dark:text-slate-600 text-lg absolute inset-0 flex items-center justify-center">image_not_supported</span>
+                      }
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 text-sm font-bold text-slate-900 dark:text-slate-100">{{ componente.codigoComponente }}</td>
+                  <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{{ componente.nomeComponente }}</td>
                   <td class="px-6 py-4 text-right text-sm">{{ formatarNumero(componente.quantidade) }}</td>
+                  <td class="px-6 py-4 text-right text-sm">{{ formatarNumero(componente.estoqueAtual) }}</td>
                 </tr>
               }
             </tbody>
@@ -386,3 +406,6 @@
 
   </div>
 </div>
+
+<app-overlay-progresso [visivel]="enviandoImagem()" mensagem="Enviando imagens..."
+                        [concluidas]="imagensConcluidas()" [total]="imagensTotal()"></app-overlay-progresso>

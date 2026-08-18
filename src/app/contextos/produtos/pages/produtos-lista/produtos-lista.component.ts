@@ -7,6 +7,7 @@ import { ProdutosService, ProdutoFiltro } from '../../services/produtos.service'
 import { ProdutoResumo } from '../../models/produto.model';
 import { AlterarProdutoEmMassaItemResposta } from '../../dtos/produto-resposta.dto';
 import { ToastService } from '../../../../core/feedback/toast.service';
+import { ConfirmService } from '../../../../core/feedback/confirm.service';
 import { ListagemPaginadaComponent } from '../../../../shared/components/listagem-paginada/listagem-paginada.component';
 import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 import { Ordenacao, ThOrdenavelComponent } from '../../../../shared/components/th-ordenavel/th-ordenavel.component';
@@ -48,6 +49,7 @@ export class ProdutosListaComponent implements OnInit {
   constructor(
     private produtosService: ProdutosService,
     private toast: ToastService,
+    private confirm: ConfirmService,
     private router: Router
   ) {}
 
@@ -125,6 +127,20 @@ export class ProdutosListaComponent implements OnInit {
 
   irParaImportar() {
     this.router.navigate(['/produtos/importar-imagens']);
+  }
+
+  async migrarImagensTinyParaR2() {
+    const confirmado = await this.confirm.confirmar(
+      'Migrar imagens do Tiny pro R2?',
+      'Processa em background TODOS os produtos ainda não migrados: recorta/converte cada imagem tiny e grava uma cópia origem=erp no R2, inativando a original. Pode demorar — acompanhe pelo Hangfire/Seq.',
+      { textoConfirmar: 'Migrar' }
+    );
+    if (!confirmado) return;
+
+    this.produtosService.migrarImagensTinyParaR2().subscribe({
+      next: () => this.toast.sucesso('Migração iniciada em background.'),
+      error: err => this.toast.erroServidor(err, 'Não foi possível iniciar a migração.')
+    });
   }
 
   // ---- Seleção pra alteração em massa ----

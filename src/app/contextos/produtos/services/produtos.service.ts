@@ -80,6 +80,10 @@ export class ProdutosService {
     return this.api.post<AlterarProdutosEmMassaResposta>(`${this.endpoint}/alterar-em-massa`, { itens });
   }
 
+  migrarImagensTinyParaR2(): Observable<Resultado<{ idJob: string }>> {
+    return this.api.post<{ idJob: string }>(`${this.endpoint}/imagens/migrar-tiny-r2`, {});
+  }
+
   importarImagensLote(arquivos: File[], confirmar: boolean): Observable<Resultado<ProdutoImportarImagensResposta>> {
     const formData = new FormData();
     arquivos.forEach(arquivo => formData.append('files', arquivo));

@@ -188,7 +188,7 @@
             </div>
           } @else {
             <p class="text-xs text-slate-400">Arraste os cards pra reordenar.</p>
-            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            <div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3">
               @for (imagem of produto()!.imagens; track imagem.id) {
                 <div class="relative group bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden cursor-move"
                      draggable="true"

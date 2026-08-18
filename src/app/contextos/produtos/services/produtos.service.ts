@@ -55,10 +55,10 @@ export class ProdutosService {
     return this.api.put<void>(`${this.endpoint}/${id}/fornecedores/${tinyIdFornecedor}/correcao`, requisicao);
   }
 
-  uploadImagem(id: number, arquivo: File): Observable<Resultado<ProdutoImagemUploadResposta>> {
+  uploadImagem(id: number, arquivo: File, indice: number): Observable<Resultado<ProdutoImagemUploadResposta>> {
     const formData = new FormData();
     formData.append('file', arquivo);
-    return this.api.post<ProdutoImagemUploadResposta>(`${this.endpoint}/${id}/imagens`, formData);
+    return this.api.post<ProdutoImagemUploadResposta>(`${this.endpoint}/${id}/imagens?indice=${indice}`, formData);
   }
 
   reordenarImagens(id: number, requisicao: ProdutoImagensReordenarRequisicao): Observable<Resultado<void>> {

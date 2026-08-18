@@ -120,6 +120,25 @@ Botão de ação na última coluna (`text-right`) segue sempre o mesmo estilo, i
 
 Cor vermelha (`text-red-600`/`text-rose-600`) é reservada só pra exclusão definitiva de registro (ver `lista-detalhe`/`categoria-modal`), nunca pra inativar/bloquear — essas são reversíveis e usam `text-primary`, igual `usuarios-lista` (`Bloquear`/`Desbloquear`).
 
+Link de texto é pra **1 ação só** por linha/card. A partir de 2 ações no mesmo lugar (célula de tabela, card de item, etc.), usa `app-btn-icone` (abaixo) — link de texto empilhado/lado-a-lado com outro não é o padrão.
+
+## `app-btn-icone` — botão quadrado de ação (2+ ações no mesmo lugar)
+
+`shared/components/btn-icone/` — quadrado `w-8 h-8 rounded-lg`, ícone `material-symbols-outlined` centralizado, pensado pra agrupar múltiplas ações compactas onde um link de texto não cabe (card de imagem, célula de ação com mais de 1 botão).
+
+```html
+<div class="flex gap-1">
+  <app-btn-icone icone="delete" titulo="Excluir" variante="perigo" (clicar)="excluir(item)"></app-btn-icone>
+  <app-btn-icone icone="star" titulo="Tornar capa" (clicar)="tornarCapa(item)"></app-btn-icone>
+</div>
+```
+
+`variante`: `neutro` (padrão, cinza) | `perigo` (vermelho — mesma regra de cor acima: só pra ação destrutiva/irreversível). `titulo` vira `title` do `<button>` (tooltip nativo, sem texto visível). `desabilitado` desabilita e aplica opacidade.
+
+**Não usar `[class.algo/com-barra]` nem `[class.dark:hover:algo]`** em nenhum componente Angular — o parser de template (`NG5002`) não aceita `/` nem `:` extra dentro do binding `[class.X]`. Pra classe condicional com esses caracteres (opacidade Tailwind `bg-primary/5`, variantes `dark:hover:`), usa `[class]="condicao ? 'classes...' : 'outras...'"` (string inteira, não binding por classe individual) — ver exemplo em `btn-icone.component.html`.
+
+Ainda não migrado (não é regressão, é lacuna): `produtos-lista` não tem coluna de ações — a linha inteira navega pro detalhe no click. Quando a tela ganhar ações rápidas (ex: excluir sem abrir detalhe), usar `app-btn-icone` desde o início, não link de texto.
+
 ## Tamanho de página
 
 Padrão: opções `[10, 50, 100]`, default `10`.

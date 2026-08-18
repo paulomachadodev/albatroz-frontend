@@ -1,15 +1,17 @@
-import { Component, signal } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { ProdutosService } from '../../services/produtos.service';
-import { ProdutoImportarImagensResposta } from '../../dtos/produto-resposta.dto';
+import { ProdutoImportarImagensCorrespondido, ProdutoImportarImagensResposta } from '../../dtos/produto-resposta.dto';
 import { ToastService } from '../../../../core/feedback/toast.service';
 import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
+import { ListagemPaginadaComponent } from '../../../../shared/components/listagem-paginada/listagem-paginada.component';
+import { BtnIconeComponent } from '../../../../shared/components/btn-icone/btn-icone.component';
 
 @Component({
   selector: 'app-produtos-importar-imagens',
   standalone: true,
-  imports: [CommonModule, RouterLink, PageHeaderComponent],
+  imports: [CommonModule, RouterLink, PageHeaderComponent, ListagemPaginadaComponent, BtnIconeComponent],
   templateUrl: './produtos-importar-imagens.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
@@ -20,6 +22,28 @@ export class ProdutosImportarImagensComponent {
   confirmandoImportacao = signal(false);
   resultadoPreview = signal<ProdutoImportarImagensResposta | null>(null);
   resultadoFinal = signal<ProdutoImportarImagensResposta | null>(null);
+
+  paginaAtual = signal(1);
+  tamanhoPagina = signal(10);
+
+  correspondidosPagina = computed(() => {
+    const resultado = this.resultadoFinal() ?? this.resultadoPreview();
+    const todos = resultado?.correspondidos ?? [];
+    const inicio = (this.paginaAtual() - 1) * this.tamanhoPagina();
+    return todos.slice(inicio, inicio + this.tamanhoPagina());
+  });
+
+  importadosComSucesso = computed(() =>
+    (this.resultadoFinal()?.correspondidos ?? []).filter(i => !i.erro).length);
+
+  ignorados = computed(() =>
+    (this.resultadoFinal()?.correspondidos ?? []).filter(i => !!i.erro));
+
+  totalPaginas = computed(() => {
+    const resultado = this.resultadoFinal() ?? this.resultadoPreview();
+    const total = resultado?.correspondidos.length ?? 0;
+    return Math.max(1, Math.ceil(total / this.tamanhoPagina()));
+  });
 
   constructor(
     private produtosService: ProdutosService,
@@ -64,6 +88,7 @@ export class ProdutosImportarImagensComponent {
     this.arquivos.set(imagens);
     this.resultadoPreview.set(null);
     this.resultadoFinal.set(null);
+    this.paginaAtual.set(1);
     this.gerarPreview();
   }
 
@@ -71,6 +96,25 @@ export class ProdutosImportarImagensComponent {
     this.arquivos.set([]);
     this.resultadoPreview.set(null);
     this.resultadoFinal.set(null);
+    this.paginaAtual.set(1);
+  }
+
+  excluirDoLote(item: ProdutoImportarImagensCorrespondido) {
+    this.arquivos.set(this.arquivos().filter(a => a.name !== item.nomeArquivo));
+    if (this.arquivos().length === 0) {
+      this.limpar();
+      return;
+    }
+    this.gerarPreview();
+  }
+
+  aoMudarPagina(pagina: number) {
+    this.paginaAtual.set(pagina);
+  }
+
+  aoMudarTamanhoPagina(tamanho: number) {
+    this.tamanhoPagina.set(tamanho);
+    this.paginaAtual.set(1);
   }
 
   private gerarPreview() {
@@ -97,6 +141,7 @@ export class ProdutosImportarImagensComponent {
       next: res => {
         this.resultadoFinal.set(res.dados ?? null);
         this.confirmandoImportacao.set(false);
+        this.paginaAtual.set(1);
         this.toast.sucesso('Importação concluída.');
       },
       error: err => {

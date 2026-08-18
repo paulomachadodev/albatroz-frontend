@@ -6,13 +6,14 @@ import { ProdutosService } from '../../services/produtos.service';
 import { ProdutoDetalhe, ProdutoFornecedor, ProdutoImagem } from '../../models/produto.model';
 import { ToastService } from '../../../../core/feedback/toast.service';
 import { ConfirmService } from '../../../../core/feedback/confirm.service';
+import { BtnIconeComponent } from '../../../../shared/components/btn-icone/btn-icone.component';
 
 type Aba = 'geral' | 'imagens' | 'fornecedores' | 'variacoes';
 
 @Component({
   selector: 'app-produtos-detalhe',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule],
+  imports: [CommonModule, RouterLink, FormsModule, BtnIconeComponent],
   templateUrl: './produtos-detalhe.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
@@ -25,11 +26,14 @@ export class ProdutosDetalheComponent implements OnInit {
   quantidadePorCaixa: number | null = null;
   salvandoDadosErp = signal(false);
 
+  readonly maximoImagens = 8;
+  readonly slotsImagens = [0, 1, 2, 3, 4, 5, 6, 7];
+
   enviandoImagem = signal(false);
   excluindoImagemId = signal<number | null>(null);
   imagemArrastadaId = signal<number | null>(null);
   salvandoOrdem = signal(false);
-  arrastandoArquivoSobreZona = signal(false);
+  slotArrastadoSobre = signal<number | null>(null);
 
   correcoesFornecedor: Record<number, string> = {};
   salvandoFornecedor = signal<number | null>(null);
@@ -111,56 +115,123 @@ export class ProdutosDetalheComponent implements OnInit {
   }
 
   // ---- Aba Imagens ----
+  // Grid fixo de 8 slots (posição visual = ordem que o backend já devolve, erp antes de tiny —
+  // ver ObterProdutoDetalheConsulta). Só o primeiro slot vazio aceita novo arquivo (regra:
+  // não dá pra pular índice); slot ocupado só aceita drop de arquivo pra substituir a imagem.
 
-  aoSelecionarArquivosImagem(event: Event) {
+  imagemNoSlot(slot: number): ProdutoImagem | null {
+    return this.produto()?.imagens?.[slot] ?? null;
+  }
+
+  slotBloqueado(slot: number): boolean {
+    const total = this.produto()?.imagens.length ?? 0;
+    return slot > total; // só o primeiro vazio (slot === total) é liberado
+  }
+
+  slotAceitaDrop(slot: number): boolean {
+    const total = this.produto()?.imagens.length ?? 0;
+    return slot <= total;
+  }
+
+  aoSelecionarArquivosSlot(event: Event, slot: number) {
     const input = event.target as HTMLInputElement;
     const arquivos = input.files;
-    if (!arquivos || arquivos.length === 0) return;
-    this.enviarArquivos(Array.from(arquivos));
+    if (arquivos && arquivos.length > 0) this.processarArquivosNoSlot(Array.from(arquivos), slot);
     input.value = '';
   }
 
-  aoSoltarArquivos(event: DragEvent) {
+  aoArrastarSobreSlot(event: DragEvent, slot: number) {
+    if (!this.slotAceitaDrop(slot)) return;
     event.preventDefault();
-    this.arrastandoArquivoSobreZona.set(false);
+    this.slotArrastadoSobre.set(slot);
+  }
+
+  aoSairDoSlot() {
+    this.slotArrastadoSobre.set(null);
+  }
+
+  aoSoltarNoSlot(event: DragEvent, slot: number) {
+    this.slotArrastadoSobre.set(null);
+    if (!this.slotAceitaDrop(slot)) return;
+    event.preventDefault();
+
     const arquivos = event.dataTransfer?.files;
-    if (!arquivos || arquivos.length === 0) return;
-    this.enviarArquivos(Array.from(arquivos));
+    if (arquivos && arquivos.length > 0) {
+      this.processarArquivosNoSlot(Array.from(arquivos), slot);
+      return;
+    }
+
+    // Sem arquivo externo — é drag interno de reordenar entre quadrados já ocupados.
+    const imagemAlvo = this.imagemNoSlot(slot);
+    if (imagemAlvo) this.aoSoltarImagemSobre(imagemAlvo);
   }
 
-  aoArrastarArquivoSobre(event: DragEvent) {
-    event.preventDefault();
-    this.arrastandoArquivoSobreZona.set(true);
-  }
-
-  aoSairArquivoDaZona() {
-    this.arrastandoArquivoSobreZona.set(false);
-  }
-
-  private enviarArquivos(arquivos: File[]) {
+  private processarArquivosNoSlot(arquivos: File[], slot: number) {
     const imagens = arquivos.filter(a => a.type.startsWith('image/'));
     if (imagens.length === 0) {
       this.toast.erro('Selecione apenas arquivos de imagem.');
       return;
     }
 
+    const existente = this.imagemNoSlot(slot);
+    if (existente) {
+      if (imagens.length > 1) {
+        this.toast.erro('Só a 1ª imagem foi usada pra substituir — solte as demais num quadrado vazio.');
+      }
+      this.substituirImagem(existente, imagens[0]);
+      return;
+    }
+
+    const totalAtual = this.produto()?.imagens.length ?? 0;
+    const vagas = this.maximoImagens - totalAtual;
+    const aEnviar = imagens.slice(0, vagas);
+    if (imagens.length > aEnviar.length) {
+      this.toast.erro(`${imagens.length - aEnviar.length} imagem(ns) não coube(ram) — máximo de ${this.maximoImagens} por produto.`);
+    }
+    if (aEnviar.length === 0) return;
+
     this.enviandoImagem.set(true);
-    this.enviarProxima(imagens, 0);
+    this.enviarSequencial(aEnviar, totalAtual + 1, 0);
   }
 
-  private enviarProxima(arquivos: File[], indice: number) {
-    if (indice >= arquivos.length) {
+  private enviarSequencial(arquivos: File[], indiceInicial: number, i: number) {
+    if (i >= arquivos.length) {
       this.enviandoImagem.set(false);
       this.toast.sucesso(arquivos.length > 1 ? 'Imagens enviadas.' : 'Imagem enviada.');
       this.recarregarSilencioso();
       return;
     }
 
-    this.produtosService.uploadImagem(this.idProduto, arquivos[indice]).subscribe({
-      next: () => this.enviarProxima(arquivos, indice + 1),
+    this.produtosService.uploadImagem(this.idProduto, arquivos[i], indiceInicial + i).subscribe({
+      next: () => this.enviarSequencial(arquivos, indiceInicial, i + 1),
       error: err => {
         this.enviandoImagem.set(false);
         this.toast.erroServidor(err, 'Não foi possível enviar a imagem.');
+        this.recarregarSilencioso();
+      }
+    });
+  }
+
+  private substituirImagem(existente: ProdutoImagem, arquivo: File) {
+    this.enviandoImagem.set(true);
+    this.produtosService.excluirImagem(this.idProduto, existente.id).subscribe({
+      next: () => {
+        this.produtosService.uploadImagem(this.idProduto, arquivo, existente.indice).subscribe({
+          next: () => {
+            this.enviandoImagem.set(false);
+            this.toast.sucesso('Imagem substituída.');
+            this.recarregarSilencioso();
+          },
+          error: err => {
+            this.enviandoImagem.set(false);
+            this.toast.erroServidor(err, 'Imagem antiga foi removida, mas o envio da nova falhou — solte outra nesse quadrado.');
+            this.recarregarSilencioso();
+          }
+        });
+      },
+      error: err => {
+        this.enviandoImagem.set(false);
+        this.toast.erroServidor(err, 'Não foi possível substituir a imagem.');
       }
     });
   }

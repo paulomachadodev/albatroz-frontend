@@ -11,6 +11,7 @@ export interface ProdutoImportarImagensCorrespondido {
   nomeProduto: string;
   indice: number;
   urlResultante?: string;
+  erro?: string;
 }
 
 export interface ProdutoImportarImagensResposta {

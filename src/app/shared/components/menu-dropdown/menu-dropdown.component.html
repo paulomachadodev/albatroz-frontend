@@ -6,7 +6,7 @@
 </button>
 
 @if (aberto()) {
-  <ul (mousedown)="fechar()"
+  <ul (click)="fechar()"
       class="absolute right-0 mt-1 w-56 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg z-20 overflow-hidden py-1">
     <ng-content select="[itens]"></ng-content>
   </ul>

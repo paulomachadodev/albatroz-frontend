@@ -7,11 +7,12 @@ import { ProdutoResumo } from '../../models/produto.model';
 import { ToastService } from '../../../../core/feedback/toast.service';
 import { ListagemPaginadaComponent } from '../../../../shared/components/listagem-paginada/listagem-paginada.component';
 import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
+import { Ordenacao, ThOrdenavelComponent } from '../../../../shared/components/th-ordenavel/th-ordenavel.component';
 
 @Component({
   selector: 'app-produtos-lista',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, ListagemPaginadaComponent, PageHeaderComponent],
+  imports: [CommonModule, RouterLink, FormsModule, ListagemPaginadaComponent, PageHeaderComponent, ThOrdenavelComponent],
   templateUrl: './produtos-lista.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
@@ -22,6 +23,7 @@ export class ProdutosListaComponent implements OnInit {
   paginaAtual = signal(1);
   totalPaginas = signal(1);
   tamanhoPagina = signal(10);
+  ordenacaoAtual = signal<Ordenacao | null>(null);
 
   filtro: ProdutoFiltro = {};
 
@@ -32,11 +34,32 @@ export class ProdutosListaComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.carregar();
+    // Restaura filtro/página/ordenação da última visita à lista (ex.: usuário voltou da
+    // tela de detalhe) em vez de resetar a busca do zero.
+    const estado = this.produtosService.estadoLista;
+    if (estado) {
+      this.filtro = { ...estado.filtro };
+      this.tamanhoPagina.set(estado.tamanhoPagina);
+      if (this.filtro.ordenarPor && this.filtro.direcao) {
+        this.ordenacaoAtual.set({ campo: this.filtro.ordenarPor, direcao: this.filtro.direcao });
+      }
+      this.carregar(estado.pagina);
+    } else {
+      this.carregar();
+    }
+  }
+
+  private salvarEstado(pagina: number) {
+    this.produtosService.estadoLista = {
+      filtro: { ...this.filtro },
+      pagina,
+      tamanhoPagina: this.tamanhoPagina()
+    };
   }
 
   carregar(pagina = 1) {
     this.carregando.set(true);
+    this.salvarEstado(pagina);
     this.produtosService.listar({ pagina, tamanho: this.tamanhoPagina() }, this.filtro).subscribe({
       next: res => {
         this.itens.set(res.dados?.dados ?? []);
@@ -58,6 +81,14 @@ export class ProdutosListaComponent implements OnInit {
 
   limparFiltros() {
     this.filtro = {};
+    this.ordenacaoAtual.set(null);
+    this.carregar(1);
+  }
+
+  aoOrdenar(ordenacao: Ordenacao) {
+    this.ordenacaoAtual.set(ordenacao);
+    this.filtro.ordenarPor = ordenacao.campo;
+    this.filtro.direcao = ordenacao.direcao;
     this.carregar(1);
   }
 

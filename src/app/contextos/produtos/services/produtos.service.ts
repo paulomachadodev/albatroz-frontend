@@ -19,11 +19,23 @@ export interface ProdutoFiltro {
   tinyIdFornecedor?: number;
   idCategoria?: number;
   idMarca?: number;
+  ordenarPor?: string;
+  direcao?: 'asc' | 'desc';
+}
+
+export interface EstadoListaProdutos {
+  filtro: ProdutoFiltro;
+  pagina: number;
+  tamanhoPagina: number;
 }
 
 @Injectable({ providedIn: 'root' })
 export class ProdutosService {
   private endpoint = '/v1/produtos';
+
+  // Guarda filtro/página/ordenação da última listagem pra restaurar quando o usuário
+  // volta da tela de detalhe (em vez de resetar a busca do zero).
+  estadoLista: EstadoListaProdutos | null = null;
 
   constructor(private api: ApiService) {}
 

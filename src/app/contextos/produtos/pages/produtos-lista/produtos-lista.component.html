@@ -32,6 +32,7 @@
         <div class="sm:col-span-2">
           <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Buscar</label>
           <input type="text" [(ngModel)]="filtro.texto" placeholder="Nome, código ou GTIN..."
+                 (keyup.enter)="aplicarFiltros()"
                  class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
         </div>
         <div>
@@ -76,13 +77,17 @@
 
       <ng-template #cabecalho>
         <tr>
-          <th class="px-6 py-4">Nome / Código</th>
+          <th class="px-6 py-4">
+            <app-th-ordenavel campo="nome" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Nome / Código</app-th-ordenavel>
+          </th>
           <th class="px-6 py-4">Marca</th>
           <th class="px-6 py-4">Categoria</th>
           <th class="px-6 py-4 text-center">Tipo</th>
           <th class="px-6 py-4 text-center">Situação</th>
           <th class="px-6 py-4 text-center">Imagem</th>
-          <th class="px-6 py-4 text-right">Preço</th>
+          <th class="px-6 py-4 text-right">
+            <app-th-ordenavel campo="preco" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Preço</app-th-ordenavel>
+          </th>
         </tr>
       </ng-template>
 

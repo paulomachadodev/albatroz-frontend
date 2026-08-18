@@ -77,6 +77,7 @@
 
       <ng-template #cabecalho>
         <tr>
+          <th class="px-6 py-4 w-16"></th>
           <th class="px-6 py-4">
             <app-th-ordenavel campo="nome" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Nome / Código</app-th-ordenavel>
           </th>
@@ -84,7 +85,7 @@
           <th class="px-6 py-4">Categoria</th>
           <th class="px-6 py-4 text-center">Tipo</th>
           <th class="px-6 py-4 text-center">Situação</th>
-          <th class="px-6 py-4 text-center">Imagem</th>
+          <th class="px-6 py-4 text-right">Estoque</th>
           <th class="px-6 py-4 text-right">
             <app-th-ordenavel campo="preco" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Preço</app-th-ordenavel>
           </th>
@@ -94,6 +95,15 @@
       <ng-template #linha let-item>
         <tr (click)="abrirDetalhe(item)"
             class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors cursor-pointer">
+          <td class="px-6 py-4">
+            @if (item.urlImagemPrincipal) {
+              <img [src]="item.urlImagemPrincipal" [alt]="item.nome" class="w-10 h-10 rounded-lg object-cover"/>
+            } @else {
+              <div class="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                <span class="material-symbols-outlined text-slate-300 dark:text-slate-600 text-lg">image_not_supported</span>
+              </div>
+            }
+          </td>
           <td class="px-6 py-4">
             <p class="text-sm font-bold text-slate-900 dark:text-slate-100">{{ item.nome }}</p>
             <p class="text-xs text-slate-400">{{ item.codigo }}</p>
@@ -106,13 +116,7 @@
           <td class="px-6 py-4 text-center">
             <span class="px-2 py-0.5 rounded-full text-xs font-bold" [class]="classeSituacao(item.situacao)">{{ rotuloSituacao(item.situacao) }}</span>
           </td>
-          <td class="px-6 py-4 text-center">
-            @if (item.temImagem) {
-              <span class="material-symbols-outlined text-emerald-500 text-lg align-middle">check_circle</span>
-            } @else {
-              <span class="material-symbols-outlined text-slate-300 dark:text-slate-600 text-lg align-middle">image_not_supported</span>
-            }
-          </td>
+          <td class="px-6 py-4 text-right text-sm">{{ formatarNumero(item.estoqueAtual) }}</td>
           <td class="px-6 py-4 text-right text-sm font-bold">{{ formatarReais(item.preco) }}</td>
         </tr>
       </ng-template>

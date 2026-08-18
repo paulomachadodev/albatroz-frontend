@@ -10,6 +10,8 @@ export interface ProdutoResumo {
   situacao: string;
   tipo: ProdutoTipo;
   temImagem: boolean;
+  urlImagemPrincipal?: string;
+  estoqueAtual: number;
   preco?: number;
 }
 

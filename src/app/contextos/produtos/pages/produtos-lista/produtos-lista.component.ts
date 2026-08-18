@@ -141,4 +141,9 @@ export class ProdutosListaComponent implements OnInit {
     if (valor == null) return '-';
     return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   }
+
+  formatarNumero(valor?: number): string {
+    if (valor == null) return '-';
+    return valor.toLocaleString('pt-BR');
+  }
 }

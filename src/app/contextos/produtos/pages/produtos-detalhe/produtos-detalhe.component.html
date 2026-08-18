@@ -63,6 +63,14 @@
               {{ produto()!.tipo === 'kit' ? 'Kit' : 'Variações' }}
             </button>
           }
+          <button (click)="abrirAbaEstoque()"
+                  class="pb-3 text-sm font-bold border-b-2 transition-colors"
+                  [class.border-primary]="abaAtiva() === 'estoque'"
+                  [class.text-primary]="abaAtiva() === 'estoque'"
+                  [class.border-transparent]="abaAtiva() !== 'estoque'"
+                  [class.text-slate-500]="abaAtiva() !== 'estoque'">
+            Estoque
+          </button>
         </nav>
       </div>
 
@@ -301,6 +309,66 @@
               }
             </tbody>
           </table>
+        </div>
+      }
+
+      <!-- Aba Estoque -->
+      @if (abaAtiva() === 'estoque') {
+        <div class="space-y-4">
+          <div class="grid grid-cols-3 gap-4">
+            <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-4">
+              <p class="text-xs font-bold text-slate-400 uppercase tracking-wide">Estoque atual</p>
+              <p class="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-1">{{ formatarNumero(estoque()?.estoqueAtual) }}</p>
+            </div>
+            <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-4">
+              <p class="text-xs font-bold text-slate-400 uppercase tracking-wide">Mínimo</p>
+              <p class="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-1">{{ formatarNumero(estoque()?.minimo) }}</p>
+            </div>
+            <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-4">
+              <p class="text-xs font-bold text-slate-400 uppercase tracking-wide">Máximo</p>
+              <p class="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-1">{{ formatarNumero(estoque()?.maximo) }}</p>
+            </div>
+          </div>
+
+          @if (estoque(); as est) {
+            <app-listagem-paginada
+              [itens]="est.historico.dados"
+              [carregando]="carregandoEstoque()"
+              [totalRegistros]="est.historico.totalRegistros"
+              [paginaAtual]="est.historico.paginaAtual"
+              [totalPaginas]="est.historico.totalPaginas"
+              [tamanhoPagina]="est.historico.registrosPorPagina"
+              tituloVazio="Sem movimentações de estoque registradas."
+              (paginaMudou)="aoMudarPaginaEstoque($event)"
+              (tamanhoPaginaMudou)="aoMudarTamanhoPaginaEstoque($event)">
+
+              <div filtros>
+                <p class="text-sm font-bold text-slate-900 dark:text-slate-100">Histórico de movimentações</p>
+              </div>
+
+              <ng-template #cabecalho>
+                <tr>
+                  <th class="px-6 py-4">Data</th>
+                  <th class="px-6 py-4">Origem</th>
+                  <th class="px-6 py-4 text-right">Anterior</th>
+                  <th class="px-6 py-4 text-right">Novo</th>
+                  <th class="px-6 py-4 text-right">Variação</th>
+                </tr>
+              </ng-template>
+
+              <ng-template #linha let-item>
+                <tr>
+                  <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{{ item.registradoEm | date: 'dd/MM/yy, HH:mm' }}</td>
+                  <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{{ rotuloOrigemEstoque(item.origem) }}</td>
+                  <td class="px-6 py-4 text-right text-sm">{{ formatarNumero(item.saldoAnterior) }}</td>
+                  <td class="px-6 py-4 text-right text-sm font-bold">{{ formatarNumero(item.saldoNovo) }}</td>
+                  <td class="px-6 py-4 text-right text-sm" [class.text-emerald-600]="(item.variacao ?? 0) > 0" [class.text-red-600]="(item.variacao ?? 0) < 0">
+                    {{ (item.variacao ?? 0) > 0 ? '+' : '' }}{{ formatarNumero(item.variacao) }}
+                  </td>
+                </tr>
+              </ng-template>
+            </app-listagem-paginada>
+          }
         </div>
       }
     }

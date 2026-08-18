@@ -4,16 +4,18 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ProdutosService } from '../../services/produtos.service';
 import { ProdutoDetalhe, ProdutoFornecedor, ProdutoImagem } from '../../models/produto.model';
+import { ProdutoEstoqueResposta } from '../../dtos/produto-resposta.dto';
 import { ToastService } from '../../../../core/feedback/toast.service';
 import { ConfirmService } from '../../../../core/feedback/confirm.service';
 import { BtnIconeComponent } from '../../../../shared/components/btn-icone/btn-icone.component';
+import { ListagemPaginadaComponent } from '../../../../shared/components/listagem-paginada/listagem-paginada.component';
 
-type Aba = 'geral' | 'imagens' | 'fornecedores' | 'variacoes';
+type Aba = 'geral' | 'imagens' | 'fornecedores' | 'variacoes' | 'estoque';
 
 @Component({
   selector: 'app-produtos-detalhe',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, BtnIconeComponent],
+  imports: [CommonModule, RouterLink, FormsModule, BtnIconeComponent, ListagemPaginadaComponent],
   templateUrl: './produtos-detalhe.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
@@ -37,6 +39,11 @@ export class ProdutosDetalheComponent implements OnInit {
 
   correcoesFornecedor: Record<number, string> = {};
   salvandoFornecedor = signal<number | null>(null);
+
+  estoque = signal<ProdutoEstoqueResposta | null>(null);
+  carregandoEstoque = signal(false);
+  paginaEstoque = signal(1);
+  tamanhoPaginaEstoque = signal(10);
 
   constructor(
     private route: ActivatedRoute,
@@ -303,6 +310,43 @@ export class ProdutosDetalheComponent implements OnInit {
         this.recarregarSilencioso();
       }
     });
+  }
+
+  // ---- Aba Estoque ----
+
+  abrirAbaEstoque() {
+    this.abaAtiva.set('estoque');
+    if (!this.estoque()) this.carregarEstoque();
+  }
+
+  carregarEstoque() {
+    this.carregandoEstoque.set(true);
+    this.produtosService.obterEstoque(this.idProduto, this.paginaEstoque(), this.tamanhoPaginaEstoque()).subscribe({
+      next: res => {
+        this.estoque.set(res.dados ?? null);
+        this.carregandoEstoque.set(false);
+      },
+      error: err => {
+        this.carregandoEstoque.set(false);
+        this.toast.erroServidor(err, 'Não foi possível carregar o estoque.');
+      }
+    });
+  }
+
+  aoMudarPaginaEstoque(pagina: number) {
+    this.paginaEstoque.set(pagina);
+    this.carregarEstoque();
+  }
+
+  aoMudarTamanhoPaginaEstoque(tamanho: number) {
+    this.tamanhoPaginaEstoque.set(tamanho);
+    this.paginaEstoque.set(1);
+    this.carregarEstoque();
+  }
+
+  rotuloOrigemEstoque(origem?: string): string {
+    const mapa: Record<string, string> = { venda: 'Venda', compra: 'Compra', ajuste: 'Ajuste', devolucao: 'Devolução' };
+    return origem ? (mapa[origem] ?? origem) : '-';
   }
 
   // ---- Aba Fornecedores ----

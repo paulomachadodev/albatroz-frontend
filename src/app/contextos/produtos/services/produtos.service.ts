@@ -9,7 +9,7 @@ import {
   ProdutoFornecedorCorrecaoRequisicao,
   ProdutoImagensReordenarRequisicao
 } from '../dtos/produto-requisicao.dto';
-import { ProdutoImagemUploadResposta, ProdutoImportarImagensResposta } from '../dtos/produto-resposta.dto';
+import { ProdutoImagemUploadResposta, ProdutoImportarImagensResposta, ProdutoEstoqueResposta } from '../dtos/produto-resposta.dto';
 
 export interface ProdutoFiltro {
   texto?: string;
@@ -59,6 +59,10 @@ export class ProdutosService {
     const formData = new FormData();
     formData.append('file', arquivo);
     return this.api.post<ProdutoImagemUploadResposta>(`${this.endpoint}/${id}/imagens?indice=${indice}`, formData);
+  }
+
+  obterEstoque(id: number, pagina: number, tamanho: number): Observable<Resultado<ProdutoEstoqueResposta>> {
+    return this.api.get<ProdutoEstoqueResposta>(`${this.endpoint}/${id}/estoque`, { pagina, tamanho });
   }
 
   reordenarImagens(id: number, requisicao: ProdutoImagensReordenarRequisicao): Observable<Resultado<void>> {

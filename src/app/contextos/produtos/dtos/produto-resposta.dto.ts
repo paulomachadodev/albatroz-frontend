@@ -1,3 +1,5 @@
+import { Paginacao } from '../../../core/models';
+
 export interface ProdutoImagemUploadResposta {
   id: number;
   url: string;
@@ -12,6 +14,22 @@ export interface ProdutoImportarImagensCorrespondido {
   indice: number;
   urlResultante?: string;
   erro?: string;
+}
+
+export interface ProdutoEstoqueHistoricoItem {
+  id: number;
+  saldoAnterior?: number;
+  saldoNovo?: number;
+  variacao?: number;
+  origem?: string;
+  registradoEm: string;
+}
+
+export interface ProdutoEstoqueResposta {
+  estoqueAtual: number;
+  minimo?: number;
+  maximo?: number;
+  historico: Paginacao<ProdutoEstoqueHistoricoItem>;
 }
 
 export interface ProdutoImportarImagensResposta {

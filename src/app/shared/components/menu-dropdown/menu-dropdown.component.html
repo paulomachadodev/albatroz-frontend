@@ -1,0 +1,13 @@
+<button type="button" (click)="alternar()" (blur)="fecharComAtraso()"
+        class="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all">
+  <span class="material-symbols-outlined text-sm">tune</span>
+  <ng-content select="[rotulo]"></ng-content>
+  <span class="material-symbols-outlined text-sm">{{ aberto() ? 'expand_less' : 'expand_more' }}</span>
+</button>
+
+@if (aberto()) {
+  <ul (mousedown)="fechar()"
+      class="absolute right-0 mt-1 w-56 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg z-20 overflow-hidden py-1">
+    <ng-content select="[itens]"></ng-content>
+  </ul>
+}

@@ -139,6 +139,27 @@ Link de texto é pra **1 ação só** por linha/card. A partir de 2 ações no m
 
 Ainda não migrado (não é regressão, é lacuna): `produtos-lista` não tem coluna de ações — a linha inteira navega pro detalhe no click. Quando a tela ganhar ações rápidas (ex: excluir sem abrir detalhe), usar `app-btn-icone` desde o início, não link de texto.
 
+## `app-menu-dropdown` — botão com submenu (ações em massa, ações agrupadas)
+
+`shared/components/menu-dropdown/` — botão primário com seta que abre uma lista de ações relacionadas. Usa quando o `acoes` do `app-page-header` teria 3+ botões que fariam mais sentido agrupados (ex: "Ações em massa" reunindo Importar, Exportar, Alterar em massa) em vez de um botão por ação disputando espaço no header.
+
+```html
+<app-page-header titulo="Produtos" subtitulo="...">
+  <app-menu-dropdown acoes>
+    <span rotulo>Ações em massa</span>
+    <div itens>
+      <button type="button" (click)="acao()" class="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+        <span class="material-symbols-outlined text-base">upload_file</span>
+        Rótulo da ação
+      </button>
+      <!-- item desabilitado ("em breve"): mesma estrutura trocando <button> por <div class="... text-slate-400 cursor-not-allowed">, sem (click) -->
+    </div>
+  </app-menu-dropdown>
+</app-page-header>
+```
+
+Não usar pra 1-2 ações — aí o botão único (padrão antigo, ver exemplo no topo do arquivo) continua mais direto.
+
 ## Tamanho de página
 
 Padrão: opções `[10, 50, 100]`, default `10`.

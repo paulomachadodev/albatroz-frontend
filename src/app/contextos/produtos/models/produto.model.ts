@@ -50,6 +50,7 @@ export interface ProdutoDetalhe {
   codigo: string;
   nome: string;
   descricao?: string;
+  idMarca?: number;
   marca?: string;
   categoria?: string;
   gtin?: string;

@@ -3,19 +3,21 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ProdutosService } from '../../services/produtos.service';
+import { MarcasService } from '../../services/marcas.service';
 import { ProdutoDetalhe, ProdutoFornecedor, ProdutoImagem } from '../../models/produto.model';
 import { ProdutoEstoqueResposta } from '../../dtos/produto-resposta.dto';
 import { ToastService } from '../../../../core/feedback/toast.service';
 import { ConfirmService } from '../../../../core/feedback/confirm.service';
 import { BtnIconeComponent } from '../../../../shared/components/btn-icone/btn-icone.component';
 import { ListagemPaginadaComponent } from '../../../../shared/components/listagem-paginada/listagem-paginada.component';
+import { SelectBuscaComponent, OpcaoSelectBusca } from '../../../../shared/components/select-busca/select-busca.component';
 
 type Aba = 'geral' | 'imagens' | 'fornecedores' | 'variacoes' | 'estoque';
 
 @Component({
   selector: 'app-produtos-detalhe',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, BtnIconeComponent, ListagemPaginadaComponent],
+  imports: [CommonModule, RouterLink, FormsModule, BtnIconeComponent, ListagemPaginadaComponent, SelectBuscaComponent],
   templateUrl: './produtos-detalhe.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
@@ -26,7 +28,9 @@ export class ProdutosDetalheComponent implements OnInit {
   abaAtiva = signal<Aba>('geral');
 
   quantidadePorCaixa: number | null = null;
+  marcaSelecionada = signal<OpcaoSelectBusca | null>(null);
   salvandoDadosErp = signal(false);
+  buscarMarcas = (termo: string) => this.marcasService.buscar(termo);
 
   readonly maximoImagens = 8;
   readonly slotsImagens = [0, 1, 2, 3, 4, 5, 6, 7];
@@ -49,6 +53,7 @@ export class ProdutosDetalheComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private produtosService: ProdutosService,
+    private marcasService: MarcasService,
     private toast: ToastService,
     private confirm: ConfirmService
   ) {}
@@ -65,6 +70,7 @@ export class ProdutosDetalheComponent implements OnInit {
         const dados = res.dados ?? null;
         this.produto.set(dados);
         this.quantidadePorCaixa = dados?.quantidadePorCaixa ?? null;
+        this.marcaSelecionada.set(dados?.idMarca ? { id: dados.idMarca, nome: dados.marca ?? '' } : null);
         this.correcoesFornecedor = {};
         (dados?.fornecedores ?? []).forEach(f => {
           this.correcoesFornecedor[f.tinyIdFornecedor] = f.codigoProdutoFornecedorCorrigido ?? '';
@@ -106,9 +112,17 @@ export class ProdutosDetalheComponent implements OnInit {
 
   // ---- Aba Geral ----
 
+  aoSelecionarMarca(opcao: OpcaoSelectBusca | null) {
+    this.marcaSelecionada.set(opcao);
+  }
+
   salvarDadosErp() {
     this.salvandoDadosErp.set(true);
-    this.produtosService.atualizarDadosErp(this.idProduto, { quantidadePorCaixa: this.quantidadePorCaixa }).subscribe({
+    const payload = {
+      quantidadePorCaixa: this.quantidadePorCaixa,
+      idMarca: this.marcaSelecionada()?.id ?? null
+    };
+    this.produtosService.atualizarDadosErp(this.idProduto, payload).subscribe({
       next: () => {
         this.salvandoDadosErp.set(false);
         this.toast.sucesso('Quantidade por caixa salva.');

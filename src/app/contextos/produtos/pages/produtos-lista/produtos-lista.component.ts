@@ -8,11 +8,12 @@ import { ToastService } from '../../../../core/feedback/toast.service';
 import { ListagemPaginadaComponent } from '../../../../shared/components/listagem-paginada/listagem-paginada.component';
 import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 import { Ordenacao, ThOrdenavelComponent } from '../../../../shared/components/th-ordenavel/th-ordenavel.component';
+import { MenuDropdownComponent } from '../../../../shared/components/menu-dropdown/menu-dropdown.component';
 
 @Component({
   selector: 'app-produtos-lista',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, ListagemPaginadaComponent, PageHeaderComponent, ThOrdenavelComponent],
+  imports: [CommonModule, RouterLink, FormsModule, ListagemPaginadaComponent, PageHeaderComponent, ThOrdenavelComponent, MenuDropdownComponent],
   templateUrl: './produtos-lista.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })

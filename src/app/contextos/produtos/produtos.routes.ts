@@ -12,6 +12,11 @@ export const PRODUTOS_ROUTES: Routes = [
       import('./pages/produtos-importar-imagens/produtos-importar-imagens.component').then(m => m.ProdutosImportarImagensComponent)
   },
   {
+    path: 'marcas',
+    loadComponent: () =>
+      import('./pages/marcas-lista/marcas-lista.component').then(m => m.MarcasListaComponent)
+  },
+  {
     path: ':id',
     loadComponent: () =>
       import('./pages/produtos-detalhe/produtos-detalhe.component').then(m => m.ProdutosDetalheComponent)

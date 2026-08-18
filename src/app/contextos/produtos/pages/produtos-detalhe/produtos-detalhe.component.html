@@ -89,11 +89,6 @@
                      class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 border-none rounded-lg text-sm outline-none cursor-default"/>
             </div>
             <div>
-              <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Marca</label>
-              <input type="text" [value]="produto()!.marca || '-'" readonly
-                     class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 border-none rounded-lg text-sm outline-none cursor-default"/>
-            </div>
-            <div>
               <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Categoria</label>
               <input type="text" [value]="produto()!.categoria || '-'" readonly
                      class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 border-none rounded-lg text-sm outline-none cursor-default"/>
@@ -163,6 +158,14 @@
                 <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Quantidade por caixa</label>
                 <input type="number" min="0" [(ngModel)]="quantidadePorCaixa" placeholder="Não informado"
                        class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+              </div>
+              <div>
+                <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Marca</label>
+                <app-select-busca
+                  [valorSelecionado]="marcaSelecionada()"
+                  placeholder="Buscar marca cadastrada..."
+                  [buscar]="buscarMarcas"
+                  (selecionado)="aoSelecionarMarca($event)"></app-select-busca>
               </div>
               <div>
                 <button type="button" (click)="salvarDadosErp()" [disabled]="salvandoDadosErp()"

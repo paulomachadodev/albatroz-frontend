@@ -58,7 +58,7 @@ export class SidebarComponent {
       titulo: 'Cadastros',
       itens: [
         { label: 'Produtos',     rota: '/produtos',            icone: 'inventory_2', permissao: 'produtos:ler' },
-        { label: 'Fornecedores', rota: '/fornecedores',        icone: 'local_shipping' },
+        { label: 'Contatos',     rota: '/cadastros/contatos',  icone: 'contacts' },
         { label: 'Escolas',      rota: '/cadastros/escolas',   icone: 'apartment' },
         { label: 'Séries',       rota: '/cadastros/series',    icone: 'auto_stories' },
         { label: 'Empresas',     rota: '/cadastros/empresas',  icone: 'business' }

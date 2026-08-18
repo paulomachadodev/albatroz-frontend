@@ -52,6 +52,8 @@ export interface ProdutoDetalhe {
   descricao?: string;
   idMarca?: number;
   marca?: string;
+  idFornecedorContato?: number;
+  nomeFornecedorContato?: string;
   categoria?: string;
   gtin?: string;
   situacao: string;

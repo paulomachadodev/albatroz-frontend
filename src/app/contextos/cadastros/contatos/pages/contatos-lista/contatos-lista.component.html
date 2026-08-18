@@ -1,0 +1,174 @@
+<div class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark px-4 sm:px-6 lg:px-8 xl:px-10 py-6 lg:py-8">
+  <div class="w-full space-y-8">
+
+    <nav class="flex items-center gap-2 text-sm text-slate-500">
+      <a class="hover:text-primary" routerLink="/dashboard">Início</a>
+      <span class="material-symbols-outlined text-xs">chevron_right</span>
+      <span class="text-slate-900 dark:text-slate-100 font-medium">Cadastros</span>
+      <span class="material-symbols-outlined text-xs">chevron_right</span>
+      <span class="text-slate-900 dark:text-slate-100 font-medium">Contatos</span>
+    </nav>
+
+    <app-page-header titulo="Cadastro de Contatos" subtitulo="Clientes, fornecedores e transportadores.">
+      <button acoes (click)="abrirCriar()"
+              class="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all">
+        <span class="material-symbols-outlined text-sm">add</span>
+        Novo Contato
+      </button>
+    </app-page-header>
+
+    <app-listagem-paginada
+      [itens]="itens()"
+      [carregando]="carregando()"
+      [totalRegistros]="totalRegistros()"
+      [paginaAtual]="paginaAtual()"
+      [totalPaginas]="totalPaginas()"
+      [tamanhoPagina]="tamanhoPagina()"
+      tituloVazio="Nenhum contato encontrado"
+      (paginaMudou)="aoMudarPagina($event)"
+      (tamanhoPaginaMudou)="aoMudarTamanhoPagina($event)">
+
+      <div filtros class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
+        <div class="lg:col-span-2">
+          <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Nome / Documento</label>
+          <input type="text" [(ngModel)]="filtroTexto" placeholder="Nome, fantasia ou CPF/CNPJ" (keyup.enter)="aplicarFiltros()"
+                 class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+        </div>
+        <div>
+          <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Tipo</label>
+          <select [(ngModel)]="filtroTipo"
+                  class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none">
+            <option value="">Todos</option>
+            @for (tipo of todosTipos; track tipo) {
+              <option [value]="tipo">{{ tipo }}</option>
+            }
+          </select>
+        </div>
+        <div class="flex items-end gap-2 lg:col-span-3">
+          <button (click)="aplicarFiltros()"
+                  class="flex-1 px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all">
+            Filtrar
+          </button>
+          <button (click)="limparFiltros()"
+                  class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
+            Limpar
+          </button>
+        </div>
+      </div>
+
+      <ng-template #cabecalho>
+        <tr>
+          <th class="px-6 py-4">Nome</th>
+          <th class="px-6 py-4">Documento</th>
+          <th class="px-6 py-4">Tipos</th>
+          <th class="px-6 py-4 text-center">Origem</th>
+          <th class="px-6 py-4 text-center">Situação</th>
+        </tr>
+      </ng-template>
+
+      <ng-template #linha let-item>
+        <tr (click)="abrirEditar(item)" class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors cursor-pointer">
+          <td class="px-6 py-4">
+            <p class="text-sm font-bold text-slate-900 dark:text-slate-100">{{ item.nome }}</p>
+            <p class="text-xs text-slate-400">{{ item.fantasia || '-' }}</p>
+          </td>
+          <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{{ item.cpfCnpj || '-' }}</td>
+          <td class="px-6 py-4">
+            <div class="flex flex-wrap gap-1">
+              @for (tipo of item.tipos; track tipo) {
+                <span class="px-2 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400">{{ tipo }}</span>
+              }
+            </div>
+          </td>
+          <td class="px-6 py-4 text-center">
+            @if (item.sincronizadoTiny) {
+              <span class="px-2 py-0.5 rounded-full text-xs font-bold bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300">Tiny</span>
+            } @else {
+              <span class="px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400">ERP</span>
+            }
+          </td>
+          <td class="px-6 py-4 text-center">
+            @if (item.ativo) {
+              <span class="px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400">Ativo</span>
+            } @else {
+              <span class="px-2 py-0.5 rounded-full text-xs font-bold bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300">Inativo</span>
+            }
+          </td>
+        </tr>
+      </ng-template>
+
+    </app-listagem-paginada>
+
+  </div>
+</div>
+
+<app-drawer [aberto]="drawerAberto()"
+            [titulo]="modoDrawer() === 'criar' ? 'Novo Contato' : 'Editar Contato'"
+            (fechar)="cancelar()">
+
+  <div class="space-y-4">
+    <div>
+      <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Nome / Razão social</label>
+      <input type="text" [(ngModel)]="nome" placeholder="Nome"
+             class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+    </div>
+    <div>
+      <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Nome fantasia</label>
+      <input type="text" [(ngModel)]="fantasia" placeholder="Fantasia (opcional)"
+             class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+    </div>
+    <div>
+      <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">CPF/CNPJ</label>
+      <input type="text" [(ngModel)]="cpfCnpj" placeholder="CPF ou CNPJ"
+             class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+    </div>
+    <div class="grid grid-cols-2 gap-3">
+      <div>
+        <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Telefone</label>
+        <input type="text" [(ngModel)]="telefone" placeholder="Telefone"
+               class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+      </div>
+      <div>
+        <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Celular</label>
+        <input type="text" [(ngModel)]="celular" placeholder="Celular"
+               class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+      </div>
+    </div>
+    <div>
+      <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">E-mail</label>
+      <input type="email" [(ngModel)]="email" placeholder="E-mail"
+             class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+    </div>
+
+    <div>
+      <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Tipos</label>
+      <div class="mt-2 flex flex-wrap gap-3">
+        @for (tipo of todosTipos; track tipo) {
+          <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
+            <input type="checkbox" [checked]="tiposSelecionados.has(tipo)"
+                   (change)="aoAlternarTipo(tipo, $any($event.target).checked)"
+                   class="rounded border-slate-300 text-primary focus:ring-primary/20"/>
+            {{ tipo }}
+          </label>
+        }
+      </div>
+    </div>
+
+    <div class="flex items-center justify-between pt-2">
+      <span class="text-sm font-bold text-slate-700 dark:text-slate-300">Ativo</span>
+      <app-toggle [valor]="ativo" (valorMudou)="aoAlternarAtivo($event)"/>
+    </div>
+
+    <div class="pt-2 flex gap-2">
+      <button type="button" (click)="cancelar()"
+              class="flex-1 px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
+        Cancelar
+      </button>
+      <button type="button" (click)="salvar()" [disabled]="salvando()"
+              class="flex-1 px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all">
+        {{ salvando() ? 'Salvando...' : 'Salvar' }}
+      </button>
+    </div>
+  </div>
+
+</app-drawer>

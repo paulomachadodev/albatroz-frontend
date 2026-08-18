@@ -29,9 +29,9 @@ export const routes: Routes = [
           import('./contextos/albia/albia.routes').then(m => m.ALBIA_ROUTES)
       },
       {
-        path: 'fornecedores',
+        path: 'cadastros/contatos',
         loadChildren: () =>
-          import('./contextos/fornecedores/fornecedores.routes').then(m => m.FORNECEDORES_ROUTES)
+          import('./contextos/cadastros/contatos/contatos.routes').then(m => m.CONTATOS_ROUTES)
       },
       {
         path: 'cotacoes/listas-escolares',

@@ -1,6 +1,7 @@
 export interface ProdutoDadosErpRequisicao {
   quantidadePorCaixa: number | null;
   idMarca: number | null;
+  idFornecedorContato: number | null;
 }
 
 export interface ProdutoFornecedorCorrecaoRequisicao {

@@ -4,6 +4,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ProdutosService } from '../../services/produtos.service';
 import { MarcasService } from '../../services/marcas.service';
+import { ContatosService } from '../../../cadastros/contatos/services/contatos.service';
 import { ProdutoDetalhe, ProdutoFornecedor, ProdutoImagem } from '../../models/produto.model';
 import { ProdutoEstoqueResposta } from '../../dtos/produto-resposta.dto';
 import { ToastService } from '../../../../core/feedback/toast.service';
@@ -29,8 +30,10 @@ export class ProdutosDetalheComponent implements OnInit {
 
   quantidadePorCaixa: number | null = null;
   marcaSelecionada = signal<OpcaoSelectBusca | null>(null);
+  fornecedorSelecionado = signal<OpcaoSelectBusca | null>(null);
   salvandoDadosErp = signal(false);
   buscarMarcas = (termo: string) => this.marcasService.buscar(termo);
+  buscarFornecedores = (termo: string) => this.contatosService.buscar(termo, 'Fornecedor');
 
   readonly maximoImagens = 8;
   readonly slotsImagens = [0, 1, 2, 3, 4, 5, 6, 7];
@@ -54,6 +57,7 @@ export class ProdutosDetalheComponent implements OnInit {
     private router: Router,
     private produtosService: ProdutosService,
     private marcasService: MarcasService,
+    private contatosService: ContatosService,
     private toast: ToastService,
     private confirm: ConfirmService
   ) {}
@@ -71,6 +75,8 @@ export class ProdutosDetalheComponent implements OnInit {
         this.produto.set(dados);
         this.quantidadePorCaixa = dados?.quantidadePorCaixa ?? null;
         this.marcaSelecionada.set(dados?.idMarca ? { id: dados.idMarca, nome: dados.marca ?? '' } : null);
+        this.fornecedorSelecionado.set(dados?.idFornecedorContato
+          ? { id: dados.idFornecedorContato, nome: dados.nomeFornecedorContato ?? '' } : null);
         this.correcoesFornecedor = {};
         (dados?.fornecedores ?? []).forEach(f => {
           this.correcoesFornecedor[f.tinyIdFornecedor] = f.codigoProdutoFornecedorCorrigido ?? '';
@@ -116,11 +122,16 @@ export class ProdutosDetalheComponent implements OnInit {
     this.marcaSelecionada.set(opcao);
   }
 
+  aoSelecionarFornecedor(opcao: OpcaoSelectBusca | null) {
+    this.fornecedorSelecionado.set(opcao);
+  }
+
   salvarDadosErp() {
     this.salvandoDadosErp.set(true);
     const payload = {
       quantidadePorCaixa: this.quantidadePorCaixa,
-      idMarca: this.marcaSelecionada()?.id ?? null
+      idMarca: this.marcaSelecionada()?.id ?? null,
+      idFornecedorContato: this.fornecedorSelecionado()?.id ?? null
     };
     this.produtosService.atualizarDadosErp(this.idProduto, payload).subscribe({
       next: () => {

@@ -3,15 +3,20 @@ import { Observable } from 'rxjs';
 import { ApiService } from '../../../core/http/api.service';
 import { Resultado, Paginacao } from '../../../core/models';
 import { ParametrosPaginacao } from '../../../core/models/paginacao.model';
-import { ProdutoDetalhe, ProdutoResumo, ProdutoTipo } from '../models/produto.model';
+import { ProdutoDetalhe, ProdutoResumo, ProdutoTipo, ListaPreco, ProdutoEnriquecimento } from '../models/produto.model';
 import {
   ProdutoDadosErpRequisicao,
-  ProdutoFornecedorCorrecaoRequisicao,
-  ProdutoImagensReordenarRequisicao
+  ProdutoImagensReordenarRequisicao,
+  AdicionarFornecedorProdutoRequisicao,
+  AtualizarFornecedorProdutoRequisicao,
+  CriarListaPrecoRequisicao,
+  AtualizarListaPrecoRequisicao,
+  AtualizarEnriquecimentoProdutoRequisicao
 } from '../dtos/produto-requisicao.dto';
 import {
   ProdutoImagemUploadResposta, ProdutoImportarImagensResposta, ProdutoEstoqueResposta,
-  AlterarProdutoEmMassaItem, AlterarProdutosEmMassaResposta
+  AlterarProdutoEmMassaItem, AlterarProdutosEmMassaResposta,
+  ImportarFornecedorEmMassaItem, ImportarFornecedoresEmMassaResposta
 } from '../dtos/produto-resposta.dto';
 
 export interface ProdutoFiltro {
@@ -54,10 +59,6 @@ export class ProdutosService {
     return this.api.put<void>(`${this.endpoint}/${id}/dados-erp`, requisicao);
   }
 
-  corrigirFornecedor(id: number, tinyIdFornecedor: number, requisicao: ProdutoFornecedorCorrecaoRequisicao): Observable<Resultado<void>> {
-    return this.api.put<void>(`${this.endpoint}/${id}/fornecedores/${tinyIdFornecedor}/correcao`, requisicao);
-  }
-
   uploadImagem(id: number, arquivo: File, indice: number): Observable<Resultado<ProdutoImagemUploadResposta>> {
     const formData = new FormData();
     formData.append('file', arquivo);
@@ -89,5 +90,55 @@ export class ProdutosService {
     arquivos.forEach(arquivo => formData.append('files', arquivo));
     formData.append('confirmar', String(confirmar));
     return this.api.post<ProdutoImportarImagensResposta>(`${this.endpoint}/imagens/importar-lote`, formData);
+  }
+
+  // ---- Fornecedores (aba Fornecedores — produto_fornecedor_erp) ----
+
+  adicionarFornecedor(id: number, requisicao: AdicionarFornecedorProdutoRequisicao): Observable<Resultado<{ id: number }>> {
+    return this.api.post<{ id: number }>(`${this.endpoint}/${id}/fornecedores`, requisicao);
+  }
+
+  atualizarFornecedor(id: number, idFornecedorErp: number, requisicao: AtualizarFornecedorProdutoRequisicao): Observable<Resultado<void>> {
+    return this.api.put<void>(`${this.endpoint}/${id}/fornecedores/${idFornecedorErp}`, requisicao);
+  }
+
+  definirFornecedorPrincipal(id: number, idFornecedorErp: number): Observable<Resultado<void>> {
+    return this.api.put<void>(`${this.endpoint}/${id}/fornecedores/${idFornecedorErp}/principal`, {});
+  }
+
+  removerFornecedor(id: number, idFornecedorErp: number): Observable<Resultado<void>> {
+    return this.api.delete<void>(`${this.endpoint}/${id}/fornecedores/${idFornecedorErp}`);
+  }
+
+  importarFornecedoresEmMassa(itens: ImportarFornecedorEmMassaItem[]): Observable<Resultado<ImportarFornecedoresEmMassaResposta>> {
+    return this.api.post<ImportarFornecedoresEmMassaResposta>(`${this.endpoint}/fornecedores/importar-em-massa`, { itens });
+  }
+
+  // ---- Listas de preço (aba Preço) ----
+
+  listarListasPreco(): Observable<Resultado<ListaPreco[]>> {
+    return this.api.get<ListaPreco[]>(`${this.endpoint}/listas-preco`);
+  }
+
+  criarListaPreco(requisicao: CriarListaPrecoRequisicao): Observable<Resultado<{ id: number }>> {
+    return this.api.post<{ id: number }>(`${this.endpoint}/listas-preco`, requisicao);
+  }
+
+  atualizarListaPreco(idLista: number, requisicao: AtualizarListaPrecoRequisicao): Observable<Resultado<void>> {
+    return this.api.put<void>(`${this.endpoint}/listas-preco/${idLista}`, requisicao);
+  }
+
+  // ---- Enriquecimento (aba Web — SEO/Google/Tags) ----
+
+  obterEnriquecimento(id: number): Observable<Resultado<ProdutoEnriquecimento>> {
+    return this.api.get<ProdutoEnriquecimento>(`${this.endpoint}/${id}/enriquecimento`);
+  }
+
+  atualizarEnriquecimento(id: number, requisicao: AtualizarEnriquecimentoProdutoRequisicao): Observable<Resultado<void>> {
+    return this.api.put<void>(`${this.endpoint}/${id}/enriquecimento`, requisicao);
+  }
+
+  reenriquecer(id: number): Observable<Resultado<void>> {
+    return this.api.post<void>(`${this.endpoint}/${id}/reenriquecer`, {});
   }
 }

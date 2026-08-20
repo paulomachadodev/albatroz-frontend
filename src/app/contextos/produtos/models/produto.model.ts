@@ -24,11 +24,60 @@ export interface ProdutoImagem {
 }
 
 export interface ProdutoFornecedor {
-  tinyIdFornecedor: number;
+  id: number;
+  idContato: number;
   nomeFornecedor: string;
-  codigoProdutoFornecedorOriginal?: string;
-  codigoProdutoFornecedorCorrigido?: string;
-  codigoProdutoFornecedor?: string;
+  codigoNoFornecedor?: string;
+  principal: boolean;
+}
+
+export interface ProdutoPrecoPorLista {
+  idLista: number;
+  nomeLista: string;
+  padrao: boolean;
+  modoCalculo: 'fixo' | 'percentual_venda' | 'percentual_custo';
+  percentual?: number;
+  preco?: number;
+  precoPromocional?: number;
+}
+
+export interface ListaPreco {
+  id: number;
+  codigo: string;
+  nome: string;
+  tipo: 'padrao' | 'empresa' | 'escola' | 'site' | 'marketplace' | 'outro';
+  padrao: boolean;
+  modoCalculo: 'fixo' | 'percentual_venda' | 'percentual_custo';
+  percentual?: number;
+  ativo: boolean;
+}
+
+export interface ProdutoEnriquecimento {
+  seoTitle?: string;
+  seoDescription?: string;
+  seoSlug?: string;
+  seoKeywords?: string;
+  seoLinkVideo?: string;
+  googleProductCategory?: string;
+  googleProductType?: string;
+  googleBrand?: string;
+  googleGtin?: string;
+  condicao?: string;
+  disponivelMerchant?: boolean;
+  tag: string[];
+  sinonimos: string[];
+  descricaoEnriquecida?: string;
+  descricaoLonga?: string;
+  descricaoUso?: string;
+  publicoFaixa: string[];
+  publicoGenero: string[];
+  faixaEtaria?: string;
+  cor?: string;
+  tamanho?: string;
+  material?: string;
+  fonteEnriquecimento?: string;
+  statusEmbedding?: string;
+  enriquecidoEm?: string;
 }
 
 export interface ProdutoVariacao {
@@ -56,8 +105,6 @@ export interface ProdutoDetalhe {
   descricao?: string;
   idMarca?: number;
   marca?: string;
-  idFornecedorContato?: number;
-  nomeFornecedorContato?: string;
   categoria?: string;
   gtin?: string;
   situacao: string;
@@ -77,4 +124,5 @@ export interface ProdutoDetalhe {
   fornecedores: ProdutoFornecedor[];
   variacoes: ProdutoVariacao[];
   kitComponentes: ProdutoKitComponente[];
+  precos: ProdutoPrecoPorLista[];
 }

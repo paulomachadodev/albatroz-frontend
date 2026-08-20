@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import * as XLSX from 'xlsx';
 import { ProdutosService, ProdutoFiltro } from '../../services/produtos.service';
 import { ProdutoResumo } from '../../models/produto.model';
-import { AlterarProdutoEmMassaItemResposta } from '../../dtos/produto-resposta.dto';
+import { AlterarProdutoEmMassaItemResposta, ImportarFornecedorEmMassaItemResposta } from '../../dtos/produto-resposta.dto';
 import { ToastService } from '../../../../core/feedback/toast.service';
 import { ConfirmService } from '../../../../core/feedback/confirm.service';
 import { ListagemPaginadaComponent } from '../../../../shared/components/listagem-paginada/listagem-paginada.component';
@@ -18,7 +18,12 @@ interface LinhaPlanilhaMassa {
   Codigo: string;
   Nome: string;
   Marca: string;
-  Fornecedor: string;
+}
+
+interface LinhaPlanilhaFornecedores {
+  Codigo: string;
+  CodigoFornecedor: string;
+  CodigoNoFornecedor: string;
 }
 
 @Component({
@@ -45,6 +50,10 @@ export class ProdutosListaComponent implements OnInit {
   modalMassaAberto = signal(false);
   processandoMassa = signal(false);
   resultadoMassa = signal<AlterarProdutoEmMassaItemResposta[] | null>(null);
+
+  modalFornecedoresAberto = signal(false);
+  processandoFornecedores = signal(false);
+  resultadoFornecedores = signal<ImportarFornecedorEmMassaItemResposta[] | null>(null);
 
   constructor(
     private produtosService: ProdutosService,
@@ -181,13 +190,9 @@ export class ProdutosListaComponent implements OnInit {
     const linhas: LinhaPlanilhaMassa[] = Array.from(this.selecionados.values()).map(item => ({
       Codigo: item.codigo,
       Nome: item.nome,
-      Marca: item.marca ?? '',
-      Fornecedor: ''
+      Marca: item.marca ?? ''
     }));
-    const planilha = XLSX.utils.json_to_sheet(linhas);
-    const livro = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(livro, planilha, 'Produtos');
-    XLSX.writeFile(livro, 'produtos-alterar-em-massa.xlsx');
+    this.exportar(linhas, 'produtos-alterar-em-massa', 'Produtos');
   }
 
   aoSelecionarPlanilhaMassa(event: Event) {
@@ -196,16 +201,13 @@ export class ProdutosListaComponent implements OnInit {
     if (!arquivo) return;
 
     arquivo.arrayBuffer().then(buffer => {
-      const livro = XLSX.read(buffer, { type: 'array' });
-      const aba = livro.Sheets[livro.SheetNames[0]];
-      const linhas = XLSX.utils.sheet_to_json<LinhaPlanilhaMassa>(aba);
+      const linhas = this.lerPlanilha<LinhaPlanilhaMassa>(buffer, arquivo.name);
 
       const itens = linhas
         .filter(l => (l.Codigo ?? '').toString().trim().length > 0)
         .map(l => ({
           codigo: l.Codigo.toString().trim(),
-          marca: l.Marca ? l.Marca.toString().trim() || null : null,
-          fornecedor: l.Fornecedor ? l.Fornecedor.toString().trim() || null : null
+          marca: l.Marca ? l.Marca.toString().trim() || null : null
         }));
 
       if (itens.length === 0) {
@@ -230,6 +232,92 @@ export class ProdutosListaComponent implements OnInit {
 
       input.value = '';
     });
+  }
+
+  // ---- Importar fornecedores em massa (produto_fornecedor_erp) ----
+  // Independente da seleção da lista — a planilha pode conter qualquer código de
+  // produto/fornecedor cadastrado, não só os visíveis na página atual.
+
+  abrirImportarFornecedores() {
+    this.resultadoFornecedores.set(null);
+    this.modalFornecedoresAberto.set(true);
+  }
+
+  fecharModalFornecedores() {
+    this.modalFornecedoresAberto.set(false);
+  }
+
+  baixarPlanilhaFornecedores(formato: 'xlsx' | 'csv') {
+    const linhas: LinhaPlanilhaFornecedores[] = [{ Codigo: '', CodigoFornecedor: '', CodigoNoFornecedor: '' }];
+    this.exportar(linhas, 'produtos-importar-fornecedores', 'Fornecedores', formato);
+  }
+
+  aoSelecionarPlanilhaFornecedores(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const arquivo = input.files?.[0];
+    if (!arquivo) return;
+
+    arquivo.arrayBuffer().then(buffer => {
+      const linhas = this.lerPlanilha<LinhaPlanilhaFornecedores>(buffer, arquivo.name);
+
+      const itens = linhas
+        .filter(l => (l.Codigo ?? '').toString().trim().length > 0 && (l.CodigoFornecedor ?? '').toString().trim().length > 0)
+        .map(l => ({
+          codigo: l.Codigo.toString().trim(),
+          codigoFornecedor: l.CodigoFornecedor.toString().trim(),
+          codigoNoFornecedor: l.CodigoNoFornecedor ? l.CodigoNoFornecedor.toString().trim() || null : null
+        }));
+
+      if (itens.length === 0) {
+        this.toast.erro('Planilha vazia ou sem colunas Código/CodigoFornecedor.');
+        input.value = '';
+        return;
+      }
+
+      this.processandoFornecedores.set(true);
+      this.produtosService.importarFornecedoresEmMassa(itens).subscribe({
+        next: res => {
+          this.processandoFornecedores.set(false);
+          this.resultadoFornecedores.set(res.dados?.itens ?? []);
+        },
+        error: err => {
+          this.processandoFornecedores.set(false);
+          this.toast.erroServidor(err, 'Não foi possível processar a planilha.');
+        }
+      });
+
+      input.value = '';
+    });
+  }
+
+  // ---- Import/export XLSX+CSV — parsing sempre no frontend, ver @standards/import-export.md ----
+
+  private lerPlanilha<T>(buffer: ArrayBuffer, nomeArquivo: string): T[] {
+    if (nomeArquivo.toLowerCase().endsWith('.csv')) {
+      const texto = new TextDecoder('utf-8').decode(buffer);
+      const livro = XLSX.read(texto, { type: 'string' });
+      return XLSX.utils.sheet_to_json<T>(livro.Sheets[livro.SheetNames[0]]);
+    }
+    const livro = XLSX.read(buffer, { type: 'array' });
+    return XLSX.utils.sheet_to_json<T>(livro.Sheets[livro.SheetNames[0]]);
+  }
+
+  private exportar<T>(linhas: T[], nomeBase: string, nomeAba: string, formato: 'xlsx' | 'csv' = 'xlsx') {
+    const planilha = XLSX.utils.json_to_sheet(linhas);
+    if (formato === 'csv') {
+      const csv = XLSX.utils.sheet_to_csv(planilha);
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${nomeBase}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      return;
+    }
+    const livro = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(livro, planilha, nomeAba);
+    XLSX.writeFile(livro, `${nomeBase}.xlsx`);
   }
 
   rotuloTipo(tipo: string): string {

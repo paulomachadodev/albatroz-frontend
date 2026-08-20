@@ -35,7 +35,6 @@ export interface ProdutoEstoqueResposta {
 export interface AlterarProdutoEmMassaItem {
   codigo: string;
   marca?: string | null;
-  fornecedor?: string | null;
 }
 
 export interface AlterarProdutoEmMassaItemResposta {
@@ -46,6 +45,23 @@ export interface AlterarProdutoEmMassaItemResposta {
 
 export interface AlterarProdutosEmMassaResposta {
   itens: AlterarProdutoEmMassaItemResposta[];
+}
+
+export interface ImportarFornecedorEmMassaItem {
+  codigo: string;
+  codigoFornecedor: string;
+  codigoNoFornecedor?: string | null;
+}
+
+export interface ImportarFornecedorEmMassaItemResposta {
+  codigo: string;
+  codigoFornecedor: string;
+  sucesso: boolean;
+  erro?: string;
+}
+
+export interface ImportarFornecedoresEmMassaResposta {
+  itens: ImportarFornecedorEmMassaItemResposta[];
 }
 
 export interface ProdutoImportarImagensResposta {

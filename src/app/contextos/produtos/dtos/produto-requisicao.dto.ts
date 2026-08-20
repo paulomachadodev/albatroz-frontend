@@ -1,13 +1,58 @@
 export interface ProdutoDadosErpRequisicao {
   quantidadePorCaixa: number | null;
-  idMarca: number | null;
-  idFornecedorContato: number | null;
-}
-
-export interface ProdutoFornecedorCorrecaoRequisicao {
-  codigoProdutoFornecedorCorrigido: string | null;
 }
 
 export interface ProdutoImagensReordenarRequisicao {
   imagemIds: number[];
+}
+
+export interface AdicionarFornecedorProdutoRequisicao {
+  idContato: number;
+  codigoNoFornecedor: string | null;
+  principal: boolean;
+}
+
+export interface AtualizarFornecedorProdutoRequisicao {
+  codigoNoFornecedor: string | null;
+}
+
+export interface CriarListaPrecoRequisicao {
+  codigo: string;
+  nome: string;
+  tipo: string;
+  modoCalculo: 'percentual_venda' | 'percentual_custo';
+  percentual: number;
+}
+
+export interface AtualizarListaPrecoRequisicao {
+  nome: string;
+  tipo: string;
+  modoCalculo: 'percentual_venda' | 'percentual_custo';
+  percentual: number;
+  ativo: boolean;
+}
+
+export interface AtualizarEnriquecimentoProdutoRequisicao {
+  seoTitle: string | null;
+  seoDescription: string | null;
+  seoSlug: string | null;
+  seoKeywords: string | null;
+  seoLinkVideo: string | null;
+  googleProductCategory: string | null;
+  googleProductType: string | null;
+  googleBrand: string | null;
+  googleGtin: string | null;
+  condicao: string | null;
+  disponivelMerchant: boolean | null;
+  tag: string[] | null;
+  sinonimos: string[] | null;
+  descricaoEnriquecida: string | null;
+  descricaoLonga: string | null;
+  descricaoUso: string | null;
+  publicoFaixa: string[] | null;
+  publicoGenero: string[] | null;
+  faixaEtaria: string | null;
+  cor: string | null;
+  tamanho: string | null;
+  material: string | null;
 }

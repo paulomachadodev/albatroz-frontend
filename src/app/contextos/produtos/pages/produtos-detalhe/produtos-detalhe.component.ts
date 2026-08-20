@@ -5,21 +5,27 @@ import { FormsModule } from '@angular/forms';
 import { ProdutosService } from '../../services/produtos.service';
 import { MarcasService } from '../../services/marcas.service';
 import { ContatosService } from '../../../cadastros/contatos/services/contatos.service';
-import { ProdutoDetalhe, ProdutoFornecedor, ProdutoImagem } from '../../models/produto.model';
+import { ProdutoDetalhe, ProdutoFornecedor, ProdutoImagem, ListaPreco, ProdutoEnriquecimento } from '../../models/produto.model';
 import { ProdutoEstoqueResposta } from '../../dtos/produto-resposta.dto';
+import { CriarListaPrecoRequisicao, AtualizarListaPrecoRequisicao } from '../../dtos/produto-requisicao.dto';
 import { ToastService } from '../../../../core/feedback/toast.service';
 import { ConfirmService } from '../../../../core/feedback/confirm.service';
 import { BtnIconeComponent } from '../../../../shared/components/btn-icone/btn-icone.component';
 import { ListagemPaginadaComponent } from '../../../../shared/components/listagem-paginada/listagem-paginada.component';
 import { SelectBuscaComponent, OpcaoSelectBusca } from '../../../../shared/components/select-busca/select-busca.component';
 import { OverlayProgressoComponent } from '../../../../shared/components/overlay-progresso/overlay-progresso.component';
+import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 
-type Aba = 'geral' | 'imagens' | 'fornecedores' | 'variacoes' | 'estoque';
+type Aba = 'geral' | 'complementos' | 'web' | 'preco' | 'fornecedores' | 'variacoes' | 'estoque';
+type SaidaEscolha = 'cancelar' | 'descartar' | 'salvar';
 
 @Component({
   selector: 'app-produtos-detalhe',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, BtnIconeComponent, ListagemPaginadaComponent, SelectBuscaComponent, OverlayProgressoComponent],
+  imports: [
+    CommonModule, RouterLink, FormsModule, BtnIconeComponent, ListagemPaginadaComponent,
+    SelectBuscaComponent, OverlayProgressoComponent, ModalComponent
+  ],
   templateUrl: './produtos-detalhe.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
@@ -29,12 +35,17 @@ export class ProdutosDetalheComponent implements OnInit {
   produto = signal<ProdutoDetalhe | null>(null);
   abaAtiva = signal<Aba>('geral');
 
+  // ---- Editar geral: só os campos ERP-owned ficam habilitados; o resto (Tiny) é
+  // sempre somente-leitura. `sujo` cobre os campos de formulário (Complementos +
+  // Web/enriquecimento) — Fornecedores/Preço já salvam de forma imediata por linha,
+  // não entram no dirty-check.
+  modoEdicao = signal(false);
+  sujo = signal(false);
+  modalSairAberto = signal(false);
+  private resolverSaida?: (escolha: SaidaEscolha) => void;
+
   quantidadePorCaixa: number | null = null;
-  marcaSelecionada = signal<OpcaoSelectBusca | null>(null);
-  fornecedorSelecionado = signal<OpcaoSelectBusca | null>(null);
   salvandoDadosErp = signal(false);
-  buscarMarcas = (termo: string) => this.marcasService.buscar(termo);
-  buscarFornecedores = (termo: string) => this.contatosService.buscar(termo, 'Fornecedor');
 
   readonly maximoImagens = 8;
   readonly slotsImagens = [0, 1, 2, 3, 4, 5, 6, 7];
@@ -47,8 +58,36 @@ export class ProdutosDetalheComponent implements OnInit {
   salvandoOrdem = signal(false);
   slotArrastadoSobre = signal<number | null>(null);
 
-  correcoesFornecedor: Record<number, string> = {};
-  salvandoFornecedor = signal<number | null>(null);
+  // ---- Fornecedores (produto_fornecedor_erp) ----
+  salvandoFornecedorCodigo = signal<number | null>(null);
+  removendoFornecedor = signal<number | null>(null);
+  definindoPrincipal = signal<number | null>(null);
+  codigoPorFornecedor: Record<number, string> = {};
+  novoFornecedorSelecionado = signal<OpcaoSelectBusca | null>(null);
+  novoFornecedorCodigo = '';
+  novoFornecedorPrincipal = false;
+  adicionandoFornecedor = signal(false);
+  buscarFornecedores = (termo: string) => this.contatosService.buscar(termo, 'Fornecedor');
+
+  // ---- Preço (listas) ----
+  listasPreco = signal<ListaPreco[]>([]);
+  carregandoListas = signal(false);
+  modalListaAberto = signal(false);
+  listaEditandoId: number | null = null;
+  formLista: { codigo: string; nome: string; tipo: string; modoCalculo: 'percentual_venda' | 'percentual_custo'; percentual: number; ativo: boolean } = {
+    codigo: '', nome: '', tipo: 'empresa', modoCalculo: 'percentual_venda', percentual: 0, ativo: true
+  };
+  salvandoLista = signal(false);
+
+  // ---- Web / enriquecimento ----
+  enriquecimento = signal<ProdutoEnriquecimento | null>(null);
+  carregandoEnriquecimento = signal(false);
+  salvandoEnriquecimento = signal(false);
+  reenriquecendo = signal(false);
+  tagTexto = '';
+  sinonimosTexto = '';
+  publicoFaixaTexto = '';
+  publicoGeneroTexto = '';
 
   estoque = signal<ProdutoEstoqueResposta | null>(null);
   carregandoEstoque = signal(false);
@@ -83,20 +122,15 @@ export class ProdutosDetalheComponent implements OnInit {
         const dados = res.dados ?? null;
         this.produto.set(dados);
         this.quantidadePorCaixa = dados?.quantidadePorCaixa ?? null;
-        this.marcaSelecionada.set(dados?.idMarca ? { id: dados.idMarca, nome: dados.marca ?? '' } : null);
-        this.fornecedorSelecionado.set(dados?.idFornecedorContato
-          ? { id: dados.idFornecedorContato, nome: dados.nomeFornecedorContato ?? '' } : null);
-        this.correcoesFornecedor = {};
-        (dados?.fornecedores ?? []).forEach(f => {
-          this.correcoesFornecedor[f.tinyIdFornecedor] = f.codigoProdutoFornecedorCorrigido ?? '';
-        });
+        this.codigoPorFornecedor = {};
+        (dados?.fornecedores ?? []).forEach(f => { this.codigoPorFornecedor[f.id] = f.codigoNoFornecedor ?? ''; });
 
         if (dados?.tipo === 'simples' && this.abaAtiva() === 'variacoes') {
           this.abaAtiva.set('geral');
         }
-        if (this.abaAtiva() === 'estoque' && !this.estoque()) {
-          this.carregarEstoque();
-        }
+        if (this.abaAtiva() === 'estoque' && !this.estoque()) this.carregarEstoque();
+        if (this.abaAtiva() === 'preco' && this.listasPreco().length === 0) this.carregarListasPreco();
+        if (this.abaAtiva() === 'web' && !this.enriquecimento()) this.carregarEnriquecimento();
 
         this.carregando.set(false);
       },
@@ -109,13 +143,81 @@ export class ProdutosDetalheComponent implements OnInit {
 
   private recarregarSilencioso() {
     this.produtosService.obter(this.idProduto).subscribe({
-      next: res => this.produto.set(res.dados ?? null),
+      next: res => {
+        this.produto.set(res.dados ?? null);
+        this.codigoPorFornecedor = {};
+        (res.dados?.fornecedores ?? []).forEach(f => { this.codigoPorFornecedor[f.id] = f.codigoNoFornecedor ?? ''; });
+      },
       error: err => this.toast.erroServidor(err, 'Não foi possível atualizar o produto.')
     });
   }
 
-  voltar() {
+  trocarAba(aba: Aba) {
+    this.abaAtiva.set(aba);
+    if (aba === 'preco' && this.listasPreco().length === 0) this.carregarListasPreco();
+    if (aba === 'web' && !this.enriquecimento()) this.carregarEnriquecimento();
+  }
+
+  // ---- Editar geral + dirty-check de saída ----
+
+  ativarEdicao() {
+    this.modoEdicao.set(true);
+  }
+
+  marcarSujo() {
+    if (this.modoEdicao()) this.sujo.set(true);
+  }
+
+  async voltar() {
+    if (this.modoEdicao() && this.sujo()) {
+      const escolha = await this.pedirEscolhaSaida();
+      if (escolha === 'cancelar') return;
+      if (escolha === 'salvar') {
+        const ok = await this.salvarTudo();
+        if (!ok) return;
+      } else {
+        this.modoEdicao.set(false);
+        this.sujo.set(false);
+        this.carregar();
+      }
+    }
     this.router.navigate(['/produtos']);
+  }
+
+  async finalizarEdicao() {
+    if (!this.sujo()) { this.modoEdicao.set(false); return; }
+
+    const escolha = await this.pedirEscolhaSaida();
+    if (escolha === 'cancelar') return;
+    if (escolha === 'salvar') {
+      await this.salvarTudo();
+    } else {
+      this.modoEdicao.set(false);
+      this.sujo.set(false);
+      this.carregar();
+    }
+  }
+
+  private pedirEscolhaSaida(): Promise<SaidaEscolha> {
+    this.modalSairAberto.set(true);
+    return new Promise(resolve => (this.resolverSaida = resolve));
+  }
+
+  responderSaida(escolha: SaidaEscolha) {
+    this.modalSairAberto.set(false);
+    this.resolverSaida?.(escolha);
+    this.resolverSaida = undefined;
+  }
+
+  private async salvarTudo(): Promise<boolean> {
+    const okDados = await this.salvarDadosErpAsync();
+    const okEnriquecimento = await this.salvarEnriquecimentoAsync();
+    if (okDados && okEnriquecimento) {
+      this.sujo.set(false);
+      this.modoEdicao.set(false);
+      return true;
+    }
+    return false;
   }
 
   rotuloTipo(tipo: string): string {
@@ -128,40 +230,29 @@ export class ProdutosDetalheComponent implements OnInit {
     return mapa[situacao] ?? situacao;
   }
 
-  // ---- Aba Geral ----
+  // ---- Aba Complementos ----
 
-  aoSelecionarMarca(opcao: OpcaoSelectBusca | null) {
-    this.marcaSelecionada.set(opcao);
-  }
-
-  aoSelecionarFornecedor(opcao: OpcaoSelectBusca | null) {
-    this.fornecedorSelecionado.set(opcao);
-  }
-
-  salvarDadosErp() {
-    this.salvandoDadosErp.set(true);
-    const payload = {
-      quantidadePorCaixa: this.quantidadePorCaixa,
-      idMarca: this.marcaSelecionada()?.id ?? null,
-      idFornecedorContato: this.fornecedorSelecionado()?.id ?? null
-    };
-    this.produtosService.atualizarDadosErp(this.idProduto, payload).subscribe({
-      next: () => {
-        this.salvandoDadosErp.set(false);
-        this.toast.sucesso('Quantidade por caixa salva.');
-        this.recarregarSilencioso();
-      },
-      error: err => {
-        this.salvandoDadosErp.set(false);
-        this.toast.erroServidor(err, 'Não foi possível salvar.');
-      }
+  private salvarDadosErpAsync(): Promise<boolean> {
+    return new Promise(resolve => {
+      this.salvandoDadosErp.set(true);
+      this.produtosService.atualizarDadosErp(this.idProduto, { quantidadePorCaixa: this.quantidadePorCaixa }).subscribe({
+        next: () => { this.salvandoDadosErp.set(false); resolve(true); },
+        error: err => {
+          this.salvandoDadosErp.set(false);
+          this.toast.erroServidor(err, 'Não foi possível salvar a quantidade por caixa.');
+          resolve(false);
+        }
+      });
     });
   }
 
-  // ---- Aba Imagens ----
-  // Grid fixo de 8 slots (posição visual = ordem que o backend já devolve, erp antes de tiny —
-  // ver ObterProdutoDetalheConsulta). Só o primeiro slot vazio aceita novo arquivo (regra:
-  // não dá pra pular índice); slot ocupado só aceita drop de arquivo pra substituir a imagem.
+  salvarDadosErp() {
+    this.salvarDadosErpAsync().then(ok => {
+      if (ok) { this.toast.sucesso('Quantidade por caixa salva.'); this.recarregarSilencioso(); }
+    });
+  }
+
+  // ---- Aba Web — Imagens ----
 
   imagemNoSlot(slot: number): ProdutoImagem | null {
     return this.produto()?.imagens?.[slot] ?? null;
@@ -169,7 +260,7 @@ export class ProdutosDetalheComponent implements OnInit {
 
   slotBloqueado(slot: number): boolean {
     const total = this.produto()?.imagens.length ?? 0;
-    return slot > total; // só o primeiro vazio (slot === total) é liberado
+    return slot > total;
   }
 
   slotAceitaDrop(slot: number): boolean {
@@ -205,7 +296,6 @@ export class ProdutosDetalheComponent implements OnInit {
       return;
     }
 
-    // Sem arquivo externo — é drag interno de reordenar entre quadrados já ocupados.
     const imagemAlvo = this.imagemNoSlot(slot);
     if (imagemAlvo) this.aoSoltarImagemSobre(imagemAlvo);
   }
@@ -357,10 +447,164 @@ export class ProdutosDetalheComponent implements OnInit {
     });
   }
 
+  // ---- Aba Web — Enriquecimento (SEO/Google/Tags) ----
+
+  carregarEnriquecimento() {
+    this.carregandoEnriquecimento.set(true);
+    this.produtosService.obterEnriquecimento(this.idProduto).subscribe({
+      next: res => {
+        const e = res.dados ?? null;
+        this.enriquecimento.set(e);
+        this.tagTexto = (e?.tag ?? []).join(', ');
+        this.sinonimosTexto = (e?.sinonimos ?? []).join(', ');
+        this.publicoFaixaTexto = (e?.publicoFaixa ?? []).join(', ');
+        this.publicoGeneroTexto = (e?.publicoGenero ?? []).join(', ');
+        this.carregandoEnriquecimento.set(false);
+      },
+      error: err => {
+        this.carregandoEnriquecimento.set(false);
+        this.toast.erroServidor(err, 'Não foi possível carregar os dados de SEO/enriquecimento.');
+      }
+    });
+  }
+
+  private listaTexto(texto: string): string[] {
+    return texto.split(',').map(t => t.trim()).filter(t => t.length > 0);
+  }
+
+  private salvarEnriquecimentoAsync(): Promise<boolean> {
+    const e = this.enriquecimento();
+    if (!e) return Promise.resolve(true);
+
+    return new Promise(resolve => {
+      this.salvandoEnriquecimento.set(true);
+      this.produtosService.atualizarEnriquecimento(this.idProduto, {
+        seoTitle: e.seoTitle ?? null,
+        seoDescription: e.seoDescription ?? null,
+        seoSlug: e.seoSlug ?? null,
+        seoKeywords: e.seoKeywords ?? null,
+        seoLinkVideo: e.seoLinkVideo ?? null,
+        googleProductCategory: e.googleProductCategory ?? null,
+        googleProductType: e.googleProductType ?? null,
+        googleBrand: e.googleBrand ?? null,
+        googleGtin: e.googleGtin ?? null,
+        condicao: e.condicao ?? null,
+        disponivelMerchant: e.disponivelMerchant ?? null,
+        tag: this.listaTexto(this.tagTexto),
+        sinonimos: this.listaTexto(this.sinonimosTexto),
+        descricaoEnriquecida: e.descricaoEnriquecida ?? null,
+        descricaoLonga: e.descricaoLonga ?? null,
+        descricaoUso: e.descricaoUso ?? null,
+        publicoFaixa: this.listaTexto(this.publicoFaixaTexto),
+        publicoGenero: this.listaTexto(this.publicoGeneroTexto),
+        faixaEtaria: e.faixaEtaria ?? null,
+        cor: e.cor ?? null,
+        tamanho: e.tamanho ?? null,
+        material: e.material ?? null
+      }).subscribe({
+        next: () => { this.salvandoEnriquecimento.set(false); resolve(true); },
+        error: err => {
+          this.salvandoEnriquecimento.set(false);
+          this.toast.erroServidor(err, 'Não foi possível salvar os dados de SEO/enriquecimento.');
+          resolve(false);
+        }
+      });
+    });
+  }
+
+  salvarEnriquecimento() {
+    this.salvarEnriquecimentoAsync().then(ok => {
+      if (ok) { this.toast.sucesso('Dados de SEO/enriquecimento salvos.'); this.sujo.set(false); this.carregarEnriquecimento(); }
+    });
+  }
+
+  async reenriquecerViaIa() {
+    const confirmado = await this.confirm.confirmar(
+      'Reenriquecer via IA?',
+      'A IA vai gerar de novo SEO, Google Shopping, tags, sinônimos e descrições desse produto — os valores atuais desses campos serão apagados e substituídos. O embedding de busca também é regenerado automaticamente ao final.',
+      { textoConfirmar: 'Reenriquecer' }
+    );
+    if (!confirmado) return;
+
+    this.reenriquecendo.set(true);
+    this.produtosService.reenriquecer(this.idProduto).subscribe({
+      next: () => {
+        this.reenriquecendo.set(false);
+        this.toast.sucesso('Produto reenriquecido pela IA.');
+        this.carregarEnriquecimento();
+      },
+      error: err => {
+        this.reenriquecendo.set(false);
+        this.toast.erroServidor(err, 'Não foi possível reenriquecer agora — tente novamente em instantes.');
+      }
+    });
+  }
+
+  // ---- Aba Preço ----
+
+  carregarListasPreco() {
+    this.carregandoListas.set(true);
+    this.produtosService.listarListasPreco().subscribe({
+      next: res => { this.listasPreco.set(res.dados ?? []); this.carregandoListas.set(false); },
+      error: err => { this.carregandoListas.set(false); this.toast.erroServidor(err, 'Não foi possível carregar as listas de preço.'); }
+    });
+  }
+
+  precoPorLista(idLista: number) {
+    return this.produto()?.precos.find(p => p.idLista === idLista) ?? null;
+  }
+
+  abrirNovaLista() {
+    this.listaEditandoId = null;
+    this.formLista = { codigo: '', nome: '', tipo: 'empresa', modoCalculo: 'percentual_venda', percentual: 0, ativo: true };
+    this.modalListaAberto.set(true);
+  }
+
+  abrirEditarLista(lista: ListaPreco) {
+    this.listaEditandoId = lista.id;
+    this.formLista = {
+      codigo: lista.codigo, nome: lista.nome, tipo: lista.tipo,
+      modoCalculo: lista.modoCalculo === 'fixo' ? 'percentual_venda' : lista.modoCalculo,
+      percentual: lista.percentual ?? 0, ativo: lista.ativo
+    };
+    this.modalListaAberto.set(true);
+  }
+
+  fecharModalLista() {
+    this.modalListaAberto.set(false);
+  }
+
+  salvarLista() {
+    if (!this.formLista.nome.trim()) { this.toast.erro('Informe o nome da lista.'); return; }
+
+    this.salvandoLista.set(true);
+
+    if (this.listaEditandoId) {
+      const req: AtualizarListaPrecoRequisicao = {
+        nome: this.formLista.nome, tipo: this.formLista.tipo,
+        modoCalculo: this.formLista.modoCalculo, percentual: this.formLista.percentual, ativo: this.formLista.ativo
+      };
+      this.produtosService.atualizarListaPreco(this.listaEditandoId, req).subscribe({
+        next: () => { this.salvandoLista.set(false); this.toast.sucesso('Lista atualizada.'); this.modalListaAberto.set(false); this.carregarListasPreco(); this.recarregarSilencioso(); },
+        error: err => { this.salvandoLista.set(false); this.toast.erroServidor(err, 'Não foi possível atualizar a lista.'); }
+      });
+    } else {
+      if (!this.formLista.codigo.trim()) { this.toast.erro('Informe o código da lista.'); this.salvandoLista.set(false); return; }
+      const req: CriarListaPrecoRequisicao = {
+        codigo: this.formLista.codigo, nome: this.formLista.nome, tipo: this.formLista.tipo,
+        modoCalculo: this.formLista.modoCalculo, percentual: this.formLista.percentual
+      };
+      this.produtosService.criarListaPreco(req).subscribe({
+        next: () => { this.salvandoLista.set(false); this.toast.sucesso('Lista criada.'); this.modalListaAberto.set(false); this.carregarListasPreco(); this.recarregarSilencioso(); },
+        error: err => { this.salvandoLista.set(false); this.toast.erroServidor(err, 'Não foi possível criar a lista.'); }
+      });
+    }
+  }
+
   // ---- Aba Estoque ----
 
   abrirAbaEstoque() {
-    this.abaAtiva.set('estoque');
+    this.trocarAba('estoque');
     if (!this.estoque()) this.carregarEstoque();
   }
 
@@ -394,24 +638,62 @@ export class ProdutosDetalheComponent implements OnInit {
     return origem ? (mapa[origem] ?? origem) : '-';
   }
 
-  // ---- Aba Fornecedores ----
+  // ---- Aba Fornecedores (produto_fornecedor_erp) ----
 
-  salvarFornecedor(fornecedor: ProdutoFornecedor) {
-    this.salvandoFornecedor.set(fornecedor.tinyIdFornecedor);
-    const valor = (this.correcoesFornecedor[fornecedor.tinyIdFornecedor] ?? '').trim();
+  aoSelecionarNovoFornecedor(opcao: OpcaoSelectBusca | null) {
+    this.novoFornecedorSelecionado.set(opcao);
+  }
 
-    this.produtosService.corrigirFornecedor(this.idProduto, fornecedor.tinyIdFornecedor, {
-      codigoProdutoFornecedorCorrigido: valor || null
+  adicionarFornecedor() {
+    const opcao = this.novoFornecedorSelecionado();
+    if (!opcao) { this.toast.erro('Busque e selecione um fornecedor.'); return; }
+
+    this.adicionandoFornecedor.set(true);
+    this.produtosService.adicionarFornecedor(this.idProduto, {
+      idContato: opcao.id, codigoNoFornecedor: this.novoFornecedorCodigo.trim() || null, principal: this.novoFornecedorPrincipal
     }).subscribe({
       next: () => {
-        this.salvandoFornecedor.set(null);
-        this.toast.sucesso('Código do fornecedor atualizado.');
+        this.adicionandoFornecedor.set(false);
+        this.novoFornecedorSelecionado.set(null);
+        this.novoFornecedorCodigo = '';
+        this.novoFornecedorPrincipal = false;
+        this.toast.sucesso('Fornecedor adicionado.');
         this.recarregarSilencioso();
       },
-      error: err => {
-        this.salvandoFornecedor.set(null);
-        this.toast.erroServidor(err, 'Não foi possível salvar a correção.');
-      }
+      error: err => { this.adicionandoFornecedor.set(false); this.toast.erroServidor(err, 'Não foi possível adicionar o fornecedor.'); }
+    });
+  }
+
+  salvarCodigoFornecedor(fornecedor: ProdutoFornecedor) {
+    this.salvandoFornecedorCodigo.set(fornecedor.id);
+    const valor = (this.codigoPorFornecedor[fornecedor.id] ?? '').trim();
+    this.produtosService.atualizarFornecedor(this.idProduto, fornecedor.id, { codigoNoFornecedor: valor || null }).subscribe({
+      next: () => { this.salvandoFornecedorCodigo.set(null); this.toast.sucesso('Código do fornecedor atualizado.'); this.recarregarSilencioso(); },
+      error: err => { this.salvandoFornecedorCodigo.set(null); this.toast.erroServidor(err, 'Não foi possível salvar o código.'); }
+    });
+  }
+
+  definirPrincipal(fornecedor: ProdutoFornecedor) {
+    if (fornecedor.principal) return;
+    this.definindoPrincipal.set(fornecedor.id);
+    this.produtosService.definirFornecedorPrincipal(this.idProduto, fornecedor.id).subscribe({
+      next: () => { this.definindoPrincipal.set(null); this.toast.sucesso('Fornecedor principal atualizado.'); this.recarregarSilencioso(); },
+      error: err => { this.definindoPrincipal.set(null); this.toast.erroServidor(err, 'Não foi possível definir como principal.'); }
+    });
+  }
+
+  async removerFornecedor(fornecedor: ProdutoFornecedor) {
+    const confirmado = await this.confirm.confirmar(
+      'Remover esse fornecedor do produto?',
+      `${fornecedor.nomeFornecedor} deixa de aparecer vinculado a esse produto.`,
+      { textoConfirmar: 'Remover' }
+    );
+    if (!confirmado) return;
+
+    this.removendoFornecedor.set(fornecedor.id);
+    this.produtosService.removerFornecedor(this.idProduto, fornecedor.id).subscribe({
+      next: () => { this.removendoFornecedor.set(null); this.toast.sucesso('Fornecedor removido.'); this.recarregarSilencioso(); },
+      error: err => { this.removendoFornecedor.set(null); this.toast.erroServidor(err, 'Não foi possível remover o fornecedor.'); }
     });
   }
 

@@ -3,7 +3,7 @@ import { Observable } from 'rxjs';
 import { ApiService } from '../../../core/http/api.service';
 import { Resultado, Paginacao } from '../../../core/models';
 import { ParametrosPaginacao } from '../../../core/models/paginacao.model';
-import { ProdutoDetalhe, ProdutoResumo, ProdutoTipo, ListaPreco, ProdutoEnriquecimento, MarketplaceProduto } from '../models/produto.model';
+import { ProdutoDetalhe, ProdutoResumo, ProdutoTipo, ListaPreco, ProdutoEnriquecimento, MarketplaceProduto, ProdutoAnalise } from '../models/produto.model';
 import {
   ProdutoDadosErpRequisicao,
   ProdutoImagensReordenarRequisicao,
@@ -154,5 +154,11 @@ export class ProdutosService {
 
   definirMarketplaceEmMassa(idsProduto: number[], marketplace: string, habilitado: boolean): Observable<Resultado<{ alterados: number }>> {
     return this.api.post<{ alterados: number }>(`${this.endpoint}/marketplaces/alterar-em-massa`, { idsProduto, marketplace, habilitado });
+  }
+
+  // ---- Análise ----
+
+  obterAnalise(id: number): Observable<Resultado<ProdutoAnalise>> {
+    return this.api.get<ProdutoAnalise>(`${this.endpoint}/${id}/analise`);
   }
 }

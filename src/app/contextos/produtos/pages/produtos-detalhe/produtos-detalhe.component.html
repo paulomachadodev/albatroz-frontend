@@ -72,6 +72,12 @@
                   [class.border-transparent]="abaAtiva() !== 'fornecedores'" [class.text-slate-500]="abaAtiva() !== 'fornecedores'">
             Fornecedores
           </button>
+          <button (click)="trocarAba('analise')"
+                  class="pb-3 text-sm font-bold border-b-2 transition-colors whitespace-nowrap"
+                  [class.border-primary]="abaAtiva() === 'analise'" [class.text-primary]="abaAtiva() === 'analise'"
+                  [class.border-transparent]="abaAtiva() !== 'analise'" [class.text-slate-500]="abaAtiva() !== 'analise'">
+            Análise
+          </button>
           @if (produto()!.tipo !== 'simples') {
             <button (click)="trocarAba('variacoes')"
                     class="pb-3 text-sm font-bold border-b-2 transition-colors whitespace-nowrap"
@@ -557,6 +563,131 @@
             </table>
           </div>
         </div>
+      }
+
+      <!-- Aba Análise — reaproveita os mesmos cálculos já validados no Metabase -->
+      @if (abaAtiva() === 'analise') {
+        @if (carregandoAnalise()) {
+          <div class="text-sm text-slate-500">Carregando análise...</div>
+        } @else if (analise()) {
+          @let a = analise()!;
+          <div class="space-y-6">
+
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+              <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-4">
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-wide">Curva ABC</p>
+                <p class="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-1">{{ a.classeAbc || '-' }}</p>
+                @if (a.percentualParticipacao != null) {
+                  <p class="text-xs text-slate-400 mt-0.5">{{ a.percentualParticipacao | number: '1.1-1' }}% do faturamento</p>
+                }
+              </div>
+              <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-4">
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-wide inline-flex items-center gap-1">
+                  Giro diário
+                  <app-campo-hint texto="Quantidade vendida nos últimos 30 dias dividida pelos dias em que de fato houve venda — não divide por 30 fixo, evita subestimar giro concentrado."></app-campo-hint>
+                </p>
+                <p class="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-1">{{ formatarNumero(a.giroDiarioReal) }}</p>
+              </div>
+              <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-4">
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-wide inline-flex items-center gap-1">
+                  GMROI
+                  <app-campo-hint texto="Gross Margin Return On Investment — lucro do ano dividido pelo capital investido em custo desse produto. Quanto maior, melhor o retorno do capital parado em estoque."></app-campo-hint>
+                </p>
+                <p class="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-1">{{ formatarNumero(a.gmroi) }}</p>
+              </div>
+              <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-4">
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-wide">Status estoque</p>
+                <p class="text-lg font-bold text-slate-900 dark:text-slate-100 mt-1">{{ a.statusEstoque || '-' }}</p>
+                @if (a.diasParadoMax != null) {
+                  <p class="text-xs text-slate-400 mt-0.5">{{ a.diasParadoMax }} dias parado</p>
+                }
+              </div>
+              <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-4">
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-wide">Última venda</p>
+                <p class="text-lg font-bold text-slate-900 dark:text-slate-100 mt-1">{{ a.dataUltimaVenda ? (a.dataUltimaVenda | date: 'dd/MM/yy') : '-' }}</p>
+              </div>
+              <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-4">
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-wide">Última compra</p>
+                <p class="text-lg font-bold text-slate-900 dark:text-slate-100 mt-1">{{ a.dataUltimaEntrada ? (a.dataUltimaEntrada | date: 'dd/MM/yy') : '-' }}</p>
+              </div>
+            </div>
+
+            <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6">
+              <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-3">Precisa comprar?</p>
+              @if (!a.precisaComprar) {
+                <p class="text-sm text-slate-500 dark:text-slate-400">Sem necessidade de compra no momento — estoque cobre a projeção de venda.</p>
+              } @else {
+                <div class="grid grid-cols-3 gap-4">
+                  <div>
+                    <p class="text-xs text-slate-400">30 dias</p>
+                    <p class="text-lg font-bold text-slate-900 dark:text-slate-100">{{ formatarNumero(a.sugestaoCompraQtd30d) }} un</p>
+                    <p class="text-xs text-slate-400">{{ formatarReais(a.valorTotalSugerido30d) }}</p>
+                  </div>
+                  <div>
+                    <p class="text-xs text-slate-400">60 dias</p>
+                    <p class="text-lg font-bold text-slate-900 dark:text-slate-100">{{ formatarNumero(a.sugestaoCompraQtd60d) }} un</p>
+                    <p class="text-xs text-slate-400">{{ formatarReais(a.valorTotalSugerido60d) }}</p>
+                  </div>
+                  <div>
+                    <p class="text-xs text-slate-400">90 dias</p>
+                    <p class="text-lg font-bold text-slate-900 dark:text-slate-100">{{ formatarNumero(a.sugestaoCompraQtd90d) }} un</p>
+                    <p class="text-xs text-slate-400">{{ formatarReais(a.valorTotalSugerido90d) }}</p>
+                  </div>
+                </div>
+                <p class="text-xs text-slate-400 mt-3">Cobertura de estoque atual: {{ formatarNumero(a.diasCoberturaEstoque) }} dias.</p>
+              }
+            </div>
+
+            <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6">
+              <div class="flex items-center justify-between mb-4">
+                <p class="text-xs font-bold text-slate-500 uppercase tracking-wide">Vendas (quantidade)</p>
+                <div class="flex gap-1">
+                  <button (click)="granularidadeVendas.set('dia')" class="px-2 py-1 rounded text-xs font-bold"
+                          [class]="granularidadeVendas() === 'dia' ? 'bg-primary text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'">Dia</button>
+                  <button (click)="granularidadeVendas.set('mes')" class="px-2 py-1 rounded text-xs font-bold"
+                          [class]="granularidadeVendas() === 'mes' ? 'bg-primary text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'">Mês</button>
+                  <button (click)="granularidadeVendas.set('ano')" class="px-2 py-1 rounded text-xs font-bold"
+                          [class]="granularidadeVendas() === 'ano' ? 'bg-primary text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'">Ano</button>
+                </div>
+              </div>
+              @if (barrasVendas.length === 0) {
+                <p class="text-sm text-slate-500">Sem vendas registradas nesse período.</p>
+              } @else {
+                <div class="flex items-end gap-1 h-40 overflow-x-auto">
+                  @for (b of barrasVendas; track b.rotulo) {
+                    <div class="flex flex-col items-center justify-end h-full min-w-[24px] gap-1" [title]="b.rotulo + ': ' + b.valor">
+                      <div class="w-full bg-primary rounded-t" [style.height.%]="(b.valor / alturaMaximaBarra) * 100"></div>
+                      <span class="text-[9px] text-slate-400 whitespace-nowrap">{{ b.rotulo }}</span>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+
+            <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6">
+              <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-4">Faturamento × Lucro bruto (mensal)</p>
+              @if (barrasFaturamentoLucro.length === 0) {
+                <p class="text-sm text-slate-500">Sem vendas registradas.</p>
+              } @else {
+                <div class="flex items-end gap-2 h-40 overflow-x-auto">
+                  @for (b of barrasFaturamentoLucro; track b.rotulo) {
+                    <div class="flex flex-col items-center justify-end h-full min-w-[36px] gap-1" [title]="b.rotulo">
+                      <div class="w-full flex items-end gap-0.5 h-full">
+                        <div class="w-1/2 bg-primary rounded-t" [style.height.%]="(b.faturamento / alturaMaximaFaturamento) * 100" title="Faturamento"></div>
+                        <div class="w-1/2 bg-emerald-500 rounded-t" [style.height.%]="(b.lucro / alturaMaximaFaturamento) * 100" title="Lucro"></div>
+                      </div>
+                      <span class="text-[9px] text-slate-400 whitespace-nowrap">{{ b.rotulo }}</span>
+                    </div>
+                  }
+                </div>
+                <div class="flex items-center gap-4 mt-3 text-xs text-slate-400">
+                  <span class="flex items-center gap-1"><span class="size-2.5 rounded-sm bg-primary"></span> Faturamento</span>
+                  <span class="flex items-center gap-1"><span class="size-2.5 rounded-sm bg-emerald-500"></span> Lucro bruto</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
       }
 
       <!-- Aba Variações / Kit — cada linha é produto real, clicável, abre a própria página -->

@@ -179,6 +179,18 @@
               <textarea rows="4" [(ngModel)]="googleServiceAccountJson" placeholder="Cole aqui o JSON da service account com acesso ao Merchant Center"
                         class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-xs font-mono outline-none resize-none"></textarea>
             </div>
+          } @else {
+            <div>
+              <label class="text-xs font-bold text-slate-500 uppercase tracking-wide inline-flex items-center gap-1">
+                Token do feed
+                <app-campo-hint texto="Vai como parte da URL que você cadastra no Merchant Center — invente uma string aleatória, só serve pra impedir que outros vejam seu catálogo."></app-campo-hint>
+              </label>
+              <input type="text" [(ngModel)]="googleFeedToken" placeholder="uma-string-secreta-qualquer"
+                     class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+              @if (googleFeedToken) {
+                <p class="mt-1 text-xs text-slate-400 break-all">URL do feed: {{ urlFeed('google') }}</p>
+              }
+            </div>
           }
         </div>
 
@@ -204,7 +216,31 @@
               <input type="password" [(ngModel)]="metaTokenSistema" placeholder="Token de usuário de sistema com catalog_management"
                      class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
             </div>
+          } @else {
+            <div>
+              <label class="text-xs font-bold text-slate-500 uppercase tracking-wide inline-flex items-center gap-1">
+                Token do feed
+                <app-campo-hint texto="Vai como parte da URL que você cadastra no Catalog Manager — invente uma string aleatória."></app-campo-hint>
+              </label>
+              <input type="text" [(ngModel)]="metaFeedToken" placeholder="uma-string-secreta-qualquer"
+                     class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+              @if (metaFeedToken) {
+                <p class="mt-1 text-xs text-slate-400 break-all">URL do feed: {{ urlFeed('meta') }}</p>
+              }
+            </div>
           }
+        </div>
+
+        <div class="space-y-4 pt-6 border-t border-slate-200 dark:border-slate-800">
+          <p class="text-sm font-bold text-slate-900 dark:text-slate-100">Site</p>
+          <div>
+            <label class="text-xs font-bold text-slate-500 uppercase tracking-wide inline-flex items-center gap-1">
+              URL base do site
+              <app-campo-hint texto="Usada pra montar o link de cada produto no feed (ex: https://loja.albatrozpapelaria.com.br). Deixe em branco até o site/vitrine existir."></app-campo-hint>
+            </label>
+            <input type="text" [(ngModel)]="siteBaseUrl" placeholder="https://loja.exemplo.com.br"
+                   class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+          </div>
         </div>
 
         <div class="pt-2">

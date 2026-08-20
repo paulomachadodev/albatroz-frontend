@@ -4,6 +4,8 @@ import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { ConfiguracoesService } from '../../services/configuracoes.service';
+import { AuthService } from '../../../../../core/auth/auth.service';
+import { environment } from '../../../../../../environments/environment';
 import { Configuracao } from '../../models/configuracao.model';
 import { ToastService } from '../../../../../core/feedback/toast.service';
 import { PageHeaderComponent } from '../../../../../shared/components/page-header/page-header.component';
@@ -40,9 +42,12 @@ export class ConfiguracoesPaginaComponent implements OnInit {
   googleMerchantId = '';
   googleFeedModo: 'url' | 'api' = 'url';
   googleServiceAccountJson = '';
+  googleFeedToken = '';
   metaCatalogId = '';
   metaFeedModo: 'url' | 'api' = 'url';
   metaTokenSistema = '';
+  metaFeedToken = '';
+  siteBaseUrl = '';
   salvandoIntegracoes = signal(false);
 
   // ---- Venda: listas de preço ----
@@ -69,8 +74,15 @@ export class ConfiguracoesPaginaComponent implements OnInit {
   constructor(
     private configuracoesService: ConfiguracoesService,
     private produtosService: ProdutosService,
+    private auth: AuthService,
     private toast: ToastService
   ) {}
+
+  urlFeed(marketplace: 'google' | 'meta'): string {
+    const empresaId = this.auth.empresaIdAtual();
+    const token = marketplace === 'google' ? this.googleFeedToken : this.metaFeedToken;
+    return `${environment.apiUrl}/v1/feed/${marketplace}/${empresaId}?token=${encodeURIComponent(token)}`;
+  }
 
   ngOnInit() {
     this.carregar();
@@ -100,9 +112,12 @@ export class ConfiguracoesPaginaComponent implements OnInit {
         this.googleMerchantId = mapa.get('google_merchant_id') ?? '';
         this.googleFeedModo = (mapa.get('google_feed_modo') as 'url' | 'api') ?? 'url';
         this.googleServiceAccountJson = mapa.get('google_service_account_json') ?? '';
+        this.googleFeedToken = mapa.get('google_feed_token') ?? '';
         this.metaCatalogId = mapa.get('meta_catalog_id') ?? '';
         this.metaFeedModo = (mapa.get('meta_feed_modo') as 'url' | 'api') ?? 'url';
         this.metaTokenSistema = mapa.get('meta_token_sistema') ?? '';
+        this.metaFeedToken = mapa.get('meta_feed_token') ?? '';
+        this.siteBaseUrl = mapa.get('site_base_url') ?? '';
 
         this.carregando.set(false);
       },
@@ -119,8 +134,11 @@ export class ConfiguracoesPaginaComponent implements OnInit {
     const chamadas = [
       this.configuracoesService.atualizar('google_merchant_id', this.googleMerchantId.trim()),
       this.configuracoesService.atualizar('google_feed_modo', this.googleFeedModo),
+      this.configuracoesService.atualizar('google_feed_token', this.googleFeedToken.trim()),
       this.configuracoesService.atualizar('meta_catalog_id', this.metaCatalogId.trim()),
-      this.configuracoesService.atualizar('meta_feed_modo', this.metaFeedModo)
+      this.configuracoesService.atualizar('meta_feed_modo', this.metaFeedModo),
+      this.configuracoesService.atualizar('meta_feed_token', this.metaFeedToken.trim()),
+      this.configuracoesService.atualizar('site_base_url', this.siteBaseUrl.trim())
     ];
     if (this.googleServiceAccountJson.trim()) {
       chamadas.push(this.configuracoesService.atualizar('google_service_account_json', this.googleServiceAccountJson.trim()));

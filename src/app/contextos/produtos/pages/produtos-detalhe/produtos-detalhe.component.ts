@@ -6,7 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { ProdutosService } from '../../services/produtos.service';
 import { MarcasService } from '../../services/marcas.service';
 import { ContatosService } from '../../../cadastros/contatos/services/contatos.service';
-import { ProdutoDetalhe, ProdutoFornecedor, ProdutoImagem, ListaPreco, ProdutoEnriquecimento, MarketplaceProduto } from '../../models/produto.model';
+import { ProdutoDetalhe, ProdutoFornecedor, ProdutoImagem, ListaPreco, ProdutoEnriquecimento, MarketplaceProduto, ProdutoAnalise } from '../../models/produto.model';
 import { ProdutoEstoqueResposta } from '../../dtos/produto-resposta.dto';
 import { ToastService } from '../../../../core/feedback/toast.service';
 import { ConfirmService } from '../../../../core/feedback/confirm.service';
@@ -16,8 +16,10 @@ import { SelectBuscaComponent, OpcaoSelectBusca } from '../../../../shared/compo
 import { OverlayProgressoComponent } from '../../../../shared/components/overlay-progresso/overlay-progresso.component';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 import { ToggleComponent } from '../../../../shared/components/toggle/toggle.component';
+import { CampoHintComponent } from '../../../../shared/components/campo-hint/campo-hint.component';
 
-type Aba = 'geral' | 'complementos' | 'web' | 'preco' | 'fornecedores' | 'variacoes' | 'estoque';
+type Aba = 'geral' | 'complementos' | 'web' | 'preco' | 'fornecedores' | 'analise' | 'variacoes' | 'estoque';
+type GranularidadeVendas = 'dia' | 'mes' | 'ano';
 type SaidaEscolha = 'cancelar' | 'descartar' | 'salvar';
 
 @Component({
@@ -25,7 +27,7 @@ type SaidaEscolha = 'cancelar' | 'descartar' | 'salvar';
   standalone: true,
   imports: [
     CommonModule, RouterLink, FormsModule, BtnIconeComponent, ListagemPaginadaComponent,
-    SelectBuscaComponent, OverlayProgressoComponent, ModalComponent, ToggleComponent
+    SelectBuscaComponent, OverlayProgressoComponent, ModalComponent, ToggleComponent, CampoHintComponent
   ],
   templateUrl: './produtos-detalhe.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
@@ -88,6 +90,11 @@ export class ProdutosDetalheComponent implements OnInit {
   marketplaces = signal<MarketplaceProduto[]>([]);
   carregandoMarketplaces = signal(false);
   alterandoMarketplace = signal<string | null>(null);
+
+  // ---- Análise ----
+  analise = signal<ProdutoAnalise | null>(null);
+  carregandoAnalise = signal(false);
+  granularidadeVendas = signal<GranularidadeVendas>('mes');
 
   estoque = signal<ProdutoEstoqueResposta | null>(null);
   carregandoEstoque = signal(false);
@@ -156,6 +163,7 @@ export class ProdutosDetalheComponent implements OnInit {
     this.abaAtiva.set(aba);
     if (aba === 'preco' && this.listasPreco().length === 0) this.carregarListasPreco();
     if (aba === 'web' && !this.enriquecimento()) { this.carregarEnriquecimento(); this.carregarMarketplaces(); }
+    if (aba === 'analise' && !this.analise()) this.carregarAnalise();
   }
 
   // ---- Editar geral + dirty-check de saída ----
@@ -545,6 +553,47 @@ export class ProdutosDetalheComponent implements OnInit {
       next: () => { this.alterandoMarketplace.set(null); this.carregarMarketplaces(); },
       error: err => { this.alterandoMarketplace.set(null); this.toast.erroServidor(err, 'Não foi possível atualizar o marketplace.'); }
     });
+  }
+
+  // ---- Aba Análise ----
+
+  carregarAnalise() {
+    this.carregandoAnalise.set(true);
+    this.produtosService.obterAnalise(this.idProduto).subscribe({
+      next: res => { this.analise.set(res.dados ?? null); this.carregandoAnalise.set(false); },
+      error: err => { this.carregandoAnalise.set(false); this.toast.erroServidor(err, 'Não foi possível carregar a análise do produto.'); }
+    });
+  }
+
+  rotuloMes(mes: number): string {
+    const nomes = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+    return nomes[mes - 1] ?? String(mes);
+  }
+
+  get barrasVendas(): { rotulo: string; valor: number }[] {
+    const a = this.analise();
+    if (!a) return [];
+    if (this.granularidadeVendas() === 'dia') {
+      return a.vendasPorDia.map(v => ({ rotulo: v.data.slice(8, 10) + '/' + v.data.slice(5, 7), valor: v.quantidade }));
+    }
+    if (this.granularidadeVendas() === 'ano') {
+      return a.vendasPorAno.map(v => ({ rotulo: String(v.ano), valor: v.quantidade }));
+    }
+    return a.vendasPorMes.map(v => ({ rotulo: `${this.rotuloMes(v.mes)}/${String(v.ano).slice(2)}`, valor: v.quantidade }));
+  }
+
+  get alturaMaximaBarra(): number {
+    return Math.max(1, ...this.barrasVendas.map(b => b.valor));
+  }
+
+  get barrasFaturamentoLucro(): { rotulo: string; faturamento: number; lucro: number }[] {
+    const a = this.analise();
+    if (!a) return [];
+    return a.vendasPorMes.map(v => ({ rotulo: `${this.rotuloMes(v.mes)}/${String(v.ano).slice(2)}`, faturamento: v.faturamento, lucro: v.lucro }));
+  }
+
+  get alturaMaximaFaturamento(): number {
+    return Math.max(1, ...this.barrasFaturamentoLucro.map(b => Math.max(b.faturamento, b.lucro)));
   }
 
   // ---- Aba Preço ----

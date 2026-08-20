@@ -52,6 +52,68 @@ export interface ListaPreco {
   ativo: boolean;
 }
 
+export interface VendaPorDia {
+  data: string;
+  quantidade: number;
+  faturamento: number;
+}
+
+export interface VendaPorMes {
+  ano: number;
+  mes: number;
+  quantidade: number;
+  faturamento: number;
+  lucro: number;
+}
+
+export interface VendaPorAno {
+  ano: number;
+  quantidade: number;
+  faturamento: number;
+  lucro: number;
+}
+
+export interface ProdutoAnalise {
+  classeAbc?: string;
+  faturamentoTotal?: number;
+  percentualParticipacao?: number;
+  giroDiarioReal?: number;
+
+  faturamentoAnual?: number;
+  lucroAnual?: number;
+  indiceGiroAnual?: number;
+  gmroi?: number;
+  capitalParadoCusto?: number;
+
+  estoqueAtual?: number;
+  custoUnitario?: number;
+  precoVendaAtual?: number;
+  dataUltimaVenda?: string;
+  dataUltimaEntrada?: string;
+  diasParadoMax?: number;
+  statusEstoque?: string;
+  custoOportunidadeAcumulado?: number;
+  sugestaoPrecoPromo?: number;
+
+  precisaComprar: boolean;
+  vendido30d?: number;
+  vendido60d?: number;
+  vendido90d?: number;
+  tendenciaCrescimentoPct?: number;
+  giroDiarioProjetado?: number;
+  diasCoberturaEstoque?: number;
+  sugestaoCompraQtd30d?: number;
+  sugestaoCompraQtd60d?: number;
+  sugestaoCompraQtd90d?: number;
+  valorTotalSugerido30d?: number;
+  valorTotalSugerido60d?: number;
+  valorTotalSugerido90d?: number;
+
+  vendasPorDia: VendaPorDia[];
+  vendasPorMes: VendaPorMes[];
+  vendasPorAno: VendaPorAno[];
+}
+
 export interface MarketplaceProduto {
   codigo: string; // "google" | "meta" | "site"
   nome: string;

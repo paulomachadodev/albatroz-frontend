@@ -3,7 +3,7 @@ import { Observable } from 'rxjs';
 import { ApiService } from '../../../core/http/api.service';
 import { Resultado, Paginacao } from '../../../core/models';
 import { ParametrosPaginacao } from '../../../core/models/paginacao.model';
-import { ProdutoDetalhe, ProdutoResumo, ProdutoTipo, ListaPreco, ProdutoEnriquecimento } from '../models/produto.model';
+import { ProdutoDetalhe, ProdutoResumo, ProdutoTipo, ListaPreco, ProdutoEnriquecimento, MarketplaceProduto } from '../models/produto.model';
 import {
   ProdutoDadosErpRequisicao,
   ProdutoImagensReordenarRequisicao,
@@ -140,5 +140,19 @@ export class ProdutosService {
 
   reenriquecer(id: number): Observable<Resultado<void>> {
     return this.api.post<void>(`${this.endpoint}/${id}/reenriquecer`, {});
+  }
+
+  // ---- Marketplaces (Google/Meta/Site) ----
+
+  listarMarketplaces(id: number): Observable<Resultado<MarketplaceProduto[]>> {
+    return this.api.get<MarketplaceProduto[]>(`${this.endpoint}/${id}/marketplaces`);
+  }
+
+  definirMarketplace(id: number, codigo: string, habilitado: boolean): Observable<Resultado<void>> {
+    return this.api.put<void>(`${this.endpoint}/${id}/marketplaces/${codigo}`, { habilitado });
+  }
+
+  definirMarketplaceEmMassa(idsProduto: number[], marketplace: string, habilitado: boolean): Observable<Resultado<{ alterados: number }>> {
+    return this.api.post<{ alterados: number }>(`${this.endpoint}/marketplaces/alterar-em-massa`, { idsProduto, marketplace, habilitado });
   }
 }

@@ -10,11 +10,12 @@ import { ListaEscolarDetalhe, ListaEscolarItem, ProdutoBusca } from '../../model
 import { ToastService } from '../../../../../core/feedback/toast.service';
 import { ConfirmService } from '../../../../../core/feedback/confirm.service';
 import { SelectBuscaComponent, OpcaoSelectBusca } from '../../../../../shared/components/select-busca/select-busca.component';
+import { BtnIconeComponent } from '../../../../../shared/components/btn-icone/btn-icone.component';
 
 @Component({
   selector: 'app-lista-detalhe',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, SelectBuscaComponent],
+  imports: [CommonModule, RouterLink, FormsModule, SelectBuscaComponent, BtnIconeComponent],
   templateUrl: './lista-detalhe.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })

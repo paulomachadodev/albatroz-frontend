@@ -1,13 +1,13 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { firstValueFrom } from 'rxjs';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ProdutosService } from '../../services/produtos.service';
 import { MarcasService } from '../../services/marcas.service';
 import { ContatosService } from '../../../cadastros/contatos/services/contatos.service';
-import { ProdutoDetalhe, ProdutoFornecedor, ProdutoImagem, ListaPreco, ProdutoEnriquecimento } from '../../models/produto.model';
+import { ProdutoDetalhe, ProdutoFornecedor, ProdutoImagem, ListaPreco, ProdutoEnriquecimento, MarketplaceProduto } from '../../models/produto.model';
 import { ProdutoEstoqueResposta } from '../../dtos/produto-resposta.dto';
-import { CriarListaPrecoRequisicao, AtualizarListaPrecoRequisicao } from '../../dtos/produto-requisicao.dto';
 import { ToastService } from '../../../../core/feedback/toast.service';
 import { ConfirmService } from '../../../../core/feedback/confirm.service';
 import { BtnIconeComponent } from '../../../../shared/components/btn-icone/btn-icone.component';
@@ -15,6 +15,7 @@ import { ListagemPaginadaComponent } from '../../../../shared/components/listage
 import { SelectBuscaComponent, OpcaoSelectBusca } from '../../../../shared/components/select-busca/select-busca.component';
 import { OverlayProgressoComponent } from '../../../../shared/components/overlay-progresso/overlay-progresso.component';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
+import { ToggleComponent } from '../../../../shared/components/toggle/toggle.component';
 
 type Aba = 'geral' | 'complementos' | 'web' | 'preco' | 'fornecedores' | 'variacoes' | 'estoque';
 type SaidaEscolha = 'cancelar' | 'descartar' | 'salvar';
@@ -24,7 +25,7 @@ type SaidaEscolha = 'cancelar' | 'descartar' | 'salvar';
   standalone: true,
   imports: [
     CommonModule, RouterLink, FormsModule, BtnIconeComponent, ListagemPaginadaComponent,
-    SelectBuscaComponent, OverlayProgressoComponent, ModalComponent
+    SelectBuscaComponent, OverlayProgressoComponent, ModalComponent, ToggleComponent
   ],
   templateUrl: './produtos-detalhe.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
@@ -69,15 +70,9 @@ export class ProdutosDetalheComponent implements OnInit {
   adicionandoFornecedor = signal(false);
   buscarFornecedores = (termo: string) => this.contatosService.buscar(termo, 'Fornecedor');
 
-  // ---- Preço (listas) ----
+  // ---- Preço (listas — só leitura aqui; gestão fica em Configurações > Venda) ----
   listasPreco = signal<ListaPreco[]>([]);
   carregandoListas = signal(false);
-  modalListaAberto = signal(false);
-  listaEditandoId: number | null = null;
-  formLista: { codigo: string; nome: string; tipo: string; modoCalculo: 'percentual_venda' | 'percentual_custo'; percentual: number; ativo: boolean } = {
-    codigo: '', nome: '', tipo: 'empresa', modoCalculo: 'percentual_venda', percentual: 0, ativo: true
-  };
-  salvandoLista = signal(false);
 
   // ---- Web / enriquecimento ----
   enriquecimento = signal<ProdutoEnriquecimento | null>(null);
@@ -88,6 +83,11 @@ export class ProdutosDetalheComponent implements OnInit {
   sinonimosTexto = '';
   publicoFaixaTexto = '';
   publicoGeneroTexto = '';
+
+  // ---- Marketplaces (Google/Meta/Site) — ação imediata, não entra no dirty-check ----
+  marketplaces = signal<MarketplaceProduto[]>([]);
+  carregandoMarketplaces = signal(false);
+  alterandoMarketplace = signal<string | null>(null);
 
   estoque = signal<ProdutoEstoqueResposta | null>(null);
   carregandoEstoque = signal(false);
@@ -130,7 +130,7 @@ export class ProdutosDetalheComponent implements OnInit {
         }
         if (this.abaAtiva() === 'estoque' && !this.estoque()) this.carregarEstoque();
         if (this.abaAtiva() === 'preco' && this.listasPreco().length === 0) this.carregarListasPreco();
-        if (this.abaAtiva() === 'web' && !this.enriquecimento()) this.carregarEnriquecimento();
+        if (this.abaAtiva() === 'web' && !this.enriquecimento()) { this.carregarEnriquecimento(); this.carregarMarketplaces(); }
 
         this.carregando.set(false);
       },
@@ -155,7 +155,7 @@ export class ProdutosDetalheComponent implements OnInit {
   trocarAba(aba: Aba) {
     this.abaAtiva.set(aba);
     if (aba === 'preco' && this.listasPreco().length === 0) this.carregarListasPreco();
-    if (aba === 'web' && !this.enriquecimento()) this.carregarEnriquecimento();
+    if (aba === 'web' && !this.enriquecimento()) { this.carregarEnriquecimento(); this.carregarMarketplaces(); }
   }
 
   // ---- Editar geral + dirty-check de saída ----
@@ -212,9 +212,12 @@ export class ProdutosDetalheComponent implements OnInit {
   private async salvarTudo(): Promise<boolean> {
     const okDados = await this.salvarDadosErpAsync();
     const okEnriquecimento = await this.salvarEnriquecimentoAsync();
-    if (okDados && okEnriquecimento) {
+    const okFornecedores = await this.salvarCodigosFornecedorAsync();
+    if (okDados && okEnriquecimento && okFornecedores) {
       this.sujo.set(false);
       this.modoEdicao.set(false);
+      this.toast.sucesso('Alterações salvas.');
+      this.recarregarSilencioso();
       return true;
     }
     return false;
@@ -246,11 +249,6 @@ export class ProdutosDetalheComponent implements OnInit {
     });
   }
 
-  salvarDadosErp() {
-    this.salvarDadosErpAsync().then(ok => {
-      if (ok) { this.toast.sucesso('Quantidade por caixa salva.'); this.recarregarSilencioso(); }
-    });
-  }
 
   // ---- Aba Web — Imagens ----
 
@@ -489,7 +487,6 @@ export class ProdutosDetalheComponent implements OnInit {
         googleBrand: e.googleBrand ?? null,
         googleGtin: e.googleGtin ?? null,
         condicao: e.condicao ?? null,
-        disponivelMerchant: e.disponivelMerchant ?? null,
         tag: this.listaTexto(this.tagTexto),
         sinonimos: this.listaTexto(this.sinonimosTexto),
         descricaoEnriquecida: e.descricaoEnriquecida ?? null,
@@ -509,12 +506,6 @@ export class ProdutosDetalheComponent implements OnInit {
           resolve(false);
         }
       });
-    });
-  }
-
-  salvarEnriquecimento() {
-    this.salvarEnriquecimentoAsync().then(ok => {
-      if (ok) { this.toast.sucesso('Dados de SEO/enriquecimento salvos.'); this.sujo.set(false); this.carregarEnriquecimento(); }
     });
   }
 
@@ -540,6 +531,22 @@ export class ProdutosDetalheComponent implements OnInit {
     });
   }
 
+  carregarMarketplaces() {
+    this.carregandoMarketplaces.set(true);
+    this.produtosService.listarMarketplaces(this.idProduto).subscribe({
+      next: res => { this.marketplaces.set(res.dados ?? []); this.carregandoMarketplaces.set(false); },
+      error: err => { this.carregandoMarketplaces.set(false); this.toast.erroServidor(err, 'Não foi possível carregar os marketplaces.'); }
+    });
+  }
+
+  alternarMarketplace(marketplace: MarketplaceProduto) {
+    this.alterandoMarketplace.set(marketplace.codigo);
+    this.produtosService.definirMarketplace(this.idProduto, marketplace.codigo, !marketplace.habilitado).subscribe({
+      next: () => { this.alterandoMarketplace.set(null); this.carregarMarketplaces(); },
+      error: err => { this.alterandoMarketplace.set(null); this.toast.erroServidor(err, 'Não foi possível atualizar o marketplace.'); }
+    });
+  }
+
   // ---- Aba Preço ----
 
   carregarListasPreco() {
@@ -552,53 +559,6 @@ export class ProdutosDetalheComponent implements OnInit {
 
   precoPorLista(idLista: number) {
     return this.produto()?.precos.find(p => p.idLista === idLista) ?? null;
-  }
-
-  abrirNovaLista() {
-    this.listaEditandoId = null;
-    this.formLista = { codigo: '', nome: '', tipo: 'empresa', modoCalculo: 'percentual_venda', percentual: 0, ativo: true };
-    this.modalListaAberto.set(true);
-  }
-
-  abrirEditarLista(lista: ListaPreco) {
-    this.listaEditandoId = lista.id;
-    this.formLista = {
-      codigo: lista.codigo, nome: lista.nome, tipo: lista.tipo,
-      modoCalculo: lista.modoCalculo === 'fixo' ? 'percentual_venda' : lista.modoCalculo,
-      percentual: lista.percentual ?? 0, ativo: lista.ativo
-    };
-    this.modalListaAberto.set(true);
-  }
-
-  fecharModalLista() {
-    this.modalListaAberto.set(false);
-  }
-
-  salvarLista() {
-    if (!this.formLista.nome.trim()) { this.toast.erro('Informe o nome da lista.'); return; }
-
-    this.salvandoLista.set(true);
-
-    if (this.listaEditandoId) {
-      const req: AtualizarListaPrecoRequisicao = {
-        nome: this.formLista.nome, tipo: this.formLista.tipo,
-        modoCalculo: this.formLista.modoCalculo, percentual: this.formLista.percentual, ativo: this.formLista.ativo
-      };
-      this.produtosService.atualizarListaPreco(this.listaEditandoId, req).subscribe({
-        next: () => { this.salvandoLista.set(false); this.toast.sucesso('Lista atualizada.'); this.modalListaAberto.set(false); this.carregarListasPreco(); this.recarregarSilencioso(); },
-        error: err => { this.salvandoLista.set(false); this.toast.erroServidor(err, 'Não foi possível atualizar a lista.'); }
-      });
-    } else {
-      if (!this.formLista.codigo.trim()) { this.toast.erro('Informe o código da lista.'); this.salvandoLista.set(false); return; }
-      const req: CriarListaPrecoRequisicao = {
-        codigo: this.formLista.codigo, nome: this.formLista.nome, tipo: this.formLista.tipo,
-        modoCalculo: this.formLista.modoCalculo, percentual: this.formLista.percentual
-      };
-      this.produtosService.criarListaPreco(req).subscribe({
-        next: () => { this.salvandoLista.set(false); this.toast.sucesso('Lista criada.'); this.modalListaAberto.set(false); this.carregarListasPreco(); this.recarregarSilencioso(); },
-        error: err => { this.salvandoLista.set(false); this.toast.erroServidor(err, 'Não foi possível criar a lista.'); }
-      });
-    }
   }
 
   // ---- Aba Estoque ----
@@ -664,13 +624,33 @@ export class ProdutosDetalheComponent implements OnInit {
     });
   }
 
-  salvarCodigoFornecedor(fornecedor: ProdutoFornecedor) {
-    this.salvandoFornecedorCodigo.set(fornecedor.id);
-    const valor = (this.codigoPorFornecedor[fornecedor.id] ?? '').trim();
-    this.produtosService.atualizarFornecedor(this.idProduto, fornecedor.id, { codigoNoFornecedor: valor || null }).subscribe({
-      next: () => { this.salvandoFornecedorCodigo.set(null); this.toast.sucesso('Código do fornecedor atualizado.'); this.recarregarSilencioso(); },
-      error: err => { this.salvandoFornecedorCodigo.set(null); this.toast.erroServidor(err, 'Não foi possível salvar o código.'); }
-    });
+  // Código no fornecedor é campo de formulário (não ação de lista) — entra no
+  // dirty-check e só grava junto com o resto no "Concluir edição" (salvarTudo).
+  private codigosFornecedorPendentes = new Set<number>();
+
+  aoMudarCodigoFornecedor(idFornecedorErp: number) {
+    this.codigosFornecedorPendentes.add(idFornecedorErp);
+    this.marcarSujo();
+  }
+
+  private async salvarCodigosFornecedorAsync(): Promise<boolean> {
+    if (this.codigosFornecedorPendentes.size === 0) return true;
+
+    this.salvandoFornecedorCodigo.set(-1);
+    const ids = Array.from(this.codigosFornecedorPendentes);
+    try {
+      await Promise.all(ids.map(id => {
+        const valor = (this.codigoPorFornecedor[id] ?? '').trim();
+        return firstValueFrom(this.produtosService.atualizarFornecedor(this.idProduto, id, { codigoNoFornecedor: valor || null }));
+      }));
+      this.codigosFornecedorPendentes.clear();
+      this.salvandoFornecedorCodigo.set(null);
+      return true;
+    } catch (err) {
+      this.salvandoFornecedorCodigo.set(null);
+      this.toast.erroServidor(err, 'Não foi possível salvar o código de um dos fornecedores.');
+      return false;
+    }
   }
 
   definirPrincipal(fornecedor: ProdutoFornecedor) {

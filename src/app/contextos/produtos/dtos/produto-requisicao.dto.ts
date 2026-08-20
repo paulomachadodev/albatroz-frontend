@@ -17,7 +17,6 @@ export interface AtualizarFornecedorProdutoRequisicao {
 }
 
 export interface CriarListaPrecoRequisicao {
-  codigo: string;
   nome: string;
   tipo: string;
   modoCalculo: 'percentual_venda' | 'percentual_custo';
@@ -43,7 +42,6 @@ export interface AtualizarEnriquecimentoProdutoRequisicao {
   googleBrand: string | null;
   googleGtin: string | null;
   condicao: string | null;
-  disponivelMerchant: boolean | null;
   tag: string[] | null;
   sinonimos: string[] | null;
   descricaoEnriquecida: string | null;

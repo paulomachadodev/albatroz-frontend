@@ -21,6 +21,22 @@
                 [class.text-slate-500]="abaAtiva() !== 'email'">
           E-mail
         </button>
+        <button (click)="trocarAba('venda')"
+                class="pb-3 text-sm font-bold border-b-2 transition-colors"
+                [class.border-primary]="abaAtiva() === 'venda'"
+                [class.text-primary]="abaAtiva() === 'venda'"
+                [class.border-transparent]="abaAtiva() !== 'venda'"
+                [class.text-slate-500]="abaAtiva() !== 'venda'">
+          Venda
+        </button>
+        <button (click)="abaAtiva.set('integracoes')"
+                class="pb-3 text-sm font-bold border-b-2 transition-colors"
+                [class.border-primary]="abaAtiva() === 'integracoes'"
+                [class.text-primary]="abaAtiva() === 'integracoes'"
+                [class.border-transparent]="abaAtiva() !== 'integracoes'"
+                [class.text-slate-500]="abaAtiva() !== 'integracoes'">
+          Integrações
+        </button>
       </nav>
     </div>
 
@@ -86,7 +102,174 @@
           </button>
         </div>
       </div>
+    } @else if (abaAtiva() === 'venda') {
+      <div class="space-y-4">
+        <div class="flex items-center justify-between">
+          <p class="text-sm text-slate-500 dark:text-slate-400">
+            Listas de preço disponíveis pros produtos — a lista Padrão vem do Tiny (fixa), as demais calculam % sobre venda ou custo.
+          </p>
+          <button type="button" (click)="abrirNovaLista()"
+                  class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all flex items-center gap-1.5 shrink-0">
+            <span class="material-symbols-outlined text-base">add</span> Nova lista
+          </button>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+          <table class="w-full text-left">
+            <thead class="bg-slate-50 dark:bg-slate-800/50 text-xs font-bold text-slate-500 uppercase tracking-wide">
+              <tr>
+                <th class="px-6 py-4">Lista</th>
+                <th class="px-6 py-4">Tipo</th>
+                <th class="px-6 py-4">Cálculo</th>
+                <th class="px-6 py-4 text-right">Ações</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+              @if (carregandoListas()) {
+                <tr><td colspan="4" class="px-6 py-8 text-center text-sm text-slate-500">Carregando...</td></tr>
+              } @else if (listasPreco().length === 0) {
+                <tr><td colspan="4" class="px-6 py-8 text-center text-sm text-slate-500">Nenhuma lista cadastrada.</td></tr>
+              } @else {
+                @for (lista of listasPreco(); track lista.id) {
+                  <tr>
+                    <td class="px-6 py-4 text-sm font-bold text-slate-900 dark:text-slate-100">
+                      {{ lista.nome }}
+                      @if (lista.padrao) { <span class="ml-2 text-[10px] font-bold px-1.5 py-0.5 rounded bg-primary/10 text-primary uppercase">Padrão</span> }
+                      @if (!lista.ativo) { <span class="ml-2 text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-500 uppercase">Inativa</span> }
+                    </td>
+                    <td class="px-6 py-4 text-sm text-slate-500 dark:text-slate-400 capitalize">{{ lista.tipo }}</td>
+                    <td class="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">
+                      @if (lista.modoCalculo === 'fixo') {
+                        Fixo (Tiny)
+                      } @else {
+                        {{ (lista.percentual ?? 0) >= 0 ? '+' : '' }}{{ lista.percentual }}% sobre {{ lista.modoCalculo === 'percentual_venda' ? 'venda' : 'custo' }}
+                      }
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                      <button (click)="abrirEditarLista(lista)" class="text-xs font-bold text-primary hover:underline">Editar</button>
+                    </td>
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    } @else if (abaAtiva() === 'integracoes') {
+      <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-8">
+        <div class="space-y-4">
+          <p class="text-sm font-bold text-slate-900 dark:text-slate-100">Google Merchant Center</p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Merchant ID</label>
+              <input type="text" [(ngModel)]="googleMerchantId" placeholder="123456789"
+                     class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+            </div>
+            <div>
+              <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Modo de envio</label>
+              <select [(ngModel)]="googleFeedModo" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none">
+                <option value="url">Feed por URL (mais simples)</option>
+                <option value="api">Content API (Service Account)</option>
+              </select>
+            </div>
+          </div>
+          @if (googleFeedModo === 'api') {
+            <div>
+              <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Service Account (JSON)</label>
+              <textarea rows="4" [(ngModel)]="googleServiceAccountJson" placeholder="Cole aqui o JSON da service account com acesso ao Merchant Center"
+                        class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-xs font-mono outline-none resize-none"></textarea>
+            </div>
+          }
+        </div>
+
+        <div class="space-y-4 pt-6 border-t border-slate-200 dark:border-slate-800">
+          <p class="text-sm font-bold text-slate-900 dark:text-slate-100">Meta (Instagram/Facebook)</p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Catalog ID</label>
+              <input type="text" [(ngModel)]="metaCatalogId" placeholder="123456789"
+                     class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+            </div>
+            <div>
+              <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Modo de envio</label>
+              <select [(ngModel)]="metaFeedModo" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none">
+                <option value="url">Feed por URL (mais simples)</option>
+                <option value="api">Catalog API (Token de sistema)</option>
+              </select>
+            </div>
+          </div>
+          @if (metaFeedModo === 'api') {
+            <div>
+              <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Token de sistema</label>
+              <input type="password" [(ngModel)]="metaTokenSistema" placeholder="Token de usuário de sistema com catalog_management"
+                     class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+            </div>
+          }
+        </div>
+
+        <div class="pt-2">
+          <button type="button" (click)="salvarIntegracoes()" [disabled]="salvandoIntegracoes()"
+                  class="px-5 py-2.5 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all">
+            {{ salvandoIntegracoes() ? 'Salvando...' : 'Salvar' }}
+          </button>
+        </div>
+      </div>
     }
 
   </div>
 </div>
+
+<app-modal [aberto]="modalListaAberto()" [titulo]="listaEditandoId ? 'Editar lista de preço' : 'Nova lista de preço'" tamanho="md" (fechar)="fecharModalLista()">
+  <div class="px-6 pb-6 space-y-4">
+    <div>
+      <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Nome</label>
+      <input type="text" [(ngModel)]="formLista.nome"
+             class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+    </div>
+    <div>
+      <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Tipo</label>
+      <select [(ngModel)]="formLista.tipo" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none">
+        <option value="empresa">Empresa</option>
+        <option value="escola">Escola</option>
+        <option value="site">Site</option>
+        <option value="marketplace">Marketplace</option>
+        <option value="outro">Outro</option>
+      </select>
+    </div>
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Cálculo</label>
+        <select [(ngModel)]="formLista.modoCalculo" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none">
+          <option value="percentual_venda">Sobre preço de venda</option>
+          <option value="percentual_custo">Sobre preço de custo</option>
+        </select>
+      </div>
+      <div>
+        <label class="text-xs font-bold text-slate-500 uppercase tracking-wide inline-flex items-center gap-1">
+          Percentual
+          <app-campo-hint texto="Positivo (Soma) = acréscimo sobre o preço base. Negativo (Diminui) = desconto. Aplicado sobre venda ou custo, conforme o Cálculo ao lado."></app-campo-hint>
+        </label>
+        <div class="mt-1 flex gap-2">
+          <select [(ngModel)]="formListaOperacao" (ngModelChange)="aoMudarOperacaoLista()" class="px-2 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none">
+            <option value="soma">+ Soma</option>
+            <option value="diminui">− Diminui</option>
+          </select>
+          <input type="number" step="0.01" min="0" [(ngModel)]="formListaPercentualAbsoluto"
+                 class="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+        </div>
+      </div>
+    </div>
+    @if (listaEditandoId) {
+      <label class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+        <input type="checkbox" [(ngModel)]="formLista.ativo" class="size-4 rounded"/> Lista ativa
+      </label>
+    }
+    <div class="flex justify-end gap-2 pt-2">
+      <button (click)="fecharModalLista()" class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm">Cancelar</button>
+      <button (click)="salvarLista()" [disabled]="salvandoLista()"
+              class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50">
+        {{ salvandoLista() ? 'Salvando...' : 'Salvar' }}
+      </button>
+    </div>
+  </div>
+</app-modal>

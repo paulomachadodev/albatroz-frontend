@@ -52,6 +52,14 @@ export interface ListaPreco {
   ativo: boolean;
 }
 
+export interface MarketplaceProduto {
+  codigo: string; // "google" | "meta" | "site"
+  nome: string;
+  habilitado: boolean;
+  elegivel: boolean;
+  motivoNaoElegivel?: string;
+}
+
 export interface ProdutoEnriquecimento {
   seoTitle?: string;
   seoDescription?: string;
@@ -63,7 +71,6 @@ export interface ProdutoEnriquecimento {
   googleBrand?: string;
   googleGtin?: string;
   condicao?: string;
-  disponivelMerchant?: boolean;
   tag: string[];
   sinonimos: string[];
   descricaoEnriquecida?: string;

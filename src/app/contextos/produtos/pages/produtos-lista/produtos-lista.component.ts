@@ -51,6 +51,11 @@ export class ProdutosListaComponent implements OnInit {
   processandoMassa = signal(false);
   resultadoMassa = signal<AlterarProdutoEmMassaItemResposta[] | null>(null);
 
+  modalMarketplaceAberto = signal(false);
+  processandoMarketplace = signal(false);
+  marketplaceEscolhido: 'google' | 'meta' | 'site' = 'google';
+  marketplaceHabilitar = true;
+
   modalFornecedoresAberto = signal(false);
   processandoFornecedores = signal(false);
   resultadoFornecedores = signal<ImportarFornecedorEmMassaItemResposta[] | null>(null);
@@ -184,6 +189,39 @@ export class ProdutosListaComponent implements OnInit {
 
   fecharModalMassa() {
     this.modalMassaAberto.set(false);
+  }
+
+  // ---- Habilitar/desabilitar marketplace em massa (produto_enriquecimento) ----
+
+  abrirMarketplaceEmMassa() {
+    if (this.selecionados.size === 0) {
+      this.toast.erro('Selecione ao menos um produto na listagem.');
+      return;
+    }
+    this.marketplaceEscolhido = 'google';
+    this.marketplaceHabilitar = true;
+    this.modalMarketplaceAberto.set(true);
+  }
+
+  fecharModalMarketplace() {
+    this.modalMarketplaceAberto.set(false);
+  }
+
+  aplicarMarketplaceEmMassa() {
+    const ids = Array.from(this.selecionados.keys());
+    this.processandoMarketplace.set(true);
+    this.produtosService.definirMarketplaceEmMassa(ids, this.marketplaceEscolhido, this.marketplaceHabilitar).subscribe({
+      next: res => {
+        this.processandoMarketplace.set(false);
+        this.modalMarketplaceAberto.set(false);
+        this.toast.sucesso(`${res.dados?.alterados ?? 0} produto(s) atualizado(s).`);
+        this.limparSelecao();
+      },
+      error: err => {
+        this.processandoMarketplace.set(false);
+        this.toast.erroServidor(err, 'Não foi possível atualizar os produtos.');
+      }
+    });
   }
 
   baixarPlanilhaMassa() {

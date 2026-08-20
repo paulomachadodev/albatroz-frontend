@@ -139,6 +139,28 @@ Link de texto é pra **1 ação só** por linha/card. A partir de 2 ações no m
 
 Ainda não migrado (não é regressão, é lacuna): `produtos-lista` não tem coluna de ações — a linha inteira navega pro detalhe no click. Quando a tela ganhar ações rápidas (ex: excluir sem abrir detalhe), usar `app-btn-icone` desde o início, não link de texto.
 
+## `app-toggle` — liga/desliga (nunca checkbox cru pra isso)
+
+`shared/components/toggle/` — switch estilo slider (`role="switch"`, bolinha desliza), não é `<input type="checkbox">` estilizado. Único componente aceito pra qualquer liga/desliga binário do sistema (habilitar/desabilitar produto num marketplace, ativo/inativo, etc.) — nunca criar checkbox cru pra isso, nem outro switch do zero.
+
+```html
+<app-toggle [valor]="produto.habilitado" [label]="'Habilitado'" [desabilitado]="salvando()"
+            (valorMudou)="aoAlternar($event)"></app-toggle>
+```
+
+`valor`/`label`/`desabilitado` são inputs; `valorMudou` emite o novo booleano no clique — a tela decide se isso dispara request imediato (ação de lista, como os itens de lista escolar) ou só marca estado sujo (campo de formulário atrás do botão Salvar, ver seção acima).
+
+## `app-campo-hint` — explicação de campo (balãozinho "?")
+
+`shared/components/campo-hint/` — bolinha "?" ao lado do label, mostra explicação num popover só no hover/click. Padrão obrigatório pra qualquer explicação de campo que hoje vira texto solto embaixo do input — o label do campo fica curto (nome só), a explicação (regra, formato esperado, o que acontece) vai pro hint, não pro corpo do form.
+
+```html
+<label class="text-xs font-bold text-slate-500 uppercase tracking-wide inline-flex items-center gap-1">
+  Percentual
+  <app-campo-hint texto="Positivo = acréscimo, negativo = desconto. Aplicado sobre o preço de venda ou custo, conforme o Cálculo escolhido acima."></app-campo-hint>
+</label>
+```
+
 ## `app-menu-dropdown` — botão com submenu (ações em massa, ações agrupadas)
 
 `shared/components/menu-dropdown/` — botão primário com seta que abre uma lista de ações relacionadas. Usa quando o `acoes` do `app-page-header` teria 3+ botões que fariam mais sentido agrupados (ex: "Ações em massa" reunindo Importar, Exportar, Alterar em massa) em vez de um botão por ação disputando espaço no header.
@@ -217,6 +239,8 @@ cancelar() {
 ```
 
 **Migração:** telas antigas construídas com autosave por campo (debounce `setTimeout`) continuam funcionando como estão — não é pra sair reescrevendo tudo de uma vez. Auditoria completa de migração está em backlog (`.claude/contexts/projeto/backlog-autosave.md`). Toda tela **nova** ou **tocada** por uma mudança não-trivial já nasce/migra pro botão Salvar.
+
+**Achado 2026-08-21**: essa regra vale mesmo quando o registro editado tem várias seções/abas dentro da mesma tela (ex: produto com abas Complementos/Web/Fornecedores). É **1 botão Salvar pro registro inteiro** (ex: "Concluir edição" no topo), não 1 por seção/aba — vira exatamente o autosave-disfarçado que essa regra proíbe se cada bloco tiver o próprio "Salvar". Exceção: ações de lista que já são atômicas por natureza (adicionar/remover/marcar principal um item de uma coleção, tipo fornecedor de produto ou imagem) continuam efetivando na hora, como sempre foi — a regra é sobre campo de formulário, não sobre ação de lista.
 
 ## Drawer único criar/editar
 

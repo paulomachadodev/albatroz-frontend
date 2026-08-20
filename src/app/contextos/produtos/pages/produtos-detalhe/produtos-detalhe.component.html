@@ -415,7 +415,8 @@
                       <span class="text-xs text-amber-600 dark:text-amber-400">{{ mkt.motivoNaoElegivel }}</span>
                     }
                   </div>
-                  <app-toggle [valor]="mkt.habilitado" [desabilitado]="alterandoMarketplace() === mkt.codigo"
+                  <app-toggle [valor]="mkt.habilitado"
+                              [desabilitado]="alterandoMarketplace() === mkt.codigo || (!mkt.elegivel && !mkt.habilitado)"
                               (valorMudou)="alternarMarketplace(mkt)"></app-toggle>
                 </div>
               }

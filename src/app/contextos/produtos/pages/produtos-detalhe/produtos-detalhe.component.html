@@ -306,7 +306,10 @@
                 <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-3">Google Shopping</p>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   <div>
-                    <label class="text-xs text-slate-500">Categoria Google</label>
+                    <label class="text-xs text-slate-500 inline-flex items-center gap-1">
+                      Categoria Google
+                      <app-campo-hint texto="Diferente da Categoria em Complementos (organização interna nossa). Aqui tem que ser o texto EXATO da taxonomia oficial do Google Shopping, ex: 'Arts &amp; Crafts &gt; Craft Supplies &gt; Paper &amp; Stationery Craft Supplies'. Categoria errada aqui pode reprovar o produto no Merchant Center."></app-campo-hint>
+                    </label>
                     <input type="text" [(ngModel)]="e.googleProductCategory" (ngModelChange)="marcarSujo()" [disabled]="!modoEdicao()"
                            class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none disabled:opacity-60"/>
                   </div>
@@ -409,23 +412,25 @@
 
           <!-- Marketplaces — só aparece o que estiver configurado em Configurações > Integrações -->
           @if (marketplaces().length > 0) {
-            <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-4">
-              <p class="text-xs font-bold text-slate-500 uppercase tracking-wide">Marketplaces</p>
-              @for (mkt of marketplaces(); track mkt.codigo) {
-                <div class="flex items-center justify-between gap-4 py-2 border-b border-slate-100 dark:border-slate-800 last:border-0">
-                  <div>
-                    <p class="text-sm font-bold text-slate-900 dark:text-slate-100">{{ mkt.nome }}</p>
+            <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6">
+              <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-3">Marketplaces</p>
+              <div class="flex flex-wrap gap-3">
+                @for (mkt of marketplaces(); track mkt.codigo) {
+                  <div class="flex flex-col gap-1 px-4 py-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 min-w-[200px]">
+                    <div class="flex items-center gap-2">
+                      <app-toggle [valor]="mkt.habilitado"
+                                  [desabilitado]="alterandoMarketplace() === mkt.codigo || (!mkt.elegivel && !mkt.habilitado)"
+                                  (valorMudou)="alternarMarketplace(mkt)"></app-toggle>
+                      <p class="text-sm font-bold text-slate-900 dark:text-slate-100">{{ mkt.nome }}</p>
+                    </div>
                     @if (mkt.elegivel) {
                       <span class="text-xs text-emerald-600 dark:text-emerald-400">Elegível</span>
                     } @else {
                       <span class="text-xs text-amber-600 dark:text-amber-400">{{ mkt.motivoNaoElegivel }}</span>
                     }
                   </div>
-                  <app-toggle [valor]="mkt.habilitado"
-                              [desabilitado]="alterandoMarketplace() === mkt.codigo || (!mkt.elegivel && !mkt.habilitado)"
-                              (valorMudou)="alternarMarketplace(mkt)"></app-toggle>
-                </div>
-              }
+                }
+              </div>
             </div>
           }
         </div>
@@ -613,7 +618,7 @@
             </div>
 
             <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6">
-              <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-3">Precisa comprar?</p>
+              <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-3">Insight de compra</p>
               @if (!a.precisaComprar) {
                 <p class="text-sm text-slate-500 dark:text-slate-400">Sem necessidade de compra no momento — estoque cobre a projeção de venda.</p>
               } @else {
@@ -638,51 +643,86 @@
               }
             </div>
 
-            <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6">
-              <div class="flex items-center justify-between mb-4">
-                <p class="text-xs font-bold text-slate-500 uppercase tracking-wide">Vendas (quantidade)</p>
-                <div class="flex gap-1">
-                  <button (click)="granularidadeVendas.set('dia')" class="px-2 py-1 rounded text-xs font-bold"
-                          [class]="granularidadeVendas() === 'dia' ? 'bg-primary text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'">Dia</button>
-                  <button (click)="granularidadeVendas.set('mes')" class="px-2 py-1 rounded text-xs font-bold"
-                          [class]="granularidadeVendas() === 'mes' ? 'bg-primary text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'">Mês</button>
-                  <button (click)="granularidadeVendas.set('ano')" class="px-2 py-1 rounded text-xs font-bold"
-                          [class]="granularidadeVendas() === 'ano' ? 'bg-primary text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'">Ano</button>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6">
+                <div class="flex items-center justify-between mb-4">
+                  <p class="text-xs font-bold text-slate-500 uppercase tracking-wide">Vendas (quantidade)</p>
+                  <div class="flex gap-1">
+                    <button (click)="granularidadeVendas.set('dia')" class="px-2 py-1 rounded text-xs font-bold"
+                            [class]="granularidadeVendas() === 'dia' ? 'bg-primary text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'">Dia</button>
+                    <button (click)="granularidadeVendas.set('mes')" class="px-2 py-1 rounded text-xs font-bold"
+                            [class]="granularidadeVendas() === 'mes' ? 'bg-primary text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'">Mês</button>
+                    <button (click)="granularidadeVendas.set('ano')" class="px-2 py-1 rounded text-xs font-bold"
+                            [class]="granularidadeVendas() === 'ano' ? 'bg-primary text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'">Ano</button>
+                  </div>
                 </div>
+                @if (barrasVendas.length === 0) {
+                  <p class="text-sm text-slate-500">Sem vendas registradas nesse período.</p>
+                } @else {
+                  <div class="flex items-end gap-1 h-48 overflow-x-auto">
+                    @for (b of barrasVendas; track b.rotulo) {
+                      <div class="flex flex-col items-center justify-end h-full min-w-[28px] gap-1">
+                        <span class="text-[9px] font-bold text-slate-600 dark:text-slate-300">{{ formatarNumero(b.valor) }}</span>
+                        <div class="w-full bg-primary rounded-t" [style.height.%]="(b.valor / alturaMaximaBarra) * 100"></div>
+                        <span class="text-[9px] text-slate-400 whitespace-nowrap">{{ b.rotulo }}</span>
+                      </div>
+                    }
+                  </div>
+                }
               </div>
-              @if (barrasVendas.length === 0) {
-                <p class="text-sm text-slate-500">Sem vendas registradas nesse período.</p>
-              } @else {
-                <div class="flex items-end gap-1 h-40 overflow-x-auto">
-                  @for (b of barrasVendas; track b.rotulo) {
-                    <div class="flex flex-col items-center justify-end h-full min-w-[24px] gap-1" [title]="b.rotulo + ': ' + b.valor">
-                      <div class="w-full bg-primary rounded-t" [style.height.%]="(b.valor / alturaMaximaBarra) * 100"></div>
-                      <span class="text-[9px] text-slate-400 whitespace-nowrap">{{ b.rotulo }}</span>
-                    </div>
-                  }
-                </div>
-              }
+
+              <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6">
+                <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-4">Faturamento × Lucro bruto (mensal)</p>
+                @if (barrasFaturamentoLucro.length === 0) {
+                  <p class="text-sm text-slate-500">Sem vendas registradas.</p>
+                } @else {
+                  <div class="flex items-end gap-2 h-48 overflow-x-auto">
+                    @for (b of barrasFaturamentoLucro; track b.rotulo) {
+                      <div class="flex flex-col items-center justify-end h-full min-w-[42px] gap-1">
+                        <span class="text-[8px] font-bold text-slate-600 dark:text-slate-300 text-center leading-tight">
+                          {{ formatarReaisCompacto(b.faturamento) }}<br/>{{ formatarReaisCompacto(b.lucro) }}
+                        </span>
+                        <div class="w-full flex items-end gap-0.5 h-full">
+                          <div class="w-1/2 bg-primary rounded-t" [style.height.%]="(b.faturamento / alturaMaximaFaturamento) * 100" title="Faturamento"></div>
+                          <div class="w-1/2 bg-emerald-500 rounded-t" [style.height.%]="(b.lucro / alturaMaximaFaturamento) * 100" title="Lucro"></div>
+                        </div>
+                        <span class="text-[9px] text-slate-400 whitespace-nowrap">{{ b.rotulo }}</span>
+                      </div>
+                    }
+                  </div>
+                  <div class="flex items-center gap-4 mt-3 text-xs text-slate-400">
+                    <span class="flex items-center gap-1"><span class="size-2.5 rounded-sm bg-primary"></span> Faturamento</span>
+                    <span class="flex items-center gap-1"><span class="size-2.5 rounded-sm bg-emerald-500"></span> Lucro bruto</span>
+                  </div>
+                }
+              </div>
             </div>
 
             <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6">
-              <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-4">Faturamento × Lucro bruto (mensal)</p>
-              @if (barrasFaturamentoLucro.length === 0) {
-                <p class="text-sm text-slate-500">Sem vendas registradas.</p>
+              <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-4">Faturamento — mês atual vs mesmo mês ano anterior</p>
+              @if (barrasComparativoAnual.length === 0) {
+                <p class="text-sm text-slate-500">Sem dados suficientes pra comparar.</p>
               } @else {
-                <div class="flex items-end gap-2 h-40 overflow-x-auto">
-                  @for (b of barrasFaturamentoLucro; track b.rotulo) {
-                    <div class="flex flex-col items-center justify-end h-full min-w-[36px] gap-1" [title]="b.rotulo">
+                <div class="flex items-end gap-3 h-48 overflow-x-auto">
+                  @for (b of barrasComparativoAnual; track b.rotulo) {
+                    <div class="flex flex-col items-center justify-end h-full min-w-[52px] gap-1">
                       <div class="w-full flex items-end gap-0.5 h-full">
-                        <div class="w-1/2 bg-primary rounded-t" [style.height.%]="(b.faturamento / alturaMaximaFaturamento) * 100" title="Faturamento"></div>
-                        <div class="w-1/2 bg-emerald-500 rounded-t" [style.height.%]="(b.lucro / alturaMaximaFaturamento) * 100" title="Lucro"></div>
+                        <div class="w-1/2 flex flex-col items-center justify-end h-full">
+                          <span class="text-[8px] font-bold text-slate-600 dark:text-slate-300">{{ formatarReaisCompacto(b.anoAnterior) }}</span>
+                          <div class="w-full bg-slate-300 dark:bg-slate-600 rounded-t" [style.height.%]="(b.anoAnterior / alturaMaximaComparativo) * 100"></div>
+                        </div>
+                        <div class="w-1/2 flex flex-col items-center justify-end h-full">
+                          <span class="text-[8px] font-bold text-slate-600 dark:text-slate-300">{{ formatarReaisCompacto(b.anoAtual) }}</span>
+                          <div class="w-full bg-primary rounded-t" [style.height.%]="(b.anoAtual / alturaMaximaComparativo) * 100"></div>
+                        </div>
                       </div>
                       <span class="text-[9px] text-slate-400 whitespace-nowrap">{{ b.rotulo }}</span>
                     </div>
                   }
                 </div>
                 <div class="flex items-center gap-4 mt-3 text-xs text-slate-400">
-                  <span class="flex items-center gap-1"><span class="size-2.5 rounded-sm bg-primary"></span> Faturamento</span>
-                  <span class="flex items-center gap-1"><span class="size-2.5 rounded-sm bg-emerald-500"></span> Lucro bruto</span>
+                  <span class="flex items-center gap-1"><span class="size-2.5 rounded-sm bg-slate-300 dark:bg-slate-600"></span> Ano anterior</span>
+                  <span class="flex items-center gap-1"><span class="size-2.5 rounded-sm bg-primary"></span> Ano atual</span>
                 </div>
               }
             </div>

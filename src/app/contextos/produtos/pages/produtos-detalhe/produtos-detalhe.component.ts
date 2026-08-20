@@ -596,6 +596,31 @@ export class ProdutosDetalheComponent implements OnInit {
     return Math.max(1, ...this.barrasFaturamentoLucro.map(b => Math.max(b.faturamento, b.lucro)));
   }
 
+  get barrasComparativoAnual(): { rotulo: string; anoAtual: number; anoAnterior: number }[] {
+    const a = this.analise();
+    if (!a) return [];
+    const anoAtual = new Date().getFullYear();
+    const anoAnterior = anoAtual - 1;
+    const porMes = a.vendasPorMes;
+
+    return Array.from({ length: 12 }, (_, i) => {
+      const mes = i + 1;
+      const atual = porMes.find(v => v.ano === anoAtual && v.mes === mes)?.faturamento ?? 0;
+      const anterior = porMes.find(v => v.ano === anoAnterior && v.mes === mes)?.faturamento ?? 0;
+      return { rotulo: this.rotuloMes(mes), anoAtual: atual, anoAnterior: anterior };
+    }).filter(b => b.anoAtual > 0 || b.anoAnterior > 0);
+  }
+
+  get alturaMaximaComparativo(): number {
+    return Math.max(1, ...this.barrasComparativoAnual.map(b => Math.max(b.anoAtual, b.anoAnterior)));
+  }
+
+  formatarReaisCompacto(valor?: number): string {
+    if (!valor) return 'R$0';
+    if (valor >= 1000) return `R$${(valor / 1000).toFixed(1)}k`;
+    return `R$${Math.round(valor)}`;
+  }
+
   // ---- Aba Preço ----
 
   carregarListasPreco() {

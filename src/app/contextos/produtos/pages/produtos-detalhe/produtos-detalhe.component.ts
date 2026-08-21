@@ -17,6 +17,8 @@ import { OverlayProgressoComponent } from '../../../../shared/components/overlay
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 import { ToggleComponent } from '../../../../shared/components/toggle/toggle.component';
 import { CampoHintComponent } from '../../../../shared/components/campo-hint/campo-hint.component';
+import { GraficoBarrasComponent, DatasetGraficoBarras } from '../../../../shared/components/grafico-barras/grafico-barras.component';
+import { ThemeService } from '../../../../core/theme/theme.service';
 
 type Aba = 'geral' | 'complementos' | 'web' | 'preco' | 'fornecedores' | 'analise' | 'variacoes' | 'estoque';
 type GranularidadeVendas = 'dia' | 'mes' | 'ano';
@@ -27,7 +29,8 @@ type SaidaEscolha = 'cancelar' | 'descartar' | 'salvar';
   standalone: true,
   imports: [
     CommonModule, RouterLink, FormsModule, BtnIconeComponent, ListagemPaginadaComponent,
-    SelectBuscaComponent, OverlayProgressoComponent, ModalComponent, ToggleComponent, CampoHintComponent
+    SelectBuscaComponent, OverlayProgressoComponent, ModalComponent, ToggleComponent, CampoHintComponent,
+    GraficoBarrasComponent
   ],
   templateUrl: './produtos-detalhe.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
@@ -108,7 +111,8 @@ export class ProdutosDetalheComponent implements OnInit {
     private marcasService: MarcasService,
     private contatosService: ContatosService,
     private toast: ToastService,
-    private confirm: ConfirmService
+    private confirm: ConfirmService,
+    private theme: ThemeService
   ) {}
 
   ngOnInit() {
@@ -586,6 +590,14 @@ export class ProdutosDetalheComponent implements OnInit {
     return Math.max(1, ...this.barrasVendas.map(b => b.valor));
   }
 
+  get chartLabelsVendas(): string[] {
+    return this.barrasVendas.map(b => b.rotulo);
+  }
+
+  get chartDatasetsVendas(): DatasetGraficoBarras[] {
+    return [{ label: 'Quantidade', data: this.barrasVendas.map(b => b.valor), color: '#1754cf' }];
+  }
+
   get barrasFaturamentoLucro(): { rotulo: string; faturamento: number; lucro: number }[] {
     const a = this.analise();
     if (!a) return [];
@@ -594,6 +606,17 @@ export class ProdutosDetalheComponent implements OnInit {
 
   get alturaMaximaFaturamento(): number {
     return Math.max(1, ...this.barrasFaturamentoLucro.map(b => Math.max(b.faturamento, b.lucro)));
+  }
+
+  get chartLabelsFaturamentoLucro(): string[] {
+    return this.barrasFaturamentoLucro.map(b => b.rotulo);
+  }
+
+  get chartDatasetsFaturamentoLucro(): DatasetGraficoBarras[] {
+    return [
+      { label: 'Faturamento', data: this.barrasFaturamentoLucro.map(b => b.faturamento), color: '#1754cf' },
+      { label: 'Lucro bruto', data: this.barrasFaturamentoLucro.map(b => b.lucro), color: '#10b981' }
+    ];
   }
 
   get barrasComparativoAnual(): { rotulo: string; anoAtual: number; anoAnterior: number }[] {
@@ -613,6 +636,18 @@ export class ProdutosDetalheComponent implements OnInit {
 
   get alturaMaximaComparativo(): number {
     return Math.max(1, ...this.barrasComparativoAnual.map(b => Math.max(b.anoAtual, b.anoAnterior)));
+  }
+
+  get chartLabelsComparativo(): string[] {
+    return this.barrasComparativoAnual.map(b => b.rotulo);
+  }
+
+  get chartDatasetsComparativo(): DatasetGraficoBarras[] {
+    const corAnoAnterior = this.theme.temaAtual() === 'dark' ? '#475569' : '#cbd5e1';
+    return [
+      { label: 'Ano anterior', data: this.barrasComparativoAnual.map(b => b.anoAnterior), color: corAnoAnterior },
+      { label: 'Ano atual', data: this.barrasComparativoAnual.map(b => b.anoAtual), color: '#1754cf' }
+    ];
   }
 
   formatarReaisCompacto(valor?: number): string {

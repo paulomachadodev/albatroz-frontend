@@ -659,15 +659,10 @@
                 @if (barrasVendas.length === 0) {
                   <p class="text-sm text-slate-500">Sem vendas registradas nesse período.</p>
                 } @else {
-                  <div class="flex items-end gap-1 h-48 overflow-x-auto">
-                    @for (b of barrasVendas; track b.rotulo) {
-                      <div class="flex flex-col items-center justify-end h-full min-w-[28px] gap-1">
-                        <span class="text-[9px] font-bold text-slate-600 dark:text-slate-300">{{ formatarNumero(b.valor) }}</span>
-                        <div class="w-full bg-primary rounded-t" [style.height.%]="(b.valor / alturaMaximaBarra) * 100"></div>
-                        <span class="text-[9px] text-slate-400 whitespace-nowrap">{{ b.rotulo }}</span>
-                      </div>
-                    }
-                  </div>
+                  <app-grafico-barras
+                    [labels]="chartLabelsVendas"
+                    [datasets]="chartDatasetsVendas"
+                    formatoValor="numero" />
                 }
               </div>
 
@@ -676,24 +671,11 @@
                 @if (barrasFaturamentoLucro.length === 0) {
                   <p class="text-sm text-slate-500">Sem vendas registradas.</p>
                 } @else {
-                  <div class="flex items-end gap-2 h-48 overflow-x-auto">
-                    @for (b of barrasFaturamentoLucro; track b.rotulo) {
-                      <div class="flex flex-col items-center justify-end h-full min-w-[42px] gap-1">
-                        <span class="text-[8px] font-bold text-slate-600 dark:text-slate-300 text-center leading-tight">
-                          {{ formatarReaisCompacto(b.faturamento) }}<br/>{{ formatarReaisCompacto(b.lucro) }}
-                        </span>
-                        <div class="w-full flex items-end gap-0.5 h-full">
-                          <div class="w-1/2 bg-primary rounded-t" [style.height.%]="(b.faturamento / alturaMaximaFaturamento) * 100" title="Faturamento"></div>
-                          <div class="w-1/2 bg-emerald-500 rounded-t" [style.height.%]="(b.lucro / alturaMaximaFaturamento) * 100" title="Lucro"></div>
-                        </div>
-                        <span class="text-[9px] text-slate-400 whitespace-nowrap">{{ b.rotulo }}</span>
-                      </div>
-                    }
-                  </div>
-                  <div class="flex items-center gap-4 mt-3 text-xs text-slate-400">
-                    <span class="flex items-center gap-1"><span class="size-2.5 rounded-sm bg-primary"></span> Faturamento</span>
-                    <span class="flex items-center gap-1"><span class="size-2.5 rounded-sm bg-emerald-500"></span> Lucro bruto</span>
-                  </div>
+                  <app-grafico-barras
+                    [labels]="chartLabelsFaturamentoLucro"
+                    [datasets]="chartDatasetsFaturamentoLucro"
+                    [stacked]="false"
+                    formatoValor="reais" />
                 }
               </div>
             </div>
@@ -703,27 +685,11 @@
               @if (barrasComparativoAnual.length === 0) {
                 <p class="text-sm text-slate-500">Sem dados suficientes pra comparar.</p>
               } @else {
-                <div class="flex items-end gap-3 h-48 overflow-x-auto">
-                  @for (b of barrasComparativoAnual; track b.rotulo) {
-                    <div class="flex flex-col items-center justify-end h-full min-w-[52px] gap-1">
-                      <div class="w-full flex items-end gap-0.5 h-full">
-                        <div class="w-1/2 flex flex-col items-center justify-end h-full">
-                          <span class="text-[8px] font-bold text-slate-600 dark:text-slate-300">{{ formatarReaisCompacto(b.anoAnterior) }}</span>
-                          <div class="w-full bg-slate-300 dark:bg-slate-600 rounded-t" [style.height.%]="(b.anoAnterior / alturaMaximaComparativo) * 100"></div>
-                        </div>
-                        <div class="w-1/2 flex flex-col items-center justify-end h-full">
-                          <span class="text-[8px] font-bold text-slate-600 dark:text-slate-300">{{ formatarReaisCompacto(b.anoAtual) }}</span>
-                          <div class="w-full bg-primary rounded-t" [style.height.%]="(b.anoAtual / alturaMaximaComparativo) * 100"></div>
-                        </div>
-                      </div>
-                      <span class="text-[9px] text-slate-400 whitespace-nowrap">{{ b.rotulo }}</span>
-                    </div>
-                  }
-                </div>
-                <div class="flex items-center gap-4 mt-3 text-xs text-slate-400">
-                  <span class="flex items-center gap-1"><span class="size-2.5 rounded-sm bg-slate-300 dark:bg-slate-600"></span> Ano anterior</span>
-                  <span class="flex items-center gap-1"><span class="size-2.5 rounded-sm bg-primary"></span> Ano atual</span>
-                </div>
+                <app-grafico-barras
+                  [labels]="chartLabelsComparativo"
+                  [datasets]="chartDatasetsComparativo"
+                  [stacked]="false"
+                  formatoValor="reais" />
               }
             </div>
           </div>

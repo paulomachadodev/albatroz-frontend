@@ -1,10 +1,10 @@
 import { Component, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 
 @Component({
   selector: 'app-menu-dropdown',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './menu-dropdown.component.html',
   host: { class: 'relative inline-block' }
 })

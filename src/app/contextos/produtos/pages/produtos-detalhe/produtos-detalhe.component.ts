@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { firstValueFrom } from 'rxjs';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -574,7 +574,7 @@ export class ProdutosDetalheComponent implements OnInit {
     return nomes[mes - 1] ?? String(mes);
   }
 
-  get barrasVendas(): { rotulo: string; valor: number }[] {
+  barrasVendas = computed<{ rotulo: string; valor: number }[]>(() => {
     const a = this.analise();
     if (!a) return [];
     if (this.granularidadeVendas() === 'dia') {
@@ -584,42 +584,28 @@ export class ProdutosDetalheComponent implements OnInit {
       return a.vendasPorAno.map(v => ({ rotulo: String(v.ano), valor: v.quantidade }));
     }
     return a.vendasPorMes.map(v => ({ rotulo: `${this.rotuloMes(v.mes)}/${String(v.ano).slice(2)}`, valor: v.quantidade }));
-  }
+  });
 
-  get alturaMaximaBarra(): number {
-    return Math.max(1, ...this.barrasVendas.map(b => b.valor));
-  }
+  chartLabelsVendas = computed(() => this.barrasVendas().map(b => b.rotulo));
 
-  get chartLabelsVendas(): string[] {
-    return this.barrasVendas.map(b => b.rotulo);
-  }
+  chartDatasetsVendas = computed<DatasetGraficoBarras[]>(() => [
+    { label: 'Quantidade', data: this.barrasVendas().map(b => b.valor), color: '#1754cf' }
+  ]);
 
-  get chartDatasetsVendas(): DatasetGraficoBarras[] {
-    return [{ label: 'Quantidade', data: this.barrasVendas.map(b => b.valor), color: '#1754cf' }];
-  }
-
-  get barrasFaturamentoLucro(): { rotulo: string; faturamento: number; lucro: number }[] {
+  barrasFaturamentoLucro = computed<{ rotulo: string; faturamento: number; lucro: number }[]>(() => {
     const a = this.analise();
     if (!a) return [];
     return a.vendasPorMes.map(v => ({ rotulo: `${this.rotuloMes(v.mes)}/${String(v.ano).slice(2)}`, faturamento: v.faturamento, lucro: v.lucro }));
-  }
+  });
 
-  get alturaMaximaFaturamento(): number {
-    return Math.max(1, ...this.barrasFaturamentoLucro.map(b => Math.max(b.faturamento, b.lucro)));
-  }
+  chartLabelsFaturamentoLucro = computed(() => this.barrasFaturamentoLucro().map(b => b.rotulo));
 
-  get chartLabelsFaturamentoLucro(): string[] {
-    return this.barrasFaturamentoLucro.map(b => b.rotulo);
-  }
+  chartDatasetsFaturamentoLucro = computed<DatasetGraficoBarras[]>(() => [
+    { label: 'Faturamento', data: this.barrasFaturamentoLucro().map(b => b.faturamento), color: '#1754cf' },
+    { label: 'Lucro bruto', data: this.barrasFaturamentoLucro().map(b => b.lucro), color: '#10b981' }
+  ]);
 
-  get chartDatasetsFaturamentoLucro(): DatasetGraficoBarras[] {
-    return [
-      { label: 'Faturamento', data: this.barrasFaturamentoLucro.map(b => b.faturamento), color: '#1754cf' },
-      { label: 'Lucro bruto', data: this.barrasFaturamentoLucro.map(b => b.lucro), color: '#10b981' }
-    ];
-  }
-
-  get barrasComparativoAnual(): { rotulo: string; anoAtual: number; anoAnterior: number }[] {
+  barrasComparativoAnual = computed<{ rotulo: string; anoAtual: number; anoAnterior: number }[]>(() => {
     const a = this.analise();
     if (!a) return [];
     const anoAtual = new Date().getFullYear();
@@ -632,23 +618,17 @@ export class ProdutosDetalheComponent implements OnInit {
       const anterior = porMes.find(v => v.ano === anoAnterior && v.mes === mes)?.faturamento ?? 0;
       return { rotulo: this.rotuloMes(mes), anoAtual: atual, anoAnterior: anterior };
     }).filter(b => b.anoAtual > 0 || b.anoAnterior > 0);
-  }
+  });
 
-  get alturaMaximaComparativo(): number {
-    return Math.max(1, ...this.barrasComparativoAnual.map(b => Math.max(b.anoAtual, b.anoAnterior)));
-  }
+  chartLabelsComparativo = computed(() => this.barrasComparativoAnual().map(b => b.rotulo));
 
-  get chartLabelsComparativo(): string[] {
-    return this.barrasComparativoAnual.map(b => b.rotulo);
-  }
-
-  get chartDatasetsComparativo(): DatasetGraficoBarras[] {
+  chartDatasetsComparativo = computed<DatasetGraficoBarras[]>(() => {
     const corAnoAnterior = this.theme.temaAtual() === 'dark' ? '#475569' : '#cbd5e1';
     return [
-      { label: 'Ano anterior', data: this.barrasComparativoAnual.map(b => b.anoAnterior), color: corAnoAnterior },
-      { label: 'Ano atual', data: this.barrasComparativoAnual.map(b => b.anoAtual), color: '#1754cf' }
+      { label: 'Ano anterior', data: this.barrasComparativoAnual().map(b => b.anoAnterior), color: corAnoAnterior },
+      { label: 'Ano atual', data: this.barrasComparativoAnual().map(b => b.anoAtual), color: '#1754cf' }
     ];
-  }
+  });
 
   formatarReaisCompacto(valor?: number): string {
     if (!valor) return 'R$0';

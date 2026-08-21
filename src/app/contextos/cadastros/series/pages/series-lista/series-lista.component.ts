@@ -1,5 +1,5 @@
 import { Component, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { map } from 'rxjs';
@@ -18,7 +18,7 @@ type ModoDrawer = 'criar' | 'editar';
 @Component({
   selector: 'app-series-lista',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, ListagemPaginadaComponent, DrawerComponent, PageHeaderComponent, ToggleComponent, SelectBuscaComponent],
+  imports: [RouterLink, FormsModule, ListagemPaginadaComponent, DrawerComponent, PageHeaderComponent, ToggleComponent, SelectBuscaComponent],
   templateUrl: './series-lista.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })

@@ -1,5 +1,5 @@
 import { Component, OnInit, computed, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { map, of } from 'rxjs';
@@ -15,7 +15,7 @@ import { BtnIconeComponent } from '../../../../../shared/components/btn-icone/bt
 @Component({
   selector: 'app-lista-detalhe',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, SelectBuscaComponent, BtnIconeComponent],
+  imports: [RouterLink, FormsModule, SelectBuscaComponent, BtnIconeComponent],
   templateUrl: './lista-detalhe.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })

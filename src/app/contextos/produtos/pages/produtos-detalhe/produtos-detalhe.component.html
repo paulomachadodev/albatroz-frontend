@@ -656,24 +656,24 @@
                             [class]="granularidadeVendas() === 'ano' ? 'bg-primary text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'">Ano</button>
                   </div>
                 </div>
-                @if (barrasVendas.length === 0) {
+                @if (barrasVendas().length === 0) {
                   <p class="text-sm text-slate-500">Sem vendas registradas nesse período.</p>
                 } @else {
                   <app-grafico-barras
-                    [labels]="chartLabelsVendas"
-                    [datasets]="chartDatasetsVendas"
+                    [labels]="chartLabelsVendas()"
+                    [datasets]="chartDatasetsVendas()"
                     formatoValor="numero" />
                 }
               </div>
 
               <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6">
                 <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-4">Faturamento × Lucro bruto (mensal)</p>
-                @if (barrasFaturamentoLucro.length === 0) {
+                @if (barrasFaturamentoLucro().length === 0) {
                   <p class="text-sm text-slate-500">Sem vendas registradas.</p>
                 } @else {
                   <app-grafico-barras
-                    [labels]="chartLabelsFaturamentoLucro"
-                    [datasets]="chartDatasetsFaturamentoLucro"
+                    [labels]="chartLabelsFaturamentoLucro()"
+                    [datasets]="chartDatasetsFaturamentoLucro()"
                     [stacked]="false"
                     formatoValor="reais" />
                 }
@@ -682,12 +682,12 @@
 
             <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6">
               <p class="text-xs font-bold text-slate-500 uppercase tracking-wide mb-4">Faturamento — mês atual vs mesmo mês ano anterior</p>
-              @if (barrasComparativoAnual.length === 0) {
+              @if (barrasComparativoAnual().length === 0) {
                 <p class="text-sm text-slate-500">Sem dados suficientes pra comparar.</p>
               } @else {
                 <app-grafico-barras
-                  [labels]="chartLabelsComparativo"
-                  [datasets]="chartDatasetsComparativo"
+                  [labels]="chartLabelsComparativo()"
+                  [datasets]="chartDatasetsComparativo()"
                   [stacked]="false"
                   formatoValor="reais" />
               }

@@ -1,5 +1,5 @@
 import { Component, OnInit, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { PerfisService } from '../../services/perfis.service';
@@ -13,7 +13,7 @@ type ModoDrawer = 'criar' | 'editar';
 @Component({
   selector: 'app-perfis-lista',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, DrawerComponent, PageHeaderComponent],
+  imports: [RouterLink, FormsModule, DrawerComponent, PageHeaderComponent],
   templateUrl: './perfis-lista.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })

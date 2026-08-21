@@ -1,5 +1,5 @@
 import { Component, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
@@ -20,7 +20,7 @@ type Aba = 'email' | 'venda' | 'integracoes';
 @Component({
   selector: 'app-configuracoes-pagina',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, PageHeaderComponent, ModalComponent, CampoHintComponent],
+  imports: [RouterLink, FormsModule, PageHeaderComponent, ModalComponent, CampoHintComponent],
   templateUrl: './configuracoes-pagina.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })

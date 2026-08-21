@@ -1,5 +1,5 @@
 import { Component, input, output, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { Observable } from 'rxjs';
 
@@ -11,7 +11,7 @@ export interface OpcaoSelectBusca {
 @Component({
   selector: 'app-select-busca',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
   templateUrl: './select-busca.component.html',
   host: { class: 'block relative' }
 })

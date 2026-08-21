@@ -1,10 +1,10 @@
 import { Component, input } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 
 @Component({
   selector: 'app-page-header',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './page-header.component.html',
   host: { class: 'block' }
 })

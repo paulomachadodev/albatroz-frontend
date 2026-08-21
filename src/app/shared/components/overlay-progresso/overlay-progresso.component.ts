@@ -1,10 +1,10 @@
 import { Component, computed, input } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 
 @Component({
   selector: 'app-overlay-progresso',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './overlay-progresso.component.html'
 })
 export class OverlayProgressoComponent {

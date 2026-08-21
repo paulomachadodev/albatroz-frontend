@@ -1,5 +1,5 @@
 import { Component, OnInit, computed, inject, output, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { CartoesService } from '../services/cartoes.service';
 import { CategoriaDespesa } from '../models/categoria-despesa.model';
@@ -9,7 +9,7 @@ import { ModalComponent } from '../../../../shared/components/modal/modal.compon
 @Component({
   selector: 'app-categoria-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, ModalComponent],
+  imports: [FormsModule, ModalComponent],
   templateUrl: './categoria-modal.component.html'
 })
 export class CategoriaModalComponent implements OnInit {

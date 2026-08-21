@@ -1,5 +1,5 @@
 import { Component, computed, effect, inject, input } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { ChartModule } from 'primeng/chart';
 import { ThemeService } from '../../../core/theme/theme.service';
 
@@ -12,7 +12,7 @@ export interface DatasetGraficoBarras {
 @Component({
   selector: 'app-grafico-barras',
   standalone: true,
-  imports: [CommonModule, ChartModule],
+  imports: [ChartModule],
   templateUrl: './grafico-barras.component.html'
 })
 export class GraficoBarrasComponent {

@@ -1,5 +1,5 @@
 import { Component, computed, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { Router, RouterLink } from '@angular/router';
 import { ProdutosService } from '../../services/produtos.service';
 import { ProdutoImportarImagensCorrespondido, ProdutoImportarImagensResposta } from '../../dtos/produto-resposta.dto';
@@ -12,7 +12,7 @@ import { OverlayProgressoComponent } from '../../../../shared/components/overlay
 @Component({
   selector: 'app-produtos-importar-imagens',
   standalone: true,
-  imports: [CommonModule, RouterLink, PageHeaderComponent, ListagemPaginadaComponent, BtnIconeComponent, OverlayProgressoComponent],
+  imports: [RouterLink, PageHeaderComponent, ListagemPaginadaComponent, BtnIconeComponent, OverlayProgressoComponent],
   templateUrl: './produtos-importar-imagens.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })

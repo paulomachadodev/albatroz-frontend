@@ -1,10 +1,10 @@
 import { Component, input, output } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 
 @Component({
   selector: 'app-btn-icone',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './btn-icone.component.html',
   host: { class: 'inline-block' }
 })

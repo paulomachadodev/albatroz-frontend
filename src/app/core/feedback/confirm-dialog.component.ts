@@ -1,11 +1,11 @@
 import { Component, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { ConfirmService } from './confirm.service';
 
 @Component({
   selector: 'app-confirm-dialog',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   template: `
     @if (confirm.estado(); as estado) {
       <div class="fixed inset-0 z-[110] flex items-center justify-center bg-black/40 p-4">

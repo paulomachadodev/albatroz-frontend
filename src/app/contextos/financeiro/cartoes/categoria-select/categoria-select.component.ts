@@ -1,12 +1,12 @@
 import { Component, ElementRef, HostListener, computed, inject, input, model, output, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { CategoriaDespesa } from '../models/categoria-despesa.model';
 
 @Component({
   selector: 'app-categoria-select',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
   templateUrl: './categoria-select.component.html'
 })
 export class CategoriaSelectComponent {

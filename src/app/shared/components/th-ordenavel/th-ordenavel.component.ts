@@ -1,5 +1,5 @@
 import { Component, input, output } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 
 export interface Ordenacao {
   campo: string;
@@ -34,7 +34,7 @@ export interface Ordenacao {
 @Component({
   selector: 'app-th-ordenavel',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './th-ordenavel.component.html',
   host: { class: 'inline-block' }
 })

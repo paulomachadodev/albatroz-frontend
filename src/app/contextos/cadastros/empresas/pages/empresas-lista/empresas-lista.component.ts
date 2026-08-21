@@ -1,5 +1,5 @@
 import { Component, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { EmpresasService } from '../../services/empresas.service';
@@ -15,7 +15,7 @@ type ModoDrawer = 'criar' | 'editar';
 @Component({
   selector: 'app-empresas-lista',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, ListagemPaginadaComponent, DrawerComponent, PageHeaderComponent, ToggleComponent],
+  imports: [RouterLink, FormsModule, ListagemPaginadaComponent, DrawerComponent, PageHeaderComponent, ToggleComponent],
   templateUrl: './empresas-lista.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })

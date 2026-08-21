@@ -1,5 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../../../core/auth/auth.service';
@@ -10,7 +10,7 @@ import { MeuPerfilService } from '../../services/meu-perfil.service';
 @Component({
   selector: 'app-meu-perfil-pagina',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, PageHeaderComponent],
+  imports: [RouterLink, FormsModule, PageHeaderComponent],
   templateUrl: './meu-perfil-pagina.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })

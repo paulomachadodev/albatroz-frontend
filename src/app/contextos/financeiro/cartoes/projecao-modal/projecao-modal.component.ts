@@ -1,5 +1,5 @@
 import { Component, input, output, signal, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { ParcelaProjetada, ParcelaMes } from '../models/despesa-cartao.model';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
@@ -7,7 +7,7 @@ import { ModalComponent } from '../../../../shared/components/modal/modal.compon
 @Component({
   selector: 'app-projecao-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, ModalComponent],
+  imports: [FormsModule, ModalComponent],
   templateUrl: './projecao-modal.component.html'
 })
 export class ProjecaoModalComponent implements OnInit {

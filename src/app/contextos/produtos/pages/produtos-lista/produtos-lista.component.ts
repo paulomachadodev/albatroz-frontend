@@ -1,5 +1,5 @@
 import { Component, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import * as XLSX from 'xlsx';
@@ -29,7 +29,7 @@ interface LinhaPlanilhaFornecedores {
 @Component({
   selector: 'app-produtos-lista',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, ListagemPaginadaComponent, PageHeaderComponent, ThOrdenavelComponent, MenuDropdownComponent, ModalComponent],
+  imports: [RouterLink, FormsModule, ListagemPaginadaComponent, PageHeaderComponent, ThOrdenavelComponent, MenuDropdownComponent, ModalComponent],
   templateUrl: './produtos-lista.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })

@@ -1,5 +1,5 @@
 import { Component, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { UsuariosService } from '../../services/usuarios.service';
@@ -15,7 +15,7 @@ type ModoDrawer = 'criar' | 'editar';
 @Component({
   selector: 'app-usuarios-lista',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, DrawerComponent, PageHeaderComponent],
+  imports: [RouterLink, FormsModule, DrawerComponent, PageHeaderComponent],
   templateUrl: './usuarios-lista.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })

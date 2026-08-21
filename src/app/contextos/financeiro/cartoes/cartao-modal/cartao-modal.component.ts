@@ -1,5 +1,5 @@
 import { Component, OnInit, input, output, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { CartoesService } from '../services/cartoes.service';
 import { Cartao } from '../models/cartao.model';
@@ -10,7 +10,7 @@ import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.
 @Component({
   selector: 'app-cartao-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, ModalComponent, SpinnerComponent],
+  imports: [FormsModule, ModalComponent, SpinnerComponent],
   templateUrl: './cartao-modal.component.html'
 })
 export class CartaoModalComponent implements OnInit {

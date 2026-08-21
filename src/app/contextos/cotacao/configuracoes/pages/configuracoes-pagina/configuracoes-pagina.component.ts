@@ -1,5 +1,5 @@
 import { Component, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CondicoesComerciaisService } from '../../services/condicoes-comerciais.service';
@@ -11,7 +11,7 @@ type Aba = 'condicoes-comerciais';
 @Component({
   selector: 'app-cotacao-configuracoes-pagina',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, PageHeaderComponent],
+  imports: [RouterLink, FormsModule, PageHeaderComponent],
   templateUrl: './configuracoes-pagina.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })

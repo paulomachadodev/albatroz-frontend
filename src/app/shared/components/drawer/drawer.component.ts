@@ -1,10 +1,10 @@
 import { Component, HostListener, OnDestroy, effect, input, output } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 
 @Component({
   selector: 'app-drawer',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './drawer.component.html'
 })
 export class DrawerComponent implements OnDestroy {

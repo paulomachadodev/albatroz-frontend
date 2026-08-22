@@ -42,6 +42,7 @@ export class GraficoBarrasComponent {
       label: d.label,
       data: d.data,
       backgroundColor: d.color,
+      hoverBackgroundColor: d.color,
       borderRadius: 4,
       maxBarThickness: 32
     }))
@@ -56,6 +57,9 @@ export class GraficoBarrasComponent {
     return {
       responsive: true,
       maintainAspectRatio: false,
+      animation: { duration: 300 },
+      interaction: { mode: 'index' as const, intersect: false },
+      hover: { mode: 'index' as const, intersect: false },
       plugins: {
         legend: {
           display: mostrarLegenda,

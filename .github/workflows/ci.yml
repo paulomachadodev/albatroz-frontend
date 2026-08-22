@@ -58,6 +58,9 @@ jobs:
     needs: build
     if: github.ref == 'refs/heads/master' && github.event_name != 'pull_request'
     runs-on: [self-hosted, infra]
+    concurrency:
+      group: deploy-infra-server
+      cancel-in-progress: false
     permissions:
       packages: read
     steps:

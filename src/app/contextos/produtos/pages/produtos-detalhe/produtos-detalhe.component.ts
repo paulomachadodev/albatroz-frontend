@@ -410,6 +410,23 @@ export class ProdutosDetalheComponent implements OnInit {
     });
   }
 
+  async excluirTodasImagens() {
+    const confirmado = await this.confirm.confirmar(
+      'Excluir todas as imagens deste produto?',
+      undefined,
+      { textoConfirmar: 'Excluir' }
+    );
+    if (!confirmado) return;
+
+    this.produtosService.excluirTodasImagens(this.idProduto).subscribe({
+      next: () => {
+        this.toast.sucesso('Imagens excluídas.');
+        this.recarregarSilencioso();
+      },
+      error: err => this.toast.erroServidor(err, 'Não foi possível excluir as imagens do produto.')
+    });
+  }
+
   aoIniciarArrasteImagem(imagem: ProdutoImagem) {
     this.imagemArrastadaId.set(imagem.id);
   }

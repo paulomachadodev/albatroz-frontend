@@ -207,7 +207,16 @@
         <div class="space-y-6">
 
           <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-3">
-            <p class="text-xs font-bold text-slate-500 uppercase tracking-wide">Imagens</p>
+            <div class="flex items-center justify-between">
+              <p class="text-xs font-bold text-slate-500 uppercase tracking-wide">Imagens</p>
+              @if ((produto()?.imagens?.length ?? 0) > 0) {
+                <button type="button" (click)="excluirTodasImagens()"
+                        class="text-xs font-bold text-red-600 dark:text-red-400 hover:underline flex items-center gap-1">
+                  <span class="material-symbols-outlined text-sm">delete_sweep</span>
+                  Excluir todas
+                </button>
+              }
+            </div>
             <p class="text-xs text-slate-400">
               {{ maximoImagens }} fotos no máximo. Solte ou clique no primeiro quadrado vazio pra enviar — os demais liberam em sequência.
               Arraste um card pra reordenar, ou solte um arquivo em cima de um quadrado ocupado pra substituir a imagem.

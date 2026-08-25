@@ -18,6 +18,11 @@
             <span class="material-symbols-outlined text-base">upload_file</span>
             Importar Imagens
           </button>
+          <a routerLink="/produtos/revisar-imagens"
+             class="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+            <span class="material-symbols-outlined text-base">rate_review</span>
+            Revisar imagens
+          </a>
           <a routerLink="/produtos/marcas"
              class="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
             <span class="material-symbols-outlined text-base">sell</span>
@@ -137,6 +142,7 @@
           <th class="px-6 py-4 text-right">
             <app-th-ordenavel campo="preco" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Preço</app-th-ordenavel>
           </th>
+          <th class="px-6 py-4 w-10"></th>
         </tr>
       </ng-template>
 
@@ -185,6 +191,12 @@
           </td>
           <td class="px-6 py-4 text-right text-sm">{{ formatarNumero(item.estoqueAtual) }}</td>
           <td class="px-6 py-4 text-right text-sm font-bold">{{ formatarReais(item.preco) }}</td>
+          <td class="px-6 py-4" (click)="$event.stopPropagation()">
+            @if (item.temImagem) {
+              <app-btn-icone icone="delete_sweep" titulo="Excluir todas as imagens do produto" variante="perigo"
+                             (clicar)="excluirTodasImagens(item)"></app-btn-icone>
+            }
+          </td>
         </tr>
       </ng-template>
 

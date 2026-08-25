@@ -1,0 +1,101 @@
+<div class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark px-4 sm:px-6 lg:px-8 xl:px-10 py-6 lg:py-8">
+  <div class="w-full space-y-8">
+
+    <nav class="flex items-center gap-2 text-sm text-slate-500">
+      <a class="hover:text-primary" routerLink="/dashboard">Início</a>
+      <span class="material-symbols-outlined text-xs">chevron_right</span>
+      <a class="hover:text-primary" routerLink="/produtos">Produtos</a>
+      <span class="material-symbols-outlined text-xs">chevron_right</span>
+      <span class="text-slate-900 dark:text-slate-100 font-medium">Revisar imagens</span>
+    </nav>
+
+    <app-page-header titulo="Revisar imagens" subtitulo="Imagens encontradas automaticamente por GTIN — aprove pra publicar no produto ou rejeite."></app-page-header>
+
+    <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-4 flex flex-wrap items-end gap-4">
+      <div class="flex-1 min-w-[200px]">
+        <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Produto</label>
+        <input type="text" [(ngModel)]="texto" placeholder="Nome ou código"
+               class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+      </div>
+      <div class="flex items-center gap-4">
+        <label class="flex items-center gap-1.5 text-sm text-slate-600 dark:text-slate-400">
+          <input type="checkbox" [(ngModel)]="incluirPendente" class="rounded border-slate-300 text-primary focus:ring-primary/20"/>
+          Pendente
+        </label>
+        <label class="flex items-center gap-1.5 text-sm text-slate-600 dark:text-slate-400">
+          <input type="checkbox" [(ngModel)]="incluirAprovada" class="rounded border-slate-300 text-primary focus:ring-primary/20"/>
+          Aprovada
+        </label>
+        <label class="flex items-center gap-1.5 text-sm text-slate-600 dark:text-slate-400">
+          <input type="checkbox" [(ngModel)]="incluirRejeitada" class="rounded border-slate-300 text-primary focus:ring-primary/20"/>
+          Rejeitada
+        </label>
+      </div>
+      <button (click)="aplicarFiltros()"
+              class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all">
+        Filtrar
+      </button>
+    </div>
+
+    <app-listagem-paginada
+      [itens]="itens()" [carregando]="carregando()" [totalRegistros]="totalRegistros()"
+      [paginaAtual]="paginaAtual()" [totalPaginas]="totalPaginas()" [tamanhoPagina]="tamanhoPagina()"
+      [opcoesTamanhoPagina]="[20, 50, 100]"
+      tituloVazio="Nenhuma imagem candidata encontrada."
+      (paginaMudou)="aoMudarPagina($event)" (tamanhoPaginaMudou)="aoMudarTamanhoPagina($event)">
+
+      <ng-template #cabecalho>
+        <tr>
+          <th class="px-6 py-4 w-20"></th>
+          <th class="px-6 py-4">Produto</th>
+          <th class="px-6 py-4">Fonte / motivo</th>
+          <th class="px-6 py-4 text-center">Status</th>
+          <th class="px-6 py-4 text-right">Ações</th>
+        </tr>
+      </ng-template>
+
+      <ng-template #linha let-item>
+        <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+          <td class="px-6 py-4">
+            <div class="w-14 h-14 relative overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-800">
+              <img [src]="item.urlOrigem" [alt]="item.nomeProduto" class="absolute inset-0 w-full h-full object-cover"/>
+            </div>
+          </td>
+          <td class="px-6 py-4">
+            <a [routerLink]="['/produtos', item.idProduto]" [queryParams]="{ aba: 'web' }"
+               class="text-sm font-bold text-primary hover:underline">{{ item.nomeProduto }}</a>
+            <p class="text-xs text-slate-400">{{ item.codigo }}</p>
+          </td>
+          <td class="px-6 py-4 text-xs text-slate-500 dark:text-slate-400 max-w-xs">
+            <p class="font-bold">{{ item.fonte }}</p>
+            @if (item.motivoIa) { <p>{{ item.motivoIa }}</p> }
+          </td>
+          <td class="px-6 py-4 text-center">
+            <span class="px-2 py-0.5 rounded-full text-xs font-bold" [class]="classeStatus(item.status)">{{ rotuloStatus(item.status) }}</span>
+          </td>
+          <td class="px-6 py-4 text-right">
+            <div class="flex justify-end gap-2">
+              @if (item.status === STATUS.PENDENTE) {
+                <button type="button" (click)="rejeitar(item)" [disabled]="processandoId() === item.id"
+                        class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-xs hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50 transition-all">
+                  Rejeitar
+                </button>
+                <button type="button" (click)="aprovar(item)" [disabled]="processandoId() === item.id"
+                        class="px-3 py-1.5 rounded-lg bg-primary text-white font-bold text-xs hover:bg-primary/90 disabled:opacity-50 transition-all">
+                  {{ processandoId() === item.id ? 'Aprovando...' : 'Aprovar' }}
+                </button>
+              } @else if (item.status === STATUS.REJEITADA) {
+                <button type="button" (click)="reabrir(item)" [disabled]="processandoId() === item.id"
+                        class="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-xs hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50 transition-all">
+                  Reabrir
+                </button>
+              }
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+    </app-listagem-paginada>
+
+  </div>
+</div>

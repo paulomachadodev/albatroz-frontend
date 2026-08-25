@@ -23,6 +23,22 @@ export interface ProdutoImagem {
   url: string;
 }
 
+// Status numérico — 0=pendente, 1=aprovada, 2=rejeitada (StatusImagemCandidata no backend).
+export const STATUS_IMAGEM_CANDIDATA = { PENDENTE: 0, APROVADA: 1, REJEITADA: 2 } as const;
+
+export interface ImagemCandidata {
+  id: number;
+  idProduto: number;
+  codigo: string;
+  nomeProduto: string;
+  urlOrigem: string;
+  fonte: string;
+  scoreIa?: number;
+  motivoIa?: string;
+  status: number;
+  criadoEm: string;
+}
+
 export interface ProdutoFornecedor {
   id: number;
   idContato: number;

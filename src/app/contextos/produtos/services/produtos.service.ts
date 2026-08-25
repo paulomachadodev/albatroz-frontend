@@ -3,7 +3,7 @@ import { Observable } from 'rxjs';
 import { ApiService } from '../../../core/http/api.service';
 import { Resultado, Paginacao } from '../../../core/models';
 import { ParametrosPaginacao } from '../../../core/models/paginacao.model';
-import { ProdutoDetalhe, ProdutoResumo, ProdutoTipo, ListaPreco, ProdutoEnriquecimento, MarketplaceProduto, ProdutoAnalise } from '../models/produto.model';
+import { ProdutoDetalhe, ProdutoResumo, ProdutoTipo, ListaPreco, ProdutoEnriquecimento, MarketplaceProduto, ProdutoAnalise, ImagemCandidata } from '../models/produto.model';
 import {
   ProdutoDadosErpRequisicao,
   ProdutoImagensReordenarRequisicao,
@@ -35,6 +35,11 @@ export interface EstadoListaProdutos {
   filtro: ProdutoFiltro;
   pagina: number;
   tamanhoPagina: number;
+}
+
+export interface ImagemCandidataFiltro {
+  texto?: string;
+  status?: number[];
 }
 
 @Injectable({ providedIn: 'root' })
@@ -75,6 +80,24 @@ export class ProdutosService {
 
   excluirImagem(id: number, imagemId: number): Observable<Resultado<void>> {
     return this.api.delete<void>(`${this.endpoint}/${id}/imagens/${imagemId}`);
+  }
+
+  excluirTodasImagens(id: number): Observable<Resultado<void>> {
+    return this.api.delete<void>(`${this.endpoint}/${id}/imagens`);
+  }
+
+  // ---- Imagens candidatas (busca automática por GTIN, revisão manual) ----
+
+  listarImagensCandidatas(paginacao: ParametrosPaginacao, filtro?: ImagemCandidataFiltro): Observable<Resultado<Paginacao<ImagemCandidata>>> {
+    return this.api.getPaginado<ImagemCandidata>(`${this.endpoint}/imagens-candidatas`, paginacao, filtro);
+  }
+
+  aprovarImagemCandidata(idCandidata: number): Observable<Resultado<ProdutoImagemUploadResposta>> {
+    return this.api.put<ProdutoImagemUploadResposta>(`${this.endpoint}/imagens-candidatas/${idCandidata}/aprovar`, {});
+  }
+
+  alterarStatusImagemCandidata(idCandidata: number, status: number): Observable<Resultado<void>> {
+    return this.api.put<void>(`${this.endpoint}/imagens-candidatas/${idCandidata}/status`, { status });
   }
 
   alterarEmMassa(itens: AlterarProdutoEmMassaItem[]): Observable<Resultado<AlterarProdutosEmMassaResposta>> {

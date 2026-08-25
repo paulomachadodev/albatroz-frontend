@@ -13,6 +13,7 @@ import { PageHeaderComponent } from '../../../../shared/components/page-header/p
 import { Ordenacao, ThOrdenavelComponent } from '../../../../shared/components/th-ordenavel/th-ordenavel.component';
 import { MenuDropdownComponent } from '../../../../shared/components/menu-dropdown/menu-dropdown.component';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
+import { BtnIconeComponent } from '../../../../shared/components/btn-icone/btn-icone.component';
 
 interface LinhaPlanilhaMassa {
   Codigo: string;
@@ -29,7 +30,7 @@ interface LinhaPlanilhaFornecedores {
 @Component({
   selector: 'app-produtos-lista',
   standalone: true,
-  imports: [RouterLink, FormsModule, ListagemPaginadaComponent, PageHeaderComponent, ThOrdenavelComponent, MenuDropdownComponent, ModalComponent],
+  imports: [RouterLink, FormsModule, ListagemPaginadaComponent, PageHeaderComponent, ThOrdenavelComponent, MenuDropdownComponent, ModalComponent, BtnIconeComponent],
   templateUrl: './produtos-lista.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
@@ -158,6 +159,23 @@ export class ProdutosListaComponent implements OnInit {
     this.produtosService.migrarImagensTinyParaR2().subscribe({
       next: () => this.toast.sucesso('Migração iniciada em background.'),
       error: err => this.toast.erroServidor(err, 'Não foi possível iniciar a migração.')
+    });
+  }
+
+  async excluirTodasImagens(item: ProdutoResumo) {
+    const confirmado = await this.confirm.confirmar(
+      'Excluir todas as imagens deste produto?',
+      undefined,
+      { textoConfirmar: 'Excluir' }
+    );
+    if (!confirmado) return;
+
+    this.produtosService.excluirTodasImagens(item.id).subscribe({
+      next: () => {
+        this.toast.sucesso('Imagens excluídas.');
+        this.carregar(this.paginaAtual());
+      },
+      error: err => this.toast.erroServidor(err, 'Não foi possível excluir as imagens do produto.')
     });
   }
 

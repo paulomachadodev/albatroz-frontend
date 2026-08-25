@@ -10,5 +10,6 @@ import { Component, input, signal } from '@angular/core';
 })
 export class CampoHintComponent {
   texto = input.required<string>();
+  largura = input<string>('w-56');
   aberto = signal(false);
 }

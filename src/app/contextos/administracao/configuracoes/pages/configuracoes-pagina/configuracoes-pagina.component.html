@@ -37,6 +37,14 @@
                 [class.text-slate-500]="abaAtiva() !== 'integracoes'">
           Integrações
         </button>
+        <button (click)="abaAtiva.set('busca-imagens')"
+                class="pb-3 text-sm font-bold border-b-2 transition-colors"
+                [class.border-primary]="abaAtiva() === 'busca-imagens'"
+                [class.text-primary]="abaAtiva() === 'busca-imagens'"
+                [class.border-transparent]="abaAtiva() !== 'busca-imagens'"
+                [class.text-slate-500]="abaAtiva() !== 'busca-imagens'">
+          Busca de imagens
+        </button>
       </nav>
     </div>
 
@@ -247,6 +255,54 @@
           <button type="button" (click)="salvarIntegracoes()" [disabled]="salvandoIntegracoes()"
                   class="px-5 py-2.5 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all">
             {{ salvandoIntegracoes() ? 'Salvando...' : 'Salvar' }}
+          </button>
+        </div>
+      </div>
+    } @else if (abaAtiva() === 'busca-imagens') {
+      <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-4">
+        <p class="text-sm text-slate-500 dark:text-slate-400">
+          Usado pelo job automático que busca foto de produto por EAN/GTIN na internet (Google Custom Search) pra você revisar e aprovar antes de ir pro catálogo.
+        </p>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="text-xs font-bold text-slate-500 uppercase tracking-wide inline-flex items-center gap-1">
+              Chave de API {{ googleCustomSearchChaveConfigurada ? '(já configurada — deixe em branco pra manter)' : '' }}
+              <app-campo-hint largura="w-80" texto="Passo a passo:
+1. console.cloud.google.com → escolha ou crie um projeto (pode reusar o mesmo do BigQuery, se já tiver).
+2. APIs & Services → Library → busque 'Custom Search API' → Enable.
+3. cse.google.com/cse/all → Add → 'Search the entire web' → nas configurações da engine, ative Image Search.
+4. Copie o Search engine ID (cx) dessa engine → cole no campo ao lado.
+5. Volte no Cloud Console → APIs & Services → Credentials → Create Credentials → API key → restrinja à Custom Search API.
+6. APIs & Services → Quotas → limite 'Custom Search API' a 100/dia, pra nunca sair do gratuito.
+7. Cole a API key aqui."></app-campo-hint>
+            </label>
+            <input type="password" [(ngModel)]="googleCustomSearchApiKey" [placeholder]="googleCustomSearchChaveConfigurada ? '••••••••' : 'Cole a API key aqui'"
+                   class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+          </div>
+          <div>
+            <label class="text-xs font-bold text-slate-500 uppercase tracking-wide inline-flex items-center gap-1">
+              ID do mecanismo de pesquisa (cx)
+              <app-campo-hint texto="Search engine ID da Programmable Search Engine criada em cse.google.com/cse/all — não é a API key."></app-campo-hint>
+            </label>
+            <input type="text" [(ngModel)]="googleCustomSearchEngineId" placeholder="ex: 017576662512468239146:omuauf_lfve"
+                   class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+          </div>
+        </div>
+
+        <div>
+          <label class="text-xs font-bold text-slate-500 uppercase tracking-wide inline-flex items-center gap-1">
+            Limite de buscas por dia
+            <app-campo-hint texto="Trava o job pra nunca gastar mais que isso por dia. 100 é o teto do plano gratuito do Google — só suba se tiver ativado billing e cota maior no Cloud Console."></app-campo-hint>
+          </label>
+          <input type="number" min="1" [(ngModel)]="googleCustomSearchLimiteDiario" placeholder="100"
+                 class="mt-1 w-40 px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+        </div>
+
+        <div class="pt-2">
+          <button type="button" (click)="salvarBuscaImagens()" [disabled]="salvandoBuscaImagens()"
+                  class="px-5 py-2.5 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all">
+            {{ salvandoBuscaImagens() ? 'Salvando...' : 'Salvar' }}
           </button>
         </div>
       </div>

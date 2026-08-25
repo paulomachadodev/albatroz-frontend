@@ -15,7 +15,7 @@ import { CriarListaPrecoRequisicao, AtualizarListaPrecoRequisicao } from '../../
 import { ModalComponent } from '../../../../../shared/components/modal/modal.component';
 import { CampoHintComponent } from '../../../../../shared/components/campo-hint/campo-hint.component';
 
-type Aba = 'email' | 'venda' | 'integracoes';
+type Aba = 'email' | 'venda' | 'integracoes' | 'busca-imagens';
 
 @Component({
   selector: 'app-configuracoes-pagina',
@@ -49,6 +49,13 @@ export class ConfiguracoesPaginaComponent implements OnInit {
   metaFeedToken = '';
   siteBaseUrl = '';
   salvandoIntegracoes = signal(false);
+
+  // ---- Busca de imagens (Google Custom Search) ----
+  googleCustomSearchApiKey = '';
+  googleCustomSearchChaveConfigurada = false;
+  googleCustomSearchEngineId = '';
+  googleCustomSearchLimiteDiario = '100';
+  salvandoBuscaImagens = signal(false);
 
   // ---- Venda: listas de preço ----
   listasPreco = signal<ListaPreco[]>([]);
@@ -119,6 +126,11 @@ export class ConfiguracoesPaginaComponent implements OnInit {
         this.metaFeedToken = mapa.get('meta_feed_token') ?? '';
         this.siteBaseUrl = mapa.get('site_base_url') ?? '';
 
+        this.googleCustomSearchChaveConfigurada = !!mapa.get('google_custom_search_api_key');
+        this.googleCustomSearchApiKey = '';
+        this.googleCustomSearchEngineId = mapa.get('google_custom_search_engine_id') ?? '';
+        this.googleCustomSearchLimiteDiario = mapa.get('google_custom_search_limite_diario') ?? '100';
+
         this.carregando.set(false);
       },
       error: err => {
@@ -156,6 +168,35 @@ export class ConfiguracoesPaginaComponent implements OnInit {
       error: err => {
         this.salvandoIntegracoes.set(false);
         this.toast.erroServidor(err, 'Não foi possível salvar as integrações.');
+      }
+    });
+  }
+
+  salvarBuscaImagens() {
+    if (!this.googleCustomSearchEngineId.trim()) {
+      this.toast.erro('Informe o ID do mecanismo de pesquisa (cx).');
+      return;
+    }
+
+    this.salvandoBuscaImagens.set(true);
+
+    const chamadas = [
+      this.configuracoesService.atualizar('google_custom_search_engine_id', this.googleCustomSearchEngineId.trim()),
+      this.configuracoesService.atualizar('google_custom_search_limite_diario', this.googleCustomSearchLimiteDiario.trim() || '100')
+    ];
+    if (this.googleCustomSearchApiKey.trim()) {
+      chamadas.push(this.configuracoesService.atualizar('google_custom_search_api_key', this.googleCustomSearchApiKey.trim()));
+    }
+
+    forkJoin(chamadas).subscribe({
+      next: () => {
+        this.salvandoBuscaImagens.set(false);
+        this.toast.sucesso('Configurações de busca de imagens salvas.');
+        this.carregar();
+      },
+      error: err => {
+        this.salvandoBuscaImagens.set(false);
+        this.toast.erroServidor(err, 'Não foi possível salvar as configurações de busca de imagens.');
       }
     });
   }

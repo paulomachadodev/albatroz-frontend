@@ -24,6 +24,11 @@ export const routes: Routes = [
           import('./contextos/produtos/produtos.routes').then(m => m.PRODUTOS_ROUTES)
       },
       {
+        path: 'compras',
+        loadChildren: () =>
+          import('./contextos/compras/compras.routes').then(m => m.COMPRAS_ROUTES)
+      },
+      {
         path: 'albia',
         loadChildren: () =>
           import('./contextos/albia/albia.routes').then(m => m.ALBIA_ROUTES)

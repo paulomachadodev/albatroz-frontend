@@ -19,6 +19,7 @@ interface LinhaPlanilhaMassa {
   Codigo: string;
   Nome: string;
   Marca: string;
+  QuantidadePorCaixa: string | number;
 }
 
 interface LinhaPlanilhaFornecedores {
@@ -246,7 +247,8 @@ export class ProdutosListaComponent implements OnInit {
     const linhas: LinhaPlanilhaMassa[] = Array.from(this.selecionados.values()).map(item => ({
       Codigo: item.codigo,
       Nome: item.nome,
-      Marca: item.marca ?? ''
+      Marca: item.marca ?? '',
+      QuantidadePorCaixa: ''
     }));
     this.exportar(linhas, 'produtos-alterar-em-massa', 'Produtos');
   }
@@ -261,10 +263,15 @@ export class ProdutosListaComponent implements OnInit {
 
       const itens = linhas
         .filter(l => (l.Codigo ?? '').toString().trim().length > 0)
-        .map(l => ({
-          codigo: l.Codigo.toString().trim(),
-          marca: l.Marca ? l.Marca.toString().trim() || null : null
-        }));
+        .map(l => {
+          const qtdTexto = (l.QuantidadePorCaixa ?? '').toString().trim();
+          const qtd = qtdTexto.length > 0 ? Number(qtdTexto) : null;
+          return {
+            codigo: l.Codigo.toString().trim(),
+            marca: l.Marca ? l.Marca.toString().trim() || null : null,
+            quantidadePorCaixa: qtd && qtd > 0 ? qtd : null
+          };
+        });
 
       if (itens.length === 0) {
         this.toast.erro('Planilha vazia ou sem coluna Código.');

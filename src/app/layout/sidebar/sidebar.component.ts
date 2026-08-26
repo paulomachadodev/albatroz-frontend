@@ -51,6 +51,7 @@ export class SidebarComponent {
           ]
         },
         { label: 'Estoque',    rota: '/estoque',   icone: 'package_2', permissao: 'estoque:ler' },
+        { label: 'Compras',    rota: '/compras',   icone: 'shopping_cart', permissao: 'produtos:ler' },
         { label: 'Albia IA',   rota: '/albia',     icone: 'auto_awesome', badge: 'NOVO' }
       ]
     },

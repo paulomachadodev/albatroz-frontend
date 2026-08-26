@@ -209,9 +209,9 @@
   <div class="space-y-4">
     @if (!resultadoMassa()) {
       <p class="text-sm text-slate-500 dark:text-slate-400">
-        Baixe a planilha dos produtos selecionados, preencha a coluna Marca
-        (deixe em branco pra não alterar) e envie de volta. Marca que não existir
-        é criada automaticamente.
+        Baixe a planilha dos produtos selecionados, preencha as colunas Marca e/ou
+        QuantidadePorCaixa (deixe em branco pra não alterar aquele campo) e envie de
+        volta. Marca que não existir é criada automaticamente.
       </p>
       <button type="button" (click)="baixarPlanilhaMassa()"
               class="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">

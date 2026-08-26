@@ -35,6 +35,7 @@ export interface ProdutoEstoqueResposta {
 export interface AlterarProdutoEmMassaItem {
   codigo: string;
   marca?: string | null;
+  quantidadePorCaixa?: number | null;
 }
 
 export interface AlterarProdutoEmMassaItemResposta {

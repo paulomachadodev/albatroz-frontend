@@ -116,10 +116,28 @@ export class ProdutosDetalheComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.idProduto = Number(this.route.snapshot.paramMap.get('id'));
-    const abaQuery = this.route.snapshot.queryParamMap.get('aba') as Aba | null;
-    if (abaQuery) this.abaAtiva.set(abaQuery);
-    this.carregar();
+    // Rota é a mesma (":id") pra qualquer produto — Angular reaproveita a instância do
+    // componente ao navegar entre eles (ex.: clicar numa variação/componente de kit),
+    // então precisa reagir a paramMap (não só ler snapshot uma vez), senão a tela trava
+    // mostrando os dados do produto anterior mesmo com a URL já trocada.
+    this.route.paramMap.subscribe(params => {
+      this.idProduto = Number(params.get('id'));
+      this.resetarEstadoNavegacao();
+      const abaQuery = this.route.snapshot.queryParamMap.get('aba') as Aba | null;
+      this.abaAtiva.set(abaQuery ?? 'geral');
+      this.carregar();
+    });
+  }
+
+  private resetarEstadoNavegacao() {
+    this.modoEdicao.set(false);
+    this.sujo.set(false);
+    this.estoque.set(null);
+    this.paginaEstoque.set(1);
+    this.listasPreco.set([]);
+    this.enriquecimento.set(null);
+    this.marketplaces.set([]);
+    this.analise.set(null);
   }
 
   abrirSubProduto(id: number) {

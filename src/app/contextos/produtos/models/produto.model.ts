@@ -205,6 +205,8 @@ export interface ProdutoDetalhe {
   altura?: number;
   comprimento?: number;
   quantidadePorCaixa: number | null;
+  idProdutoPai?: number;
+  nomeProdutoPai?: string;
   imagens: ProdutoImagem[];
   fornecedores: ProdutoFornecedor[];
   variacoes: ProdutoVariacao[];

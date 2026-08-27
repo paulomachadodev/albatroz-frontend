@@ -1,0 +1,94 @@
+<div class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark px-4 sm:px-6 lg:px-8 xl:px-10 py-6 lg:py-8">
+  <div class="w-full space-y-8">
+
+    <nav class="flex items-center gap-2 text-sm text-slate-500">
+      <a class="hover:text-primary" routerLink="/dashboard">Início</a>
+      <span class="material-symbols-outlined text-xs">chevron_right</span>
+      <a class="hover:text-primary" routerLink="/compras">Compras</a>
+      <span class="material-symbols-outlined text-xs">chevron_right</span>
+      <span class="text-slate-900 dark:text-slate-100 font-medium">Pedidos de Compra</span>
+    </nav>
+
+    <app-page-header titulo="Pedidos de Compra" subtitulo="Pedidos gerados a partir do relatório de Compras — ainda sem envio automático pro fornecedor.">
+      <a acoes routerLink="/compras"
+         class="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all">
+        <span class="material-symbols-outlined text-sm">add</span>
+        Novo pedido (ir pro relatório)
+      </a>
+    </app-page-header>
+
+    <app-listagem-paginada
+      [itens]="itens()"
+      [carregando]="carregando()"
+      [totalRegistros]="totalRegistros()"
+      [paginaAtual]="paginaAtual()"
+      [totalPaginas]="totalPaginas()"
+      [tamanhoPagina]="tamanhoPagina()"
+      tituloVazio="Nenhum pedido de compra encontrado"
+      (paginaMudou)="aoMudarPagina($event)"
+      (tamanhoPaginaMudou)="aoMudarTamanhoPagina($event)">
+
+      <div filtros class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div>
+          <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Situação</label>
+          <select [(ngModel)]="filtro.situacao"
+                  class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none">
+            <option [ngValue]="undefined">Todas</option>
+            <option [ngValue]="situacaoEnum.RASCUNHO">Rascunho</option>
+            <option [ngValue]="situacaoEnum.PRONTO">Pronto</option>
+            <option [ngValue]="situacaoEnum.ENVIADO">Enviado</option>
+            <option [ngValue]="situacaoEnum.CANCELADO">Cancelado</option>
+          </select>
+        </div>
+        <div class="flex items-end gap-2">
+          <button (click)="aplicarFiltros()"
+                  class="flex-1 px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all">
+            Filtrar
+          </button>
+          <button (click)="limparFiltros()"
+                  class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
+            Limpar
+          </button>
+        </div>
+      </div>
+
+      <ng-template #cabecalho>
+        <tr class="uppercase">
+          <th class="px-6 py-4">Pedido</th>
+          <th class="px-6 py-4">Fornecedor</th>
+          <th class="px-6 py-4 text-center">Itens</th>
+          <th class="px-6 py-4 text-right">Valor total</th>
+          <th class="px-6 py-4 text-center">Situação</th>
+          <th class="px-6 py-4">Criado em</th>
+          <th class="px-6 py-4 w-10"></th>
+        </tr>
+      </ng-template>
+
+      <ng-template #linha let-item>
+        <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+          <td class="px-6 py-4 text-sm font-bold text-slate-900 dark:text-slate-100">#{{ item.id }}</td>
+          <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{{ item.fornecedor }}</td>
+          <td class="px-6 py-4 text-center text-sm">{{ item.quantidadeItens }}</td>
+          <td class="px-6 py-4 text-right text-sm font-bold">{{ formatarReais(item.valorTotal) }}</td>
+          <td class="px-6 py-4 text-center">
+            <select [ngModel]="item.situacao" (ngModelChange)="mudarSituacao(item, $event)"
+                    class="px-2 py-1 rounded-full text-xs font-bold border-none outline-none cursor-pointer" [class]="classeSituacao(item.situacao)">
+              <option [ngValue]="situacaoEnum.RASCUNHO">Rascunho</option>
+              <option [ngValue]="situacaoEnum.PRONTO">Pronto</option>
+              <option [ngValue]="situacaoEnum.ENVIADO">Enviado</option>
+              <option [ngValue]="situacaoEnum.CANCELADO">Cancelado</option>
+            </select>
+          </td>
+          <td class="px-6 py-4 text-sm text-slate-500">{{ item.criadoEm | date: 'dd/MM/yy HH:mm' }}</td>
+          <td class="px-6 py-4 text-right">
+            <button (click)="excluir(item)" class="text-red-500 hover:text-red-700">
+              <span class="material-symbols-outlined text-base">delete</span>
+            </button>
+          </td>
+        </tr>
+      </ng-template>
+
+    </app-listagem-paginada>
+
+  </div>
+</div>

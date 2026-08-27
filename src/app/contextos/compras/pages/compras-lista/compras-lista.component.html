@@ -7,6 +7,22 @@
       <span class="text-slate-900 dark:text-slate-100 font-medium">Compras</span>
     </nav>
 
+    @if (qtdSelecionados() > 0) {
+      <div class="flex items-center justify-between bg-primary/10 border border-primary/20 rounded-xl px-4 py-3">
+        <p class="text-sm font-bold text-primary">{{ qtdSelecionados() }} produto(s) selecionado(s)</p>
+        <div class="flex gap-2">
+          <button (click)="abrirGerarPedido()"
+                  class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-xs hover:bg-primary/90 transition-all">
+            Gerar pedido de compra
+          </button>
+          <button (click)="limparSelecao()"
+                  class="px-4 py-2 rounded-lg bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-xs hover:bg-slate-100 dark:hover:bg-slate-700 transition-all">
+            Limpar seleção
+          </button>
+        </div>
+      </div>
+    }
+
     <app-page-header titulo="Relatório de Compras"
       subtitulo="Cruza venda, giro de estoque e estoque atual pra sugerir o que comprar de cada produto — ajustada pra fechar caixa quando o produto tem quantidade por caixa cadastrada, e considera o prazo de entrega e o pedido mínimo do fornecedor principal.">
     </app-page-header>
@@ -108,6 +124,7 @@
 
       <ng-template #cabecalho>
         <tr class="uppercase">
+          <th class="px-6 py-4 w-10"></th>
           <th class="px-6 py-4">
             <app-th-ordenavel campo="produto" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Produto</app-th-ordenavel>
           </th>
@@ -130,6 +147,11 @@
 
       <ng-template #linha let-item>
         <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+          <td class="px-6 py-4" (click)="$event.stopPropagation()">
+            <input type="checkbox" [checked]="estaSelecionado(item)"
+                   (change)="aoAlternarSelecao(item, $any($event.target).checked)"
+                   class="rounded border-slate-300 text-primary focus:ring-primary/20"/>
+          </td>
           <td class="px-6 py-4 cursor-pointer" (click)="abrirProduto(item)">
             <p class="text-sm font-bold text-slate-900 dark:text-slate-100">{{ item.nome }}</p>
             <p class="text-xs text-slate-400">{{ item.codigo }}</p>
@@ -185,3 +207,34 @@
 
   </div>
 </div>
+
+<app-modal [aberto]="modalPedidoAberto()" titulo="Gerar pedido de compra" tamanho="md" (fechar)="fecharModalPedido()">
+  <div class="space-y-4">
+    <p class="text-sm text-slate-500 dark:text-slate-400">
+      {{ qtdSelecionados() }} produto(s) selecionado(s) — a quantidade usada é a sugestão atual de cada um (editada ou não).
+    </p>
+    <div>
+      <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Fornecedor</label>
+      <app-select-busca
+        [valorSelecionado]="fornecedorPedido"
+        placeholder="Buscar fornecedor..."
+        [buscar]="buscarFornecedoresPedido"
+        (selecionado)="fornecedorPedido = $event"></app-select-busca>
+    </div>
+    <div>
+      <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Observações</label>
+      <textarea [(ngModel)]="observacoesPedido" rows="3"
+                class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"></textarea>
+    </div>
+    <div class="pt-2 flex gap-2">
+      <button type="button" (click)="fecharModalPedido()"
+              class="flex-1 px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
+        Cancelar
+      </button>
+      <button type="button" (click)="confirmarGerarPedido()" [disabled]="gerandoPedido()"
+              class="flex-1 px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all">
+        {{ gerandoPedido() ? 'Gerando...' : 'Gerar pedido' }}
+      </button>
+    </div>
+  </div>
+</app-modal>

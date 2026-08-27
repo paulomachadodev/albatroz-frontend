@@ -2,12 +2,14 @@ import { Component, OnInit, signal, computed } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ComprasService, SugestaoCompraFiltro, ComSugestaoFiltro } from '../../services/compras.service';
+import { PedidosCompraService } from '../../services/pedidos-compra.service';
 import { SugestaoCompra } from '../../models/sugestao-compra.model';
 import { ToastService } from '../../../../core/feedback/toast.service';
 import { ListagemPaginadaComponent } from '../../../../shared/components/listagem-paginada/listagem-paginada.component';
 import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 import { Ordenacao, ThOrdenavelComponent } from '../../../../shared/components/th-ordenavel/th-ordenavel.component';
 import { SelectBuscaComponent, OpcaoSelectBusca } from '../../../../shared/components/select-busca/select-busca.component';
+import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 import { MarcasService } from '../../../produtos/services/marcas.service';
 import { ContatosService } from '../../../cadastros/contatos/services/contatos.service';
 
@@ -16,7 +18,7 @@ const CHAVE_LOCALSTORAGE = 'compras-sugestoes-ajustadas-v1';
 @Component({
   selector: 'app-compras-lista',
   standalone: true,
-  imports: [RouterLink, FormsModule, ListagemPaginadaComponent, PageHeaderComponent, ThOrdenavelComponent, SelectBuscaComponent],
+  imports: [RouterLink, FormsModule, ListagemPaginadaComponent, PageHeaderComponent, ThOrdenavelComponent, SelectBuscaComponent, ModalComponent],
   templateUrl: './compras-lista.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
@@ -49,8 +51,19 @@ export class ComprasListaComponent implements OnInit {
     }, 0);
   });
 
+  // ---- Seleção pra gerar pedido de compra ----
+  selecionados = new Map<number, SugestaoCompra>();
+  qtdSelecionados = signal(0);
+  modalPedidoAberto = signal(false);
+  fornecedorPedido: OpcaoSelectBusca | null = null;
+  observacoesPedido = '';
+  gerandoPedido = signal(false);
+
+  buscarFornecedoresPedido = (termo: string) => this.contatosService.buscar(termo, 'Fornecedor');
+
   constructor(
     private comprasService: ComprasService,
+    private pedidosCompraService: PedidosCompraService,
     private marcasService: MarcasService,
     private contatosService: ContatosService,
     private toast: ToastService,
@@ -202,6 +215,72 @@ export class ComprasListaComponent implements OnInit {
   rotuloCaixa(item: SugestaoCompra): string {
     if (!item.quantidadePorCaixa || item.quantidadePorCaixa <= 1) return '-';
     return `cx c/ ${item.quantidadePorCaixa}`;
+  }
+
+  // ---- Seleção pra gerar pedido de compra ----
+
+  estaSelecionado(item: SugestaoCompra): boolean {
+    return this.selecionados.has(item.idProduto);
+  }
+
+  aoAlternarSelecao(item: SugestaoCompra, marcado: boolean) {
+    if (marcado) this.selecionados.set(item.idProduto, item);
+    else this.selecionados.delete(item.idProduto);
+    this.qtdSelecionados.set(this.selecionados.size);
+  }
+
+  limparSelecao() {
+    this.selecionados.clear();
+    this.qtdSelecionados.set(0);
+  }
+
+  abrirGerarPedido() {
+    if (this.selecionados.size === 0) {
+      this.toast.erro('Selecione ao menos um produto na listagem.');
+      return;
+    }
+    this.fornecedorPedido = null;
+    this.observacoesPedido = '';
+    this.modalPedidoAberto.set(true);
+  }
+
+  fecharModalPedido() {
+    this.modalPedidoAberto.set(false);
+  }
+
+  confirmarGerarPedido() {
+    if (!this.fornecedorPedido) {
+      this.toast.erro('Selecione o fornecedor do pedido.');
+      return;
+    }
+
+    const itens = Array.from(this.selecionados.values())
+      .map(item => ({ idProduto: item.idProduto, quantidade: this.quantidadeEfetiva(item) }))
+      .filter(i => i.quantidade > 0);
+
+    if (itens.length === 0) {
+      this.toast.erro('Os produtos selecionados estão com sugestão zerada — ajuste a quantidade antes de gerar o pedido.');
+      return;
+    }
+
+    this.gerandoPedido.set(true);
+    this.pedidosCompraService.criar({
+      idFornecedor: this.fornecedorPedido.id,
+      observacoes: this.observacoesPedido.trim() || null,
+      itens
+    }).subscribe({
+      next: () => {
+        this.gerandoPedido.set(false);
+        this.toast.sucesso('Pedido de compra gerado.');
+        this.fecharModalPedido();
+        this.limparSelecao();
+        this.router.navigate(['/compras/pedidos']);
+      },
+      error: err => {
+        this.gerandoPedido.set(false);
+        this.toast.erroServidor(err, 'Não foi possível gerar o pedido de compra.');
+      }
+    });
   }
 
   formatarReais(valor?: number): string {

@@ -51,7 +51,13 @@ export class SidebarComponent {
           ]
         },
         { label: 'Estoque',    rota: '/estoque',   icone: 'package_2', permissao: 'estoque:ler' },
-        { label: 'Compras',    rota: '/compras',   icone: 'shopping_cart', permissao: 'produtos:ler' },
+        {
+          label: 'Compras', icone: 'shopping_cart',
+          subItens: [
+            { label: 'Relatório', rota: '/compras', icone: 'trending_up', permissao: 'produtos:ler' },
+            { label: 'Pedidos', rota: '/compras/pedidos', icone: 'receipt_long', permissao: 'produtos:ler' }
+          ]
+        },
         { label: 'Albia IA',   rota: '/albia',     icone: 'auto_awesome', badge: 'NOVO' }
       ]
     },

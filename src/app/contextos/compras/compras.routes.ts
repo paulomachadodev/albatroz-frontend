@@ -10,5 +10,10 @@ export const COMPRAS_ROUTES: Routes = [
     path: 'pedidos',
     loadComponent: () =>
       import('./pages/pedidos-compra-lista/pedidos-compra-lista.component').then(m => m.PedidosCompraListaComponent)
+  },
+  {
+    path: 'fornecedores',
+    loadComponent: () =>
+      import('./pages/fornecedores-painel/fornecedores-painel.component').then(m => m.FornecedoresPainelComponent)
   }
 ];

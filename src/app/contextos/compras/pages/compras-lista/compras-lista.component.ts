@@ -1,5 +1,5 @@
 import { Component, OnInit, signal, computed } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ComprasService, SugestaoCompraFiltro, ComSugestaoFiltro } from '../../services/compras.service';
 import { PedidosCompraService } from '../../services/pedidos-compra.service';
@@ -58,6 +58,7 @@ export class ComprasListaComponent implements OnInit {
   fornecedorPedido: OpcaoSelectBusca | null = null;
   observacoesPedido = '';
   gerandoPedido = signal(false);
+  saldoAPagarFornecedorPedido = signal<number | null>(null);
 
   buscarFornecedoresPedido = (termo: string) => this.contatosService.buscar(termo, 'Fornecedor');
 
@@ -67,10 +68,23 @@ export class ComprasListaComponent implements OnInit {
     private marcasService: MarcasService,
     private contatosService: ContatosService,
     private toast: ToastService,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit() {
+    // Vindo do Painel de Fornecedores ("Fechar pedido") — filtro de fornecedor já aplicado,
+    // ignora estado salvo da última visita pra não misturar contexto.
+    const params = this.route.snapshot.queryParamMap;
+    const idFornecedor = params.get('idFornecedor');
+    const fornecedorNome = params.get('fornecedorNome');
+    if (idFornecedor && fornecedorNome) {
+      this.fornecedorSelecionado = { id: Number(idFornecedor), nome: fornecedorNome };
+      this.filtro.idFornecedor = Number(idFornecedor);
+      this.carregar();
+      return;
+    }
+
     const estado = this.comprasService.estadoLista;
     if (estado) {
       this.filtro = { ...estado.filtro };
@@ -247,11 +261,21 @@ export class ComprasListaComponent implements OnInit {
     }
     this.fornecedorPedido = null;
     this.observacoesPedido = '';
+    this.saldoAPagarFornecedorPedido.set(null);
     this.modalPedidoAberto.set(true);
   }
 
   fecharModalPedido() {
     this.modalPedidoAberto.set(false);
+  }
+
+  aoSelecionarFornecedorPedido(opcao: OpcaoSelectBusca | null) {
+    this.fornecedorPedido = opcao;
+    this.saldoAPagarFornecedorPedido.set(null);
+    if (!opcao) return;
+    this.contatosService.obterSaldoAPagar(opcao.id).subscribe({
+      next: res => this.saldoAPagarFornecedorPedido.set(res.dados ?? 0)
+    });
   }
 
   confirmarGerarPedido() {

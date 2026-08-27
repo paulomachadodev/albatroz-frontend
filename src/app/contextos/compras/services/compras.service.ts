@@ -4,8 +4,15 @@ import { ApiService } from '../../../core/http/api.service';
 import { Resultado, Paginacao } from '../../../core/models';
 import { ParametrosPaginacao } from '../../../core/models/paginacao.model';
 import { SugestaoCompra } from '../models/sugestao-compra.model';
+import { PainelFornecedor } from '../models/painel-fornecedor.model';
 
 export type ComSugestaoFiltro = 'com_sugestao' | 'sem_sugestao';
+
+export interface PainelFornecedorFiltro {
+  apenasAtingiuMinimo?: boolean;
+  ordenarPor?: string;
+  direcao?: 'asc' | 'desc';
+}
 
 export interface SugestaoCompraFiltro {
   texto?: string;
@@ -36,5 +43,9 @@ export class ComprasService {
 
   listarSugestoes(paginacao: ParametrosPaginacao, filtros?: SugestaoCompraFiltro): Observable<Resultado<Paginacao<SugestaoCompra>>> {
     return this.api.getPaginado<SugestaoCompra>(`${this.endpoint}/sugestoes`, paginacao, filtros);
+  }
+
+  listarPainelFornecedores(paginacao: ParametrosPaginacao, filtros?: PainelFornecedorFiltro): Observable<Resultado<Paginacao<PainelFornecedor>>> {
+    return this.api.getPaginado<PainelFornecedor>(`${this.endpoint}/fornecedores`, paginacao, filtros);
   }
 }

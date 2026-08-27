@@ -55,6 +55,7 @@ export class SidebarComponent {
           label: 'Compras', icone: 'shopping_cart',
           subItens: [
             { label: 'Relatório', rota: '/compras', icone: 'trending_up', permissao: 'produtos:ler' },
+            { label: 'Fornecedores', rota: '/compras/fornecedores', icone: 'storefront', permissao: 'produtos:ler' },
             { label: 'Pedidos', rota: '/compras/pedidos', icone: 'receipt_long', permissao: 'produtos:ler' }
           ]
         },

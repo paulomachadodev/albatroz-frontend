@@ -1,0 +1,102 @@
+<div class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark px-4 sm:px-6 lg:px-8 xl:px-10 py-6 lg:py-8">
+  <div class="w-full space-y-8">
+
+    <nav class="flex items-center gap-2 text-sm text-slate-500">
+      <a class="hover:text-primary" routerLink="/dashboard">Início</a>
+      <span class="material-symbols-outlined text-xs">chevron_right</span>
+      <a class="hover:text-primary" routerLink="/compras">Compras</a>
+      <span class="material-symbols-outlined text-xs">chevron_right</span>
+      <span class="text-slate-900 dark:text-slate-100 font-medium">Fornecedores</span>
+    </nav>
+
+    <app-page-header titulo="Painel de Fornecedores"
+      subtitulo="Fornecedores que já bateram o pedido mínimo aparecem primeiro, ordenados por giro (proxy de Curva A). Saldo em aberto pra não comprometer o fluxo de caixa fechando pedido com quem já se deve muito.">
+    </app-page-header>
+
+    <app-listagem-paginada
+      [itens]="itens()"
+      [carregando]="carregando()"
+      [totalRegistros]="totalRegistros()"
+      [paginaAtual]="paginaAtual()"
+      [totalPaginas]="totalPaginas()"
+      [tamanhoPagina]="tamanhoPagina()"
+      tituloVazio="Nenhum fornecedor com produto ativo encontrado"
+      (paginaMudou)="aoMudarPagina($event)"
+      (tamanhoPaginaMudou)="aoMudarTamanhoPagina($event)">
+
+      <div filtros class="space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+          <div class="flex items-end">
+            <label class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+              <input type="checkbox" [(ngModel)]="filtro.apenasAtingiuMinimo"
+                     class="rounded border-slate-300 text-primary focus:ring-primary/20"/>
+              Só quem já bateu o pedido mínimo
+            </label>
+          </div>
+        </div>
+        <div class="flex justify-end gap-2">
+          <button (click)="aplicarFiltros()"
+                  class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all">
+            Filtrar
+          </button>
+          <button (click)="limparFiltros()"
+                  class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
+            Limpar
+          </button>
+        </div>
+      </div>
+
+      <ng-template #cabecalho>
+        <tr>
+          <th class="px-6 py-4">
+            <app-th-ordenavel campo="fornecedor" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Fornecedor</app-th-ordenavel>
+          </th>
+          <th class="px-6 py-4 text-center">Atingiu mínimo</th>
+          <th class="px-6 py-4 text-right">
+            <app-th-ordenavel campo="valorSugerido" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Valor sugerido</app-th-ordenavel>
+          </th>
+          <th class="px-6 py-4 text-right">Pedido mínimo</th>
+          <th class="px-6 py-4 text-right">
+            <app-th-ordenavel campo="giro" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Giro médio</app-th-ordenavel>
+          </th>
+          <th class="px-6 py-4 text-right">
+            <app-th-ordenavel campo="lucratividade" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Lucratividade (90d)</app-th-ordenavel>
+          </th>
+          <th class="px-6 py-4 text-right">
+            <app-th-ordenavel campo="saldo" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Saldo em aberto</app-th-ordenavel>
+          </th>
+          <th class="px-6 py-4 w-10"></th>
+        </tr>
+      </ng-template>
+
+      <ng-template #linha let-item>
+        <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+          <td class="px-6 py-4 text-sm font-bold text-slate-900 dark:text-slate-100">{{ item.fornecedor }}</td>
+          <td class="px-6 py-4 text-center">
+            @if (item.atingiuMinimo) {
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400">
+                <span class="material-symbols-outlined text-xs">check_circle</span> Sim
+              </span>
+            } @else {
+              <span class="text-xs text-slate-400">-</span>
+            }
+          </td>
+          <td class="px-6 py-4 text-right text-sm font-bold">{{ formatarReais(item.valorSugeridoTotal) }}</td>
+          <td class="px-6 py-4 text-right text-sm text-slate-500">{{ formatarReais(item.valorPedidoMinimo) }}</td>
+          <td class="px-6 py-4 text-right text-sm">{{ formatarNumero(item.giroMedio) }}</td>
+          <td class="px-6 py-4 text-right text-sm">{{ formatarReais(item.lucratividadeEstimada90d) }}</td>
+          <td class="px-6 py-4 text-right text-sm"
+              [class.text-red-600]="item.saldoEmAberto > 0 && item.saldoEmAberto >= item.valorSugeridoTotal"
+              [class.dark:text-red-400]="item.saldoEmAberto > 0 && item.saldoEmAberto >= item.valorSugeridoTotal">
+            {{ formatarReais(item.saldoEmAberto) }}
+          </td>
+          <td class="px-6 py-4 text-right">
+            <button (click)="fecharPedido(item)" class="text-xs font-bold text-primary hover:underline">Fechar pedido</button>
+          </td>
+        </tr>
+      </ng-template>
+
+    </app-listagem-paginada>
+
+  </div>
+</div>

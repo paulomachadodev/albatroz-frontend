@@ -139,6 +139,11 @@ export class ContatosService {
     return this.api.get<ContatoDetalhe>(`${this.endpoint}/${id}`);
   }
 
+  // 0 até o backfill de erp.conta_pagar.id_contato rodar — ver scripts/Albatroz.ETL/20260827_1400_*.
+  obterSaldoAPagar(id: number): Observable<Resultado<number>> {
+    return this.api.get<number>(`${this.endpoint}/${id}/saldo-a-pagar`);
+  }
+
   criar(requisicao: ContatoRequisicao): Observable<Resultado<number>> {
     return this.api.post<number>(this.endpoint, requisicao);
   }

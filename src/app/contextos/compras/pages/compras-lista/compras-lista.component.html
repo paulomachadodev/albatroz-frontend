@@ -221,7 +221,12 @@
         [valorSelecionado]="fornecedorPedido"
         placeholder="Buscar fornecedor..."
         [buscar]="buscarFornecedoresPedido"
-        (selecionado)="fornecedorPedido = $event"></app-select-busca>
+        (selecionado)="aoSelecionarFornecedorPedido($event)"></app-select-busca>
+      @if (fornecedorPedido && saldoAPagarFornecedorPedido() != null) {
+        <p class="mt-1 text-xs" [class.text-red-600]="saldoAPagarFornecedorPedido()! > 0" [class.dark:text-red-400]="saldoAPagarFornecedorPedido()! > 0" [class.text-slate-400]="saldoAPagarFornecedorPedido() === 0">
+          Saldo em aberto com esse fornecedor: {{ formatarReais(saldoAPagarFornecedorPedido()!) }}
+        </p>
+      }
     </div>
     <div>
       <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Observações</label>

@@ -69,7 +69,9 @@ Uso:
 </app-listagem-paginada>
 ```
 
-**Cabeçalho de coluna sempre em maiúsculo** (regra confirmada 2026-08-27) — classe `uppercase` na `<tr>` do `#cabecalho` (cascata CSS pros `<th>` filhos, incluindo os que usam `app-th-ordenavel`). Nunca escrever o texto do `<th>` já em caixa alta no template — é `text-transform`, não o conteúdo literal.
+**Cabeçalho de coluna sempre em maiúsculo** (regra confirmada 2026-08-27) — o `<thead>` do próprio `app-listagem-paginada` já aplica `uppercase` (cascata normal de CSS pros `<th>` filhos), não precisa repetir `class="uppercase"` na `<tr>` de cada tela.
+
+**Causa raiz de um bug real (2026-08-27):** qualquer `<th>` que usa `app-th-ordenavel` ficava fora do padrão porque o template desse componente é um `<button>` — o *user-agent stylesheet* do navegador reseta `text-transform: none` em elementos de formulário (`button`/`input`/`select`), quebrando a herança só nessas colunas. Corrigido colocando `uppercase` direto no `<button>` de `th-ordenavel.component.html` (com `normal-case` no `<span>` do ícone `material-symbols-outlined`, que depende de ligadura em minúsculo pra funcionar — nunca deixar `uppercase` alcançar esse span). Se um componente novo puser texto dentro de `<button>`/`<select>`/`<input>` num `<th>`, replicar esse padrão (uppercase explícito no elemento de formulário), não assumir que a herança do `<thead>` basta.
 ```
 
 - `filtros` é um slot de projeção — o componente só renderiza o card externo, cada tela monta seus próprios campos.
@@ -279,3 +281,21 @@ Todo filtro cujo valor vem de uma lista de opções do backend (escola, série, 
 - Fonte das opções: endpoint dedicado do domínio (ex: `GET /cotacao/listas-escolares/filtros/escolas?termo=`), **não** o cadastro inteiro — o filtro só deve oferecer valores que realmente existem no recorte listado (ex: só escolas que têm ao menos 1 lista cotada), não todo o cadastro mestre.
 - Componente: usar/criar um `app-select-busca` genérico em `shared/components/` (mesma lógica de reuso do `app-listagem-paginada`) — digita, debounce ~300ms, chama o endpoint, mostra resultados num dropdown, seleciona um item, guarda o `id`.
 - Filtro de texto livre continua OK só quando o campo é realmente texto livre no domínio (não vem de uma lista fechada de opções).
+
+## Botões Filtrar/Limpar — sempre abaixo dos campos, alinhados à direita (padrão 2026-08-27)
+
+Nunca colocar o botão "Filtrar"/"Limpar" como célula dentro da grid de campos (`<div class="flex items-end gap-2">` misturado nas colunas) — isso empurra o botão pra onde sobrar espaço, e quebra o alinhamento quando algum campo é condicional. Padrão fixo: a grid de campos só tem campos, e uma segunda `<div>` fora da grid (mas dentro do slot `filtros`) reúne os botões, alinhados à direita:
+
+```html
+<div filtros class="space-y-4">
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
+    <!-- só campos aqui, nenhum botão -->
+  </div>
+  <div class="flex justify-end gap-2">
+    <button (click)="aplicarFiltros()" class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all">Filtrar</button>
+    <button (click)="limparFiltros()" class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">Limpar</button>
+  </div>
+</div>
+```
+
+Campo condicional (ex: um filtro de período que só aparece quando outro select está num valor específico) entra **dentro da mesma grid** de campos via `@if`, nunca como uma segunda `<div class="grid ...">` empilhada abaixo — isso insere uma linha inteira nova e empurra tudo que vem depois. Deixar a grid ter colunas suficientes (ex: `lg:grid-cols-6`) pra o campo condicional caber na mesma ou próxima linha sem estourar o número de linhas.

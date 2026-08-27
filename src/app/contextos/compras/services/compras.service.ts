@@ -15,6 +15,7 @@ export interface SugestaoCompraFiltro {
   comSugestao?: ComSugestaoFiltro;
   dataInicio?: string;
   dataFim?: string;
+  diasCobertura?: number;
   ordenarPor?: string;
   direcao?: 'asc' | 'desc';
 }

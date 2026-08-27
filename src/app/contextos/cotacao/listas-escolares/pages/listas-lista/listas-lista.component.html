@@ -29,34 +29,36 @@
       (paginaMudou)="aoMudarPagina($event)"
       (tamanhoPaginaMudou)="aoMudarTamanhoPagina($event)">
 
-      <div filtros class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div>
-          <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Escola</label>
-          <div class="mt-1">
-            <app-select-busca [valorSelecionado]="escolaFiltro()" placeholder="Buscar escola..."
-                               [buscar]="buscarEscolas" (selecionado)="aoSelecionarEscolaFiltro($event)"/>
+      <div filtros class="space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div>
+            <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Escola</label>
+            <div class="mt-1">
+              <app-select-busca [valorSelecionado]="escolaFiltro()" placeholder="Buscar escola..."
+                                 [buscar]="buscarEscolas" (selecionado)="aoSelecionarEscolaFiltro($event)"/>
+            </div>
+          </div>
+          <div>
+            <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Série</label>
+            <div class="mt-1">
+              <app-select-busca [valorSelecionado]="serieFiltro()" placeholder="Buscar série..."
+                                 [buscar]="buscarSeries" (selecionado)="aoSelecionarSerieFiltro($event)"/>
+            </div>
+          </div>
+          <div>
+            <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Status</label>
+            <select [(ngModel)]="filtro.status"
+                    class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none">
+              <option [ngValue]="undefined">Todos</option>
+              <option value="cotada">Cotada</option>
+              <option value="re-cotada">Re-cotada</option>
+              <option value="liberada">Liberada</option>
+            </select>
           </div>
         </div>
-        <div>
-          <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Série</label>
-          <div class="mt-1">
-            <app-select-busca [valorSelecionado]="serieFiltro()" placeholder="Buscar série..."
-                               [buscar]="buscarSeries" (selecionado)="aoSelecionarSerieFiltro($event)"/>
-          </div>
-        </div>
-        <div>
-          <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Status</label>
-          <select [(ngModel)]="filtro.status"
-                  class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none">
-            <option [ngValue]="undefined">Todos</option>
-            <option value="cotada">Cotada</option>
-            <option value="re-cotada">Re-cotada</option>
-            <option value="liberada">Liberada</option>
-          </select>
-        </div>
-        <div class="flex items-end gap-2">
+        <div class="flex justify-end gap-2">
           <button (click)="aplicarFiltros()"
-                  class="flex-1 px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all">
+                  class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all">
             Filtrar
           </button>
           <button (click)="limparFiltros()"

@@ -28,25 +28,27 @@
       (paginaMudou)="aoMudarPagina($event)"
       (tamanhoPaginaMudou)="aoMudarTamanhoPagina($event)">
 
-      <div filtros class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
-        <div class="lg:col-span-2">
-          <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Nome / Documento</label>
-          <input type="text" [(ngModel)]="filtroTexto" placeholder="Nome, fantasia ou CPF/CNPJ" (keyup.enter)="aplicarFiltros()"
-                 class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+      <div filtros class="space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
+          <div class="lg:col-span-2">
+            <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Nome / Documento</label>
+            <input type="text" [(ngModel)]="filtroTexto" placeholder="Nome, fantasia ou CPF/CNPJ" (keyup.enter)="aplicarFiltros()"
+                   class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+          </div>
+          <div>
+            <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Tipo</label>
+            <select [(ngModel)]="filtroTipo"
+                    class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none">
+              <option value="">Todos</option>
+              @for (tipo of todosTipos; track tipo) {
+                <option [value]="tipo">{{ tipo }}</option>
+              }
+            </select>
+          </div>
         </div>
-        <div>
-          <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Tipo</label>
-          <select [(ngModel)]="filtroTipo"
-                  class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none">
-            <option value="">Todos</option>
-            @for (tipo of todosTipos; track tipo) {
-              <option [value]="tipo">{{ tipo }}</option>
-            }
-          </select>
-        </div>
-        <div class="flex items-end gap-2 lg:col-span-3">
+        <div class="flex justify-end gap-2">
           <button (click)="aplicarFiltros()"
-                  class="flex-1 px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all">
+                  class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all">
             Filtrar
           </button>
           <button (click)="limparFiltros()"

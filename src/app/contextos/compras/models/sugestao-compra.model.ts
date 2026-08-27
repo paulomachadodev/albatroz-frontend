@@ -15,6 +15,7 @@ export interface SugestaoCompra {
   vendido30d?: number;
   vendido60d?: number;
   vendido90d?: number;
+  vendidoPeriodo?: number;
 
   sugestaoCompraQtd90d?: number;
   valorTotalSugerido90d?: number;

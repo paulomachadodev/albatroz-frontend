@@ -75,20 +75,29 @@
               <option value="personalizado">Personalizado...</option>
             </select>
           </div>
-          <div class="flex items-end gap-2">
-            <button (click)="aplicarFiltros()"
-                    class="flex-1 px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all">
-              Filtrar
-            </button>
-            <button (click)="limparFiltros()"
-                    class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
-              Limpar
-            </button>
+          <div>
+            <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Marca</label>
+            <app-select-busca
+              [valorSelecionado]="marcaSelecionada"
+              placeholder="Todas..."
+              [buscar]="buscarMarcas"
+              (selecionado)="marcaSelecionada = $event"></app-select-busca>
           </div>
-        </div>
 
-        @if (periodoPreset === 'personalizado') {
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div>
+            <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Fornecedor</label>
+            <app-select-busca
+              [valorSelecionado]="fornecedorSelecionado"
+              placeholder="Todos..."
+              [buscar]="buscarFornecedores"
+              (selecionado)="fornecedorSelecionado = $event"></app-select-busca>
+          </div>
+          <div>
+            <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Comprar para quantos dias</label>
+            <input type="number" min="1" [(ngModel)]="filtro.diasCobertura" placeholder="90 (padrão)"
+                   class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+          </div>
+          @if (periodoPreset === 'personalizado') {
             <div>
               <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">De</label>
               <input type="date" [(ngModel)]="filtro.dataInicio"
@@ -99,26 +108,18 @@
               <input type="date" [(ngModel)]="filtro.dataFim"
                      class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
             </div>
-          </div>
-        }
+          }
+        </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Marca</label>
-            <app-select-busca
-              [valorSelecionado]="marcaSelecionada"
-              placeholder="Todas..."
-              [buscar]="buscarMarcas"
-              (selecionado)="marcaSelecionada = $event"></app-select-busca>
-          </div>
-          <div>
-            <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Fornecedor</label>
-            <app-select-busca
-              [valorSelecionado]="fornecedorSelecionado"
-              placeholder="Todos..."
-              [buscar]="buscarFornecedores"
-              (selecionado)="fornecedorSelecionado = $event"></app-select-busca>
-          </div>
+        <div class="flex justify-end gap-2">
+          <button (click)="aplicarFiltros()"
+                  class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all">
+            Filtrar
+          </button>
+          <button (click)="limparFiltros()"
+                  class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
+            Limpar
+          </button>
         </div>
       </div>
 
@@ -132,7 +133,7 @@
           <th class="px-6 py-4 text-right">
             <app-th-ordenavel campo="estoque" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Estoque</app-th-ordenavel>
           </th>
-          <th class="px-6 py-4 text-right">Vendido 90d</th>
+          <th class="px-6 py-4 text-right">{{ rotuloColunaVendas() }}</th>
           <th class="px-6 py-4 text-right">Custo unit.</th>
           <th class="px-6 py-4 text-right">Caixa</th>
           <th class="px-6 py-4 text-center">Sugestão</th>
@@ -168,7 +169,7 @@
           </td>
           <td class="px-6 py-4 text-center text-sm font-bold cursor-pointer" (click)="abrirProduto(item)">{{ item.curvaAbc || '-' }}</td>
           <td class="px-6 py-4 text-right text-sm cursor-pointer" (click)="abrirProduto(item)">{{ formatarNumero(item.estoqueAtual) }}</td>
-          <td class="px-6 py-4 text-right text-sm cursor-pointer" (click)="abrirProduto(item)">{{ formatarNumero(item.vendido90d) }}</td>
+          <td class="px-6 py-4 text-right text-sm cursor-pointer" (click)="abrirProduto(item)">{{ formatarNumero(item.vendidoPeriodo) }}</td>
           <td class="px-6 py-4 text-right text-sm cursor-pointer" (click)="abrirProduto(item)">{{ formatarReais(item.precoCusto) }}</td>
           <td class="px-6 py-4 text-right text-xs text-slate-400 cursor-pointer" (click)="abrirProduto(item)">{{ rotuloCaixa(item) }}</td>
           <td class="px-6 py-4">
@@ -179,8 +180,9 @@
               <button (click)="ajustarSugestao(item, 1)" class="w-6 h-6 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-sm font-bold">+</button>
             </div>
             <div class="flex items-center justify-center gap-2 mt-1">
+              <span class="text-xs text-slate-400">exato: {{ formatarNumero(item.sugestaoCompraQtd90d) }}</span>
               @if (item.caixasSugeridas != null && item.quantidadePorCaixa && item.quantidadePorCaixa > 1) {
-                <span class="text-xs text-slate-400">{{ item.caixasSugeridas }} cx</span>
+                <span class="text-xs text-slate-400">· {{ item.caixasSugeridas }} cx</span>
               }
               @if (foiAjustado(item)) {
                 <button (click)="restaurarSugestao(item)" class="text-xs text-primary hover:underline">restaurar</button>

@@ -212,6 +212,12 @@ export class ComprasListaComponent implements OnInit {
     return this.ajustesLocais()[item.idProduto] != null;
   }
 
+  rotuloColunaVendas(): string {
+    if (this.periodoPreset === 'dez_mar') return 'Vendas (dez-mar)';
+    if (this.periodoPreset === 'personalizado') return 'Vendas (período)';
+    return 'Vendas (90d)';
+  }
+
   rotuloCaixa(item: SugestaoCompra): string {
     if (!item.quantidadePorCaixa || item.quantidadePorCaixa <= 1) return '-';
     return `cx c/ ${item.quantidadePorCaixa}`;

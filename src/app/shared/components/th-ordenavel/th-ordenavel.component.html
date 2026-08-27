@@ -1,6 +1,6 @@
 <button type="button" (click)="aoClicar()"
-        class="inline-flex items-center gap-1 select-none hover:text-slate-700 dark:hover:text-slate-200"
+        class="inline-flex items-center gap-1 select-none uppercase hover:text-slate-700 dark:hover:text-slate-200"
         [class.text-slate-700]="ativa" [class.dark:text-slate-200]="ativa">
   <ng-content></ng-content>
-  <span class="material-symbols-outlined text-sm" [class.opacity-40]="!ativa">{{ icone }}</span>
+  <span class="material-symbols-outlined normal-case text-sm" [class.opacity-40]="!ativa">{{ icone }}</span>
 </button>

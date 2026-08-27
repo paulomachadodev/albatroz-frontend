@@ -1,0 +1,376 @@
+<div class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark px-4 sm:px-6 lg:px-8 xl:px-10 py-6 lg:py-8">
+  <div class="w-full space-y-8">
+
+    <nav class="flex items-center gap-2 text-sm text-slate-500">
+      <a class="hover:text-primary" routerLink="/dashboard">Início</a>
+      <span class="material-symbols-outlined text-xs">chevron_right</span>
+      <a class="hover:text-primary" routerLink="/cadastros/contatos">Contatos</a>
+      <span class="material-symbols-outlined text-xs">chevron_right</span>
+      <span class="text-slate-900 dark:text-slate-100 font-medium">{{ contato()?.nome ?? '...' }}</span>
+    </nav>
+
+    @if (carregando()) {
+      <div class="text-sm text-slate-500">Carregando...</div>
+    } @else if (!contato()) {
+      <div class="text-sm text-slate-500">Contato não encontrado.</div>
+    } @else {
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <h1 class="text-2xl font-bold text-slate-900 dark:text-slate-100">{{ contato()!.nome }}</h1>
+          <p class="text-sm text-slate-500 dark:text-slate-400">
+            Código {{ contato()!.codigo || '-' }} · {{ contato()!.tipos.join(', ') }} · {{ contato()!.ativo ? 'Ativo' : 'Inativo' }}
+          </p>
+        </div>
+        <button (click)="voltar()"
+                class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
+          Voltar
+        </button>
+      </div>
+
+      <div class="border-b border-slate-200 dark:border-slate-800">
+        <nav class="flex gap-6 overflow-x-auto">
+          <button (click)="trocarAba('geral')"
+                  class="pb-3 text-sm font-bold border-b-2 transition-colors whitespace-nowrap"
+                  [class.border-primary]="abaAtiva() === 'geral'" [class.text-primary]="abaAtiva() === 'geral'"
+                  [class.border-transparent]="abaAtiva() !== 'geral'" [class.text-slate-500]="abaAtiva() !== 'geral'">
+            Geral
+          </button>
+          <button (click)="trocarAba('enderecos')"
+                  class="pb-3 text-sm font-bold border-b-2 transition-colors whitespace-nowrap"
+                  [class.border-primary]="abaAtiva() === 'enderecos'" [class.text-primary]="abaAtiva() === 'enderecos'"
+                  [class.border-transparent]="abaAtiva() !== 'enderecos'" [class.text-slate-500]="abaAtiva() !== 'enderecos'">
+            Endereços
+          </button>
+          @if (ehFornecedor()) {
+            <button (click)="trocarAba('compras')"
+                    class="pb-3 text-sm font-bold border-b-2 transition-colors whitespace-nowrap"
+                    [class.border-primary]="abaAtiva() === 'compras'" [class.text-primary]="abaAtiva() === 'compras'"
+                    [class.border-transparent]="abaAtiva() !== 'compras'" [class.text-slate-500]="abaAtiva() !== 'compras'">
+              Compras
+            </button>
+            <button (click)="trocarAba('representantes')"
+                    class="pb-3 text-sm font-bold border-b-2 transition-colors whitespace-nowrap"
+                    [class.border-primary]="abaAtiva() === 'representantes'" [class.text-primary]="abaAtiva() === 'representantes'"
+                    [class.border-transparent]="abaAtiva() !== 'representantes'" [class.text-slate-500]="abaAtiva() !== 'representantes'">
+              Representantes
+            </button>
+            <button (click)="trocarAba('produtos')"
+                    class="pb-3 text-sm font-bold border-b-2 transition-colors whitespace-nowrap"
+                    [class.border-primary]="abaAtiva() === 'produtos'" [class.text-primary]="abaAtiva() === 'produtos'"
+                    [class.border-transparent]="abaAtiva() !== 'produtos'" [class.text-slate-500]="abaAtiva() !== 'produtos'">
+              Produtos Fornecidos
+            </button>
+          }
+        </nav>
+      </div>
+
+      <!-- Aba Geral -->
+      @if (abaAtiva() === 'geral') {
+        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-6">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Nome / Razão social</label>
+              <input type="text" [(ngModel)]="nome"
+                     class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+            </div>
+            <div>
+              <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Nome fantasia</label>
+              <input type="text" [(ngModel)]="fantasia"
+                     class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+            </div>
+            <div>
+              <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">CPF/CNPJ</label>
+              <input type="text" [(ngModel)]="cpfCnpj"
+                     class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+            </div>
+            <div>
+              <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Telefone</label>
+              <input type="text" [(ngModel)]="telefone"
+                     class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+            </div>
+            <div>
+              <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Celular</label>
+              <input type="text" [(ngModel)]="celular"
+                     class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+            </div>
+            <div>
+              <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">E-mail</label>
+              <input type="email" [(ngModel)]="email"
+                     class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+            </div>
+          </div>
+
+          <div>
+            <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Tipos</label>
+            <div class="mt-2 flex flex-wrap gap-3">
+              @for (tipo of todosTipos; track tipo) {
+                <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
+                  <input type="checkbox" [checked]="tiposSelecionados.has(tipo)"
+                         (change)="aoAlternarTipo(tipo, $any($event.target).checked)"
+                         class="rounded border-slate-300 text-primary focus:ring-primary/20"/>
+                  {{ tipo }}
+                </label>
+              }
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between">
+            <span class="text-sm font-bold text-slate-700 dark:text-slate-300">Ativo</span>
+            <app-toggle [valor]="ativo" (valorMudou)="aoAlternarAtivo($event)"/>
+          </div>
+
+          <div class="flex justify-end">
+            <button (click)="salvarGeral()" [disabled]="salvando()"
+                    class="px-5 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all">
+              {{ salvando() ? 'Salvando...' : 'Salvar' }}
+            </button>
+          </div>
+
+          <div class="border-t border-slate-100 dark:border-slate-800 pt-4">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="material-symbols-outlined text-slate-400 text-base">sync</span>
+              <p class="text-xs font-bold text-slate-400 uppercase tracking-wide">Sincronizado do Tiny — somente leitura</p>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
+              <div><p class="text-xs text-slate-400">Tipo pessoa</p><p class="font-bold text-slate-700 dark:text-slate-300">{{ rotuloTipoPessoa(contato()!.tipoPessoa) }}</p></div>
+              <div><p class="text-xs text-slate-400">Inscrição Estadual</p><p class="font-bold text-slate-700 dark:text-slate-300">{{ contato()!.inscricaoEstadual || '-' }}</p></div>
+              <div><p class="text-xs text-slate-400">Inscrição Municipal</p><p class="font-bold text-slate-700 dark:text-slate-300">{{ contato()!.inscricaoMunicipal || '-' }}</p></div>
+              <div><p class="text-xs text-slate-400">Regime Tributário (CRT)</p><p class="font-bold text-slate-700 dark:text-slate-300">{{ contato()!.crt || '-' }}</p></div>
+              <div><p class="text-xs text-slate-400">Data nascimento</p><p class="font-bold text-slate-700 dark:text-slate-300">{{ contato()!.dataNascimento ? (contato()!.dataNascimento | date: 'dd/MM/yyyy') : '-' }}</p></div>
+              <div><p class="text-xs text-slate-400">Website</p><p class="font-bold text-slate-700 dark:text-slate-300">{{ contato()!.website || '-' }}</p></div>
+              <div><p class="text-xs text-slate-400">WhatsApp</p><p class="font-bold text-slate-700 dark:text-slate-300">{{ contato()!.whatsappId || '-' }}</p></div>
+            </div>
+            @if (contato()!.observacoes) {
+              <div class="mt-4">
+                <p class="text-xs text-slate-400">Observações</p>
+                <p class="text-sm text-slate-700 dark:text-slate-300">{{ contato()!.observacoes }}</p>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Aba Endereços -->
+      @if (abaAtiva() === 'enderecos') {
+        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+          <div class="p-4 flex justify-end border-b border-slate-100 dark:border-slate-800">
+            <button (click)="abrirNovoEndereco()"
+                    class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all">
+              + Adicionar endereço
+            </button>
+          </div>
+          <table class="w-full text-left">
+            <thead class="bg-slate-50 dark:bg-slate-800/50 text-xs font-bold text-slate-500 uppercase tracking-wide">
+              <tr>
+                <th class="px-6 py-4">Tipo</th>
+                <th class="px-6 py-4">Endereço</th>
+                <th class="px-6 py-4">Cidade/UF</th>
+                <th class="px-6 py-4">CEP</th>
+                <th class="px-6 py-4 text-center">Principal</th>
+                <th class="px-6 py-4 w-20"></th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+              @for (endereco of contato()!.enderecos; track endereco.id) {
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors cursor-pointer" (click)="abrirEditarEndereco(endereco)">
+                  <td class="px-6 py-4 text-sm">{{ rotulosTipoEndereco[endereco.tipo] || '-' }}</td>
+                  <td class="px-6 py-4 text-sm">{{ endereco.logradouro }}{{ endereco.numero ? ', ' + endereco.numero : '' }} {{ endereco.bairro }}</td>
+                  <td class="px-6 py-4 text-sm">{{ endereco.municipio }}{{ endereco.uf ? '/' + endereco.uf : '' }}</td>
+                  <td class="px-6 py-4 text-sm">{{ endereco.cep || '-' }}</td>
+                  <td class="px-6 py-4 text-center">
+                    @if (endereco.principal) { <span class="material-symbols-outlined text-emerald-600 text-base">check_circle</span> }
+                  </td>
+                  <td class="px-6 py-4 text-right" (click)="$event.stopPropagation()">
+                    <button (click)="excluirEndereco(endereco)" class="text-red-500 hover:text-red-700">
+                      <span class="material-symbols-outlined text-base">delete</span>
+                    </button>
+                  </td>
+                </tr>
+              } @empty {
+                <tr><td colspan="6" class="px-6 py-8 text-center text-sm text-slate-400">Nenhum endereço cadastrado.</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+
+      <!-- Aba Compras (Fornecedor) -->
+      @if (abaAtiva() === 'compras') {
+        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-6">
+          <p class="text-sm text-slate-500 dark:text-slate-400">Essas informações entram no cálculo da sugestão de compra desse fornecedor.</p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Prazo de entrega (dias)</label>
+              <input type="number" min="0" [(ngModel)]="prazoEntregaDias"
+                     class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+            </div>
+            <div>
+              <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Valor de pedido mínimo</label>
+              <input type="number" min="0" step="0.01" [(ngModel)]="valorPedidoMinimo"
+                     class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+            </div>
+          </div>
+          <div class="flex justify-end">
+            <button (click)="salvarCompras()" [disabled]="salvandoCompras()"
+                    class="px-5 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all">
+              {{ salvandoCompras() ? 'Salvando...' : 'Salvar' }}
+            </button>
+          </div>
+        </div>
+      }
+
+      <!-- Aba Representantes (Fornecedor) -->
+      @if (abaAtiva() === 'representantes') {
+        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+          <div class="p-4 flex justify-end border-b border-slate-100 dark:border-slate-800">
+            <button (click)="abrirNovoRepresentante()"
+                    class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all">
+              + Adicionar representante
+            </button>
+          </div>
+          <table class="w-full text-left">
+            <thead class="bg-slate-50 dark:bg-slate-800/50 text-xs font-bold text-slate-500 uppercase tracking-wide">
+              <tr>
+                <th class="px-6 py-4">Nome</th>
+                <th class="px-6 py-4">Cargo</th>
+                <th class="px-6 py-4">Telefone</th>
+                <th class="px-6 py-4">E-mail</th>
+                <th class="px-6 py-4 w-20"></th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+              @for (rep of contato()!.representantes; track rep.id) {
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors cursor-pointer" (click)="abrirEditarRepresentante(rep)">
+                  <td class="px-6 py-4 text-sm font-bold text-slate-900 dark:text-slate-100">{{ rep.nome }}</td>
+                  <td class="px-6 py-4 text-sm">{{ rep.cargo || '-' }}</td>
+                  <td class="px-6 py-4 text-sm">{{ rep.telefone || '-' }}</td>
+                  <td class="px-6 py-4 text-sm">{{ rep.email || '-' }}</td>
+                  <td class="px-6 py-4 text-right" (click)="$event.stopPropagation()">
+                    <button (click)="excluirRepresentante(rep)" class="text-red-500 hover:text-red-700">
+                      <span class="material-symbols-outlined text-base">delete</span>
+                    </button>
+                  </td>
+                </tr>
+              } @empty {
+                <tr><td colspan="5" class="px-6 py-8 text-center text-sm text-slate-400">Nenhum representante cadastrado.</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+
+      <!-- Aba Produtos Fornecidos (Fornecedor) -->
+      @if (abaAtiva() === 'produtos') {
+        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+          <table class="w-full text-left">
+            <thead class="bg-slate-50 dark:bg-slate-800/50 text-xs font-bold text-slate-500 uppercase tracking-wide">
+              <tr>
+                <th class="px-6 py-4">Código</th>
+                <th class="px-6 py-4">Produto</th>
+                <th class="px-6 py-4">Código no fornecedor</th>
+                <th class="px-6 py-4 text-center">Principal</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+              @for (produto of contato()!.produtosFornecidos; track produto.idProduto) {
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors cursor-pointer" (click)="abrirProduto(produto.idProduto)">
+                  <td class="px-6 py-4 text-sm font-bold text-slate-900 dark:text-slate-100">{{ produto.codigo }}</td>
+                  <td class="px-6 py-4 text-sm">{{ produto.nome }}</td>
+                  <td class="px-6 py-4 text-sm">{{ produto.codigoNoFornecedor || '-' }}</td>
+                  <td class="px-6 py-4 text-center">
+                    @if (produto.principal) { <span class="material-symbols-outlined text-emerald-600 text-base">check_circle</span> }
+                  </td>
+                </tr>
+              } @empty {
+                <tr><td colspan="4" class="px-6 py-8 text-center text-sm text-slate-400">Nenhum produto vinculado a esse fornecedor.</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    }
+  </div>
+</div>
+
+<app-modal [aberto]="modalEnderecoAberto()" [titulo]="enderecoEmEdicao() ? 'Editar endereço' : 'Novo endereço'" tamanho="md" (fechar)="fecharModalEndereco()">
+  <div class="space-y-4">
+    <div>
+      <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Tipo</label>
+      <select [(ngModel)]="formEndereco.tipo" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none">
+        <option [ngValue]="1">Principal</option>
+        <option [ngValue]="2">Cobrança</option>
+        <option [ngValue]="3">Entrega</option>
+        <option [ngValue]="4">Outro</option>
+      </select>
+    </div>
+    <div class="grid grid-cols-3 gap-3">
+      <div class="col-span-2">
+        <label class="text-xs text-slate-500">Logradouro</label>
+        <input type="text" [(ngModel)]="formEndereco.logradouro" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+      </div>
+      <div>
+        <label class="text-xs text-slate-500">Número</label>
+        <input type="text" [(ngModel)]="formEndereco.numero" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+      </div>
+    </div>
+    <div>
+      <label class="text-xs text-slate-500">Complemento</label>
+      <input type="text" [(ngModel)]="formEndereco.complemento" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+    </div>
+    <div class="grid grid-cols-3 gap-3">
+      <div>
+        <label class="text-xs text-slate-500">Bairro</label>
+        <input type="text" [(ngModel)]="formEndereco.bairro" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+      </div>
+      <div>
+        <label class="text-xs text-slate-500">Município</label>
+        <input type="text" [(ngModel)]="formEndereco.municipio" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+      </div>
+      <div>
+        <label class="text-xs text-slate-500">UF</label>
+        <input type="text" maxlength="2" [(ngModel)]="formEndereco.uf" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+      </div>
+    </div>
+    <div>
+      <label class="text-xs text-slate-500">CEP</label>
+      <input type="text" [(ngModel)]="formEndereco.cep" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+    </div>
+    <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
+      <input type="checkbox" [(ngModel)]="formEndereco.principal" class="rounded border-slate-300 text-primary focus:ring-primary/20"/>
+      Endereço principal
+    </label>
+    <div class="pt-2 flex gap-2">
+      <button type="button" (click)="fecharModalEndereco()" class="flex-1 px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">Cancelar</button>
+      <button type="button" (click)="salvarEndereco()" [disabled]="salvandoEndereco()" class="flex-1 px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all">
+        {{ salvandoEndereco() ? 'Salvando...' : 'Salvar' }}
+      </button>
+    </div>
+  </div>
+</app-modal>
+
+<app-modal [aberto]="modalRepresentanteAberto()" [titulo]="representanteEmEdicao() ? 'Editar representante' : 'Novo representante'" tamanho="sm" (fechar)="fecharModalRepresentante()">
+  <div class="space-y-4">
+    <div>
+      <label class="text-xs text-slate-500">Nome</label>
+      <input type="text" [(ngModel)]="formRepresentante.nome" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+    </div>
+    <div>
+      <label class="text-xs text-slate-500">Cargo</label>
+      <input type="text" [(ngModel)]="formRepresentante.cargo" placeholder="Ex: Vendedor, Pós-venda" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+    </div>
+    <div>
+      <label class="text-xs text-slate-500">Telefone</label>
+      <input type="text" [(ngModel)]="formRepresentante.telefone" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+    </div>
+    <div>
+      <label class="text-xs text-slate-500">E-mail</label>
+      <input type="email" [(ngModel)]="formRepresentante.email" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+    </div>
+    <div class="pt-2 flex gap-2">
+      <button type="button" (click)="fecharModalRepresentante()" class="flex-1 px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">Cancelar</button>
+      <button type="button" (click)="salvarRepresentante()" [disabled]="salvandoRepresentante()" class="flex-1 px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all">
+        {{ salvandoRepresentante() ? 'Salvando...' : 'Salvar' }}
+      </button>
+    </div>
+  </div>
+</app-modal>

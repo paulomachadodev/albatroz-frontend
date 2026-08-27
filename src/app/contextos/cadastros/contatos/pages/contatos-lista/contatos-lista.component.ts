@@ -1,6 +1,6 @@
 import { Component, OnInit, signal } from '@angular/core';
 
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ContatosService, Contato, TipoContato } from '../../services/contatos.service';
 import { ToastService } from '../../../../../core/feedback/toast.service';
@@ -49,8 +49,13 @@ export class ContatosListaComponent implements OnInit {
 
   constructor(
     private contatosService: ContatosService,
-    private toast: ToastService
+    private toast: ToastService,
+    private router: Router
   ) {}
+
+  abrirDetalhe(item: Contato) {
+    this.router.navigate(['/cadastros/contatos', item.id]);
+  }
 
   ngOnInit() {
     this.carregar();

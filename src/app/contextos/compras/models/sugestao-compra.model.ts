@@ -24,4 +24,9 @@ export interface SugestaoCompra {
   quantidadeAjustada?: number;
   valorTotalAjustado?: number;
   coberturaDiasComCompra?: number;
+
+  prazoEntregaDias?: number;
+  valorPedidoMinimo?: number;
+  alertaReposicaoUrgente: boolean;
+  abaixoPedidoMinimo: boolean;
 }

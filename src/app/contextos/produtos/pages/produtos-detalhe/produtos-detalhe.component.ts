@@ -125,9 +125,15 @@ export class ProdutosDetalheComponent implements OnInit {
       this.resetarEstadoNavegacao();
       const abaQuery = this.route.snapshot.queryParamMap.get('aba') as Aba | null;
       this.abaAtiva.set(abaQuery ?? 'geral');
+      this.origemCompras = this.route.snapshot.queryParamMap.get('origem') === 'compras';
       this.carregar();
     });
   }
+
+  // Quando aberto a partir do relatório de Compras, "Voltar" retorna pra lá (o
+  // filtro/página ficam preservados em ComprasService.estadoLista) em vez da
+  // listagem geral de produtos.
+  private origemCompras = false;
 
   private resetarEstadoNavegacao() {
     this.modoEdicao.set(false);
@@ -211,7 +217,7 @@ export class ProdutosDetalheComponent implements OnInit {
         this.carregar();
       }
     }
-    this.router.navigate(['/produtos']);
+    this.router.navigate([this.origemCompras ? '/compras' : '/produtos']);
   }
 
   async finalizarEdicao() {

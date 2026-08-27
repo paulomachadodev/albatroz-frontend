@@ -59,7 +59,7 @@ Uso:
   </div>
 
   <ng-template #cabecalho>
-    <tr><th>...</th></tr>
+    <tr class="uppercase"><th>...</th></tr>
   </ng-template>
 
   <ng-template #linha let-item>
@@ -67,6 +67,9 @@ Uso:
   </ng-template>
 
 </app-listagem-paginada>
+```
+
+**Cabeçalho de coluna sempre em maiúsculo** (regra confirmada 2026-08-27) — classe `uppercase` na `<tr>` do `#cabecalho` (cascata CSS pros `<th>` filhos, incluindo os que usam `app-th-ordenavel`). Nunca escrever o texto do `<th>` já em caixa alta no template — é `text-transform`, não o conteúdo literal.
 ```
 
 - `filtros` é um slot de projeção — o componente só renderiza o card externo, cada tela monta seus próprios campos.

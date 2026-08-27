@@ -8,7 +8,7 @@
     </nav>
 
     <app-page-header titulo="Relatório de Compras"
-      subtitulo="Sugestão de compra por SKU — cruza venda, giro e estoque (vw_sugestao_compras). Ajustada pra múltiplo de caixa fechada quando o produto tem quantidade por caixa cadastrada.">
+      subtitulo="Cruza venda, giro de estoque e estoque atual pra sugerir o que comprar de cada produto — ajustada pra fechar caixa quando o produto tem quantidade por caixa cadastrada, e considera o prazo de entrega e o pedido mínimo do fornecedor principal.">
     </app-page-header>
 
     <app-listagem-paginada
@@ -18,98 +18,170 @@
       [paginaAtual]="paginaAtual()"
       [totalPaginas]="totalPaginas()"
       [tamanhoPagina]="tamanhoPagina()"
-      tituloVazio="Nenhuma sugestão de compra encontrada"
+      tituloVazio="Nenhum produto encontrado"
       (paginaMudou)="aoMudarPagina($event)"
       (tamanhoPaginaMudou)="aoMudarTamanhoPagina($event)">
 
-      <div filtros class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
-        <div class="sm:col-span-2">
-          <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Buscar</label>
-          <input type="text" [(ngModel)]="filtro.texto" placeholder="Nome ou código..."
-                 (keyup.enter)="aplicarFiltros()"
-                 class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+      <div filtros class="space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
+          <div class="sm:col-span-2">
+            <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Buscar</label>
+            <input type="text" [(ngModel)]="filtro.texto" placeholder="Nome, código ou GTIN..."
+                   (keyup.enter)="aplicarFiltros()"
+                   class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+          </div>
+          <div>
+            <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Curva ABC</label>
+            <select [(ngModel)]="filtro.curvaAbc"
+                    class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none">
+              <option [ngValue]="undefined">Todas</option>
+              <option value="A">A</option>
+              <option value="B">B</option>
+              <option value="C">C</option>
+              <option value="Sem Venda">Sem venda</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Sugestão</label>
+            <select [ngModel]="filtro.comSugestao" (ngModelChange)="aoMudarComSugestao($event)"
+                    class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none">
+              <option value="">Todos</option>
+              <option value="com_sugestao">Com sugestão</option>
+              <option value="sem_sugestao">Sem sugestão</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Período de venda</label>
+            <select [ngModel]="periodoPreset" (ngModelChange)="aoMudarPreset($event)"
+                    class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none">
+              <option value="">Padrão (90 dias + giro atual)</option>
+              <option value="dez_mar">Volta às aulas (dez-mar)</option>
+              <option value="personalizado">Personalizado...</option>
+            </select>
+          </div>
+          <div class="flex items-end gap-2">
+            <button (click)="aplicarFiltros()"
+                    class="flex-1 px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all">
+              Filtrar
+            </button>
+            <button (click)="limparFiltros()"
+                    class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
+              Limpar
+            </button>
+          </div>
         </div>
-        <div>
-          <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">GTIN</label>
-          <input type="text" [(ngModel)]="filtro.gtin" placeholder="Código de barras..."
-                 (keyup.enter)="aplicarFiltros()"
-                 class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
-        </div>
-        <div>
-          <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Marca</label>
-          <app-select-busca
-            [valorSelecionado]="marcaSelecionada"
-            placeholder="Todas..."
-            [buscar]="buscarMarcas"
-            (selecionado)="marcaSelecionada = $event"></app-select-busca>
-        </div>
-        <div>
-          <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Fornecedor</label>
-          <app-select-busca
-            [valorSelecionado]="fornecedorSelecionado"
-            placeholder="Todos..."
-            [buscar]="buscarFornecedores"
-            (selecionado)="fornecedorSelecionado = $event"></app-select-busca>
-        </div>
-        <div class="flex items-end gap-2">
-          <button (click)="aplicarFiltros()"
-                  class="flex-1 px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all">
-            Filtrar
-          </button>
-          <button (click)="limparFiltros()"
-                  class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
-            Limpar
-          </button>
+
+        @if (periodoPreset === 'personalizado') {
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div>
+              <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">De</label>
+              <input type="date" [(ngModel)]="filtro.dataInicio"
+                     class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+            </div>
+            <div>
+              <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Até</label>
+              <input type="date" [(ngModel)]="filtro.dataFim"
+                     class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+            </div>
+          </div>
+        }
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Marca</label>
+            <app-select-busca
+              [valorSelecionado]="marcaSelecionada"
+              placeholder="Todas..."
+              [buscar]="buscarMarcas"
+              (selecionado)="marcaSelecionada = $event"></app-select-busca>
+          </div>
+          <div>
+            <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Fornecedor</label>
+            <app-select-busca
+              [valorSelecionado]="fornecedorSelecionado"
+              placeholder="Todos..."
+              [buscar]="buscarFornecedores"
+              (selecionado)="fornecedorSelecionado = $event"></app-select-busca>
+          </div>
         </div>
       </div>
 
       <ng-template #cabecalho>
-        <tr>
+        <tr class="uppercase">
           <th class="px-6 py-4">
             <app-th-ordenavel campo="produto" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Produto</app-th-ordenavel>
           </th>
-          <th class="px-6 py-4">
-            <app-th-ordenavel campo="marca" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Marca</app-th-ordenavel>
-          </th>
-          <th class="px-6 py-4">Fornecedor</th>
           <th class="px-6 py-4 text-center">Curva</th>
           <th class="px-6 py-4 text-right">
             <app-th-ordenavel campo="estoque" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Estoque</app-th-ordenavel>
           </th>
           <th class="px-6 py-4 text-right">Vendido 90d</th>
+          <th class="px-6 py-4 text-right">Custo unit.</th>
           <th class="px-6 py-4 text-right">Caixa</th>
-          <th class="px-6 py-4 text-right">Sugestão (ajustada)</th>
+          <th class="px-6 py-4 text-center">Sugestão</th>
           <th class="px-6 py-4 text-right">
-            <app-th-ordenavel campo="valor" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Valor sugerido</app-th-ordenavel>
+            <app-th-ordenavel campo="valor" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Valor estimado</app-th-ordenavel>
           </th>
-          <th class="px-6 py-4 text-right">Cobertura pós-compra</th>
+          <th class="px-6 py-4 text-right">Cobertura</th>
+          <th class="px-6 py-4">Marca</th>
+          <th class="px-6 py-4">Fornecedor</th>
         </tr>
       </ng-template>
 
       <ng-template #linha let-item>
-        <tr (click)="abrirProduto(item)" class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors cursor-pointer">
-          <td class="px-6 py-4">
+        <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+          <td class="px-6 py-4 cursor-pointer" (click)="abrirProduto(item)">
             <p class="text-sm font-bold text-slate-900 dark:text-slate-100">{{ item.nome }}</p>
             <p class="text-xs text-slate-400">{{ item.codigo }}</p>
-          </td>
-          <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{{ item.marca || '-' }}</td>
-          <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{{ item.fornecedor || '-' }}</td>
-          <td class="px-6 py-4 text-center text-sm font-bold">{{ item.curvaAbc || '-' }}</td>
-          <td class="px-6 py-4 text-right text-sm">{{ formatarNumero(item.estoqueAtual) }}</td>
-          <td class="px-6 py-4 text-right text-sm">{{ formatarNumero(item.vendido90d) }}</td>
-          <td class="px-6 py-4 text-right text-xs text-slate-400">{{ rotuloCaixa(item) }}</td>
-          <td class="px-6 py-4 text-right text-sm font-bold">
-            {{ formatarNumero(item.quantidadeAjustada) }}
-            @if (item.caixasSugeridas != null && item.quantidadePorCaixa > 1) {
-              <span class="block text-xs font-normal text-slate-400">{{ item.caixasSugeridas }} cx</span>
+            @if (item.alertaReposicaoUrgente) {
+              <span class="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400">
+                <span class="material-symbols-outlined text-xs">warning</span> risco de faltar antes de chegar
+              </span>
+            }
+            @if (item.abaixoPedidoMinimo) {
+              <span class="inline-flex items-center gap-1 mt-1 ml-1 px-2 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400">
+                abaixo do pedido mínimo
+              </span>
             }
           </td>
-          <td class="px-6 py-4 text-right text-sm font-bold">{{ formatarReais(item.valorTotalAjustado) }}</td>
-          <td class="px-6 py-4 text-right text-sm">{{ item.coberturaDiasComCompra != null ? (item.coberturaDiasComCompra + ' d') : '-' }}</td>
+          <td class="px-6 py-4 text-center text-sm font-bold cursor-pointer" (click)="abrirProduto(item)">{{ item.curvaAbc || '-' }}</td>
+          <td class="px-6 py-4 text-right text-sm cursor-pointer" (click)="abrirProduto(item)">{{ formatarNumero(item.estoqueAtual) }}</td>
+          <td class="px-6 py-4 text-right text-sm cursor-pointer" (click)="abrirProduto(item)">{{ formatarNumero(item.vendido90d) }}</td>
+          <td class="px-6 py-4 text-right text-sm cursor-pointer" (click)="abrirProduto(item)">{{ formatarReais(item.precoCusto) }}</td>
+          <td class="px-6 py-4 text-right text-xs text-slate-400 cursor-pointer" (click)="abrirProduto(item)">{{ rotuloCaixa(item) }}</td>
+          <td class="px-6 py-4">
+            <div class="flex items-center justify-center gap-1">
+              <button (click)="ajustarSugestao(item, -1)" class="w-6 h-6 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-sm font-bold">−</button>
+              <input type="number" min="0" [ngModel]="quantidadeEfetiva(item)" (ngModelChange)="aoDigitarSugestao(item, $event)"
+                     class="w-16 text-center px-1 py-1 bg-slate-100 dark:bg-slate-800 border-none rounded text-sm outline-none"/>
+              <button (click)="ajustarSugestao(item, 1)" class="w-6 h-6 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-sm font-bold">+</button>
+            </div>
+            <div class="flex items-center justify-center gap-2 mt-1">
+              @if (item.caixasSugeridas != null && item.quantidadePorCaixa && item.quantidadePorCaixa > 1) {
+                <span class="text-xs text-slate-400">{{ item.caixasSugeridas }} cx</span>
+              }
+              @if (foiAjustado(item)) {
+                <button (click)="restaurarSugestao(item)" class="text-xs text-primary hover:underline">restaurar</button>
+              }
+            </div>
+          </td>
+          <td class="px-6 py-4 text-right text-sm font-bold cursor-pointer" (click)="abrirProduto(item)">
+            {{ formatarReais(quantidadeEfetiva(item) * (item.precoCusto ?? 0)) }}
+          </td>
+          <td class="px-6 py-4 text-right text-sm cursor-pointer" (click)="abrirProduto(item)">{{ item.coberturaDiasComCompra != null ? (item.coberturaDiasComCompra + ' d') : '-' }}</td>
+          <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 cursor-pointer" (click)="abrirProduto(item)">{{ item.marca || '-' }}</td>
+          <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 cursor-pointer" (click)="abrirProduto(item)">{{ item.fornecedor || '-' }}</td>
         </tr>
       </ng-template>
 
     </app-listagem-paginada>
+
+    <div class="flex justify-end">
+      <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 px-6 py-4">
+        <p class="text-xs font-bold text-slate-400 uppercase tracking-wide">Total estimado (produtos desta página)</p>
+        <p class="text-xl font-bold text-slate-900 dark:text-slate-100">{{ formatarReais(totalEstimadoPagina()) }}</p>
+      </div>
+    </div>
 
   </div>
 </div>

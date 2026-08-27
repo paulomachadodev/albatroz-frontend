@@ -634,6 +634,9 @@
               <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-4">
                 <p class="text-xs font-bold text-slate-400 uppercase tracking-wide">Última compra</p>
                 <p class="text-lg font-bold text-slate-900 dark:text-slate-100 mt-1">{{ a.dataUltimaEntrada ? (a.dataUltimaEntrada | date: 'dd/MM/yy') : '-' }}</p>
+                @if (a.quantidadeUltimaEntrada != null) {
+                  <p class="text-xs text-slate-400 mt-0.5">{{ formatarNumero(a.quantidadeUltimaEntrada) }} un</p>
+                }
               </div>
             </div>
 

@@ -106,6 +106,7 @@ export interface ProdutoAnalise {
   precoVendaAtual?: number;
   dataUltimaVenda?: string;
   dataUltimaEntrada?: string;
+  quantidadeUltimaEntrada?: number;
   diasParadoMax?: number;
   statusEstoque?: string;
   custoOportunidadeAcumulado?: number;

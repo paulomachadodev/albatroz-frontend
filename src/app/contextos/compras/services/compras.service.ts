@@ -5,12 +5,16 @@ import { Resultado, Paginacao } from '../../../core/models';
 import { ParametrosPaginacao } from '../../../core/models/paginacao.model';
 import { SugestaoCompra } from '../models/sugestao-compra.model';
 
+export type ComSugestaoFiltro = 'com_sugestao' | 'sem_sugestao';
+
 export interface SugestaoCompraFiltro {
   texto?: string;
-  gtin?: string;
   idMarca?: number;
   idFornecedor?: number;
   curvaAbc?: string;
+  comSugestao?: ComSugestaoFiltro;
+  dataInicio?: string;
+  dataFim?: string;
   ordenarPor?: string;
   direcao?: 'asc' | 'desc';
 }

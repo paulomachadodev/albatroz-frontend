@@ -1,7 +1,7 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { ComprasService, SugestaoCompraFiltro } from '../../services/compras.service';
+import { ComprasService, SugestaoCompraFiltro, ComSugestaoFiltro } from '../../services/compras.service';
 import { SugestaoCompra } from '../../models/sugestao-compra.model';
 import { ToastService } from '../../../../core/feedback/toast.service';
 import { ListagemPaginadaComponent } from '../../../../shared/components/listagem-paginada/listagem-paginada.component';
@@ -10,6 +10,8 @@ import { Ordenacao, ThOrdenavelComponent } from '../../../../shared/components/t
 import { SelectBuscaComponent, OpcaoSelectBusca } from '../../../../shared/components/select-busca/select-busca.component';
 import { MarcasService } from '../../../produtos/services/marcas.service';
 import { ContatosService } from '../../../cadastros/contatos/services/contatos.service';
+
+const CHAVE_LOCALSTORAGE = 'compras-sugestoes-ajustadas-v1';
 
 @Component({
   selector: 'app-compras-lista',
@@ -30,9 +32,22 @@ export class ComprasListaComponent implements OnInit {
   filtro: SugestaoCompraFiltro = {};
   marcaSelecionada: OpcaoSelectBusca | null = null;
   fornecedorSelecionado: OpcaoSelectBusca | null = null;
+  periodoPreset: '' | 'dez_mar' | 'personalizado' = '';
+
+  // Sugestão editável — override local por produto, sobrevive a reload da página (localStorage),
+  // nunca é mandado pro backend. Chave = idProduto.
+  ajustesLocais = signal<Record<number, number>>(this.carregarAjustesLocais());
 
   buscarMarcas = (termo: string) => this.marcasService.buscar(termo);
   buscarFornecedores = (termo: string) => this.contatosService.buscar(termo, 'Fornecedor');
+
+  totalEstimadoPagina = computed(() => {
+    const ajustes = this.ajustesLocais();
+    return this.itens().reduce((soma, item) => {
+      const qtd = ajustes[item.idProduto] ?? item.quantidadeAjustada ?? 0;
+      return soma + qtd * (item.precoCusto ?? 0);
+    }, 0);
+  });
 
   constructor(
     private comprasService: ComprasService,
@@ -92,8 +107,26 @@ export class ComprasListaComponent implements OnInit {
     this.filtro = {};
     this.marcaSelecionada = null;
     this.fornecedorSelecionado = null;
+    this.periodoPreset = '';
     this.ordenacaoAtual.set(null);
     this.carregar(1);
+  }
+
+  aoMudarComSugestao(valor: string) {
+    this.filtro.comSugestao = (valor || undefined) as ComSugestaoFiltro | undefined;
+  }
+
+  aoMudarPreset(preset: '' | 'dez_mar' | 'personalizado') {
+    this.periodoPreset = preset;
+    if (preset === 'dez_mar') {
+      const hoje = new Date();
+      const anoFim = hoje.getMonth() >= 3 ? hoje.getFullYear() : hoje.getFullYear() - 1;
+      this.filtro.dataInicio = `${anoFim - 1}-12-01`;
+      this.filtro.dataFim = `${anoFim}-03-31`;
+    } else if (preset === '') {
+      this.filtro.dataInicio = undefined;
+      this.filtro.dataFim = undefined;
+    }
   }
 
   aoOrdenar(ordenacao: Ordenacao) {
@@ -113,7 +146,57 @@ export class ComprasListaComponent implements OnInit {
   }
 
   abrirProduto(item: SugestaoCompra) {
-    this.router.navigate(['/produtos', item.idProduto]);
+    this.router.navigate(['/produtos', item.idProduto], { queryParams: { origem: 'compras' } });
+  }
+
+  // ---- Sugestão editável (local, não vai pro backend) ----
+
+  private carregarAjustesLocais(): Record<number, number> {
+    try {
+      const bruto = localStorage.getItem(CHAVE_LOCALSTORAGE);
+      return bruto ? JSON.parse(bruto) : {};
+    } catch {
+      return {};
+    }
+  }
+
+  private salvarAjustesLocais(valores: Record<number, number>) {
+    this.ajustesLocais.set(valores);
+    try { localStorage.setItem(CHAVE_LOCALSTORAGE, JSON.stringify(valores)); } catch { /* localStorage indisponível — ignora */ }
+  }
+
+  quantidadeEfetiva(item: SugestaoCompra): number {
+    const ajustes = this.ajustesLocais();
+    return ajustes[item.idProduto] ?? item.quantidadeAjustada ?? 0;
+  }
+
+  passoAjuste(item: SugestaoCompra): number {
+    return item.quantidadePorCaixa && item.quantidadePorCaixa > 1 ? item.quantidadePorCaixa : 1;
+  }
+
+  ajustarSugestao(item: SugestaoCompra, delta: number) {
+    const passo = this.passoAjuste(item);
+    const atual = this.quantidadeEfetiva(item);
+    const novo = Math.max(0, atual + delta * passo);
+    const valores = { ...this.ajustesLocais(), [item.idProduto]: novo };
+    this.salvarAjustesLocais(valores);
+  }
+
+  aoDigitarSugestao(item: SugestaoCompra, valor: string) {
+    const numero = Number(valor);
+    if (Number.isNaN(numero) || numero < 0) return;
+    const valores = { ...this.ajustesLocais(), [item.idProduto]: numero };
+    this.salvarAjustesLocais(valores);
+  }
+
+  restaurarSugestao(item: SugestaoCompra) {
+    const valores = { ...this.ajustesLocais() };
+    delete valores[item.idProduto];
+    this.salvarAjustesLocais(valores);
+  }
+
+  foiAjustado(item: SugestaoCompra): boolean {
+    return this.ajustesLocais()[item.idProduto] != null;
   }
 
   rotuloCaixa(item: SugestaoCompra): string {

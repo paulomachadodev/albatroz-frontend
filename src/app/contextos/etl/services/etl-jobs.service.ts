@@ -42,4 +42,14 @@ export class EtlJobsService {
   reprocessarDeadLetter(entidade: string, empresaId = 1): Observable<Resultado<{ total: number }>> {
     return this.api.post<{ total: number }>(`/v1/etl/pipeline/${entidade}/reprocessar-dead-letter?empresaId=${empresaId}`);
   }
+
+  saudeFilas(): Observable<Resultado<SaudeFila[]>> {
+    return this.api.get<SaudeFila[]>('/v1/etl/filas/saude');
+  }
+}
+
+export interface SaudeFila {
+  fila: string;
+  pendentesNaoBuscados: number;
+  idadeMaisAntigoMinutos: number;
 }

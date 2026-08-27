@@ -2,7 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { toSignal, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { interval, startWith, switchMap } from 'rxjs';
-import { EtlJobsService } from '../../services/etl-jobs.service';
+import { EtlJobsService, SaudeFila } from '../../services/etl-jobs.service';
 import { EtlJobStatusResposta } from '../../dtos/etl-job-status.resposta';
 import { EtlPipelineEntidadeResposta } from '../../dtos/etl-pipeline-entidade.resposta';
 import { formatarCron } from '../../utils/cron-legivel';
@@ -31,6 +31,27 @@ import { ToastService } from '../../../../core/feedback/toast.service';
         <h1 class="text-3xl font-bold text-slate-900 mb-2">ERP Tiny — Visão Geral</h1>
         <p class="text-slate-600">Monitoramento em tempo real de todos os pipelines ETL</p>
       </div>
+
+      @if (filasTravadas().length > 0) {
+        <div class="bg-red-50 dark:bg-red-900/20 border border-red-300 dark:border-red-800 rounded-lg p-4">
+          <div class="flex items-start gap-3">
+            <span class="material-symbols-outlined text-red-600 dark:text-red-400">error</span>
+            <div>
+              <p class="font-semibold text-red-800 dark:text-red-300">
+                {{ filasTravadas().length === 1 ? 'Fila travada' : 'Filas travadas' }} — worker não está processando
+              </p>
+              <p class="text-sm text-red-700 dark:text-red-400 mt-1">
+                @for (f of filasTravadas(); track f.fila) {
+                  <span class="block">
+                    <strong>{{ f.fila }}</strong>: {{ f.pendentesNaoBuscados }} item(ns) esperando, o mais antigo há {{ formatarIdade(f.idadeMaisAntigoMinutos) }}.
+                  </span>
+                }
+              </p>
+              <p class="text-xs text-red-600 dark:text-red-500 mt-2">Provavelmente precisa reiniciar o container Albatroz.ETL.API no servidor.</p>
+            </div>
+          </div>
+        </div>
+      }
 
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         @for (pipeline of pipelines(); track pipeline.entidade) {
@@ -175,18 +196,39 @@ export class EtlVisaoGeralPageComponent {
   );
 
   pipelines = signal<EtlPipelineEntidadeResposta[]>([]);
+  saudeFilas = signal<SaudeFila[]>([]);
+
+  // Acima de 15 min sem ninguém buscar da fila é sinal real de worker travado/morto — folga
+  // suficiente pra não disparar falso positivo com pico normal de fila.
+  private readonly LIMITE_TRAVADA_MINUTOS = 15;
+  filasTravadas = () => this.saudeFilas().filter(f => f.idadeMaisAntigoMinutos > this.LIMITE_TRAVADA_MINUTOS);
 
   /** chave "entidade:tipo" da ação em andamento, ou null */
   reprocessando = signal<string | null>(null);
 
   constructor() {
     interval(30000).pipe(startWith(0), takeUntilDestroyed()).subscribe(() => this.carregarPipelines());
+    interval(30000).pipe(startWith(0), takeUntilDestroyed()).subscribe(() => this.carregarSaudeFilas());
   }
 
   private carregarPipelines(): void {
     this.jobsService.pipelineResumo().subscribe(resultado => {
       if (resultado.dados) this.pipelines.set(resultado.dados);
     });
+  }
+
+  private carregarSaudeFilas(): void {
+    this.jobsService.saudeFilas().subscribe(resultado => {
+      if (resultado.dados) this.saudeFilas.set(resultado.dados);
+    });
+  }
+
+  formatarIdade(minutos: number): string {
+    if (minutos < 60) return `${minutos} min`;
+    const horas = Math.floor(minutos / 60);
+    if (horas < 24) return `${horas}h${minutos % 60 ? ` ${minutos % 60}min` : ''}`;
+    const dias = Math.floor(horas / 24);
+    return `${dias}d ${horas % 24}h`;
   }
 
   disparar(jobId: string): void {

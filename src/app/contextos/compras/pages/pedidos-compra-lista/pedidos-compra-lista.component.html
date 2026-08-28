@@ -55,13 +55,23 @@
       </div>
 
       <ng-template #cabecalho>
-        <tr class="uppercase">
+        <tr>
           <th class="px-6 py-4">Pedido</th>
-          <th class="px-6 py-4">Fornecedor</th>
-          <th class="px-6 py-4 text-center">Itens</th>
-          <th class="px-6 py-4 text-right">Valor total</th>
-          <th class="px-6 py-4 text-center">Situação</th>
-          <th class="px-6 py-4">Criado em</th>
+          <th class="px-6 py-4">
+            <app-th-ordenavel campo="fornecedor" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Fornecedor</app-th-ordenavel>
+          </th>
+          <th class="px-6 py-4 text-center">
+            <app-th-ordenavel campo="quantidadeItens" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Itens</app-th-ordenavel>
+          </th>
+          <th class="px-6 py-4 text-right">
+            <app-th-ordenavel campo="valorTotal" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Valor total</app-th-ordenavel>
+          </th>
+          <th class="px-6 py-4 text-center">
+            <app-th-ordenavel campo="situacao" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Situação</app-th-ordenavel>
+          </th>
+          <th class="px-6 py-4">
+            <app-th-ordenavel campo="criadoEm" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Criado em</app-th-ordenavel>
+          </th>
           <th class="px-6 py-4 w-10"></th>
         </tr>
       </ng-template>

@@ -8,6 +8,8 @@ import { PedidoCompraResumo, PedidoCompraDetalhe, CriarPedidoCompraRequisicao } 
 export interface PedidoCompraFiltro {
   situacao?: number;
   idFornecedor?: number;
+  ordenarPor?: string;
+  direcao?: string;
 }
 
 @Injectable({ providedIn: 'root' })

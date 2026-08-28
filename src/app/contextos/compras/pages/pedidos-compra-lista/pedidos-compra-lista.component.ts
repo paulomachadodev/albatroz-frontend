@@ -8,6 +8,7 @@ import { ToastService } from '../../../../core/feedback/toast.service';
 import { ConfirmService } from '../../../../core/feedback/confirm.service';
 import { ListagemPaginadaComponent } from '../../../../shared/components/listagem-paginada/listagem-paginada.component';
 import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
+import { Ordenacao, ThOrdenavelComponent } from '../../../../shared/components/th-ordenavel/th-ordenavel.component';
 
 const ROTULOS_SITUACAO: Record<number, string> = { 1: 'Rascunho', 2: 'Pronto', 3: 'Enviado', 4: 'Cancelado' };
 const CLASSES_SITUACAO: Record<number, string> = {
@@ -20,7 +21,7 @@ const CLASSES_SITUACAO: Record<number, string> = {
 @Component({
   selector: 'app-pedidos-compra-lista',
   standalone: true,
-  imports: [RouterLink, FormsModule, DatePipe, ListagemPaginadaComponent, PageHeaderComponent],
+  imports: [RouterLink, FormsModule, DatePipe, ListagemPaginadaComponent, PageHeaderComponent, ThOrdenavelComponent],
   templateUrl: './pedidos-compra-lista.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
@@ -33,6 +34,7 @@ export class PedidosCompraListaComponent implements OnInit {
   paginaAtual = signal(1);
   totalPaginas = signal(1);
   tamanhoPagina = signal(10);
+  ordenacaoAtual = signal<Ordenacao | null>(null);
 
   filtro: PedidoCompraFiltro = {};
 
@@ -64,9 +66,16 @@ export class PedidosCompraListaComponent implements OnInit {
   }
 
   aplicarFiltros() { this.carregar(1); }
-  limparFiltros() { this.filtro = {}; this.carregar(1); }
+  limparFiltros() { this.filtro = {}; this.ordenacaoAtual.set(null); this.carregar(1); }
   aoMudarPagina(pagina: number) { this.carregar(pagina); }
   aoMudarTamanhoPagina(tamanho: number) { this.tamanhoPagina.set(tamanho); this.carregar(1); }
+
+  aoOrdenar(ordenacao: Ordenacao) {
+    this.ordenacaoAtual.set(ordenacao);
+    this.filtro.ordenarPor = ordenacao.campo;
+    this.filtro.direcao = ordenacao.direcao;
+    this.carregar(1);
+  }
 
   rotuloSituacao(situacao: number): string { return ROTULOS_SITUACAO[situacao] ?? '-'; }
   classeSituacao(situacao: number): string { return CLASSES_SITUACAO[situacao] ?? CLASSES_SITUACAO[1]; }

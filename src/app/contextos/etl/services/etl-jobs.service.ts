@@ -43,13 +43,27 @@ export class EtlJobsService {
     return this.api.post<{ total: number }>(`/v1/etl/pipeline/${entidade}/reprocessar-dead-letter?empresaId=${empresaId}`);
   }
 
-  saudeFilas(): Observable<Resultado<SaudeFila[]>> {
-    return this.api.get<SaudeFila[]>('/v1/etl/filas/saude');
+  saudeFilas(): Observable<Resultado<SaudeFilasResposta>> {
+    return this.api.get<SaudeFilasResposta>('/v1/etl/filas/saude');
   }
+}
+
+export interface SaudeFilasResposta {
+  filas: SaudeFila[];
+  travados: WorkerTravado[];
 }
 
 export interface SaudeFila {
   fila: string;
   pendentesNaoBuscados: number;
   idadeMaisAntigoMinutos: number;
+}
+
+// Lock de DisableConcurrentExecution preso além do prazo do JobDeadlineGuard (8min, sempre
+// libera sozinho) — diferente de idadeMaisAntigoMinutos em SaudeFila, que pode ficar alto por
+// horas em operação normal (Hangfire.PostgreSql não garante FIFO no fetch), isso aqui é sinal
+// real de travamento.
+export interface WorkerTravado {
+  job: string;
+  minutosPreso: number;
 }

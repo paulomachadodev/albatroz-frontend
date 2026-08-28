@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -9,13 +9,14 @@ import { Perfil } from '../../../perfis/models/perfil.model';
 import { ToastService } from '../../../../../core/feedback/toast.service';
 import { DrawerComponent } from '../../../../../shared/components/drawer/drawer.component';
 import { PageHeaderComponent } from '../../../../../shared/components/page-header/page-header.component';
+import { Ordenacao, ThOrdenavelComponent } from '../../../../../shared/components/th-ordenavel/th-ordenavel.component';
 
 type ModoDrawer = 'criar' | 'editar';
 
 @Component({
   selector: 'app-usuarios-lista',
   standalone: true,
-  imports: [RouterLink, FormsModule, DrawerComponent, PageHeaderComponent],
+  imports: [RouterLink, FormsModule, DrawerComponent, PageHeaderComponent, ThOrdenavelComponent],
   templateUrl: './usuarios-lista.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
@@ -23,6 +24,20 @@ export class UsuariosListaComponent implements OnInit {
   carregando = signal(true);
   itens = signal<Usuario[]>([]);
   perfisDisponiveis = signal<Perfil[]>([]);
+  ordenacaoAtual = signal<Ordenacao | null>(null);
+
+  // Lista pequena (não paginada) — ordenação é client-side, sem round-trip ao backend.
+  itensOrdenados = computed(() => {
+    const ordenacao = this.ordenacaoAtual();
+    const lista = [...this.itens()];
+    if (!ordenacao) return lista;
+    const dir = ordenacao.direcao === 'asc' ? 1 : -1;
+    return lista.sort((a, b) => {
+      const va = ordenacao.campo === 'email' ? a.email : ordenacao.campo === 'situacao' ? a.situacao : a.nome;
+      const vb = ordenacao.campo === 'email' ? b.email : ordenacao.campo === 'situacao' ? b.situacao : b.nome;
+      return va.localeCompare(vb) * dir;
+    });
+  });
 
   drawerAberto = signal(false);
   modoDrawer = signal<ModoDrawer>('criar');
@@ -59,6 +74,10 @@ export class UsuariosListaComponent implements OnInit {
         this.carregando.set(false);
       }
     });
+  }
+
+  aoOrdenar(ordenacao: Ordenacao) {
+    this.ordenacaoAtual.set(ordenacao);
   }
 
   abrirCriar() {

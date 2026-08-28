@@ -7,13 +7,14 @@ import { Perfil, Permissao } from '../../models/perfil.model';
 import { ToastService } from '../../../../../core/feedback/toast.service';
 import { DrawerComponent } from '../../../../../shared/components/drawer/drawer.component';
 import { PageHeaderComponent } from '../../../../../shared/components/page-header/page-header.component';
+import { Ordenacao, ThOrdenavelComponent } from '../../../../../shared/components/th-ordenavel/th-ordenavel.component';
 
 type ModoDrawer = 'criar' | 'editar';
 
 @Component({
   selector: 'app-perfis-lista',
   standalone: true,
-  imports: [RouterLink, FormsModule, DrawerComponent, PageHeaderComponent],
+  imports: [RouterLink, FormsModule, DrawerComponent, PageHeaderComponent, ThOrdenavelComponent],
   templateUrl: './perfis-lista.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
@@ -21,6 +22,20 @@ export class PerfisListaComponent implements OnInit {
   carregando = signal(true);
   itens = signal<Perfil[]>([]);
   catalogoPermissoes = signal<Permissao[]>([]);
+  ordenacaoAtual = signal<Ordenacao | null>(null);
+
+  // Lista pequena (não paginada) — ordenação é client-side, sem round-trip ao backend.
+  itensOrdenados = computed(() => {
+    const ordenacao = this.ordenacaoAtual();
+    const lista = [...this.itens()];
+    if (!ordenacao) return lista;
+    const dir = ordenacao.direcao === 'asc' ? 1 : -1;
+    return lista.sort((a, b) => {
+      const va = ordenacao.campo === 'descricao' ? (a.descricao ?? '') : a.nome;
+      const vb = ordenacao.campo === 'descricao' ? (b.descricao ?? '') : b.nome;
+      return va.localeCompare(vb) * dir;
+    });
+  });
 
   recursos = computed(() => Array.from(new Set(this.catalogoPermissoes().map(p => p.recurso))).sort());
 
@@ -57,6 +72,10 @@ export class PerfisListaComponent implements OnInit {
         this.carregando.set(false);
       }
     });
+  }
+
+  aoOrdenar(ordenacao: Ordenacao) {
+    this.ordenacaoAtual.set(ordenacao);
   }
 
   permissoesDoRecurso(recurso: string): Permissao[] {

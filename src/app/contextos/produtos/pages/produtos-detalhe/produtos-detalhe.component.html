@@ -266,6 +266,18 @@
                 }
               }
             </div>
+
+            <div class="flex items-center gap-2 pt-1">
+              <input type="url" [(ngModel)]="urlImagem" placeholder="Ou cole a URL de uma imagem e aperte Enter..."
+                     [disabled]="enviandoImagemPorUrl() || (produto()?.imagens?.length ?? 0) >= maximoImagens"
+                     (keydown.enter)="enviarPorUrl()"
+                     class="flex-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none disabled:opacity-50"/>
+              <button type="button" (click)="enviarPorUrl()"
+                      [disabled]="enviandoImagemPorUrl() || !urlImagem.trim() || (produto()?.imagens?.length ?? 0) >= maximoImagens"
+                      class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50 transition-all whitespace-nowrap">
+                {{ enviandoImagemPorUrl() ? 'Baixando...' : 'Adicionar por URL' }}
+              </button>
+            </div>
           </div>
 
           @if (carregandoEnriquecimento()) {

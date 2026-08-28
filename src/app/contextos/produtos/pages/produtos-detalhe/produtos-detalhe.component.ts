@@ -59,6 +59,8 @@ export class ProdutosDetalheComponent implements OnInit {
   enviandoImagem = signal(false);
   imagensConcluidas = signal(0);
   imagensTotal = signal(0);
+  urlImagem = '';
+  enviandoImagemPorUrl = signal(false);
   excluindoImagemId = signal<number | null>(null);
   imagemArrastadaId = signal<number | null>(null);
   salvandoOrdem = signal(false);
@@ -381,6 +383,33 @@ export class ProdutosDetalheComponent implements OnInit {
         this.enviandoImagem.set(false);
         this.toast.erroServidor(err, 'Não foi possível enviar a imagem.');
         this.recarregarSilencioso();
+      }
+    });
+  }
+
+  // Sempre vai pro próximo slot livre — sem seletor de posição, mesmo comportamento do
+  // drag-and-drop de arquivo. Backend baixa a URL, converte pra WebP e sobe pro R2.
+  enviarPorUrl() {
+    const url = this.urlImagem.trim();
+    if (!url) return;
+
+    const totalAtual = this.produto()?.imagens.length ?? 0;
+    if (totalAtual >= this.maximoImagens) {
+      this.toast.erro(`Produto já atingiu o máximo de ${this.maximoImagens} imagens.`);
+      return;
+    }
+
+    this.enviandoImagemPorUrl.set(true);
+    this.produtosService.uploadImagemPorUrl(this.idProduto, url).subscribe({
+      next: () => {
+        this.enviandoImagemPorUrl.set(false);
+        this.urlImagem = '';
+        this.toast.sucesso('Imagem enviada.');
+        this.recarregarSilencioso();
+      },
+      error: err => {
+        this.enviandoImagemPorUrl.set(false);
+        this.toast.erroServidor(err, 'Não foi possível baixar a imagem dessa URL.');
       }
     });
   }

@@ -70,6 +70,10 @@ export class ProdutosService {
     return this.api.post<ProdutoImagemUploadResposta>(`${this.endpoint}/${id}/imagens?indice=${indice}`, formData);
   }
 
+  uploadImagemPorUrl(id: number, url: string): Observable<Resultado<ProdutoImagemUploadResposta>> {
+    return this.api.post<ProdutoImagemUploadResposta>(`${this.endpoint}/${id}/imagens/url`, { url });
+  }
+
   obterEstoque(id: number, pagina: number, tamanho: number): Observable<Resultado<ProdutoEstoqueResposta>> {
     return this.api.get<ProdutoEstoqueResposta>(`${this.endpoint}/${id}/estoque`, { pagina, tamanho });
   }

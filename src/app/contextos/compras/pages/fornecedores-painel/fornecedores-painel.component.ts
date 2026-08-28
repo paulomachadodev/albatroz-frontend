@@ -1,4 +1,5 @@
 import { Component, OnInit, signal } from '@angular/core';
+import { LowerCasePipe, TitleCasePipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ComprasService, PainelFornecedorFiltro } from '../../services/compras.service';
@@ -11,7 +12,7 @@ import { Ordenacao, ThOrdenavelComponent } from '../../../../shared/components/t
 @Component({
   selector: 'app-fornecedores-painel',
   standalone: true,
-  imports: [RouterLink, FormsModule, ListagemPaginadaComponent, PageHeaderComponent, ThOrdenavelComponent],
+  imports: [RouterLink, FormsModule, LowerCasePipe, TitleCasePipe, ListagemPaginadaComponent, PageHeaderComponent, ThOrdenavelComponent],
   templateUrl: './fornecedores-painel.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })

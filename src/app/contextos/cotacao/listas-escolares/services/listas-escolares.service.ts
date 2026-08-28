@@ -13,6 +13,8 @@ export interface ListaEscolarFiltro {
   status?: string;
   de?: string;
   ate?: string;
+  ordenarPor?: string;
+  direcao?: string;
 }
 
 @Injectable({ providedIn: 'root' })

@@ -9,13 +9,14 @@ import { ListagemPaginadaComponent } from '../../../../../shared/components/list
 import { DrawerComponent } from '../../../../../shared/components/drawer/drawer.component';
 import { PageHeaderComponent } from '../../../../../shared/components/page-header/page-header.component';
 import { ToggleComponent } from '../../../../../shared/components/toggle/toggle.component';
+import { Ordenacao, ThOrdenavelComponent } from '../../../../../shared/components/th-ordenavel/th-ordenavel.component';
 
 type ModoDrawer = 'criar' | 'editar';
 
 @Component({
   selector: 'app-escolas-lista',
   standalone: true,
-  imports: [RouterLink, FormsModule, ListagemPaginadaComponent, DrawerComponent, PageHeaderComponent, ToggleComponent],
+  imports: [RouterLink, FormsModule, ListagemPaginadaComponent, DrawerComponent, PageHeaderComponent, ToggleComponent, ThOrdenavelComponent],
   templateUrl: './escolas-lista.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
@@ -26,6 +27,7 @@ export class EscolasListaComponent implements OnInit {
   paginaAtual = signal(1);
   totalPaginas = signal(1);
   tamanhoPagina = signal(10);
+  ordenacaoAtual = signal<Ordenacao | null>(null);
 
   filtroNome = '';
 
@@ -51,7 +53,10 @@ export class EscolasListaComponent implements OnInit {
 
   carregar(pagina = 1) {
     this.carregando.set(true);
-    this.escolasService.listar(pagina, this.tamanhoPagina(), this.filtroNome || undefined).subscribe({
+    this.escolasService.listar(
+      pagina, this.tamanhoPagina(), this.filtroNome || undefined,
+      this.ordenacaoAtual()?.campo, this.ordenacaoAtual()?.direcao
+    ).subscribe({
       next: res => {
         this.itens.set(res.dados?.dados ?? []);
         this.totalRegistros.set(res.dados?.totalRegistros ?? 0);
@@ -72,6 +77,12 @@ export class EscolasListaComponent implements OnInit {
 
   limparFiltros() {
     this.filtroNome = '';
+    this.ordenacaoAtual.set(null);
+    this.carregar(1);
+  }
+
+  aoOrdenar(ordenacao: Ordenacao) {
+    this.ordenacaoAtual.set(ordenacao);
     this.carregar(1);
   }
 

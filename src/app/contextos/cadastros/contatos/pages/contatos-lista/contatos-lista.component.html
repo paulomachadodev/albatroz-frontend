@@ -59,12 +59,18 @@
       </div>
 
       <ng-template #cabecalho>
-        <tr class="uppercase">
-          <th class="px-6 py-4">Nome</th>
-          <th class="px-6 py-4">Documento</th>
+        <tr>
+          <th class="px-6 py-4">
+            <app-th-ordenavel campo="nome" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Nome</app-th-ordenavel>
+          </th>
+          <th class="px-6 py-4">
+            <app-th-ordenavel campo="cpfCnpj" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Documento</app-th-ordenavel>
+          </th>
           <th class="px-6 py-4">Tipos</th>
           <th class="px-6 py-4 text-center">Origem</th>
-          <th class="px-6 py-4 text-center">Situação</th>
+          <th class="px-6 py-4 text-center">
+            <app-th-ordenavel campo="ativo" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Situação</app-th-ordenavel>
+          </th>
         </tr>
       </ng-template>
 

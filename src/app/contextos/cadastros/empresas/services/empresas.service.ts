@@ -11,8 +11,8 @@ export class EmpresasService {
 
   constructor(private api: ApiService) {}
 
-  listar(pagina: number, tamanho: number, nome?: string): Observable<Resultado<Paginacao<Empresa>>> {
-    return this.api.getPaginado<Empresa>(this.endpoint, { pagina, tamanho }, nome ? { nome } : undefined);
+  listar(pagina: number, tamanho: number, nome?: string, ordenarPor?: string, direcao?: string): Observable<Resultado<Paginacao<Empresa>>> {
+    return this.api.getPaginado<Empresa>(this.endpoint, { pagina, tamanho }, { nome, ordenarPor, direcao });
   }
 
   criar(requisicao: EmpresaCriarRequisicao): Observable<Resultado<Empresa>> {

@@ -71,7 +71,7 @@
 
       <ng-template #linha let-item>
         <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
-          <td class="px-6 py-4 text-sm font-bold text-slate-900 dark:text-slate-100">{{ item.fornecedor }}</td>
+          <td class="px-6 py-4 text-sm font-bold text-slate-900 dark:text-slate-100">{{ item.fornecedor | lowercase | titlecase }}</td>
           <td class="px-6 py-4 text-center">
             @if (item.atingiuMinimo) {
               <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400">

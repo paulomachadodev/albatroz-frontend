@@ -8,13 +8,14 @@ import { ListagemPaginadaComponent } from '../../../../shared/components/listage
 import { DrawerComponent } from '../../../../shared/components/drawer/drawer.component';
 import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 import { ToggleComponent } from '../../../../shared/components/toggle/toggle.component';
+import { Ordenacao, ThOrdenavelComponent } from '../../../../shared/components/th-ordenavel/th-ordenavel.component';
 
 type ModoDrawer = 'criar' | 'editar';
 
 @Component({
   selector: 'app-marcas-lista',
   standalone: true,
-  imports: [RouterLink, FormsModule, ListagemPaginadaComponent, DrawerComponent, PageHeaderComponent, ToggleComponent],
+  imports: [RouterLink, FormsModule, ListagemPaginadaComponent, DrawerComponent, PageHeaderComponent, ToggleComponent, ThOrdenavelComponent],
   templateUrl: './marcas-lista.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
@@ -25,6 +26,7 @@ export class MarcasListaComponent implements OnInit {
   paginaAtual = signal(1);
   totalPaginas = signal(1);
   tamanhoPagina = signal(10);
+  ordenacaoAtual = signal<Ordenacao | null>(null);
 
   filtroTexto = '';
 
@@ -48,7 +50,10 @@ export class MarcasListaComponent implements OnInit {
 
   carregar(pagina = 1) {
     this.carregando.set(true);
-    this.marcasService.listar({ pagina, tamanho: this.tamanhoPagina() }, { texto: this.filtroTexto || undefined }).subscribe({
+    this.marcasService.listar({ pagina, tamanho: this.tamanhoPagina() }, {
+      texto: this.filtroTexto || undefined,
+      ordenarPor: this.ordenacaoAtual()?.campo, direcao: this.ordenacaoAtual()?.direcao
+    }).subscribe({
       next: res => {
         this.itens.set(res.dados?.dados ?? []);
         this.totalRegistros.set(res.dados?.totalRegistros ?? 0);
@@ -69,6 +74,12 @@ export class MarcasListaComponent implements OnInit {
 
   limparFiltros() {
     this.filtroTexto = '';
+    this.ordenacaoAtual.set(null);
+    this.carregar(1);
+  }
+
+  aoOrdenar(ordenacao: Ordenacao) {
+    this.ordenacaoAtual.set(ordenacao);
     this.carregar(1);
   }
 

@@ -9,11 +9,12 @@ import { ToastService } from '../../../../../core/feedback/toast.service';
 import { ListagemPaginadaComponent } from '../../../../../shared/components/listagem-paginada/listagem-paginada.component';
 import { PageHeaderComponent } from '../../../../../shared/components/page-header/page-header.component';
 import { SelectBuscaComponent, OpcaoSelectBusca } from '../../../../../shared/components/select-busca/select-busca.component';
+import { Ordenacao, ThOrdenavelComponent } from '../../../../../shared/components/th-ordenavel/th-ordenavel.component';
 
 @Component({
   selector: 'app-listas-lista',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, ListagemPaginadaComponent, PageHeaderComponent, SelectBuscaComponent],
+  imports: [CommonModule, RouterLink, FormsModule, ListagemPaginadaComponent, PageHeaderComponent, SelectBuscaComponent, ThOrdenavelComponent],
   templateUrl: './listas-lista.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
@@ -24,6 +25,7 @@ export class ListasListaComponent implements OnInit {
   paginaAtual = signal(1);
   totalPaginas = signal(1);
   tamanhoPagina = signal(20);
+  ordenacaoAtual = signal<Ordenacao | null>(null);
 
   filtro: ListaEscolarFiltro = {};
   escolaFiltro = signal<OpcaoSelectBusca | null>(null);
@@ -80,6 +82,14 @@ export class ListasListaComponent implements OnInit {
     this.filtro = {};
     this.escolaFiltro.set(null);
     this.serieFiltro.set(null);
+    this.ordenacaoAtual.set(null);
+    this.carregar(1);
+  }
+
+  aoOrdenar(ordenacao: Ordenacao) {
+    this.ordenacaoAtual.set(ordenacao);
+    this.filtro.ordenarPor = ordenacao.campo;
+    this.filtro.direcao = ordenacao.direcao;
     this.carregar(1);
   }
 

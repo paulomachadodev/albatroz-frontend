@@ -35,6 +35,8 @@ export interface ContatoRequisicao {
 export interface ContatoFiltro {
   texto?: string;
   tipo?: TipoContato;
+  ordenarPor?: string;
+  direcao?: string;
 }
 
 export interface ContatoEndereco {

@@ -22,6 +22,8 @@ export interface MarcaRequisicao {
 
 export interface MarcaFiltro {
   texto?: string;
+  ordenarPor?: string;
+  direcao?: string;
 }
 
 @Injectable({ providedIn: 'root' })

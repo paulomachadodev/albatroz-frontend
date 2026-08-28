@@ -12,13 +12,14 @@ import { DrawerComponent } from '../../../../../shared/components/drawer/drawer.
 import { PageHeaderComponent } from '../../../../../shared/components/page-header/page-header.component';
 import { ToggleComponent } from '../../../../../shared/components/toggle/toggle.component';
 import { SelectBuscaComponent, OpcaoSelectBusca } from '../../../../../shared/components/select-busca/select-busca.component';
+import { Ordenacao, ThOrdenavelComponent } from '../../../../../shared/components/th-ordenavel/th-ordenavel.component';
 
 type ModoDrawer = 'criar' | 'editar';
 
 @Component({
   selector: 'app-series-lista',
   standalone: true,
-  imports: [RouterLink, FormsModule, ListagemPaginadaComponent, DrawerComponent, PageHeaderComponent, ToggleComponent, SelectBuscaComponent],
+  imports: [RouterLink, FormsModule, ListagemPaginadaComponent, DrawerComponent, PageHeaderComponent, ToggleComponent, SelectBuscaComponent, ThOrdenavelComponent],
   templateUrl: './series-lista.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
@@ -29,6 +30,7 @@ export class SeriesListaComponent implements OnInit {
   paginaAtual = signal(1);
   totalPaginas = signal(1);
   tamanhoPagina = signal(10);
+  ordenacaoAtual = signal<Ordenacao | null>(null);
 
   filtroNome = '';
   filtroEscola = signal<OpcaoSelectBusca | null>(null);
@@ -62,7 +64,8 @@ export class SeriesListaComponent implements OnInit {
     this.seriesService.listar(pagina, this.tamanhoPagina(), {
       nome: this.filtroNome || undefined,
       escolaId: this.filtroEscola()?.id,
-      ativo: this.filtroAtivo === '' ? undefined : this.filtroAtivo === 'true'
+      ativo: this.filtroAtivo === '' ? undefined : this.filtroAtivo === 'true',
+      ordenarPor: this.ordenacaoAtual()?.campo, direcao: this.ordenacaoAtual()?.direcao
     }).subscribe({
       next: res => {
         this.itens.set(res.dados?.dados ?? []);
@@ -86,6 +89,12 @@ export class SeriesListaComponent implements OnInit {
     this.filtroNome = '';
     this.filtroEscola.set(null);
     this.filtroAtivo = '';
+    this.ordenacaoAtual.set(null);
+    this.carregar(1);
+  }
+
+  aoOrdenar(ordenacao: Ordenacao) {
+    this.ordenacaoAtual.set(ordenacao);
     this.carregar(1);
   }
 

@@ -9,6 +9,8 @@ export interface SerieFiltro {
   nome?: string;
   escolaId?: number;
   ativo?: boolean;
+  ordenarPor?: string;
+  direcao?: string;
 }
 
 @Injectable({ providedIn: 'root' })

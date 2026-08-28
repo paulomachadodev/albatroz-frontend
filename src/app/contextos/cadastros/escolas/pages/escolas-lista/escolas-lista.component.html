@@ -50,11 +50,21 @@
 
       <ng-template #cabecalho>
         <tr>
-          <th class="px-6 py-4">Nome</th>
-          <th class="px-6 py-4">Bairro</th>
-          <th class="px-6 py-4">Cidade</th>
-          <th class="px-6 py-4 text-center">Parceira</th>
-          <th class="px-6 py-4 text-center">Ativo</th>
+          <th class="px-6 py-4">
+            <app-th-ordenavel campo="nome" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Nome</app-th-ordenavel>
+          </th>
+          <th class="px-6 py-4">
+            <app-th-ordenavel campo="bairro" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Bairro</app-th-ordenavel>
+          </th>
+          <th class="px-6 py-4">
+            <app-th-ordenavel campo="cidade" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Cidade</app-th-ordenavel>
+          </th>
+          <th class="px-6 py-4 text-center">
+            <app-th-ordenavel campo="parceira" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Parceira</app-th-ordenavel>
+          </th>
+          <th class="px-6 py-4 text-center">
+            <app-th-ordenavel campo="ativo" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Ativo</app-th-ordenavel>
+          </th>
         </tr>
       </ng-template>
 

@@ -8,6 +8,7 @@ import { ListagemPaginadaComponent } from '../../../../../shared/components/list
 import { DrawerComponent } from '../../../../../shared/components/drawer/drawer.component';
 import { PageHeaderComponent } from '../../../../../shared/components/page-header/page-header.component';
 import { ToggleComponent } from '../../../../../shared/components/toggle/toggle.component';
+import { Ordenacao, ThOrdenavelComponent } from '../../../../../shared/components/th-ordenavel/th-ordenavel.component';
 
 type ModoDrawer = 'criar' | 'editar';
 
@@ -16,7 +17,7 @@ const TODOS_TIPOS: TipoContato[] = ['Cliente', 'Fornecedor', 'Transportador', 'P
 @Component({
   selector: 'app-contatos-lista',
   standalone: true,
-  imports: [RouterLink, FormsModule, ListagemPaginadaComponent, DrawerComponent, PageHeaderComponent, ToggleComponent],
+  imports: [RouterLink, FormsModule, ListagemPaginadaComponent, DrawerComponent, PageHeaderComponent, ToggleComponent, ThOrdenavelComponent],
   templateUrl: './contatos-lista.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
@@ -29,6 +30,7 @@ export class ContatosListaComponent implements OnInit {
   paginaAtual = signal(1);
   totalPaginas = signal(1);
   tamanhoPagina = signal(10);
+  ordenacaoAtual = signal<Ordenacao | null>(null);
 
   filtroTexto = '';
   filtroTipo: TipoContato | '' = '';
@@ -65,7 +67,10 @@ export class ContatosListaComponent implements OnInit {
     this.carregando.set(true);
     this.contatosService.listar(
       { pagina, tamanho: this.tamanhoPagina() },
-      { texto: this.filtroTexto || undefined, tipo: this.filtroTipo || undefined }
+      {
+        texto: this.filtroTexto || undefined, tipo: this.filtroTipo || undefined,
+        ordenarPor: this.ordenacaoAtual()?.campo, direcao: this.ordenacaoAtual()?.direcao
+      }
     ).subscribe({
       next: res => {
         this.itens.set(res.dados?.dados ?? []);
@@ -88,6 +93,12 @@ export class ContatosListaComponent implements OnInit {
   limparFiltros() {
     this.filtroTexto = '';
     this.filtroTipo = '';
+    this.ordenacaoAtual.set(null);
+    this.carregar(1);
+  }
+
+  aoOrdenar(ordenacao: Ordenacao) {
+    this.ordenacaoAtual.set(ordenacao);
     this.carregar(1);
   }
 

@@ -12,8 +12,8 @@ export class EscolasService {
 
   constructor(private api: ApiService) {}
 
-  listar(pagina: number, tamanho: number, nome?: string): Observable<Resultado<Paginacao<Escola>>> {
-    return this.api.getPaginado<Escola>(this.endpoint, { pagina, tamanho }, nome ? { nome } : undefined);
+  listar(pagina: number, tamanho: number, nome?: string, ordenarPor?: string, direcao?: string): Observable<Resultado<Paginacao<Escola>>> {
+    return this.api.getPaginado<Escola>(this.endpoint, { pagina, tamanho }, { nome, ordenarPor, direcao });
   }
 
   criar(requisicao: EscolaCriarRequisicao): Observable<Resultado<Escola>> {

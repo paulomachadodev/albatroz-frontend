@@ -70,12 +70,22 @@
 
       <ng-template #cabecalho>
         <tr>
-          <th class="px-6 py-4">Escola</th>
-          <th class="px-6 py-4">Série</th>
-          <th class="px-6 py-4 text-center">Itens</th>
+          <th class="px-6 py-4">
+            <app-th-ordenavel campo="escolaNome" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Escola</app-th-ordenavel>
+          </th>
+          <th class="px-6 py-4">
+            <app-th-ordenavel campo="serie" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Série</app-th-ordenavel>
+          </th>
+          <th class="px-6 py-4 text-center">
+            <app-th-ordenavel campo="totalItens" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Itens</app-th-ordenavel>
+          </th>
           <th class="px-6 py-4 text-center">Liberados</th>
-          <th class="px-6 py-4 text-right">Total</th>
-          <th class="px-6 py-4 text-center">Status</th>
+          <th class="px-6 py-4 text-right">
+            <app-th-ordenavel campo="totalEstimado" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Total</app-th-ordenavel>
+          </th>
+          <th class="px-6 py-4 text-center">
+            <app-th-ordenavel campo="status" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Status</app-th-ordenavel>
+          </th>
         </tr>
       </ng-template>
 

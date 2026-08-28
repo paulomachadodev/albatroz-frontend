@@ -9,17 +9,41 @@ import { CartaoModalComponent } from '../cartao-modal/cartao-modal.component';
 import { CategoriaModalComponent } from '../categoria-modal/categoria-modal.component';
 import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
+import { Ordenacao, ThOrdenavelComponent } from '../../../../shared/components/th-ordenavel/th-ordenavel.component';
 
 @Component({
   selector: 'app-cartoes-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink, CartaoModalComponent, CategoriaModalComponent, PageHeaderComponent, SpinnerComponent],
+  imports: [CommonModule, RouterLink, CartaoModalComponent, CategoriaModalComponent, PageHeaderComponent, SpinnerComponent, ThOrdenavelComponent],
   templateUrl: './cartoes-dashboard.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
 export class CartoesDashboardComponent implements OnInit {
   cartoes   = signal<Cartao[]>([]);
   faturas   = signal<Fatura[]>([]);
+  ordenacaoFaturas = signal<Ordenacao | null>(null);
+
+  // Lista pequena (não paginada) — ordenação é client-side, sem round-trip ao backend.
+  faturasOrdenadas = computed(() => {
+    const ordenacao = this.ordenacaoFaturas();
+    const lista = [...this.faturas()];
+    if (!ordenacao) return lista;
+    const dir = ordenacao.direcao === 'asc' ? 1 : -1;
+    return lista.sort((a, b) => {
+      switch (ordenacao.campo) {
+        case 'cartao':      return (a.cartaoApelido ?? '').localeCompare(b.cartaoApelido ?? '') * dir;
+        case 'referencia':  return (a.anoReferencia * 12 + a.mesReferencia - (b.anoReferencia * 12 + b.mesReferencia)) * dir;
+        case 'vencimento':  return (new Date(a.dataVencimento).getTime() - new Date(b.dataVencimento).getTime()) * dir;
+        case 'valor':       return (a.valorTotal - b.valorTotal) * dir;
+        case 'status':      return (a.status - b.status) * dir;
+        default:            return 0;
+      }
+    });
+  });
+
+  aoOrdenarFaturas(ordenacao: Ordenacao) {
+    this.ordenacaoFaturas.set(ordenacao);
+  }
   carregando = signal(true);
 
   mostrarModalCartao    = signal(false);

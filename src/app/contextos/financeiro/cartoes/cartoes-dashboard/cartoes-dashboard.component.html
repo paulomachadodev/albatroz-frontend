@@ -173,16 +173,26 @@
             <table class="w-full text-left border-collapse text-sm">
               <thead class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 text-xs uppercase tracking-wider font-bold">
                 <tr>
-                  <th class="px-6 py-4">Cartão</th>
-                  <th class="px-6 py-4">Referência</th>
-                  <th class="px-6 py-4">Vencimento</th>
-                  <th class="px-6 py-4 text-right">Valor</th>
-                  <th class="px-6 py-4 text-center">Status</th>
+                  <th class="px-6 py-4">
+                    <app-th-ordenavel campo="cartao" [ordenacaoAtual]="ordenacaoFaturas()" (ordenar)="aoOrdenarFaturas($event)">Cartão</app-th-ordenavel>
+                  </th>
+                  <th class="px-6 py-4">
+                    <app-th-ordenavel campo="referencia" [ordenacaoAtual]="ordenacaoFaturas()" (ordenar)="aoOrdenarFaturas($event)">Referência</app-th-ordenavel>
+                  </th>
+                  <th class="px-6 py-4">
+                    <app-th-ordenavel campo="vencimento" [ordenacaoAtual]="ordenacaoFaturas()" (ordenar)="aoOrdenarFaturas($event)">Vencimento</app-th-ordenavel>
+                  </th>
+                  <th class="px-6 py-4 text-right">
+                    <app-th-ordenavel campo="valor" [ordenacaoAtual]="ordenacaoFaturas()" (ordenar)="aoOrdenarFaturas($event)">Valor</app-th-ordenavel>
+                  </th>
+                  <th class="px-6 py-4 text-center">
+                    <app-th-ordenavel campo="status" [ordenacaoAtual]="ordenacaoFaturas()" (ordenar)="aoOrdenarFaturas($event)">Status</app-th-ordenavel>
+                  </th>
                   <th class="px-6 py-4 text-center">Ações</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-                @for (f of faturas(); track f.id) {
+                @for (f of faturasOrdenadas(); track f.id) {
                   <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
                     <td class="px-6 py-4 font-bold text-slate-800 dark:text-slate-100">{{ f.cartaoApelido ?? '—' }}</td>
                     <td class="px-6 py-4 text-slate-600 dark:text-slate-400">{{ formatarMes(f.mesReferencia, f.anoReferencia) }}</td>

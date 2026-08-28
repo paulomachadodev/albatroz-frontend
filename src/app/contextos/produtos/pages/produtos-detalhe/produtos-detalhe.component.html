@@ -541,12 +541,14 @@
                   <th class="px-6 py-4">Fornecedor</th>
                   <th class="px-6 py-4">Código no fornecedor</th>
                   <th class="px-6 py-4">Principal</th>
+                  <th class="px-6 py-4">Última compra</th>
+                  <th class="px-6 py-4 text-right">Custo na última compra</th>
                   <th class="px-6 py-4 text-right">Ações</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
                 @if (produto()!.fornecedores.length === 0) {
-                  <tr><td colspan="4" class="px-6 py-8 text-center text-sm text-slate-500">Nenhum fornecedor vinculado.</td></tr>
+                  <tr><td colspan="6" class="px-6 py-8 text-center text-sm text-slate-500">Nenhum fornecedor vinculado.</td></tr>
                 } @else {
                   @for (fornecedor of produto()!.fornecedores; track fornecedor.id) {
                     <tr>
@@ -562,6 +564,12 @@
                         } @else {
                           <span class="text-xs text-slate-400">-</span>
                         }
+                      </td>
+                      <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
+                        {{ fornecedor.dataUltimaCompra ? (fornecedor.dataUltimaCompra | date: 'dd/MM/yy') : '-' }}
+                      </td>
+                      <td class="px-6 py-4 text-right text-sm text-slate-600 dark:text-slate-400">
+                        {{ fornecedor.precoCustoUltimaCompra != null ? formatarReais(fornecedor.precoCustoUltimaCompra) : '-' }}
                       </td>
                       <td class="px-6 py-4 text-right">
                         @if (modoEdicao()) {

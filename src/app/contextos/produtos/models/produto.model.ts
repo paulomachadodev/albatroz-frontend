@@ -45,6 +45,8 @@ export interface ProdutoFornecedor {
   nomeFornecedor: string;
   codigoNoFornecedor?: string;
   principal: boolean;
+  dataUltimaCompra?: string;
+  precoCustoUltimaCompra?: number;
 }
 
 export interface ProdutoPrecoPorLista {

@@ -116,6 +116,26 @@
               <option [ngValue]="false">Só sem imagem</option>
             </select>
           </div>
+          <div>
+            <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Marca</label>
+            <app-select-busca
+              [valorSelecionado]="marcaFiltro()"
+              placeholder="Buscar marca..."
+              [buscar]="buscarMarcas"
+              (selecionado)="marcaFiltro.set($event)"></app-select-busca>
+          </div>
+          <div>
+            <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Fornecedor</label>
+            <app-select-busca
+              [valorSelecionado]="fornecedorFiltro()"
+              placeholder="Buscar fornecedor..."
+              [buscar]="buscarFornecedores"
+              (selecionado)="fornecedorFiltro.set($event)"></app-select-busca>
+          </div>
+          <div class="flex items-end gap-4 sm:col-span-2">
+            <app-toggle label="Com estoque" [valor]="filtro.comEstoque === true" (valorMudou)="aoAlternarComEstoque($event)"></app-toggle>
+            <app-toggle label="Sem estoque" [valor]="filtro.comEstoque === false" (valorMudou)="aoAlternarSemEstoque($event)"></app-toggle>
+          </div>
         </div>
         <div class="flex justify-end gap-2">
           <button (click)="aplicarFiltros()"

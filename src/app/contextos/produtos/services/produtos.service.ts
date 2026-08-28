@@ -25,8 +25,10 @@ export interface ProdutoFiltro {
   situacao?: string;
   temImagem?: boolean;
   tinyIdFornecedor?: number;
+  idFornecedor?: number;
   idCategoria?: number;
   idMarca?: number;
+  comEstoque?: boolean;
   ordenarPor?: string;
   direcao?: 'asc' | 'desc';
 }

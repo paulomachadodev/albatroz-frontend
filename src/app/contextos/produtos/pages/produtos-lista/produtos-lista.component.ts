@@ -14,6 +14,10 @@ import { Ordenacao, ThOrdenavelComponent } from '../../../../shared/components/t
 import { MenuDropdownComponent } from '../../../../shared/components/menu-dropdown/menu-dropdown.component';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 import { BtnIconeComponent } from '../../../../shared/components/btn-icone/btn-icone.component';
+import { ToggleComponent } from '../../../../shared/components/toggle/toggle.component';
+import { SelectBuscaComponent, OpcaoSelectBusca } from '../../../../shared/components/select-busca/select-busca.component';
+import { MarcasService } from '../../services/marcas.service';
+import { ContatosService } from '../../../cadastros/contatos/services/contatos.service';
 
 interface LinhaPlanilhaMassa {
   Codigo: string;
@@ -31,7 +35,7 @@ interface LinhaPlanilhaFornecedores {
 @Component({
   selector: 'app-produtos-lista',
   standalone: true,
-  imports: [RouterLink, FormsModule, ListagemPaginadaComponent, PageHeaderComponent, ThOrdenavelComponent, MenuDropdownComponent, ModalComponent, BtnIconeComponent],
+  imports: [RouterLink, FormsModule, ListagemPaginadaComponent, PageHeaderComponent, ThOrdenavelComponent, MenuDropdownComponent, ModalComponent, BtnIconeComponent, ToggleComponent, SelectBuscaComponent],
   templateUrl: './produtos-lista.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
@@ -45,6 +49,11 @@ export class ProdutosListaComponent implements OnInit {
   ordenacaoAtual = signal<Ordenacao | null>(null);
 
   filtro: ProdutoFiltro = {};
+  marcaFiltro = signal<OpcaoSelectBusca | null>(null);
+  fornecedorFiltro = signal<OpcaoSelectBusca | null>(null);
+
+  buscarMarcas = (termo: string) => this.marcasService.buscar(termo);
+  buscarFornecedores = (termo: string) => this.contatosService.buscar(termo, 'Fornecedor');
 
   selecionados = new Map<number, ProdutoResumo>();
   qtdSelecionados = signal(0);
@@ -64,6 +73,8 @@ export class ProdutosListaComponent implements OnInit {
 
   constructor(
     private produtosService: ProdutosService,
+    private marcasService: MarcasService,
+    private contatosService: ContatosService,
     private toast: ToastService,
     private confirm: ConfirmService,
     private router: Router
@@ -112,13 +123,26 @@ export class ProdutosListaComponent implements OnInit {
   }
 
   aplicarFiltros() {
+    this.filtro.idMarca = this.marcaFiltro()?.id;
+    this.filtro.idFornecedor = this.fornecedorFiltro()?.id;
     this.carregar(1);
   }
 
   limparFiltros() {
     this.filtro = {};
+    this.marcaFiltro.set(null);
+    this.fornecedorFiltro.set(null);
     this.ordenacaoAtual.set(null);
     this.carregar(1);
+  }
+
+  // Toggles mutuamente exclusivos — ligar um desliga o outro (com estoque / sem estoque / todos).
+  aoAlternarComEstoque(valor: boolean) {
+    this.filtro.comEstoque = valor ? true : undefined;
+  }
+
+  aoAlternarSemEstoque(valor: boolean) {
+    this.filtro.comEstoque = valor ? false : undefined;
   }
 
   aoOrdenar(ordenacao: Ordenacao) {

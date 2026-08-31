@@ -8,15 +8,21 @@ import { PageHeaderComponent } from '../../../../shared/components/page-header/p
 import { ListagemPaginadaComponent } from '../../../../shared/components/listagem-paginada/listagem-paginada.component';
 import { BtnIconeComponent } from '../../../../shared/components/btn-icone/btn-icone.component';
 import { OverlayProgressoComponent } from '../../../../shared/components/overlay-progresso/overlay-progresso.component';
+import { SelectBuscaComponent, OpcaoSelectBusca } from '../../../../shared/components/select-busca/select-busca.component';
+import { ContatosService } from '../../../cadastros/contatos/services/contatos.service';
 
 @Component({
   selector: 'app-produtos-importar-imagens',
   standalone: true,
-  imports: [RouterLink, PageHeaderComponent, ListagemPaginadaComponent, BtnIconeComponent, OverlayProgressoComponent],
+  imports: [RouterLink, PageHeaderComponent, ListagemPaginadaComponent, BtnIconeComponent, OverlayProgressoComponent, SelectBuscaComponent],
   templateUrl: './produtos-importar-imagens.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
 export class ProdutosImportarImagensComponent {
+  modo = signal<'codigo_produto' | 'codigo_fornecedor'>('codigo_produto');
+  fornecedorFiltro = signal<OpcaoSelectBusca | null>(null);
+  buscarFornecedores = (termo: string) => this.contatosService.buscar(termo, 'Fornecedor');
+
   arquivos = signal<File[]>([]);
   arrastandoSobreZona = signal(false);
   processandoPreview = signal(false);
@@ -48,12 +54,30 @@ export class ProdutosImportarImagensComponent {
 
   constructor(
     private produtosService: ProdutosService,
+    private contatosService: ContatosService,
     private toast: ToastService,
     private router: Router
   ) {}
 
   voltar() {
     this.router.navigate(['/produtos']);
+  }
+
+  aoMudarModo(modo: 'codigo_produto' | 'codigo_fornecedor') {
+    this.modo.set(modo);
+    if (modo === 'codigo_produto') this.fornecedorFiltro.set(null);
+    this.reprocessarSeHouverArquivos();
+  }
+
+  aoSelecionarFornecedor(opcao: OpcaoSelectBusca | null) {
+    this.fornecedorFiltro.set(opcao);
+    this.reprocessarSeHouverArquivos();
+  }
+
+  private reprocessarSeHouverArquivos() {
+    if (this.arquivos().length === 0) return;
+    if (this.modo() === 'codigo_fornecedor' && !this.fornecedorFiltro()) return;
+    this.gerarPreview();
   }
 
   aoSelecionarArquivos(event: Event) {
@@ -118,37 +142,95 @@ export class ProdutosImportarImagensComponent {
     this.paginaAtual.set(1);
   }
 
+  // Cloudflare (proxy da api-erp) rejeita upload com mais de 100MB antes de chegar no
+  // servidor, mesmo o backend aceitando até 200MB — lote grande (ex: 107 imagens) estourava
+  // isso. Divide em sub-lotes por tamanho acumulado, bem abaixo do limite, e envia em
+  // sequência, juntando os resultados como se fosse uma request só.
+  private static readonly TAMANHO_MAXIMO_LOTE_BYTES = 60 * 1024 * 1024; // 60MB, margem folgada sob os 100MB do Cloudflare
+
+  private dividirEmLotes(arquivos: File[]): File[][] {
+    const lotes: File[][] = [];
+    let loteAtual: File[] = [];
+    let tamanhoAtual = 0;
+
+    for (const arquivo of arquivos) {
+      if (loteAtual.length > 0 && tamanhoAtual + arquivo.size > ProdutosImportarImagensComponent.TAMANHO_MAXIMO_LOTE_BYTES) {
+        lotes.push(loteAtual);
+        loteAtual = [];
+        tamanhoAtual = 0;
+      }
+      loteAtual.push(arquivo);
+      tamanhoAtual += arquivo.size;
+    }
+    if (loteAtual.length > 0) lotes.push(loteAtual);
+    return lotes;
+  }
+
+  private processandoLote = signal<{ atual: number; total: number } | null>(null);
+  readonly progressoLotes = this.processandoLote.asReadonly();
+
+  private executarEmLotes(confirmar: boolean, aoConcluir: (res: ProdutoImportarImagensResposta) => void, aoErro: (err: unknown) => void) {
+    const lotes = this.dividirEmLotes(this.arquivos());
+    const acumulado: ProdutoImportarImagensResposta = { confirmado: confirmar, correspondidos: [], semCorrespondencia: [] };
+
+    const proximo = (indice: number) => {
+      if (indice >= lotes.length) {
+        this.processandoLote.set(null);
+        aoConcluir(acumulado);
+        return;
+      }
+
+      this.processandoLote.set({ atual: indice + 1, total: lotes.length });
+      this.produtosService.importarImagensLote(lotes[indice], confirmar, this.modo(), this.fornecedorFiltro()?.id).subscribe({
+        next: res => {
+          if (res.dados) {
+            acumulado.correspondidos.push(...res.dados.correspondidos);
+            acumulado.semCorrespondencia.push(...res.dados.semCorrespondencia);
+          }
+          proximo(indice + 1);
+        },
+        error: err => {
+          this.processandoLote.set(null);
+          aoErro(err);
+        }
+      });
+    };
+
+    proximo(0);
+  }
+
   private gerarPreview() {
     if (this.arquivos().length === 0) return;
+    if (this.modo() === 'codigo_fornecedor' && !this.fornecedorFiltro()) {
+      this.toast.erro('Selecione o fornecedor pra comparar pelo código dele.');
+      return;
+    }
 
     this.processandoPreview.set(true);
-    this.produtosService.importarImagensLote(this.arquivos(), false).subscribe({
-      next: res => {
-        this.resultadoPreview.set(res.dados ?? null);
-        this.processandoPreview.set(false);
-      },
-      error: err => {
-        this.processandoPreview.set(false);
-        this.toast.erroServidor(err, 'Não foi possível processar os arquivos.');
-      }
-    });
+    this.executarEmLotes(
+      false,
+      res => { this.resultadoPreview.set(res); this.processandoPreview.set(false); },
+      err => { this.processandoPreview.set(false); this.toast.erroServidor(err, 'Não foi possível processar os arquivos.'); }
+    );
   }
 
   confirmarImportacao() {
     if (this.arquivos().length === 0) return;
+    if (this.modo() === 'codigo_fornecedor' && !this.fornecedorFiltro()) {
+      this.toast.erro('Selecione o fornecedor pra comparar pelo código dele.');
+      return;
+    }
 
     this.confirmandoImportacao.set(true);
-    this.produtosService.importarImagensLote(this.arquivos(), true).subscribe({
-      next: res => {
-        this.resultadoFinal.set(res.dados ?? null);
+    this.executarEmLotes(
+      true,
+      res => {
+        this.resultadoFinal.set(res);
         this.confirmandoImportacao.set(false);
         this.paginaAtual.set(1);
         this.toast.sucesso('Importação concluída.');
       },
-      error: err => {
-        this.confirmandoImportacao.set(false);
-        this.toast.erroServidor(err, 'Não foi possível confirmar a importação.');
-      }
-    });
+      err => { this.confirmandoImportacao.set(false); this.toast.erroServidor(err, 'Não foi possível confirmar a importação.'); }
+    );
   }
 }

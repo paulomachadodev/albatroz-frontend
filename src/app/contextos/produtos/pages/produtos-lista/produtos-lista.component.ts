@@ -14,7 +14,6 @@ import { Ordenacao, ThOrdenavelComponent } from '../../../../shared/components/t
 import { MenuDropdownComponent } from '../../../../shared/components/menu-dropdown/menu-dropdown.component';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 import { BtnIconeComponent } from '../../../../shared/components/btn-icone/btn-icone.component';
-import { ToggleComponent } from '../../../../shared/components/toggle/toggle.component';
 import { SelectBuscaComponent, OpcaoSelectBusca } from '../../../../shared/components/select-busca/select-busca.component';
 import { MarcasService } from '../../services/marcas.service';
 import { ContatosService } from '../../../cadastros/contatos/services/contatos.service';
@@ -35,7 +34,7 @@ interface LinhaPlanilhaFornecedores {
 @Component({
   selector: 'app-produtos-lista',
   standalone: true,
-  imports: [RouterLink, FormsModule, ListagemPaginadaComponent, PageHeaderComponent, ThOrdenavelComponent, MenuDropdownComponent, ModalComponent, BtnIconeComponent, ToggleComponent, SelectBuscaComponent],
+  imports: [RouterLink, FormsModule, ListagemPaginadaComponent, PageHeaderComponent, ThOrdenavelComponent, MenuDropdownComponent, ModalComponent, BtnIconeComponent, SelectBuscaComponent],
   templateUrl: './produtos-lista.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
@@ -138,15 +137,6 @@ export class ProdutosListaComponent implements OnInit {
     this.fornecedorFiltro.set(null);
     this.ordenacaoAtual.set(null);
     this.carregar(1);
-  }
-
-  // Toggles mutuamente exclusivos — ligar um desliga o outro (com estoque / sem estoque / todos).
-  aoAlternarComEstoque(valor: boolean) {
-    this.filtro.comEstoque = valor ? true : undefined;
-  }
-
-  aoAlternarSemEstoque(valor: boolean) {
-    this.filtro.comEstoque = valor ? false : undefined;
   }
 
   aoOrdenar(ordenacao: Ordenacao) {

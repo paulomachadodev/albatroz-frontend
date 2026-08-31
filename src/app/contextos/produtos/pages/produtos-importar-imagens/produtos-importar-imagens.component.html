@@ -13,6 +13,30 @@
 
     <app-page-header titulo="Importar Imagens em Lote" subtitulo="Envie arquivos nomeados como {código}_{índice}.jpg — o sistema casa automaticamente com o produto."></app-page-header>
 
+    <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-3">
+      <p class="text-sm font-bold text-slate-900 dark:text-slate-100">Comparar o código do arquivo com</p>
+      <div class="flex gap-2">
+        <button type="button" (click)="aoMudarModo('codigo_produto')"
+                class="flex-1 py-2 rounded-lg border text-sm font-semibold transition-colors"
+                [class]="modo() === 'codigo_produto' ? 'border-primary bg-primary/10 text-primary' : 'border-slate-300 dark:border-slate-700 text-slate-500 dark:text-slate-400'">
+          Código do produto (ERP)
+        </button>
+        <button type="button" (click)="aoMudarModo('codigo_fornecedor')"
+                class="flex-1 py-2 rounded-lg border text-sm font-semibold transition-colors"
+                [class]="modo() === 'codigo_fornecedor' ? 'border-primary bg-primary/10 text-primary' : 'border-slate-300 dark:border-slate-700 text-slate-500 dark:text-slate-400'">
+          Código no fornecedor
+        </button>
+      </div>
+
+      @if (modo() === 'codigo_fornecedor') {
+        <div class="max-w-sm">
+          <app-select-busca placeholder="Selecione o fornecedor..." [buscar]="buscarFornecedores"
+            [valorSelecionado]="fornecedorFiltro()"
+            (selecionado)="aoSelecionarFornecedor($event)"></app-select-busca>
+        </div>
+      }
+    </div>
+
     <div (drop)="aoSoltar($event)" (dragover)="aoArrastarSobre($event)" (dragleave)="aoSairDaZona()"
          class="border-2 border-dashed rounded-xl p-8 text-center transition-colors"
          [class]="arrastandoSobreZona() ? 'border-primary bg-primary/5' : 'border-slate-300 dark:border-slate-700'">

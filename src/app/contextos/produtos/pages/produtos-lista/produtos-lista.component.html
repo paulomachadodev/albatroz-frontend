@@ -132,9 +132,14 @@
               [buscar]="buscarFornecedores"
               (selecionado)="fornecedorFiltro.set($event)"></app-select-busca>
           </div>
-          <div class="flex items-end gap-4 sm:col-span-2">
-            <app-toggle label="Com estoque" [valor]="filtro.comEstoque === true" (valorMudou)="aoAlternarComEstoque($event)"></app-toggle>
-            <app-toggle label="Sem estoque" [valor]="filtro.comEstoque === false" (valorMudou)="aoAlternarSemEstoque($event)"></app-toggle>
+          <div>
+            <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Estoque</label>
+            <select [(ngModel)]="filtro.comEstoque"
+                    class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none">
+              <option [ngValue]="undefined">Todos</option>
+              <option [ngValue]="true">Com estoque</option>
+              <option [ngValue]="false">Sem estoque</option>
+            </select>
           </div>
         </div>
         <div class="flex justify-end gap-2">

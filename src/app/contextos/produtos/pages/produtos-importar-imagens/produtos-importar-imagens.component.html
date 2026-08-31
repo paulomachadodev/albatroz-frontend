@@ -87,8 +87,7 @@
                 }
               </td>
               <td class="px-6 py-4 text-right">
-                <app-btn-icone icone="close" titulo="Não enviar esse arquivo" variante="perigo"
-                               (clicar)="excluirDoLote(item)"></app-btn-icone>
+                <button (click)="excluirDoLote(item)" class="text-xs font-bold text-primary hover:underline">Excluir</button>
               </td>
             </tr>
           </ng-template>

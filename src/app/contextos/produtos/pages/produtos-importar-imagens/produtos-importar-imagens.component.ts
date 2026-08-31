@@ -4,15 +4,15 @@ import { Router, RouterLink } from '@angular/router';
 import { ProdutosService } from '../../services/produtos.service';
 import { ProdutoImportarImagensCorrespondido, ProdutoImportarImagensResposta } from '../../dtos/produto-resposta.dto';
 import { ToastService } from '../../../../core/feedback/toast.service';
+import { ConfirmService } from '../../../../core/feedback/confirm.service';
 import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 import { ListagemPaginadaComponent } from '../../../../shared/components/listagem-paginada/listagem-paginada.component';
-import { BtnIconeComponent } from '../../../../shared/components/btn-icone/btn-icone.component';
 import { OverlayProgressoComponent } from '../../../../shared/components/overlay-progresso/overlay-progresso.component';
 
 @Component({
   selector: 'app-produtos-importar-imagens',
   standalone: true,
-  imports: [RouterLink, PageHeaderComponent, ListagemPaginadaComponent, BtnIconeComponent, OverlayProgressoComponent],
+  imports: [RouterLink, PageHeaderComponent, ListagemPaginadaComponent, OverlayProgressoComponent],
   templateUrl: './produtos-importar-imagens.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
@@ -51,6 +51,7 @@ export class ProdutosImportarImagensComponent {
   constructor(
     private produtosService: ProdutosService,
     private toast: ToastService,
+    private confirm: ConfirmService,
     private router: Router
   ) {}
 
@@ -107,13 +108,29 @@ export class ProdutosImportarImagensComponent {
     this.paginaAtual.set(1);
   }
 
-  excluirDoLote(item: ProdutoImportarImagensCorrespondido) {
+  // Remoção é só local (o preview já sabe o que casou com o quê) — nunca reprocessa o lote
+  // inteiro no servidor de novo só pra tirar 1 arquivo, isso é que deixava lento.
+  async excluirDoLote(item: ProdutoImportarImagensCorrespondido) {
+    const confirmado = await this.confirm.confirmar(
+      `Excluir "${item.nomeArquivo}" do lote?`,
+      'Esse arquivo não será enviado nessa importação.',
+      { textoConfirmar: 'Excluir' }
+    );
+    if (!confirmado) return;
+
     this.arquivos.set(this.arquivos().filter(a => a.name !== item.nomeArquivo));
     if (this.arquivos().length === 0) {
       this.limpar();
       return;
     }
-    this.gerarPreview();
+
+    const atual = this.resultadoPreview();
+    if (atual) {
+      this.resultadoPreview.set({
+        ...atual,
+        correspondidos: atual.correspondidos.filter(c => c.nomeArquivo !== item.nomeArquivo)
+      });
+    }
   }
 
   aoMudarPagina(pagina: number) {

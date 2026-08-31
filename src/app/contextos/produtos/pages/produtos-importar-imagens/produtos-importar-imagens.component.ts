@@ -142,11 +142,15 @@ export class ProdutosImportarImagensComponent {
     this.paginaAtual.set(1);
   }
 
-  // Cloudflare (proxy da api-erp) rejeita upload com mais de 100MB antes de chegar no
-  // servidor, mesmo o backend aceitando até 200MB — lote grande (ex: 107 imagens) estourava
-  // isso. Divide em sub-lotes por tamanho acumulado, bem abaixo do limite, e envia em
-  // sequência, juntando os resultados como se fosse uma request só.
-  private static readonly TAMANHO_MAXIMO_LOTE_BYTES = 60 * 1024 * 1024; // 60MB, margem folgada sob os 100MB do Cloudflare
+  // Cloudflare (proxy da api-erp) tem dois limites que batem aqui: 100MB de corpo de
+  // requisição E ~100s de timeout de gateway por requisição. O primeiro já tinha sido
+  // resolvido limitando por tamanho, mas um lote com muitos arquivos pequenos (o cap de
+  // bytes nunca estoura) ainda demorava demais na CONFIRMAÇÃO — cada arquivo passa por
+  // conversão WebP + upload R2 + escrita no banco, em sequência, e isso sozinho já passa
+  // dos 100s antes do corpo se aproximar de 100MB. Por isso limita também por quantidade
+  // de arquivos, não só por bytes.
+  private static readonly TAMANHO_MAXIMO_LOTE_BYTES = 40 * 1024 * 1024; // 40MB
+  private static readonly MAXIMO_ARQUIVOS_POR_LOTE = 15;
 
   private dividirEmLotes(arquivos: File[]): File[][] {
     const lotes: File[][] = [];
@@ -154,7 +158,11 @@ export class ProdutosImportarImagensComponent {
     let tamanhoAtual = 0;
 
     for (const arquivo of arquivos) {
-      if (loteAtual.length > 0 && tamanhoAtual + arquivo.size > ProdutosImportarImagensComponent.TAMANHO_MAXIMO_LOTE_BYTES) {
+      const estourouLimite = loteAtual.length > 0 && (
+        tamanhoAtual + arquivo.size > ProdutosImportarImagensComponent.TAMANHO_MAXIMO_LOTE_BYTES ||
+        loteAtual.length >= ProdutosImportarImagensComponent.MAXIMO_ARQUIVOS_POR_LOTE
+      );
+      if (estourouLimite) {
         lotes.push(loteAtual);
         loteAtual = [];
         tamanhoAtual = 0;

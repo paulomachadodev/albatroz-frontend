@@ -9,11 +9,18 @@ import { PageHeaderComponent } from '../../../../shared/components/page-header/p
 import { ListagemPaginadaComponent } from '../../../../shared/components/listagem-paginada/listagem-paginada.component';
 import { OverlayProgressoComponent } from '../../../../shared/components/overlay-progresso/overlay-progresso.component';
 import { ToggleComponent } from '../../../../shared/components/toggle/toggle.component';
+import { DrawerComponent } from '../../../../shared/components/drawer/drawer.component';
+
+interface ResumoImportacao {
+  sucesso: number;
+  ignoradas: ProdutoImportarImagensCorrespondido[];
+  semCorrespondencia: string[];
+}
 
 @Component({
   selector: 'app-produtos-importar-imagens',
   standalone: true,
-  imports: [RouterLink, PageHeaderComponent, ListagemPaginadaComponent, OverlayProgressoComponent, ToggleComponent],
+  imports: [RouterLink, PageHeaderComponent, ListagemPaginadaComponent, OverlayProgressoComponent, ToggleComponent, DrawerComponent],
   templateUrl: './produtos-importar-imagens.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
@@ -26,27 +33,24 @@ export class ProdutosImportarImagensComponent {
   processandoPreview = signal(false);
   confirmandoImportacao = signal(false);
   resultadoPreview = signal<ProdutoImportarImagensResposta | null>(null);
-  resultadoFinal = signal<ProdutoImportarImagensResposta | null>(null);
+
+  // Resumo fica visível depois de confirmar, mesmo com a tela limpa pra receber o próximo
+  // lote — só reseta quando um novo arquivo é selecionado (definirArquivos).
+  resumoImportacao = signal<ResumoImportacao | null>(null);
+  drawerIgnoradasAberto = signal(false);
+  drawerSemCorrespondenciaAberto = signal(false);
 
   paginaAtual = signal(1);
   tamanhoPagina = signal(10);
 
   correspondidosPagina = computed(() => {
-    const resultado = this.resultadoFinal() ?? this.resultadoPreview();
-    const todos = resultado?.correspondidos ?? [];
+    const todos = this.resultadoPreview()?.correspondidos ?? [];
     const inicio = (this.paginaAtual() - 1) * this.tamanhoPagina();
     return todos.slice(inicio, inicio + this.tamanhoPagina());
   });
 
-  importadosComSucesso = computed(() =>
-    (this.resultadoFinal()?.correspondidos ?? []).filter(i => !i.erro).length);
-
-  ignorados = computed(() =>
-    (this.resultadoFinal()?.correspondidos ?? []).filter(i => !!i.erro));
-
   totalPaginas = computed(() => {
-    const resultado = this.resultadoFinal() ?? this.resultadoPreview();
-    const total = resultado?.correspondidos.length ?? 0;
+    const total = this.resultadoPreview()?.correspondidos.length ?? 0;
     return Math.max(1, Math.ceil(total / this.tamanhoPagina()));
   });
 
@@ -108,7 +112,7 @@ export class ProdutosImportarImagensComponent {
     }
     this.arquivos.set(imagens);
     this.resultadoPreview.set(null);
-    this.resultadoFinal.set(null);
+    this.resumoImportacao.set(null);
     this.paginaAtual.set(1);
     this.gerarPreview();
   }
@@ -116,7 +120,6 @@ export class ProdutosImportarImagensComponent {
   limpar() {
     this.arquivos.set([]);
     this.resultadoPreview.set(null);
-    this.resultadoFinal.set(null);
     this.paginaAtual.set(1);
   }
 
@@ -143,6 +146,16 @@ export class ProdutosImportarImagensComponent {
         correspondidos: atual.correspondidos.filter(c => c.nomeArquivo !== item.nomeArquivo)
       });
     }
+  }
+
+  abrirDrawerIgnoradas() {
+    if ((this.resumoImportacao()?.ignoradas.length ?? 0) === 0) return;
+    this.drawerIgnoradasAberto.set(true);
+  }
+
+  abrirDrawerSemCorrespondencia() {
+    if ((this.resumoImportacao()?.semCorrespondencia.length ?? 0) === 0) return;
+    this.drawerSemCorrespondenciaAberto.set(true);
   }
 
   aoMudarPagina(pagina: number) {
@@ -237,10 +250,14 @@ export class ProdutosImportarImagensComponent {
     this.executarEmLotes(
       true,
       res => {
-        this.resultadoFinal.set(res);
         this.confirmandoImportacao.set(false);
-        this.paginaAtual.set(1);
-        this.toast.sucesso('Importação concluída.');
+        this.resumoImportacao.set({
+          sucesso: res.correspondidos.filter(i => !i.erro).length,
+          ignoradas: res.correspondidos.filter(i => !!i.erro),
+          semCorrespondencia: res.semCorrespondencia
+        });
+        this.toast.sucesso('Importado com sucesso!');
+        this.limpar(); // tela pronta pro próximo lote — resumo continua visível até o próximo upload
       },
       err => { this.confirmandoImportacao.set(false); this.toast.erroServidor(err, 'Não foi possível confirmar a importação.'); }
     );

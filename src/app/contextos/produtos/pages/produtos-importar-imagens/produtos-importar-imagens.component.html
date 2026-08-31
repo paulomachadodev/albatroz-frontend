@@ -64,7 +64,7 @@
       }
     </div>
 
-    @if (resultadoPreview() && !resultadoFinal()) {
+    @if (resultadoPreview()) {
       <div class="space-y-4">
         <app-listagem-paginada
           [itens]="correspondidosPagina()"
@@ -138,42 +138,33 @@
       </div>
     }
 
-    @if (resultadoFinal()) {
+    @if (resumoImportacao(); as resumo) {
       <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-4">
         <div class="flex items-center gap-2">
           <span class="material-symbols-outlined text-emerald-500">check_circle</span>
           <p class="text-sm font-bold text-slate-900 dark:text-slate-100">
-            {{ importadosComSucesso() }} imagem(ns) importada(s) com sucesso.
+            {{ resumo.sucesso }} imagem(ns) importada(s) com sucesso.
           </p>
         </div>
 
-        @if (ignorados().length > 0) {
-          <div>
-            <p class="text-sm font-bold text-red-600 mb-2">Ignoradas ({{ ignorados().length }})</p>
-            <ul class="text-sm text-slate-500 dark:text-slate-400 list-disc list-inside space-y-1">
-              @for (item of ignorados(); track item.nomeArquivo) {
-                <li>{{ item.nomeArquivo }} — {{ item.erro }}</li>
-              }
-            </ul>
-          </div>
-        }
-
-        @if (resultadoFinal()!.semCorrespondencia.length > 0) {
-          <div>
-            <p class="text-sm font-bold text-red-600 mb-2">Sem correspondência ({{ resultadoFinal()!.semCorrespondencia.length }})</p>
-            <ul class="text-sm text-slate-500 dark:text-slate-400 list-disc list-inside space-y-1">
-              @for (nome of resultadoFinal()!.semCorrespondencia; track nome) {
-                <li>{{ nome }}</li>
-              }
-            </ul>
-          </div>
-        }
+        <div class="flex gap-3 flex-wrap">
+          @if (resumo.ignoradas.length > 0) {
+            <button (click)="abrirDrawerIgnoradas()"
+                    class="px-4 py-3 rounded-lg border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-900/20 text-left hover:bg-red-100 dark:hover:bg-red-900/30 transition-all">
+              <p class="text-lg font-bold text-red-600">{{ resumo.ignoradas.length }}</p>
+              <p class="text-xs text-red-600">Ignoradas</p>
+            </button>
+          }
+          @if (resumo.semCorrespondencia.length > 0) {
+            <button (click)="abrirDrawerSemCorrespondencia()"
+                    class="px-4 py-3 rounded-lg border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-900/20 text-left hover:bg-red-100 dark:hover:bg-red-900/30 transition-all">
+              <p class="text-lg font-bold text-red-600">{{ resumo.semCorrespondencia.length }}</p>
+              <p class="text-xs text-red-600">Sem correspondência</p>
+            </button>
+          }
+        </div>
 
         <div class="flex gap-2 pt-2">
-          <button (click)="limpar()"
-                  class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
-            Importar mais
-          </button>
           <button (click)="voltar()"
                   class="px-5 py-2.5 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all">
             Voltar pra Produtos
@@ -184,6 +175,22 @@
 
   </div>
 </div>
+
+<app-drawer [aberto]="drawerIgnoradasAberto()" titulo="Imagens ignoradas" (fechar)="drawerIgnoradasAberto.set(false)">
+  <ul class="text-sm text-slate-500 dark:text-slate-400 list-disc list-inside space-y-1">
+    @for (item of resumoImportacao()?.ignoradas ?? []; track item.nomeArquivo) {
+      <li>{{ item.nomeArquivo }} — {{ item.erro }}</li>
+    }
+  </ul>
+</app-drawer>
+
+<app-drawer [aberto]="drawerSemCorrespondenciaAberto()" titulo="Sem correspondência" (fechar)="drawerSemCorrespondenciaAberto.set(false)">
+  <ul class="text-sm text-slate-500 dark:text-slate-400 list-disc list-inside space-y-1">
+    @for (nome of resumoImportacao()?.semCorrespondencia ?? []; track nome) {
+      <li>{{ nome }}</li>
+    }
+  </ul>
+</app-drawer>
 
 <app-overlay-progresso [visivel]="processandoPreview() || confirmandoImportacao()"
                         [mensagem]="confirmandoImportacao() ? 'Confirmando importação...' : 'Processando preview...'"></app-overlay-progresso>

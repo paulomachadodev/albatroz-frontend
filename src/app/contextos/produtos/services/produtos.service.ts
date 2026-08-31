@@ -122,12 +122,14 @@ export class ProdutosService {
 
   importarImagensLote(
     arquivos: File[], confirmar: boolean,
-    modoCorrespondencia: 'codigo_produto' | 'codigo_fornecedor' = 'codigo_produto'
+    modoCorrespondencia: 'codigo_produto' | 'codigo_fornecedor' = 'codigo_fornecedor',
+    pularSeJaTemImagem = true
   ): Observable<Resultado<ProdutoImportarImagensResposta>> {
     const formData = new FormData();
     arquivos.forEach(arquivo => formData.append('files', arquivo));
     formData.append('confirmar', String(confirmar));
     formData.append('modoCorrespondencia', modoCorrespondencia);
+    formData.append('pularSeJaTemImagem', String(pularSeJaTemImagem));
     return this.api.post<ProdutoImportarImagensResposta>(`${this.endpoint}/imagens/importar-lote`, formData);
   }
 

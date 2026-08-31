@@ -8,16 +8,18 @@ import { ConfirmService } from '../../../../core/feedback/confirm.service';
 import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 import { ListagemPaginadaComponent } from '../../../../shared/components/listagem-paginada/listagem-paginada.component';
 import { OverlayProgressoComponent } from '../../../../shared/components/overlay-progresso/overlay-progresso.component';
+import { ToggleComponent } from '../../../../shared/components/toggle/toggle.component';
 
 @Component({
   selector: 'app-produtos-importar-imagens',
   standalone: true,
-  imports: [RouterLink, PageHeaderComponent, ListagemPaginadaComponent, OverlayProgressoComponent],
+  imports: [RouterLink, PageHeaderComponent, ListagemPaginadaComponent, OverlayProgressoComponent, ToggleComponent],
   templateUrl: './produtos-importar-imagens.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
 export class ProdutosImportarImagensComponent {
-  modo = signal<'codigo_produto' | 'codigo_fornecedor'>('codigo_produto');
+  modo = signal<'codigo_produto' | 'codigo_fornecedor'>('codigo_fornecedor');
+  pularSeJaTemImagem = signal(true);
 
   arquivos = signal<File[]>([]);
   arrastandoSobreZona = signal(false);
@@ -63,6 +65,16 @@ export class ProdutosImportarImagensComponent {
     this.modo.set(modo);
     if (this.arquivos().length > 0) this.gerarPreview();
   }
+
+  aoMudarPularSeJaTemImagem(valor: boolean) {
+    this.pularSeJaTemImagem.set(valor);
+    if (this.arquivos().length > 0) this.gerarPreview();
+  }
+
+  qtdJaTinhaImagem = computed(() =>
+    new Set((this.resultadoPreview()?.correspondidos ?? [])
+      .filter(i => i.produtoJaTinhaImagem)
+      .map(i => i.idProduto)).size);
 
   aoSelecionarArquivos(event: Event) {
     const input = event.target as HTMLInputElement;
@@ -189,7 +201,7 @@ export class ProdutosImportarImagensComponent {
       }
 
       this.processandoLote.set({ atual: indice + 1, total: lotes.length });
-      this.produtosService.importarImagensLote(lotes[indice], confirmar, this.modo()).subscribe({
+      this.produtosService.importarImagensLote(lotes[indice], confirmar, this.modo(), this.pularSeJaTemImagem()).subscribe({
         next: res => {
           if (res.dados) {
             acumulado.correspondidos.push(...res.dados.correspondidos);

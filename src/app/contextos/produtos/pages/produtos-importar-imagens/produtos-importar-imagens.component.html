@@ -27,7 +27,27 @@
           Código no fornecedor
         </button>
       </div>
+
+      <div class="pt-3 border-t border-slate-100 dark:border-slate-800">
+        <app-toggle [valor]="pularSeJaTemImagem()" label="Pular produtos que já têm imagem"
+                    (valorMudou)="aoMudarPularSeJaTemImagem($event)"></app-toggle>
+        <p class="text-xs text-slate-400 mt-1">Evita reimportar por engano — desligue só se quiser adicionar mais imagens a produtos que já têm alguma.</p>
+      </div>
     </div>
+
+    @if (qtdJaTinhaImagem() > 0) {
+      <div class="rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 px-4 py-3 flex items-start gap-2">
+        <span class="material-symbols-outlined text-amber-600 dark:text-amber-400 text-xl">warning</span>
+        <p class="text-sm text-amber-800 dark:text-amber-300">
+          <strong>{{ qtdJaTinhaImagem() }}</strong> produto(s) já {{ qtdJaTinhaImagem() === 1 ? 'tem' : 'têm' }} imagem
+          @if (pularSeJaTemImagem()) {
+            e {{ qtdJaTinhaImagem() === 1 ? 'será pulado' : 'serão pulados' }} nessa importação (veja o Status na tabela).
+          } @else {
+            — importando mesmo assim, essas imagens serão adicionadas às existentes.
+          }
+        </p>
+      </div>
+    }
 
     <div (drop)="aoSoltar($event)" (dragover)="aoArrastarSobre($event)" (dragleave)="aoSairDaZona()"
          class="border-2 border-dashed rounded-xl p-8 text-center transition-colors"

@@ -14,6 +14,7 @@ export interface ProdutoImportarImagensCorrespondido {
   indice: number;
   urlResultante?: string;
   erro?: string;
+  produtoJaTinhaImagem?: boolean;
 }
 
 export interface ProdutoEstoqueHistoricoItem {

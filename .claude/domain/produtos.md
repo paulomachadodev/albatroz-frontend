@@ -29,6 +29,12 @@ Ver domínio completo de produtos em: backend `.claude/domain/produtos.md`.
 - Reordenar = drag entre slots ocupados (`reordenarImagens` — reescreve o índice de TODAS as imagens envolvidas, inclusive as de origem `tiny`/sync do Tiny ERP; próximo sync do Tiny pode resetar a ordem de imagens `tiny`, é comportamento conhecido/aceito, não é bug).
 - Importação em lote (`produtos-importar-imagens`) é separada — casa arquivo com produto pelo nome `código_índice.ext`, pode inserir em vários produtos de uma vez, e empurra (shift) índice ocupado em vez de bloquear. Mesmo limite de 8 por produto — excedente é ignorado e listado com motivo na prévia (coluna Status), e logado como warning no Seq.
 
+**Elegibilidade de marketplace/site** (`produtos-detalhe`, aba Web → seção Marketplaces)
+- Cada canal (Google Shopping, Instagram/Facebook, Site Albatroz) tem critério próprio de elegibilidade calculado no backend (GTIN + categoria Google + preço + imagem + situação ativa pros marketplaces; só situação ativa + imagem pro site) — ver `ListarMarketplacesProdutoConsulta`/`ElegibilidadeMarketplaceServico` no backend.
+- **Regra (2026-08-31):** qualquer edição do produto que possa afetar esses critérios — dados gerais (preço, GTIN, situação), enriquecimento/categoria Google, upload/exclusão/substituição de imagem, reenriquecimento via IA — precisa reavaliar a elegibilidade exibida na aba, não só os dados que a própria ação alterou. Ficou stale até o usuário sair e voltar pra aba porque `carregarMarketplaces()` só era chamado uma vez (guard `!this.enriquecimento()`), nunca depois de salvar.
+- Padrão de fix: hook central de recarga pós-save (`recarregarSilencioso()` em `produtos-detalhe.component.ts`) chama `carregarMarketplaces()` de novo — só se `this.marketplaces().length > 0` (ou seja, a aba já foi aberta ao menos uma vez nessa sessão; produto que nunca teve a aba visitada não precisa de refresh antecipado). Handlers de save que não passam por `recarregarSilencioso()` (ex: `reenriquecerViaIa()`) repetem a mesma checagem inline.
+- Toda tela nova com abas/seções derivadas que dependem de dados que outras abas podem alterar deve seguir esse mesmo padrão: 1 ponto central de "recarregar depois de salvar" que também atualiza as abas com dado potencialmente stale, não só a aba que originou o save.
+
 ## Vocabulário
 
 | Termo | Significado |

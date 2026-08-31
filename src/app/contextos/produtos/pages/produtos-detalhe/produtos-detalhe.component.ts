@@ -187,6 +187,11 @@ export class ProdutosDetalheComponent implements OnInit {
       },
       error: err => this.toast.erroServidor(err, 'Não foi possível atualizar o produto.')
     });
+
+    // Qualquer alteração no produto (preço, GTIN, categoria Google, imagem, situação) pode
+    // mudar a elegibilidade pra marketplace/site — reavalia sempre que a aba já foi aberta
+    // alguma vez nessa sessão (marketplaces() vazio = nunca carregou, nada a refrescar).
+    if (this.marketplaces().length > 0) this.carregarMarketplaces();
   }
 
   trocarAba(aba: Aba) {
@@ -605,6 +610,7 @@ export class ProdutosDetalheComponent implements OnInit {
         this.reenriquecendo.set(false);
         this.toast.sucesso('Produto reenriquecido pela IA.');
         this.carregarEnriquecimento();
+        if (this.marketplaces().length > 0) this.carregarMarketplaces();
       },
       error: err => {
         this.reenriquecendo.set(false);

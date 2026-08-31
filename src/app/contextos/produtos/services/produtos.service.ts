@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from '../../../core/http/api.service';
+import { OpcaoSelectBusca } from '../../../shared/components/select-busca/select-busca.component';
 import { Resultado, Paginacao } from '../../../core/models';
 import { ParametrosPaginacao } from '../../../core/models/paginacao.model';
 import { ProdutoDetalhe, ProdutoResumo, ProdutoTipo, ListaPreco, ProdutoEnriquecimento, MarketplaceProduto, ProdutoAnalise, ImagemCandidata } from '../models/produto.model';
@@ -37,6 +38,11 @@ export interface EstadoListaProdutos {
   filtro: ProdutoFiltro;
   pagina: number;
   tamanhoPagina: number;
+  // Filtro só guarda os ids (o que a API precisa) — sem o rótulo, os widgets de busca
+  // (app-select-busca) voltavam em branco ao retornar da tela de detalhe, mesmo com o
+  // filtro de fato ainda aplicado. Guardar a opção inteira aqui resolve a exibição.
+  marcaSelecionada?: OpcaoSelectBusca | null;
+  fornecedorSelecionado?: OpcaoSelectBusca | null;
 }
 
 export interface ImagemCandidataFiltro {

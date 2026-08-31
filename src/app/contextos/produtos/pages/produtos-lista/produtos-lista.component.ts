@@ -87,6 +87,8 @@ export class ProdutosListaComponent implements OnInit {
     if (estado) {
       this.filtro = { ...estado.filtro };
       this.tamanhoPagina.set(estado.tamanhoPagina);
+      this.marcaFiltro.set(estado.marcaSelecionada ?? null);
+      this.fornecedorFiltro.set(estado.fornecedorSelecionado ?? null);
       if (this.filtro.ordenarPor && this.filtro.direcao) {
         this.ordenacaoAtual.set({ campo: this.filtro.ordenarPor, direcao: this.filtro.direcao });
       }
@@ -100,7 +102,9 @@ export class ProdutosListaComponent implements OnInit {
     this.produtosService.estadoLista = {
       filtro: { ...this.filtro },
       pagina,
-      tamanhoPagina: this.tamanhoPagina()
+      tamanhoPagina: this.tamanhoPagina(),
+      marcaSelecionada: this.marcaFiltro(),
+      fornecedorSelecionado: this.fornecedorFiltro()
     };
   }
 

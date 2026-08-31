@@ -282,6 +282,49 @@ Todo filtro cujo valor vem de uma lista de opções do backend (escola, série, 
 - Componente: usar/criar um `app-select-busca` genérico em `shared/components/` (mesma lógica de reuso do `app-listagem-paginada`) — digita, debounce ~300ms, chama o endpoint, mostra resultados num dropdown, seleciona um item, guarda o `id`.
 - Filtro de texto livre continua OK só quando o campo é realmente texto livre no domínio (não vem de uma lista fechada de opções).
 
+## Preservar estado da listagem ao voltar da tela de detalhe (padrão 2026-08-31)
+
+Toda tela de listagem que navega pra uma tela de detalhe (editar registro, incluir foto, etc.) precisa restaurar filtro/página/ordenação quando o usuário volta — nunca resetar a busca do zero. Padrão: um campo `estadoLista` no *service* da feature (sobrevive à destruição do componente de listagem, ao contrário de uma property do próprio componente), salvo a cada `carregar()` e restaurado no `ngOnInit()` se existir.
+
+```typescript
+// no service da feature
+export interface EstadoListaX {
+  filtro: FiltroX;
+  pagina: number;
+  tamanhoPagina: number;
+}
+
+@Injectable({ providedIn: 'root' })
+export class XService {
+  estadoLista: EstadoListaX | null = null;
+}
+```
+
+```typescript
+// no componente de listagem
+ngOnInit() {
+  const estado = this.service.estadoLista;
+  if (estado) {
+    this.filtro = { ...estado.filtro };
+    this.tamanhoPagina.set(estado.tamanhoPagina);
+    this.carregar(estado.pagina);
+  } else {
+    this.carregar();
+  }
+}
+
+private salvarEstado(pagina: number) {
+  this.service.estadoLista = { filtro: { ...this.filtro }, pagina, tamanhoPagina: this.tamanhoPagina() };
+}
+
+carregar(pagina = 1) {
+  this.salvarEstado(pagina); // sempre salva antes/durante o load, não só no "Filtrar"
+  // ... request
+}
+```
+
+**Achado real (2026-08-31, `produtos-lista`):** o `estadoLista` já existia com esse formato, mas só guardava os **ids** dos filtros (`filtro.idMarca`, `filtro.idFornecedor`). Isso bastava pra reaplicar o filtro na API — os produtos vinham filtrados certinho — mas os widgets `app-select-busca` (que exibem o **rótulo** selecionado, não o id) voltavam em branco, dando a impressão de que o filtro tinha sumido. Qualquer filtro que use `app-select-busca` (ou outro widget que precise de rótulo, não só id, pra se exibir) tem que guardar a **opção inteira** (`OpcaoSelectBusca` — `{ id, nome }`) no estado, além do id no objeto `filtro`, e restaurar o signal do widget (`this.marcaFiltro.set(estado.marcaSelecionada ?? null)`) junto no `ngOnInit()` — não só o `filtro` puro. Toggles/`<select>` HTML que já leem direto de `filtro.campo` (ex: `[valor]="filtro.comEstoque === true"`) não têm esse problema, só os widgets com signal de exibição próprio.
+
 ## Botões Filtrar/Limpar — sempre abaixo dos campos, alinhados à direita (padrão 2026-08-27)
 
 Nunca colocar o botão "Filtrar"/"Limpar" como célula dentro da grid de campos (`<div class="flex items-end gap-2">` misturado nas colunas) — isso empurra o botão pra onde sobrar espaço, e quebra o alinhamento quando algum campo é condicional. Padrão fixo: a grid de campos só tem campos, e uma segunda `<div>` fora da grid (mas dentro do slot `filtros`) reúne os botões, alinhados à direita:

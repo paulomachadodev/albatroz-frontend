@@ -8,20 +8,16 @@ import { PageHeaderComponent } from '../../../../shared/components/page-header/p
 import { ListagemPaginadaComponent } from '../../../../shared/components/listagem-paginada/listagem-paginada.component';
 import { BtnIconeComponent } from '../../../../shared/components/btn-icone/btn-icone.component';
 import { OverlayProgressoComponent } from '../../../../shared/components/overlay-progresso/overlay-progresso.component';
-import { SelectBuscaComponent, OpcaoSelectBusca } from '../../../../shared/components/select-busca/select-busca.component';
-import { ContatosService } from '../../../cadastros/contatos/services/contatos.service';
 
 @Component({
   selector: 'app-produtos-importar-imagens',
   standalone: true,
-  imports: [RouterLink, PageHeaderComponent, ListagemPaginadaComponent, BtnIconeComponent, OverlayProgressoComponent, SelectBuscaComponent],
+  imports: [RouterLink, PageHeaderComponent, ListagemPaginadaComponent, BtnIconeComponent, OverlayProgressoComponent],
   templateUrl: './produtos-importar-imagens.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
 export class ProdutosImportarImagensComponent {
   modo = signal<'codigo_produto' | 'codigo_fornecedor'>('codigo_produto');
-  fornecedorFiltro = signal<OpcaoSelectBusca | null>(null);
-  buscarFornecedores = (termo: string) => this.contatosService.buscar(termo, 'Fornecedor');
 
   arquivos = signal<File[]>([]);
   arrastandoSobreZona = signal(false);
@@ -54,7 +50,6 @@ export class ProdutosImportarImagensComponent {
 
   constructor(
     private produtosService: ProdutosService,
-    private contatosService: ContatosService,
     private toast: ToastService,
     private router: Router
   ) {}
@@ -65,19 +60,7 @@ export class ProdutosImportarImagensComponent {
 
   aoMudarModo(modo: 'codigo_produto' | 'codigo_fornecedor') {
     this.modo.set(modo);
-    if (modo === 'codigo_produto') this.fornecedorFiltro.set(null);
-    this.reprocessarSeHouverArquivos();
-  }
-
-  aoSelecionarFornecedor(opcao: OpcaoSelectBusca | null) {
-    this.fornecedorFiltro.set(opcao);
-    this.reprocessarSeHouverArquivos();
-  }
-
-  private reprocessarSeHouverArquivos() {
-    if (this.arquivos().length === 0) return;
-    if (this.modo() === 'codigo_fornecedor' && !this.fornecedorFiltro()) return;
-    this.gerarPreview();
+    if (this.arquivos().length > 0) this.gerarPreview();
   }
 
   aoSelecionarArquivos(event: Event) {
@@ -181,7 +164,7 @@ export class ProdutosImportarImagensComponent {
       }
 
       this.processandoLote.set({ atual: indice + 1, total: lotes.length });
-      this.produtosService.importarImagensLote(lotes[indice], confirmar, this.modo(), this.fornecedorFiltro()?.id).subscribe({
+      this.produtosService.importarImagensLote(lotes[indice], confirmar, this.modo()).subscribe({
         next: res => {
           if (res.dados) {
             acumulado.correspondidos.push(...res.dados.correspondidos);
@@ -201,10 +184,6 @@ export class ProdutosImportarImagensComponent {
 
   private gerarPreview() {
     if (this.arquivos().length === 0) return;
-    if (this.modo() === 'codigo_fornecedor' && !this.fornecedorFiltro()) {
-      this.toast.erro('Selecione o fornecedor pra comparar pelo código dele.');
-      return;
-    }
 
     this.processandoPreview.set(true);
     this.executarEmLotes(
@@ -216,10 +195,6 @@ export class ProdutosImportarImagensComponent {
 
   confirmarImportacao() {
     if (this.arquivos().length === 0) return;
-    if (this.modo() === 'codigo_fornecedor' && !this.fornecedorFiltro()) {
-      this.toast.erro('Selecione o fornecedor pra comparar pelo código dele.');
-      return;
-    }
 
     this.confirmandoImportacao.set(true);
     this.executarEmLotes(

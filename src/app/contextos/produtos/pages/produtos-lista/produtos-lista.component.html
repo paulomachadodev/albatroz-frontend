@@ -181,7 +181,7 @@
                    (change)="aoAlternarSelecao(item, $any($event.target).checked)"
                    class="rounded border-slate-300 text-primary focus:ring-primary/20"/>
           </td>
-          <td class="px-6 py-4">
+          <td class="px-6 py-4" (click)="$event.stopPropagation(); abrirDetalheAba(item, 'web')">
             <div class="w-10 h-10 relative overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-800">
               @if (item.urlImagemPrincipal) {
                 <img [src]="item.urlImagemPrincipal" [alt]="item.nome" class="absolute inset-0 w-full h-full object-cover"/>

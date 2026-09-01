@@ -755,7 +755,7 @@
             <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
               @for (variacao of produto()!.variacoes; track variacao.id) {
                 <tr (click)="abrirSubProduto(variacao.id)" class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors cursor-pointer">
-                  <td class="px-6 py-4">
+                  <td class="px-6 py-4" (click)="$event.stopPropagation(); abrirSubProduto(variacao.id, 'web')">
                     <div class="w-10 h-10 relative overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-800">
                       @if (variacao.urlImagemPrincipal) {
                         <img [src]="variacao.urlImagemPrincipal" [alt]="variacao.nome" class="absolute inset-0 w-full h-full object-cover"/>
@@ -790,7 +790,7 @@
             <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
               @for (componente of produto()!.kitComponentes; track componente.idComponente) {
                 <tr (click)="abrirSubProduto(componente.idComponente)" class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors cursor-pointer">
-                  <td class="px-6 py-4">
+                  <td class="px-6 py-4" (click)="$event.stopPropagation(); abrirSubProduto(componente.idComponente, 'web')">
                     <div class="w-10 h-10 relative overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-800">
                       @if (componente.urlImagemPrincipal) {
                         <img [src]="componente.urlImagemPrincipal" [alt]="componente.nomeComponente" class="absolute inset-0 w-full h-full object-cover"/>

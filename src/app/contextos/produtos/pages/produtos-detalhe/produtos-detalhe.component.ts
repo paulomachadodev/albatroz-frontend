@@ -148,8 +148,8 @@ export class ProdutosDetalheComponent implements OnInit {
     this.analise.set(null);
   }
 
-  abrirSubProduto(id: number) {
-    this.router.navigate(['/produtos', id]);
+  abrirSubProduto(id: number, aba?: Aba) {
+    this.router.navigate(['/produtos', id], aba ? { queryParams: { aba } } : {});
   }
 
   carregar() {
@@ -196,6 +196,7 @@ export class ProdutosDetalheComponent implements OnInit {
 
   trocarAba(aba: Aba) {
     this.abaAtiva.set(aba);
+    this.router.navigate([], { relativeTo: this.route, queryParams: { aba }, queryParamsHandling: 'merge', replaceUrl: true });
     if (aba === 'preco' && this.listasPreco().length === 0) this.carregarListasPreco();
     if (aba === 'web' && !this.enriquecimento()) { this.carregarEnriquecimento(); this.carregarMarketplaces(); }
     if (aba === 'analise' && !this.analise()) this.carregarAnalise();

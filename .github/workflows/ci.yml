@@ -83,4 +83,4 @@ jobs:
             ghcr.io/${{ env.IMAGE_NAME }}:latest
 
       - name: Clean up old images
-        run: docker image prune -af --filter "until=24h"
+        run: docker image prune -af

@@ -34,8 +34,6 @@ export class ProdutosImportarImagensComponent {
   confirmandoImportacao = signal(false);
   resultadoPreview = signal<ProdutoImportarImagensResposta | null>(null);
 
-  // Resumo fica visível depois de confirmar, mesmo com a tela limpa pra receber o próximo
-  // lote — só reseta quando um novo arquivo é selecionado (definirArquivos).
   resumoImportacao = signal<ResumoImportacao | null>(null);
   drawerIgnoradasAberto = signal(false);
   drawerSemCorrespondenciaAberto = signal(false);
@@ -123,8 +121,6 @@ export class ProdutosImportarImagensComponent {
     this.paginaAtual.set(1);
   }
 
-  // Remoção é só local (o preview já sabe o que casou com o quê) — nunca reprocessa o lote
-  // inteiro no servidor de novo só pra tirar 1 arquivo, isso é que deixava lento.
   async excluirDoLote(item: ProdutoImportarImagensCorrespondido) {
     const confirmado = await this.confirm.confirmar(
       `Excluir "${item.nomeArquivo}" do lote?`,
@@ -167,17 +163,7 @@ export class ProdutosImportarImagensComponent {
     this.paginaAtual.set(1);
   }
 
-  // Cloudflare (proxy da api-erp) tem dois limites que batem aqui: 100MB de corpo de
-  // requisição E ~100s de timeout de gateway por requisição. O primeiro já tinha sido
-  // resolvido limitando por tamanho, mas um lote com muitos arquivos pequenos (o cap de
-  // bytes nunca estoura) ainda demorava demais na CONFIRMAÇÃO — cada arquivo passa por
-  // conversão WebP + upload R2 + escrita no banco, em sequência, e isso sozinho já passa
-  // dos 100s antes do corpo se aproximar de 100MB. Por isso limita também por quantidade
-  // de arquivos, não só por bytes.
-  // Achado 2026-09-01: 40MB/15 arquivos ainda estourava o timeout em conexão de upload mais
-  // lenta — Cloudflare mata a conexão (erro "0 Unknown Error" no cliente, sem log nenhum no
-  // servidor porque o corpo nem terminou de chegar). Reduzido pra dar mais margem.
-  private static readonly TAMANHO_MAXIMO_LOTE_BYTES = 15 * 1024 * 1024; // 15MB
+  private static readonly TAMANHO_MAXIMO_LOTE_BYTES = 15 * 1024 * 1024;
   private static readonly MAXIMO_ARQUIVOS_POR_LOTE = 8;
   private static readonly MAXIMO_TENTATIVAS_POR_LOTE = 3;
 
@@ -210,9 +196,6 @@ export class ProdutosImportarImagensComponent {
     const lotes = this.dividirEmLotes(this.arquivos());
     const acumulado: ProdutoImportarImagensResposta = { confirmado: confirmar, correspondidos: [], semCorrespondencia: [] };
 
-    // Erro de rede (status 0 — conexão cortada pelo proxy antes de resposta, sem log nenhum
-    // no servidor) costuma ser transitório (timeout de gateway, instabilidade de upload) —
-    // vale a pena tentar de novo o mesmo lote antes de abortar a importação inteira.
     const proximo = (indice: number, tentativa = 1) => {
       if (indice >= lotes.length) {
         this.processandoLote.set(null);
@@ -269,7 +252,7 @@ export class ProdutosImportarImagensComponent {
           semCorrespondencia: res.semCorrespondencia
         });
         this.toast.sucesso('Importado com sucesso!');
-        this.limpar(); // tela pronta pro próximo lote — resumo continua visível até o próximo upload
+        this.limpar();
       },
       err => { this.confirmandoImportacao.set(false); this.toast.erroServidor(err, 'Não foi possível confirmar a importação.'); }
     );

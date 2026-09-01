@@ -193,4 +193,6 @@
 </app-drawer>
 
 <app-overlay-progresso [visivel]="processandoPreview() || confirmandoImportacao()"
-                        [mensagem]="confirmandoImportacao() ? 'Confirmando importação...' : 'Processando preview...'"></app-overlay-progresso>
+                        [mensagem]="confirmandoImportacao() ? 'Confirmando importação...' : 'Processando preview...'"
+                        [concluidas]="(progressoLotes()?.atual ?? 1) - 1"
+                        [total]="progressoLotes()?.total ?? 0"></app-overlay-progresso>

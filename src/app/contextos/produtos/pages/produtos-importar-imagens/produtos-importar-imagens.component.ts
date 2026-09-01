@@ -1,6 +1,7 @@
 import { Component, computed, signal } from '@angular/core';
 
 import { Router, RouterLink } from '@angular/router';
+import { timeout } from 'rxjs';
 import { ProdutosService } from '../../services/produtos.service';
 import { ProdutoImportarImagensCorrespondido, ProdutoImportarImagensResposta } from '../../dtos/produto-resposta.dto';
 import { ToastService } from '../../../../core/feedback/toast.service';
@@ -165,6 +166,8 @@ export class ProdutosImportarImagensComponent {
 
   private static readonly TAMANHO_MAXIMO_LOTE_BYTES = 40 * 1024 * 1024;
   private static readonly MAXIMO_ARQUIVOS_POR_LOTE = 15;
+  private static readonly TIMEOUT_LOTE_MS = 90_000;
+  private static readonly MAXIMO_TENTATIVAS_POR_LOTE = 3;
 
   private dividirEmLotes(arquivos: File[]): File[][] {
     const lotes: File[][] = [];
@@ -191,11 +194,16 @@ export class ProdutosImportarImagensComponent {
   private processandoLote = signal<{ atual: number; total: number } | null>(null);
   readonly progressoLotes = this.processandoLote.asReadonly();
 
+  private execucaoLoteAtual = 0;
+
   private executarEmLotes(confirmar: boolean, aoConcluir: (res: ProdutoImportarImagensResposta) => void, aoErro: (err: unknown) => void) {
+    const idExecucao = ++this.execucaoLoteAtual;
     const lotes = this.dividirEmLotes(this.arquivos());
     const acumulado: ProdutoImportarImagensResposta = { confirmado: confirmar, correspondidos: [], semCorrespondencia: [] };
 
-    const proximo = (indice: number) => {
+    const proximo = (indice: number, tentativa = 1) => {
+      if (idExecucao !== this.execucaoLoteAtual) return;
+
       if (indice >= lotes.length) {
         this.processandoLote.set(null);
         aoConcluir(acumulado);
@@ -203,24 +211,34 @@ export class ProdutosImportarImagensComponent {
       }
 
       this.processandoLote.set({ atual: indice + 1, total: lotes.length });
-      this.produtosService.importarImagensLote(lotes[indice], confirmar, this.modo(), this.pularSeJaTemImagem()).subscribe({
-        next: res => {
-          try {
-            if (res.dados) {
-              acumulado.correspondidos.push(...res.dados.correspondidos);
-              acumulado.semCorrespondencia.push(...res.dados.semCorrespondencia);
+      this.produtosService.importarImagensLote(lotes[indice], confirmar, this.modo(), this.pularSeJaTemImagem())
+        .pipe(timeout(ProdutosImportarImagensComponent.TIMEOUT_LOTE_MS))
+        .subscribe({
+          next: res => {
+            if (idExecucao !== this.execucaoLoteAtual) return;
+            try {
+              if (res.dados) {
+                acumulado.correspondidos.push(...res.dados.correspondidos);
+                acumulado.semCorrespondencia.push(...res.dados.semCorrespondencia);
+              }
+              proximo(indice + 1);
+            } catch (ex) {
+              this.processandoLote.set(null);
+              aoErro(ex);
             }
-            proximo(indice + 1);
-          } catch (ex) {
+          },
+          error: err => {
+            if (idExecucao !== this.execucaoLoteAtual) return;
+            const podeTentarDeNovo = (err?.status === 0 || err?.name === 'TimeoutError')
+              && tentativa < ProdutosImportarImagensComponent.MAXIMO_TENTATIVAS_POR_LOTE;
+            if (podeTentarDeNovo) {
+              proximo(indice, tentativa + 1);
+              return;
+            }
             this.processandoLote.set(null);
-            aoErro(ex);
+            aoErro(err);
           }
-        },
-        error: err => {
-          this.processandoLote.set(null);
-          aoErro(err);
-        }
-      });
+        });
     };
 
     proximo(0);

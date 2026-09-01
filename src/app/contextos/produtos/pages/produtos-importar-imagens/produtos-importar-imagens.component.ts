@@ -163,9 +163,8 @@ export class ProdutosImportarImagensComponent {
     this.paginaAtual.set(1);
   }
 
-  private static readonly TAMANHO_MAXIMO_LOTE_BYTES = 15 * 1024 * 1024;
-  private static readonly MAXIMO_ARQUIVOS_POR_LOTE = 8;
-  private static readonly MAXIMO_TENTATIVAS_POR_LOTE = 3;
+  private static readonly TAMANHO_MAXIMO_LOTE_BYTES = 40 * 1024 * 1024;
+  private static readonly MAXIMO_ARQUIVOS_POR_LOTE = 15;
 
   private dividirEmLotes(arquivos: File[]): File[][] {
     const lotes: File[][] = [];
@@ -192,16 +191,11 @@ export class ProdutosImportarImagensComponent {
   private processandoLote = signal<{ atual: number; total: number } | null>(null);
   readonly progressoLotes = this.processandoLote.asReadonly();
 
-  private execucaoLoteAtual = 0;
-
   private executarEmLotes(confirmar: boolean, aoConcluir: (res: ProdutoImportarImagensResposta) => void, aoErro: (err: unknown) => void) {
-    const idExecucao = ++this.execucaoLoteAtual;
     const lotes = this.dividirEmLotes(this.arquivos());
     const acumulado: ProdutoImportarImagensResposta = { confirmado: confirmar, correspondidos: [], semCorrespondencia: [] };
 
-    const proximo = (indice: number, tentativa = 1) => {
-      if (idExecucao !== this.execucaoLoteAtual) return;
-
+    const proximo = (indice: number) => {
       if (indice >= lotes.length) {
         this.processandoLote.set(null);
         aoConcluir(acumulado);
@@ -211,20 +205,18 @@ export class ProdutosImportarImagensComponent {
       this.processandoLote.set({ atual: indice + 1, total: lotes.length });
       this.produtosService.importarImagensLote(lotes[indice], confirmar, this.modo(), this.pularSeJaTemImagem()).subscribe({
         next: res => {
-          if (idExecucao !== this.execucaoLoteAtual) return;
-          if (res.dados) {
-            acumulado.correspondidos.push(...res.dados.correspondidos);
-            acumulado.semCorrespondencia.push(...res.dados.semCorrespondencia);
+          try {
+            if (res.dados) {
+              acumulado.correspondidos.push(...res.dados.correspondidos);
+              acumulado.semCorrespondencia.push(...res.dados.semCorrespondencia);
+            }
+            proximo(indice + 1);
+          } catch (ex) {
+            this.processandoLote.set(null);
+            aoErro(ex);
           }
-          proximo(indice + 1);
         },
         error: err => {
-          if (idExecucao !== this.execucaoLoteAtual) return;
-          const erroDeRede = err?.status === 0;
-          if (erroDeRede && tentativa < ProdutosImportarImagensComponent.MAXIMO_TENTATIVAS_POR_LOTE) {
-            proximo(indice, tentativa + 1);
-            return;
-          }
           this.processandoLote.set(null);
           aoErro(err);
         }

@@ -192,11 +192,16 @@ export class ProdutosImportarImagensComponent {
   private processandoLote = signal<{ atual: number; total: number } | null>(null);
   readonly progressoLotes = this.processandoLote.asReadonly();
 
+  private execucaoLoteAtual = 0;
+
   private executarEmLotes(confirmar: boolean, aoConcluir: (res: ProdutoImportarImagensResposta) => void, aoErro: (err: unknown) => void) {
+    const idExecucao = ++this.execucaoLoteAtual;
     const lotes = this.dividirEmLotes(this.arquivos());
     const acumulado: ProdutoImportarImagensResposta = { confirmado: confirmar, correspondidos: [], semCorrespondencia: [] };
 
     const proximo = (indice: number, tentativa = 1) => {
+      if (idExecucao !== this.execucaoLoteAtual) return;
+
       if (indice >= lotes.length) {
         this.processandoLote.set(null);
         aoConcluir(acumulado);
@@ -206,6 +211,7 @@ export class ProdutosImportarImagensComponent {
       this.processandoLote.set({ atual: indice + 1, total: lotes.length });
       this.produtosService.importarImagensLote(lotes[indice], confirmar, this.modo(), this.pularSeJaTemImagem()).subscribe({
         next: res => {
+          if (idExecucao !== this.execucaoLoteAtual) return;
           if (res.dados) {
             acumulado.correspondidos.push(...res.dados.correspondidos);
             acumulado.semCorrespondencia.push(...res.dados.semCorrespondencia);
@@ -213,6 +219,7 @@ export class ProdutosImportarImagensComponent {
           proximo(indice + 1);
         },
         error: err => {
+          if (idExecucao !== this.execucaoLoteAtual) return;
           const erroDeRede = err?.status === 0;
           if (erroDeRede && tentativa < ProdutosImportarImagensComponent.MAXIMO_TENTATIVAS_POR_LOTE) {
             proximo(indice, tentativa + 1);

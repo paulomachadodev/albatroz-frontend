@@ -174,8 +174,12 @@ export class ProdutosImportarImagensComponent {
   // conversão WebP + upload R2 + escrita no banco, em sequência, e isso sozinho já passa
   // dos 100s antes do corpo se aproximar de 100MB. Por isso limita também por quantidade
   // de arquivos, não só por bytes.
-  private static readonly TAMANHO_MAXIMO_LOTE_BYTES = 40 * 1024 * 1024; // 40MB
-  private static readonly MAXIMO_ARQUIVOS_POR_LOTE = 15;
+  // Achado 2026-09-01: 40MB/15 arquivos ainda estourava o timeout em conexão de upload mais
+  // lenta — Cloudflare mata a conexão (erro "0 Unknown Error" no cliente, sem log nenhum no
+  // servidor porque o corpo nem terminou de chegar). Reduzido pra dar mais margem.
+  private static readonly TAMANHO_MAXIMO_LOTE_BYTES = 15 * 1024 * 1024; // 15MB
+  private static readonly MAXIMO_ARQUIVOS_POR_LOTE = 8;
+  private static readonly MAXIMO_TENTATIVAS_POR_LOTE = 3;
 
   private dividirEmLotes(arquivos: File[]): File[][] {
     const lotes: File[][] = [];
@@ -206,7 +210,10 @@ export class ProdutosImportarImagensComponent {
     const lotes = this.dividirEmLotes(this.arquivos());
     const acumulado: ProdutoImportarImagensResposta = { confirmado: confirmar, correspondidos: [], semCorrespondencia: [] };
 
-    const proximo = (indice: number) => {
+    // Erro de rede (status 0 — conexão cortada pelo proxy antes de resposta, sem log nenhum
+    // no servidor) costuma ser transitório (timeout de gateway, instabilidade de upload) —
+    // vale a pena tentar de novo o mesmo lote antes de abortar a importação inteira.
+    const proximo = (indice: number, tentativa = 1) => {
       if (indice >= lotes.length) {
         this.processandoLote.set(null);
         aoConcluir(acumulado);
@@ -223,6 +230,11 @@ export class ProdutosImportarImagensComponent {
           proximo(indice + 1);
         },
         error: err => {
+          const erroDeRede = err?.status === 0;
+          if (erroDeRede && tentativa < ProdutosImportarImagensComponent.MAXIMO_TENTATIVAS_POR_LOTE) {
+            proximo(indice, tentativa + 1);
+            return;
+          }
           this.processandoLote.set(null);
           aoErro(err);
         }

@@ -153,6 +153,7 @@ export interface ProdutoEnriquecimento {
   sinonimos: string[];
   descricaoEnriquecida?: string;
   descricaoLonga?: string;
+  descricaoUso?: string;
   publicoFaixa: string[];
   publicoGenero: string[];
   cor?: string;

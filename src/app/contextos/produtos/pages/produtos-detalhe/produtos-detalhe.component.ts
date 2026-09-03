@@ -586,6 +586,7 @@ export class ProdutosDetalheComponent implements OnInit {
         sinonimos: this.listaTexto(this.sinonimosTexto),
         descricaoEnriquecida: e.descricaoEnriquecida ?? null,
         descricaoLonga: e.descricaoLonga ?? null,
+        descricaoUso: e.descricaoUso ?? null,
         publicoFaixa: this.listaTexto(this.publicoFaixaTexto),
         publicoGenero: this.listaTexto(this.publicoGeneroTexto),
         cor: e.cor ?? null,

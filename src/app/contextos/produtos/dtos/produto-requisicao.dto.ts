@@ -43,6 +43,7 @@ export interface AtualizarEnriquecimentoProdutoRequisicao {
   sinonimos: string[] | null;
   descricaoEnriquecida: string | null;
   descricaoLonga: string | null;
+  descricaoUso: string | null;
   publicoFaixa: string[] | null;
   publicoGenero: string[] | null;
   cor: string | null;

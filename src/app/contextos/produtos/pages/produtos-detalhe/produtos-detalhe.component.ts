@@ -90,6 +90,8 @@ export class ProdutosDetalheComponent implements OnInit {
   sinonimosTexto = '';
   publicoFaixaTexto = '';
   publicoGeneroTexto = '';
+  categoriaGoogleSelecionada = signal<OpcaoSelectBusca | null>(null);
+  buscarCategoriasGoogle = (termo: string) => this.produtosService.buscarCategoriasGoogle(termo);
 
   // ---- Marketplaces (Google/Meta/Site) — ação imediata, não entra no dirty-check ----
   marketplaces = signal<MarketplaceProduto[]>([]);
@@ -545,6 +547,7 @@ export class ProdutosDetalheComponent implements OnInit {
         this.sinonimosTexto = (e?.sinonimos ?? []).join(', ');
         this.publicoFaixaTexto = (e?.publicoFaixa ?? []).join(', ');
         this.publicoGeneroTexto = (e?.publicoGenero ?? []).join(', ');
+        this.categoriaGoogleSelecionada.set(e?.googleProductCategory ? { id: 0, nome: e.googleProductCategory } : null);
         this.carregandoEnriquecimento.set(false);
       },
       error: err => {
@@ -552,6 +555,13 @@ export class ProdutosDetalheComponent implements OnInit {
         this.toast.erroServidor(err, 'Não foi possível carregar os dados de SEO/enriquecimento.');
       }
     });
+  }
+
+  aoSelecionarCategoriaGoogle(opcao: OpcaoSelectBusca | null) {
+    this.categoriaGoogleSelecionada.set(opcao);
+    const e = this.enriquecimento();
+    if (e) e.googleProductCategory = opcao ? String(opcao.nome) : undefined;
+    this.marcarSujo();
   }
 
   private listaTexto(texto: string): string[] {

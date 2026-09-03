@@ -338,8 +338,16 @@
                       Categoria Google
                       <app-campo-hint texto="Diferente da Categoria em Complementos (organização interna nossa). Aqui tem que ser o texto EXATO da taxonomia oficial do Google Shopping, ex: 'Arts &amp; Crafts &gt; Craft Supplies &gt; Paper &amp; Stationery Craft Supplies'. Categoria errada aqui pode reprovar o produto no Merchant Center."></app-campo-hint>
                     </label>
-                    <input type="text" [(ngModel)]="e.googleProductCategory" (ngModelChange)="marcarSujo()" [disabled]="!modoEdicao()"
-                           class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none disabled:opacity-60"/>
+                    @if (modoEdicao()) {
+                      <app-select-busca
+                        [valorSelecionado]="categoriaGoogleSelecionada()"
+                        placeholder="Buscar categoria na taxonomia do Google..."
+                        [buscar]="buscarCategoriasGoogle"
+                        (selecionado)="aoSelecionarCategoriaGoogle($event)"></app-select-busca>
+                    } @else {
+                      <input type="text" [value]="e.googleProductCategory" disabled
+                             class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none disabled:opacity-60"/>
+                    }
                   </div>
                   <div>
                     <label class="text-xs text-slate-500">Tipo de produto Google</label>

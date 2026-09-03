@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { ApiService } from '../../../core/http/api.service';
 import { OpcaoSelectBusca } from '../../../shared/components/select-busca/select-busca.component';
 import { Resultado, Paginacao } from '../../../core/models';
@@ -181,6 +182,12 @@ export class ProdutosService {
 
   reenriquecer(id: number): Observable<Resultado<void>> {
     return this.api.post<void>(`${this.endpoint}/${id}/reenriquecer`, {});
+  }
+
+  buscarCategoriasGoogle(termo: string): Observable<OpcaoSelectBusca[]> {
+    return this.api.get<{ categoria: string }[]>(`${this.endpoint}/categorias-google`, { termo, limite: 20 }).pipe(
+      map(res => (res.dados ?? []).map((c, i) => ({ id: i, nome: c.categoria })))
+    );
   }
 
   // ---- Marketplaces (Google/Meta/Site) ----

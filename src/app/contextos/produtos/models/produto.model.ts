@@ -145,10 +145,7 @@ export interface ProdutoEnriquecimento {
   seoTitle?: string;
   seoDescription?: string;
   seoSlug?: string;
-  seoKeywords?: string;
-  seoLinkVideo?: string;
   googleProductCategory?: string;
-  googleProductType?: string;
   googleBrand?: string;
   googleGtin?: string;
   condicao?: string;
@@ -156,10 +153,8 @@ export interface ProdutoEnriquecimento {
   sinonimos: string[];
   descricaoEnriquecida?: string;
   descricaoLonga?: string;
-  descricaoUso?: string;
   publicoFaixa: string[];
   publicoGenero: string[];
-  faixaEtaria?: string;
   cor?: string;
   tamanho?: string;
   material?: string;

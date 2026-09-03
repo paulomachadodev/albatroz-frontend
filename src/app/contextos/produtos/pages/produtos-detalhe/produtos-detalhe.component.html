@@ -316,17 +316,6 @@
                     <textarea rows="2" [(ngModel)]="e.seoDescription" (ngModelChange)="marcarSujo()" [disabled]="!modoEdicao()"
                               class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none disabled:opacity-60 resize-none"></textarea>
                   </div>
-                  <div>
-                    <label class="text-xs text-slate-500">Palavras-chave</label>
-                    <input type="text" [(ngModel)]="e.seoKeywords" (ngModelChange)="marcarSujo()" [disabled]="!modoEdicao()"
-                           class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none disabled:opacity-60"/>
-                  </div>
-                  <div>
-                    <label class="text-xs text-slate-500">Link de vídeo (YouTube)</label>
-                    <input type="text" [(ngModel)]="e.seoLinkVideo" (ngModelChange)="marcarSujo()" [disabled]="!modoEdicao()"
-                           placeholder="https://youtube.com/..."
-                           class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none disabled:opacity-60"/>
-                  </div>
                 </div>
               </div>
 
@@ -348,11 +337,6 @@
                       <input type="text" [value]="e.googleProductCategory" disabled
                              class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none disabled:opacity-60"/>
                     }
-                  </div>
-                  <div>
-                    <label class="text-xs text-slate-500">Tipo de produto Google</label>
-                    <input type="text" [(ngModel)]="e.googleProductType" (ngModelChange)="marcarSujo()" [disabled]="!modoEdicao()"
-                           class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none disabled:opacity-60"/>
                   </div>
                   <div>
                     <label class="text-xs text-slate-500">Marca Google</label>
@@ -401,11 +385,6 @@
                            class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none disabled:opacity-60"/>
                   </div>
                   <div>
-                    <label class="text-xs text-slate-500">Faixa etária</label>
-                    <input type="text" [(ngModel)]="e.faixaEtaria" (ngModelChange)="marcarSujo()" [disabled]="!modoEdicao()"
-                           class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none disabled:opacity-60"/>
-                  </div>
-                  <div>
                     <label class="text-xs text-slate-500">Cor</label>
                     <input type="text" [(ngModel)]="e.cor" (ngModelChange)="marcarSujo()" [disabled]="!modoEdicao()"
                            class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none disabled:opacity-60"/>
@@ -428,11 +407,6 @@
                   <div class="sm:col-span-2">
                     <label class="text-xs text-slate-500">Descrição longa</label>
                     <textarea rows="3" [(ngModel)]="e.descricaoLonga" (ngModelChange)="marcarSujo()" [disabled]="!modoEdicao()"
-                              class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none disabled:opacity-60 resize-none"></textarea>
-                  </div>
-                  <div class="sm:col-span-2">
-                    <label class="text-xs text-slate-500">Descrição de uso</label>
-                    <textarea rows="2" [(ngModel)]="e.descricaoUso" (ngModelChange)="marcarSujo()" [disabled]="!modoEdicao()"
                               class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none disabled:opacity-60 resize-none"></textarea>
                   </div>
                 </div>

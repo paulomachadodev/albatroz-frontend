@@ -51,7 +51,7 @@
       (tamanhoPaginaMudou)="aoMudarTamanhoPagina($event)">
 
       <div filtros class="space-y-4">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-9 gap-4">
           <div class="sm:col-span-2">
             <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Buscar</label>
             <input type="text" [(ngModel)]="filtro.texto" placeholder="Nome, código ou GTIN..."
@@ -76,6 +76,15 @@
               <option value="">Todos</option>
               <option value="com_sugestao">Com sugestão</option>
               <option value="sem_sugestao">Sem sugestão</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Estoque</label>
+            <select [(ngModel)]="filtro.comEstoque"
+                    class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none">
+              <option [ngValue]="undefined">Todos</option>
+              <option [ngValue]="true">Com estoque</option>
+              <option [ngValue]="false">Sem estoque</option>
             </select>
           </div>
           <div>
@@ -141,20 +150,36 @@
           <th class="px-6 py-4">
             <app-th-ordenavel campo="produto" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Produto</app-th-ordenavel>
           </th>
-          <th class="px-6 py-4 text-center">Curva</th>
-          <th class="px-6 py-4 text-right">
+          <th class="px-3 py-4 w-14 text-center">Curva</th>
+          <th class="px-3 py-4 w-16 text-right">
             <app-th-ordenavel campo="estoque" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Estoque</app-th-ordenavel>
           </th>
-          <th class="px-6 py-4 text-right">{{ rotuloColunaVendas() }}</th>
+          <th class="px-3 py-4 w-16 text-right">{{ rotuloColunaVendas() }}</th>
           <th class="px-6 py-4 text-right">Custo unit.</th>
-          <th class="px-6 py-4 text-right">Caixa</th>
+          <th class="px-3 py-4 w-14 text-right">Caixa</th>
           <th class="px-6 py-4 text-center">Sugestão</th>
           <th class="px-6 py-4 text-right">
             <app-th-ordenavel campo="valor" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Valor estimado</app-th-ordenavel>
           </th>
-          <th class="px-6 py-4 text-right">Cobertura</th>
-          <th class="px-6 py-4">Marca</th>
-          <th class="px-6 py-4">Fornecedor</th>
+          @if (colunaVisivel('cobertura')) {
+            <th class="px-3 py-4 w-16 text-right">Cobertura</th>
+          }
+          @if (colunaVisivel('marca')) {
+            <th class="px-6 py-4">Marca</th>
+          }
+          @if (colunaVisivel('fornecedor')) {
+            <th class="px-6 py-4">Fornecedor</th>
+          }
+          @if (colunaVisivel('ultimaCompra')) {
+            <th class="px-6 py-4 text-right">Última Compra</th>
+          }
+          @if (colunaVisivel('ultimaVenda')) {
+            <th class="px-6 py-4 text-right">Última Venda</th>
+          }
+          <th class="px-3 py-4 w-10 text-right">
+            <app-colunas-configuraveis [colunas]="colunasConfiguraveis" [visiveis]="colunasVisiveis()"
+                                        (visivelMudou)="aoAlternarColuna($event)"></app-colunas-configuraveis>
+          </th>
         </tr>
       </ng-template>
 
@@ -168,22 +193,12 @@
           <td class="px-6 py-4 cursor-pointer" (click)="abrirProduto(item)">
             <p class="text-sm font-bold text-slate-900 dark:text-slate-100">{{ item.nome }}</p>
             <p class="text-xs text-slate-400">{{ item.codigo }}</p>
-            @if (item.alertaReposicaoUrgente) {
-              <span class="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400">
-                <span class="material-symbols-outlined text-xs">warning</span> risco de faltar antes de chegar
-              </span>
-            }
-            @if (item.abaixoPedidoMinimo) {
-              <span class="inline-flex items-center gap-1 mt-1 ml-1 px-2 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400">
-                abaixo do pedido mínimo
-              </span>
-            }
           </td>
-          <td class="px-6 py-4 text-center text-sm font-bold cursor-pointer" (click)="abrirProduto(item)">{{ item.curvaAbc || '-' }}</td>
-          <td class="px-6 py-4 text-right text-sm cursor-pointer" (click)="abrirProduto(item)">{{ formatarNumero(item.estoqueAtual) }}</td>
-          <td class="px-6 py-4 text-right text-sm cursor-pointer" (click)="abrirProduto(item)">{{ formatarNumero(item.vendidoPeriodo) }}</td>
+          <td class="px-3 py-4 text-center text-sm font-bold cursor-pointer" (click)="abrirProduto(item)">{{ item.curvaAbc || '-' }}</td>
+          <td class="px-3 py-4 text-right text-sm cursor-pointer" (click)="abrirProduto(item)">{{ formatarNumero(item.estoqueAtual) }}</td>
+          <td class="px-3 py-4 text-right text-sm cursor-pointer" (click)="abrirProduto(item)">{{ formatarNumero(item.vendidoPeriodo) }}</td>
           <td class="px-6 py-4 text-right text-sm cursor-pointer" (click)="abrirProduto(item)">{{ formatarReais(item.precoCusto) }}</td>
-          <td class="px-6 py-4 text-right text-xs text-slate-400 cursor-pointer" (click)="abrirProduto(item)">{{ rotuloCaixa(item) }}</td>
+          <td class="px-3 py-4 text-right text-xs text-slate-400 cursor-pointer" (click)="abrirProduto(item)">{{ rotuloCaixa(item) }}</td>
           <td class="px-6 py-4">
             <div class="flex items-center justify-center gap-1">
               <button (click)="ajustarSugestao(item, -1)" class="w-6 h-6 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-sm font-bold">−</button>
@@ -192,10 +207,7 @@
               <button (click)="ajustarSugestao(item, 1)" class="w-6 h-6 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-sm font-bold">+</button>
             </div>
             <div class="flex items-center justify-center gap-2 mt-1">
-              <span class="text-xs text-slate-400">exato: {{ formatarNumero(item.sugestaoCompraQtd90d) }}</span>
-              @if (item.caixasSugeridas != null && item.quantidadePorCaixa && item.quantidadePorCaixa > 1) {
-                <span class="text-xs text-slate-400">· {{ item.caixasSugeridas }} cx</span>
-              }
+              <span class="text-xs text-slate-400">sugestão: {{ formatarNumero(item.sugestaoCompraQtd90d) }}</span>
               @if (foiAjustado(item)) {
                 <button (click)="restaurarSugestao(item)" class="text-xs text-primary hover:underline">restaurar</button>
               }
@@ -204,10 +216,41 @@
           <td class="px-6 py-4 text-right text-sm font-bold cursor-pointer" (click)="abrirProduto(item)">
             {{ formatarReais(quantidadeEfetiva(item) * (item.precoCusto ?? 0)) }}
           </td>
-          <td class="px-6 py-4 text-right text-sm cursor-pointer" (click)="abrirProduto(item)">{{ item.coberturaDiasComCompra != null ? (item.coberturaDiasComCompra + ' d') : '-' }}</td>
-          <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 cursor-pointer" (click)="abrirProduto(item)">{{ item.marca || '-' }}</td>
-          <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 cursor-pointer" (click)="abrirProduto(item)">{{ item.fornecedor || '-' }}</td>
+          @if (colunaVisivel('cobertura')) {
+            <td class="px-3 py-4 text-right text-sm cursor-pointer" (click)="abrirProduto(item)">{{ item.coberturaDiasComCompra != null ? (item.coberturaDiasComCompra + ' d') : '-' }}</td>
+          }
+          @if (colunaVisivel('marca')) {
+            <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 cursor-pointer" (click)="abrirProduto(item)">{{ item.marca || '-' }}</td>
+          }
+          @if (colunaVisivel('fornecedor')) {
+            <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 cursor-pointer" (click)="abrirProduto(item)">{{ item.fornecedor || '-' }}</td>
+          }
+          @if (colunaVisivel('ultimaCompra')) {
+            <td class="px-6 py-4 text-right text-sm text-slate-600 dark:text-slate-400 cursor-pointer" (click)="abrirProduto(item)">{{ formatarData(item.dataUltimaCompra) }}</td>
+          }
+          @if (colunaVisivel('ultimaVenda')) {
+            <td class="px-6 py-4 text-right text-sm text-slate-600 dark:text-slate-400 cursor-pointer" (click)="abrirProduto(item)">{{ formatarData(item.dataUltimaVenda) }}</td>
+          }
+          <td class="px-3 py-4"></td>
         </tr>
+        @if (item.alertaReposicaoUrgente || item.abaixoPedidoMinimo) {
+          <tr>
+            <td colspan="100" class="px-6 py-1"
+                [class]="item.alertaReposicaoUrgente ? 'bg-red-50 dark:bg-red-900/10' : 'bg-amber-50 dark:bg-amber-900/10'">
+              <div class="flex items-center gap-3 text-xs font-bold"
+                   [class]="item.alertaReposicaoUrgente ? 'text-red-700 dark:text-red-400' : 'text-amber-700 dark:text-amber-400'">
+                @if (item.alertaReposicaoUrgente) {
+                  <span class="inline-flex items-center gap-1">
+                    <span class="material-symbols-outlined text-xs">warning</span> risco de faltar antes de chegar
+                  </span>
+                }
+                @if (item.abaixoPedidoMinimo) {
+                  <span>abaixo do pedido mínimo do fornecedor</span>
+                }
+              </div>
+            </td>
+          </tr>
+        }
       </ng-template>
 
     </app-listagem-paginada>

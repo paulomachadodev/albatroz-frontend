@@ -20,6 +20,7 @@ export interface SugestaoCompraFiltro {
   idFornecedor?: number;
   curvaAbc?: string;
   comSugestao?: ComSugestaoFiltro;
+  comEstoque?: boolean;
   dataInicio?: string;
   dataFim?: string;
   diasCobertura?: number;

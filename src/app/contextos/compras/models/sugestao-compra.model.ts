@@ -30,4 +30,8 @@ export interface SugestaoCompra {
   valorPedidoMinimo?: number;
   alertaReposicaoUrgente: boolean;
   abaixoPedidoMinimo: boolean;
+
+  dataUltimaVenda?: string;
+  dataUltimaCompra?: string;
+  precoUltimaCompra?: number;
 }

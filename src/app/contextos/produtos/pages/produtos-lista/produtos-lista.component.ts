@@ -48,7 +48,7 @@ export class ProdutosListaComponent implements OnInit {
   tamanhoPagina = signal(10);
   ordenacaoAtual = signal<Ordenacao | null>(null);
 
-  filtro: ProdutoFiltro = {};
+  filtro: ProdutoFiltro = { situacao: 'A' };
   marcaFiltro = signal<OpcaoSelectBusca | null>(null);
   fornecedorFiltro = signal<OpcaoSelectBusca | null>(null);
 
@@ -131,7 +131,7 @@ export class ProdutosListaComponent implements OnInit {
   }
 
   limparFiltros() {
-    this.filtro = {};
+    this.filtro = { situacao: 'A' };
     this.marcaFiltro.set(null);
     this.fornecedorFiltro.set(null);
     this.ordenacaoAtual.set(null);

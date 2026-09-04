@@ -1,4 +1,5 @@
 import { Component, OnInit, signal, computed } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Observable, of } from 'rxjs';
@@ -13,15 +14,18 @@ import { PageHeaderComponent } from '../../../../shared/components/page-header/p
 import { Ordenacao, ThOrdenavelComponent } from '../../../../shared/components/th-ordenavel/th-ordenavel.component';
 import { SelectBuscaComponent, OpcaoSelectBusca } from '../../../../shared/components/select-busca/select-busca.component';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
+import { ColunasConfiguraveisComponent, ColunaConfiguravel } from '../../../../shared/components/colunas-configuraveis/colunas-configuraveis.component';
 import { MarcasService } from '../../../produtos/services/marcas.service';
 import { ContatosService } from '../../../cadastros/contatos/services/contatos.service';
 
 const CHAVE_LOCALSTORAGE = 'compras-sugestoes-ajustadas-v1';
+const CHAVE_LOCALSTORAGE_COLUNAS = 'compras-colunas-visiveis-v1';
+const COLUNAS_VISIVEIS_PADRAO = ['cobertura', 'marca', 'fornecedor'];
 
 @Component({
   selector: 'app-compras-lista',
   standalone: true,
-  imports: [RouterLink, FormsModule, ListagemPaginadaComponent, PageHeaderComponent, ThOrdenavelComponent, SelectBuscaComponent, ModalComponent],
+  imports: [RouterLink, FormsModule, ListagemPaginadaComponent, PageHeaderComponent, ThOrdenavelComponent, SelectBuscaComponent, ModalComponent, ColunasConfiguraveisComponent],
   templateUrl: './compras-lista.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
@@ -40,6 +44,15 @@ export class ComprasListaComponent implements OnInit {
   periodoPreset: '' | 'dez_mar' | 'personalizado' = '';
 
   ajustesLocais = signal<Record<number, number>>(this.carregarAjustesLocais());
+
+  colunasConfiguraveis: ColunaConfiguravel[] = [
+    { chave: 'cobertura', rotulo: 'Cobertura' },
+    { chave: 'marca', rotulo: 'Marca' },
+    { chave: 'fornecedor', rotulo: 'Fornecedor' },
+    { chave: 'ultimaCompra', rotulo: 'Última Compra' },
+    { chave: 'ultimaVenda', rotulo: 'Última Venda' }
+  ];
+  colunasVisiveis = signal<Set<string>>(this.carregarColunasVisiveis());
 
   buscarMarcas = (termo: string) => this.marcasService.buscar(termo);
   buscarFornecedores = (termo: string) => this.contatosService.buscar(termo, 'Fornecedor');
@@ -190,6 +203,27 @@ export class ComprasListaComponent implements OnInit {
     try { localStorage.setItem(CHAVE_LOCALSTORAGE, JSON.stringify(valores)); } catch { }
   }
 
+  private carregarColunasVisiveis(): Set<string> {
+    try {
+      const bruto = localStorage.getItem(CHAVE_LOCALSTORAGE_COLUNAS);
+      return bruto ? new Set(JSON.parse(bruto)) : new Set(COLUNAS_VISIVEIS_PADRAO);
+    } catch {
+      return new Set(COLUNAS_VISIVEIS_PADRAO);
+    }
+  }
+
+  colunaVisivel(chave: string): boolean {
+    return this.colunasVisiveis().has(chave);
+  }
+
+  aoAlternarColuna(evento: { chave: string; visivel: boolean }) {
+    const novo = new Set(this.colunasVisiveis());
+    if (evento.visivel) novo.add(evento.chave);
+    else novo.delete(evento.chave);
+    this.colunasVisiveis.set(novo);
+    try { localStorage.setItem(CHAVE_LOCALSTORAGE_COLUNAS, JSON.stringify([...novo])); } catch { }
+  }
+
   quantidadeEfetiva(item: SugestaoCompra): number {
     const ajustes = this.ajustesLocais();
     return ajustes[item.idProduto] ?? item.quantidadeAjustada ?? 0;
@@ -232,7 +266,7 @@ export class ComprasListaComponent implements OnInit {
 
   rotuloCaixa(item: SugestaoCompra): string {
     if (!item.quantidadePorCaixa || item.quantidadePorCaixa <= 1) return '-';
-    return `cx c/ ${item.quantidadePorCaixa}`;
+    return String(item.quantidadePorCaixa);
   }
 
   estaSelecionado(item: SugestaoCompra): boolean {
@@ -319,6 +353,13 @@ export class ComprasListaComponent implements OnInit {
     return valor.toLocaleString('pt-BR');
   }
 
+  private datePipe = new DatePipe('pt-BR');
+
+  formatarData(valor?: string): string {
+    if (!valor) return '-';
+    return this.datePipe.transform(valor, 'dd/MM/yyyy', 'America/Sao_Paulo') ?? '-';
+  }
+
   exportarRelatorio(formato: 'xlsx' | 'csv') {
     this.exportando.set(true);
     this.buscarTodasPaginas(1, []).subscribe({
@@ -343,6 +384,9 @@ export class ComprasListaComponent implements OnInit {
           'Qtd a Comprar': this.quantidadeEfetiva(item),
           'Valor Total': this.quantidadeEfetiva(item) * (item.precoCusto ?? 0),
           'Cobertura c/ Compra (dias)': item.coberturaDiasComCompra ?? '',
+          'Última Venda': this.formatarData(item.dataUltimaVenda),
+          'Última Compra': this.formatarData(item.dataUltimaCompra),
+          'Preço Última Compra': item.precoUltimaCompra ?? '',
           'Prazo Entrega Fornecedor': item.prazoEntregaDias ?? '',
           'Pedido Mínimo Fornecedor': item.valorPedidoMinimo ?? '',
           'Alerta Reposição Urgente': item.alertaReposicaoUrgente ? 'Sim' : 'Não',

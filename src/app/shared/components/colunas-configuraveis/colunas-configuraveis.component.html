@@ -1,0 +1,10 @@
+<app-btn-icone icone="view_column" titulo="Configurar colunas" (clicar)="abrir()"></app-btn-icone>
+
+<app-drawer [aberto]="drawerAberto()" titulo="Colunas" (fechar)="fechar()">
+  <div class="space-y-4">
+    @for (coluna of colunas(); track coluna.chave) {
+      <app-toggle [valor]="estaVisivel(coluna.chave)" [label]="coluna.rotulo"
+                  (valorMudou)="alternar(coluna.chave, $event)"></app-toggle>
+    }
+  </div>
+</app-drawer>

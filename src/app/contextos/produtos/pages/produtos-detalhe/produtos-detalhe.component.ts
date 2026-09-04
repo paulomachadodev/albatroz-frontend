@@ -299,17 +299,20 @@ export class ProdutosDetalheComponent implements OnInit {
   // ---- Aba Web — Imagens ----
 
   imagemNoSlot(slot: number): ProdutoImagem | null {
-    return this.produto()?.imagens?.[slot] ?? null;
+    return this.produto()?.imagens?.find(i => i.indice === slot + 1) ?? null;
+  }
+
+  private maiorIndiceOcupado(): number {
+    const imagens = this.produto()?.imagens ?? [];
+    return imagens.reduce((max, i) => Math.max(max, i.indice), 0);
   }
 
   slotBloqueado(slot: number): boolean {
-    const total = this.produto()?.imagens.length ?? 0;
-    return slot > total;
+    return slot > this.maiorIndiceOcupado();
   }
 
   slotAceitaDrop(slot: number): boolean {
-    const total = this.produto()?.imagens.length ?? 0;
-    return slot <= total;
+    return slot <= this.maiorIndiceOcupado();
   }
 
   aoSelecionarArquivosSlot(event: Event, slot: number) {
@@ -360,8 +363,7 @@ export class ProdutosDetalheComponent implements OnInit {
       return;
     }
 
-    const totalAtual = this.produto()?.imagens.length ?? 0;
-    const vagas = this.maximoImagens - totalAtual;
+    const vagas = this.maximoImagens - slot;
     const aEnviar = imagens.slice(0, vagas);
     if (imagens.length > aEnviar.length) {
       this.toast.erro(`${imagens.length - aEnviar.length} imagem(ns) não coube(ram) — máximo de ${this.maximoImagens} por produto.`);
@@ -371,7 +373,7 @@ export class ProdutosDetalheComponent implements OnInit {
     this.enviandoImagem.set(true);
     this.imagensConcluidas.set(0);
     this.imagensTotal.set(aEnviar.length);
-    this.enviarSequencial(aEnviar, totalAtual + 1, 0);
+    this.enviarSequencial(aEnviar, slot + 1, 0);
   }
 
   private enviarSequencial(arquivos: File[], indiceInicial: number, i: number) {

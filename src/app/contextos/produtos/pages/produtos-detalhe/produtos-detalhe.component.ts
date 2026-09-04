@@ -315,6 +315,15 @@ export class ProdutosDetalheComponent implements OnInit {
     return slot <= this.maiorIndiceOcupado();
   }
 
+  private vagasContiguasApartirDoSlot(slot: number): number {
+    let vagas = 0;
+    for (let s = slot; s < this.maximoImagens; s++) {
+      if (this.imagemNoSlot(s)) break;
+      vagas++;
+    }
+    return vagas;
+  }
+
   aoSelecionarArquivosSlot(event: Event, slot: number) {
     const input = event.target as HTMLInputElement;
     const arquivos = input.files;
@@ -363,7 +372,7 @@ export class ProdutosDetalheComponent implements OnInit {
       return;
     }
 
-    const vagas = this.maximoImagens - slot;
+    const vagas = this.vagasContiguasApartirDoSlot(slot);
     const aEnviar = imagens.slice(0, vagas);
     if (imagens.length > aEnviar.length) {
       this.toast.erro(`${imagens.length - aEnviar.length} imagem(ns) não coube(ram) — máximo de ${this.maximoImagens} por produto.`);

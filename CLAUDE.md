@@ -18,6 +18,12 @@ Ler `.claude/standards/angular/listagem-padrao.md` inteiro antes de criar botão
 
 ---
 
+## ⚠️ Antes de commit/push (obrigatório)
+
+Toda alteração de código neste repo passa pela skill `code-review` (`/code-review`) antes do commit/push — não só a pré-revisão de comentários (`revisao-pre-commit`). Rodar no diff da mudança, aplicar os achados relevantes, só então commitar e dar push.
+
+---
+
 ## Stack
 
 - **Angular 19** — standalone components, signals, inject()

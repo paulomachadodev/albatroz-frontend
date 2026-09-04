@@ -25,6 +25,18 @@
 
     <app-page-header titulo="Relatório de Compras"
       subtitulo="Cruza venda, giro de estoque e estoque atual pra sugerir o que comprar de cada produto — ajustada pra fechar caixa quando o produto tem quantidade por caixa cadastrada, e considera o prazo de entrega e o pedido mínimo do fornecedor principal.">
+      <div acoes class="flex gap-2">
+        <button type="button" (click)="exportarRelatorio('xlsx')" [disabled]="exportando()"
+                class="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50 transition-all">
+          <span class="material-symbols-outlined text-base">download</span>
+          {{ exportando() ? 'Exportando...' : 'Exportar XLSX' }}
+        </button>
+        <button type="button" (click)="exportarRelatorio('csv')" [disabled]="exportando()"
+                class="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50 transition-all">
+          <span class="material-symbols-outlined text-base">download</span>
+          CSV
+        </button>
+      </div>
     </app-page-header>
 
     <app-listagem-paginada

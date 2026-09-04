@@ -3,6 +3,7 @@ import { Component, OnInit, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import * as XLSX from 'xlsx';
+import { exportarPlanilha } from '../../../../shared/utils/exportar-planilha';
 import { ProdutosService, ProdutoFiltro } from '../../services/produtos.service';
 import { ProdutoResumo } from '../../models/produto.model';
 import { AlterarProdutoEmMassaItemResposta, ImportarFornecedorEmMassaItemResposta } from '../../dtos/produto-resposta.dto';
@@ -262,7 +263,7 @@ export class ProdutosListaComponent implements OnInit {
       Marca: item.marca ?? '',
       QuantidadePorCaixa: ''
     }));
-    this.exportar(linhas, 'produtos-alterar-em-massa', 'Produtos');
+    exportarPlanilha(linhas, 'produtos-alterar-em-massa', 'Produtos');
   }
 
   aoSelecionarPlanilhaMassa(event: Event) {
@@ -320,7 +321,7 @@ export class ProdutosListaComponent implements OnInit {
 
   baixarPlanilhaFornecedores(formato: 'xlsx' | 'csv') {
     const linhas: LinhaPlanilhaFornecedores[] = [{ Codigo: '', CodigoFornecedor: '', CodigoNoFornecedor: '' }];
-    this.exportar(linhas, 'produtos-importar-fornecedores', 'Fornecedores', formato);
+    exportarPlanilha(linhas, 'produtos-importar-fornecedores', 'Fornecedores', formato);
   }
 
   aoSelecionarPlanilhaFornecedores(event: Event) {
@@ -369,24 +370,6 @@ export class ProdutosListaComponent implements OnInit {
     }
     const livro = XLSX.read(buffer, { type: 'array' });
     return XLSX.utils.sheet_to_json<T>(livro.Sheets[livro.SheetNames[0]]);
-  }
-
-  private exportar<T>(linhas: T[], nomeBase: string, nomeAba: string, formato: 'xlsx' | 'csv' = 'xlsx') {
-    const planilha = XLSX.utils.json_to_sheet(linhas);
-    if (formato === 'csv') {
-      const csv = XLSX.utils.sheet_to_csv(planilha);
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${nomeBase}.csv`;
-      a.click();
-      URL.revokeObjectURL(url);
-      return;
-    }
-    const livro = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(livro, planilha, nomeAba);
-    XLSX.writeFile(livro, `${nomeBase}.xlsx`);
   }
 
   rotuloTipo(tipo: string): string {

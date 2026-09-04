@@ -1,6 +1,9 @@
 import { Component, OnInit, signal, computed } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { Observable, of } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
+import { exportarPlanilha } from '../../../../shared/utils/exportar-planilha';
 import { ComprasService, SugestaoCompraFiltro, ComSugestaoFiltro } from '../../services/compras.service';
 import { PedidosCompraService } from '../../services/pedidos-compra.service';
 import { SugestaoCompra } from '../../models/sugestao-compra.model';
@@ -36,8 +39,6 @@ export class ComprasListaComponent implements OnInit {
   fornecedorSelecionado: OpcaoSelectBusca | null = null;
   periodoPreset: '' | 'dez_mar' | 'personalizado' = '';
 
-  // Sugestão editável — override local por produto, sobrevive a reload da página (localStorage),
-  // nunca é mandado pro backend. Chave = idProduto.
   ajustesLocais = signal<Record<number, number>>(this.carregarAjustesLocais());
 
   buscarMarcas = (termo: string) => this.marcasService.buscar(termo);
@@ -51,7 +52,6 @@ export class ComprasListaComponent implements OnInit {
     }, 0);
   });
 
-  // ---- Seleção pra gerar pedido de compra ----
   selecionados = new Map<number, SugestaoCompra>();
   qtdSelecionados = signal(0);
   modalPedidoAberto = signal(false);
@@ -61,6 +61,8 @@ export class ComprasListaComponent implements OnInit {
   saldoAPagarFornecedorPedido = signal<number | null>(null);
 
   buscarFornecedoresPedido = (termo: string) => this.contatosService.buscar(termo, 'Fornecedor');
+
+  exportando = signal(false);
 
   constructor(
     private comprasService: ComprasService,
@@ -73,8 +75,6 @@ export class ComprasListaComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    // Vindo do Painel de Fornecedores ("Fechar pedido") — filtro de fornecedor já aplicado,
-    // ignora estado salvo da última visita pra não misturar contexto.
     const params = this.route.snapshot.queryParamMap;
     const idFornecedor = params.get('idFornecedor');
     const fornecedorNome = params.get('fornecedorNome');
@@ -176,8 +176,6 @@ export class ComprasListaComponent implements OnInit {
     this.router.navigate(['/produtos', item.idProduto], { queryParams: { origem: 'compras' } });
   }
 
-  // ---- Sugestão editável (local, não vai pro backend) ----
-
   private carregarAjustesLocais(): Record<number, number> {
     try {
       const bruto = localStorage.getItem(CHAVE_LOCALSTORAGE);
@@ -189,7 +187,7 @@ export class ComprasListaComponent implements OnInit {
 
   private salvarAjustesLocais(valores: Record<number, number>) {
     this.ajustesLocais.set(valores);
-    try { localStorage.setItem(CHAVE_LOCALSTORAGE, JSON.stringify(valores)); } catch { /* localStorage indisponível — ignora */ }
+    try { localStorage.setItem(CHAVE_LOCALSTORAGE, JSON.stringify(valores)); } catch { }
   }
 
   quantidadeEfetiva(item: SugestaoCompra): number {
@@ -236,8 +234,6 @@ export class ComprasListaComponent implements OnInit {
     if (!item.quantidadePorCaixa || item.quantidadePorCaixa <= 1) return '-';
     return `cx c/ ${item.quantidadePorCaixa}`;
   }
-
-  // ---- Seleção pra gerar pedido de compra ----
 
   estaSelecionado(item: SugestaoCompra): boolean {
     return this.selecionados.has(item.idProduto);
@@ -322,4 +318,53 @@ export class ComprasListaComponent implements OnInit {
     if (valor == null) return '-';
     return valor.toLocaleString('pt-BR');
   }
+
+  exportarRelatorio(formato: 'xlsx' | 'csv') {
+    this.exportando.set(true);
+    this.buscarTodasPaginas(1, []).subscribe({
+      next: itens => {
+        this.exportando.set(false);
+        if (itens.length === 0) {
+          this.toast.erro('Nenhum produto encontrado com os filtros atuais.');
+          return;
+        }
+        const linhas = itens.map(item => ({
+          'Código': item.codigo,
+          'Produto': item.nome,
+          'GTIN': item.gtin ?? '',
+          'Marca': item.marca ?? '',
+          'Fornecedor': item.fornecedor ?? '',
+          'Curva ABC': item.curvaAbc ?? '',
+          'Estoque Atual': item.estoqueAtual,
+          'Preço Custo': item.precoCusto ?? 0,
+          [this.rotuloColunaVendas()]: item.vendidoPeriodo ?? 0,
+          'Qtd/Caixa': item.quantidadePorCaixa ?? '',
+          'Sugestão (calc.)': item.sugestaoCompraQtd90d ?? 0,
+          'Qtd a Comprar': this.quantidadeEfetiva(item),
+          'Valor Total': this.quantidadeEfetiva(item) * (item.precoCusto ?? 0),
+          'Cobertura c/ Compra (dias)': item.coberturaDiasComCompra ?? '',
+          'Prazo Entrega Fornecedor': item.prazoEntregaDias ?? '',
+          'Pedido Mínimo Fornecedor': item.valorPedidoMinimo ?? '',
+          'Alerta Reposição Urgente': item.alertaReposicaoUrgente ? 'Sim' : 'Não',
+          'Abaixo Pedido Mínimo': item.abaixoPedidoMinimo ? 'Sim' : 'Não'
+        }));
+        exportarPlanilha(linhas, 'relatorio-compras', 'Sugestões', formato);
+      },
+      error: err => {
+        this.exportando.set(false);
+        this.toast.erroServidor(err, 'Não foi possível exportar o relatório.');
+      }
+    });
+  }
+
+  private buscarTodasPaginas(pagina: number, acumulado: SugestaoCompra[]): Observable<SugestaoCompra[]> {
+    return this.comprasService.listarSugestoes({ pagina, tamanho: 100 }, this.filtro).pipe(
+      switchMap(res => {
+        const itens = [...acumulado, ...(res.dados?.dados ?? [])];
+        const totalPaginas = res.dados?.totalPaginas ?? 1;
+        return pagina < totalPaginas ? this.buscarTodasPaginas(pagina + 1, itens) : of(itens);
+      })
+    );
+  }
+
 }

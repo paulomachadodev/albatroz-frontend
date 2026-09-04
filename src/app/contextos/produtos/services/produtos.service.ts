@@ -25,6 +25,7 @@ export interface ProdutoFiltro {
   texto?: string;
   tipo?: ProdutoTipo;
   situacao?: string;
+  curvaAbc?: string;
   temImagem?: boolean;
   tinyIdFornecedor?: number;
   idFornecedor?: number;
@@ -39,9 +40,6 @@ export interface EstadoListaProdutos {
   filtro: ProdutoFiltro;
   pagina: number;
   tamanhoPagina: number;
-  // Filtro só guarda os ids (o que a API precisa) — sem o rótulo, os widgets de busca
-  // (app-select-busca) voltavam em branco ao retornar da tela de detalhe, mesmo com o
-  // filtro de fato ainda aplicado. Guardar a opção inteira aqui resolve a exibição.
   marcaSelecionada?: OpcaoSelectBusca | null;
   fornecedorSelecionado?: OpcaoSelectBusca | null;
 }
@@ -55,8 +53,6 @@ export interface ImagemCandidataFiltro {
 export class ProdutosService {
   private endpoint = '/v1/produtos';
 
-  // Guarda filtro/página/ordenação da última listagem pra restaurar quando o usuário
-  // volta da tela de detalhe (em vez de resetar a busca do zero).
   estadoLista: EstadoListaProdutos | null = null;
 
   constructor(private api: ApiService) {}
@@ -99,8 +95,6 @@ export class ProdutosService {
     return this.api.delete<void>(`${this.endpoint}/${id}/imagens`);
   }
 
-  // ---- Imagens candidatas (busca automática por GTIN, revisão manual) ----
-
   listarImagensCandidatas(paginacao: ParametrosPaginacao, filtro?: ImagemCandidataFiltro): Observable<Resultado<Paginacao<ImagemCandidata>>> {
     return this.api.getPaginado<ImagemCandidata>(`${this.endpoint}/imagens-candidatas`, paginacao, filtro);
   }
@@ -134,8 +128,6 @@ export class ProdutosService {
     return this.api.post<ProdutoImportarImagensResposta>(`${this.endpoint}/imagens/importar-lote`, formData);
   }
 
-  // ---- Fornecedores (aba Fornecedores — produto_fornecedor_erp) ----
-
   adicionarFornecedor(id: number, requisicao: AdicionarFornecedorProdutoRequisicao): Observable<Resultado<{ id: number }>> {
     return this.api.post<{ id: number }>(`${this.endpoint}/${id}/fornecedores`, requisicao);
   }
@@ -156,8 +148,6 @@ export class ProdutosService {
     return this.api.post<ImportarFornecedoresEmMassaResposta>(`${this.endpoint}/fornecedores/importar-em-massa`, { itens });
   }
 
-  // ---- Listas de preço (aba Preço) ----
-
   listarListasPreco(): Observable<Resultado<ListaPreco[]>> {
     return this.api.get<ListaPreco[]>(`${this.endpoint}/listas-preco`);
   }
@@ -169,8 +159,6 @@ export class ProdutosService {
   atualizarListaPreco(idLista: number, requisicao: AtualizarListaPrecoRequisicao): Observable<Resultado<void>> {
     return this.api.put<void>(`${this.endpoint}/listas-preco/${idLista}`, requisicao);
   }
-
-  // ---- Enriquecimento (aba Web — SEO/Google/Tags) ----
 
   obterEnriquecimento(id: number): Observable<Resultado<ProdutoEnriquecimento>> {
     return this.api.get<ProdutoEnriquecimento>(`${this.endpoint}/${id}/enriquecimento`);
@@ -190,8 +178,6 @@ export class ProdutosService {
     );
   }
 
-  // ---- Marketplaces (Google/Meta/Site) ----
-
   listarMarketplaces(id: number): Observable<Resultado<MarketplaceProduto[]>> {
     return this.api.get<MarketplaceProduto[]>(`${this.endpoint}/${id}/marketplaces`);
   }
@@ -203,8 +189,6 @@ export class ProdutosService {
   definirMarketplaceEmMassa(idsProduto: number[], marketplace: string, habilitado: boolean): Observable<Resultado<{ alterados: number }>> {
     return this.api.post<{ alterados: number }>(`${this.endpoint}/marketplaces/alterar-em-massa`, { idsProduto, marketplace, habilitado });
   }
-
-  // ---- Análise ----
 
   obterAnalise(id: number): Observable<Resultado<ProdutoAnalise>> {
     return this.api.get<ProdutoAnalise>(`${this.endpoint}/${id}/analise`);

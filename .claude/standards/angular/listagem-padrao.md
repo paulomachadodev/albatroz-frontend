@@ -342,3 +342,11 @@ Nunca colocar o botão "Filtrar"/"Limpar" como célula dentro da grid de campos 
 ```
 
 Campo condicional (ex: um filtro de período que só aparece quando outro select está num valor específico) entra **dentro da mesma grid** de campos via `@if`, nunca como uma segunda `<div class="grid ...">` empilhada abaixo — isso insere uma linha inteira nova e empurra tudo que vem depois. Deixar a grid ter colunas suficientes (ex: `lg:grid-cols-6`) pra o campo condicional caber na mesma ou próxima linha sem estourar o número de linhas.
+
+## Densidade de filtros — nunca campo isolado ocupando linha própria (regra 2026-09-04)
+
+Toda grid de filtro dimensiona `grid-cols-N` pelo **número real de campos**, não por um valor fixo copiado de outra tela. Um select booleano/status (`Sim/Não/Todos`, 1 palavra) cabe em 1 coluna estreita; texto livre (`Buscar...`) precisa de 2; nenhum campo deve ficar sozinho numa linha que sobra vazia ao lado — isso é sintoma de `grid-cols` baixo demais pro tanto de filtro que a tela tem.
+
+Regra prática: contar os campos de filtro (Buscar conta como 2), somar, e escolher `lg:grid-cols-N` igual ou próximo da soma — prefere **mais colunas, menos linhas** a manter um valor padrão tipo `grid-cols-4` que sobrou de outra tela com menos filtros. Referência: `compras-lista` usa `lg:grid-cols-6` pra 7 campos (Buscar ocupa 2 de 8 posições efetivas); `produtos-lista` foi de `lg:grid-cols-4` (7 campos, 2-3 linhas) pra `lg:grid-cols-8` (8 campos, 1 linha) ao ganhar o filtro de Curva ABC.
+
+Isso vale só pra grid de **filtro** (topo da listagem) — não se aplica a formulário de cadastro/drawer, onde 1 campo por linha pode ser certo pra legibilidade dependendo do campo.

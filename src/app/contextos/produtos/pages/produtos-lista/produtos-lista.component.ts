@@ -80,8 +80,6 @@ export class ProdutosListaComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    // Restaura filtro/página/ordenação da última visita à lista (ex.: usuário voltou da
-    // tela de detalhe) em vez de resetar a busca do zero.
     const estado = this.produtosService.estadoLista;
     if (estado) {
       this.filtro = { ...estado.filtro };
@@ -198,8 +196,6 @@ export class ProdutosListaComponent implements OnInit {
     });
   }
 
-  // ---- Seleção pra alteração em massa ----
-
   estaSelecionado(item: ProdutoResumo): boolean {
     return this.selecionados.has(item.id);
   }
@@ -227,8 +223,6 @@ export class ProdutosListaComponent implements OnInit {
   fecharModalMassa() {
     this.modalMassaAberto.set(false);
   }
-
-  // ---- Habilitar/desabilitar marketplace em massa (produto_enriquecimento) ----
 
   abrirMarketplaceEmMassa() {
     if (this.selecionados.size === 0) {
@@ -315,10 +309,6 @@ export class ProdutosListaComponent implements OnInit {
     });
   }
 
-  // ---- Importar fornecedores em massa (produto_fornecedor_erp) ----
-  // Independente da seleção da lista — a planilha pode conter qualquer código de
-  // produto/fornecedor cadastrado, não só os visíveis na página atual.
-
   abrirImportarFornecedores() {
     this.resultadoFornecedores.set(null);
     this.modalFornecedoresAberto.set(true);
@@ -370,8 +360,6 @@ export class ProdutosListaComponent implements OnInit {
       input.value = '';
     });
   }
-
-  // ---- Import/export XLSX+CSV — parsing sempre no frontend, ver @standards/import-export.md ----
 
   private lerPlanilha<T>(buffer: ArrayBuffer, nomeArquivo: string): T[] {
     if (nomeArquivo.toLowerCase().endsWith('.csv')) {
@@ -427,6 +415,15 @@ export class ProdutosListaComponent implements OnInit {
       E: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400'
     };
     return mapa[situacao] ?? 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300';
+  }
+
+  classeCurvaAbc(curva?: string): string {
+    const mapa: Record<string, string> = {
+      A: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400',
+      B: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400',
+      C: 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300'
+    };
+    return curva ? (mapa[curva] ?? 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400') : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400';
   }
 
   formatarReais(valor?: number): string {

@@ -9,6 +9,7 @@ export interface ProdutoResumo {
   gtin?: string;
   situacao: string;
   tipo: ProdutoTipo;
+  curvaAbc?: string;
   quantidadeVariacoes: number;
   quantidadeItensKit: number;
   temImagem: boolean;
@@ -23,7 +24,6 @@ export interface ProdutoImagem {
   url: string;
 }
 
-// Status numérico — 0=pendente, 1=aprovada, 2=rejeitada (StatusImagemCandidata no backend).
 export const STATUS_IMAGEM_CANDIDATA = { PENDENTE: 0, APROVADA: 1, REJEITADA: 2 } as const;
 
 export interface ImagemCandidata {
@@ -134,7 +134,7 @@ export interface ProdutoAnalise {
 }
 
 export interface MarketplaceProduto {
-  codigo: string; // "google" | "meta" | "site"
+  codigo: string;
   nome: string;
   habilitado: boolean;
   elegivel: boolean;

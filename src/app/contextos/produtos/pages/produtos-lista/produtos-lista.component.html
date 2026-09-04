@@ -81,8 +81,8 @@
       (tamanhoPaginaMudou)="aoMudarTamanhoPagina($event)">
 
       <div filtros class="space-y-4">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div class="sm:col-span-2">
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-8 gap-4">
+          <div class="col-span-2 sm:col-span-1 lg:col-span-2">
             <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Buscar</label>
             <input type="text" [(ngModel)]="filtro.texto" placeholder="Nome, código ou GTIN..."
                    (keyup.enter)="aplicarFiltros()"
@@ -108,12 +108,32 @@
             </select>
           </div>
           <div>
+            <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Curva</label>
+            <select [(ngModel)]="filtro.curvaAbc"
+                    class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none">
+              <option [ngValue]="undefined">Todas</option>
+              <option value="A">A</option>
+              <option value="B">B</option>
+              <option value="C">C</option>
+              <option value="Sem Venda">Sem venda</option>
+            </select>
+          </div>
+          <div>
             <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Imagem</label>
             <select [(ngModel)]="filtro.temImagem"
                     class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none">
               <option [ngValue]="undefined">Todos</option>
               <option [ngValue]="true">Só com imagem</option>
               <option [ngValue]="false">Só sem imagem</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Estoque</label>
+            <select [(ngModel)]="filtro.comEstoque"
+                    class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none">
+              <option [ngValue]="undefined">Todos</option>
+              <option [ngValue]="true">Com estoque</option>
+              <option [ngValue]="false">Sem estoque</option>
             </select>
           </div>
           <div>
@@ -131,15 +151,6 @@
               placeholder="Buscar fornecedor..."
               [buscar]="buscarFornecedores"
               (selecionado)="fornecedorFiltro.set($event)"></app-select-busca>
-          </div>
-          <div>
-            <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Estoque</label>
-            <select [(ngModel)]="filtro.comEstoque"
-                    class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none">
-              <option [ngValue]="undefined">Todos</option>
-              <option [ngValue]="true">Com estoque</option>
-              <option [ngValue]="false">Sem estoque</option>
-            </select>
           </div>
         </div>
         <div class="flex justify-end gap-2">
@@ -161,11 +172,24 @@
           <th class="px-6 py-4">
             <app-th-ordenavel campo="nome" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Nome / Código</app-th-ordenavel>
           </th>
-          <th class="px-6 py-4">Marca</th>
-          <th class="px-6 py-4">Categoria</th>
-          <th class="px-6 py-4 text-center">Tipo</th>
-          <th class="px-6 py-4 text-center">Situação</th>
-          <th class="px-6 py-4 text-right">Estoque</th>
+          <th class="px-6 py-4">
+            <app-th-ordenavel campo="marca" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Marca</app-th-ordenavel>
+          </th>
+          <th class="px-6 py-4">
+            <app-th-ordenavel campo="categoria" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Categoria</app-th-ordenavel>
+          </th>
+          <th class="px-6 py-4 text-center">
+            <app-th-ordenavel campo="tipo" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Tipo</app-th-ordenavel>
+          </th>
+          <th class="px-6 py-4 text-center">
+            <app-th-ordenavel campo="curvaAbc" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Curva</app-th-ordenavel>
+          </th>
+          <th class="px-6 py-4 text-center">
+            <app-th-ordenavel campo="situacao" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Situação</app-th-ordenavel>
+          </th>
+          <th class="px-6 py-4 text-right">
+            <app-th-ordenavel campo="estoque" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Estoque</app-th-ordenavel>
+          </th>
           <th class="px-6 py-4 text-right">
             <app-th-ordenavel campo="preco" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Preço</app-th-ordenavel>
           </th>
@@ -212,6 +236,9 @@
           <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{{ item.categoria || '-' }}</td>
           <td class="px-6 py-4 text-center">
             <span class="px-2 py-0.5 rounded-full text-xs font-bold" [class]="classeTipo(item.tipo)">{{ rotuloTipo(item.tipo) }}</span>
+          </td>
+          <td class="px-6 py-4 text-center">
+            <span class="px-2 py-0.5 rounded-full text-xs font-bold" [class]="classeCurvaAbc(item.curvaAbc)">{{ item.curvaAbc || '-' }}</span>
           </td>
           <td class="px-6 py-4 text-center">
             <span class="px-2 py-0.5 rounded-full text-xs font-bold" [class]="classeSituacao(item.situacao)">{{ rotuloSituacao(item.situacao) }}</span>

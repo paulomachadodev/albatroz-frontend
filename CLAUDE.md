@@ -12,6 +12,12 @@ Checado antes de todo commit/push — ver skill `revisao-pre-commit`.
 
 ---
 
+## ⚠️ Feature com ligação back+front: sempre as duas pontas
+
+Toda feature que envolve dado vindo/indo pra API (novo filtro, nova coluna, novo botão de ação, export) só conta como entregue com **as duas pontas prontas** — endpoint/campo no `albatroz-backend` E o consumo real na tela aqui. Nunca parar no meio (só backend, ou só planejamento) sem avisar explicitamente que ficou pendente — isso já aconteceu (export Excel do Relatório de Compras planejado em 2026-09-04, nunca construído, usuário só percebeu ao abrir a tela dias depois). Se uma sessão for interrompida com só metade pronta, registrar isso como pendência clara (memória/plano), não deixar implícito.
+
+---
+
 ## ⚠️ Antes de escrever QUALQUER UI (obrigatório)
 
 Ler `.claude/standards/angular/listagem-padrao.md` inteiro antes de criar botão, toggle, tabela, modal, drawer, listagem, coluna de ações ou fluxo de salvar — nessa ordem de prioridade. Esse standard já resolve: botão de ação (`app-btn-icone`, nunca link cru pra 2+ ações), liga/desliga (`app-toggle`, nunca checkbox cru), listagem paginada, modal, drawer, dropdown de ações em massa, e a regra de **1 botão Salvar por registro** (nunca 1 por seção/aba do mesmo formulário). Criar um desses do zero sem checar aqui primeiro é bug, não estilo — já aconteceu (2026-08-21: telas de produto nasceram com botão Salvar espalhado e sem usar o padrão de ação existente porque esse arquivo não foi lido antes).

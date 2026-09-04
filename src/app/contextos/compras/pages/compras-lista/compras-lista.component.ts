@@ -284,6 +284,19 @@ export class ComprasListaComponent implements OnInit {
     this.qtdSelecionados.set(0);
   }
 
+  todosSelecionadosNaPagina(): boolean {
+    const itens = this.itens();
+    return itens.length > 0 && itens.every(item => this.selecionados.has(item.idProduto));
+  }
+
+  aoAlternarTodos(marcado: boolean) {
+    for (const item of this.itens()) {
+      if (marcado) this.selecionados.set(item.idProduto, item);
+      else this.selecionados.delete(item.idProduto);
+    }
+    this.qtdSelecionados.set(this.selecionados.size);
+  }
+
   abrirGerarPedido() {
     if (this.selecionados.size === 0) {
       this.toast.erro('Selecione ao menos um produto na listagem.');

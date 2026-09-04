@@ -3,8 +3,11 @@
 <app-drawer [aberto]="drawerAberto()" titulo="Colunas" (fechar)="fechar()">
   <div class="space-y-4">
     @for (coluna of colunas(); track coluna.chave) {
-      <app-toggle [valor]="estaVisivel(coluna.chave)" [label]="coluna.rotulo"
-                  (valorMudou)="alternar(coluna.chave, $event)"></app-toggle>
+      <div class="flex items-center justify-between">
+        <span class="text-sm text-slate-700 dark:text-slate-300">{{ coluna.rotulo }}</span>
+        <app-toggle [valor]="estaVisivel(coluna.chave)"
+                    (valorMudou)="alternar(coluna.chave, $event)"></app-toggle>
+      </div>
     }
   </div>
 </app-drawer>

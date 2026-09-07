@@ -98,9 +98,70 @@ export class ProdutosImportarImagensComponent {
   aoSoltar(event: DragEvent) {
     event.preventDefault();
     this.arrastandoSobreZona.set(false);
+
+    const itens = event.dataTransfer?.items;
+    if (itens && itens.length > 0 && typeof itens[0]?.webkitGetAsEntry === 'function') {
+      this.extrairArquivosDeItens(itens)
+        .then(arquivos => {
+          if (arquivos.length > 0) this.definirArquivos(arquivos);
+        })
+        .catch(() => this.toast.erro('Não foi possível ler os arquivos da pasta arrastada.'));
+      return;
+    }
+
     const arquivos = event.dataTransfer?.files;
     if (!arquivos || arquivos.length === 0) return;
     this.definirArquivos(Array.from(arquivos));
+  }
+
+  private async extrairArquivosDeItens(itens: DataTransferItemList): Promise<File[]> {
+    const entradas = Array.from(itens)
+      .map(item => item.webkitGetAsEntry())
+      .filter((entrada): entrada is FileSystemEntry => entrada !== null);
+
+    const acumulador: File[] = [];
+    await Promise.all(entradas.map(entrada => this.percorrerEntrada(entrada, acumulador)));
+    return acumulador;
+  }
+
+  private async percorrerEntrada(entrada: FileSystemEntry, acumulador: File[]): Promise<void> {
+    if (entrada.isFile) {
+      const arquivo = await new Promise<File>((resolve, reject) =>
+        (entrada as FileSystemFileEntry).file(resolve, reject));
+      acumulador.push(arquivo);
+      return;
+    }
+
+    if (entrada.isDirectory) {
+      const leitor = (entrada as FileSystemDirectoryEntry).createReader();
+      let pagina: FileSystemEntry[];
+      do {
+        pagina = await new Promise<FileSystemEntry[]>((resolve, reject) => leitor.readEntries(resolve, reject));
+        await Promise.all(pagina.map(sub => this.percorrerEntrada(sub, acumulador)));
+      } while (pagina.length > 0);
+    }
+  }
+
+  private removerNomesDuplicados(arquivos: File[]): File[] {
+    const vistos = new Set<string>();
+    const unicos: File[] = [];
+    const duplicados: string[] = [];
+
+    for (const arquivo of arquivos) {
+      if (vistos.has(arquivo.name)) {
+        duplicados.push(arquivo.name);
+        continue;
+      }
+      vistos.add(arquivo.name);
+      unicos.push(arquivo);
+    }
+
+    if (duplicados.length > 0) {
+      const amostra = [...new Set(duplicados)].slice(0, 3).join(', ');
+      this.toast.erro(`${duplicados.length} arquivo(s) com nome repetido em subpastas diferentes foram ignorados (ex: ${amostra}) — renomeie antes de importar.`);
+    }
+
+    return unicos;
   }
 
   private definirArquivos(arquivos: File[]) {
@@ -109,7 +170,9 @@ export class ProdutosImportarImagensComponent {
       this.toast.erro('Selecione apenas arquivos de imagem.');
       return;
     }
-    this.arquivos.set(imagens);
+
+    const semDuplicata = this.removerNomesDuplicados(imagens);
+    this.arquivos.set(semDuplicata);
     this.resultadoPreview.set(null);
     this.resumoImportacao.set(null);
     this.paginaAtual.set(1);

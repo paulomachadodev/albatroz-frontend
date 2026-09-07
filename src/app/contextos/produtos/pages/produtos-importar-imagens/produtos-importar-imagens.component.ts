@@ -164,8 +164,16 @@ export class ProdutosImportarImagensComponent {
     return unicos;
   }
 
+  private static readonly EXTENSOES_IMAGEM = ['jpg', 'jpeg', 'png', 'webp', 'bmp', 'gif', 'tif', 'tiff', 'heic'];
+
+  private ehArquivoDeImagem(arquivo: File): boolean {
+    if (arquivo.type.startsWith('image/')) return true;
+    const extensao = arquivo.name.split('.').pop()?.toLowerCase();
+    return !!extensao && ProdutosImportarImagensComponent.EXTENSOES_IMAGEM.includes(extensao);
+  }
+
   private definirArquivos(arquivos: File[]) {
-    const imagens = arquivos.filter(a => a.type.startsWith('image/'));
+    const imagens = arquivos.filter(a => this.ehArquivoDeImagem(a));
     if (imagens.length === 0) {
       this.toast.erro('Selecione apenas arquivos de imagem.');
       return;

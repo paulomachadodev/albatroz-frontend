@@ -1,5 +1,5 @@
 import { Component, OnInit, signal, computed } from '@angular/core';
-import { DatePipe } from '@angular/common';
+import { formatDate } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { exportarPlanilha } from '../../../../shared/utils/exportar-planilha';
@@ -35,6 +35,7 @@ export class ComprasListaComponent implements OnInit {
   totalPaginas = signal(1);
   tamanhoPagina = signal(20);
   ordenacaoAtual = signal<Ordenacao | null>(null);
+  aindaNaoFiltrado = signal(false);
 
   filtro: SugestaoCompraFiltro = {};
   marcaSelecionada: OpcaoSelectBusca | null = null;
@@ -108,7 +109,8 @@ export class ComprasListaComponent implements OnInit {
       }
       this.carregar(estado.pagina);
     } else {
-      this.carregar();
+      this.carregando.set(false);
+      this.aindaNaoFiltrado.set(true);
     }
   }
 
@@ -122,6 +124,7 @@ export class ComprasListaComponent implements OnInit {
 
   carregar(pagina = 1) {
     this.carregando.set(true);
+    this.aindaNaoFiltrado.set(false);
     this.salvarEstado(pagina);
     this.comprasService.listarSugestoes({ pagina, tamanho: this.tamanhoPagina() }, this.filtro).subscribe({
       next: res => {
@@ -151,7 +154,13 @@ export class ComprasListaComponent implements OnInit {
     this.fornecedorSelecionado = null;
     this.periodoPreset = '';
     this.ordenacaoAtual.set(null);
-    this.carregar(1);
+    this.itens.set([]);
+    this.totalRegistros.set(0);
+    this.totalEstimadoBase.set(0);
+    this.paginaAtual.set(1);
+    this.totalPaginas.set(1);
+    this.comprasService.estadoLista = undefined;
+    this.aindaNaoFiltrado.set(true);
   }
 
   aoMudarComSugestao(valor: string) {
@@ -175,6 +184,7 @@ export class ComprasListaComponent implements OnInit {
     this.ordenacaoAtual.set(ordenacao);
     this.filtro.ordenarPor = ordenacao.campo;
     this.filtro.direcao = ordenacao.direcao;
+    if (this.aindaNaoFiltrado()) return;
     this.carregar(1);
   }
 
@@ -368,11 +378,13 @@ export class ComprasListaComponent implements OnInit {
     return valor.toLocaleString('pt-BR');
   }
 
-  private datePipe = new DatePipe('pt-BR');
-
   formatarData(valor?: string): string {
     if (!valor) return '-';
-    return this.datePipe.transform(valor, 'dd/MM/yyyy', 'America/Sao_Paulo') ?? '-';
+    try {
+      return formatDate(valor, 'dd/MM/yyyy', 'pt-BR', 'America/Sao_Paulo');
+    } catch {
+      return '-';
+    }
   }
 
   exportarRelatorio(formato: 'xlsx' | 'csv') {

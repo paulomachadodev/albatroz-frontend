@@ -30,7 +30,7 @@
       [paginaAtual]="paginaAtual()"
       [totalPaginas]="totalPaginas()"
       [tamanhoPagina]="tamanhoPagina()"
-      tituloVazio="Nenhum produto encontrado"
+      [tituloVazio]="aindaNaoFiltrado() ? 'Escolha os filtros e clique em Filtrar para listar os produtos.' : 'Nenhum produto encontrado'"
       (paginaMudou)="aoMudarPagina($event)"
       (tamanhoPaginaMudou)="aoMudarTamanhoPagina($event)">
 

@@ -2,8 +2,6 @@ import { Component, OnInit, signal, computed } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { Observable, of } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
 import { exportarPlanilha } from '../../../../shared/utils/exportar-planilha';
 import { ComprasService, SugestaoCompraFiltro, ComSugestaoFiltro } from '../../services/compras.service';
 import { PedidosCompraService } from '../../services/pedidos-compra.service';
@@ -57,12 +55,15 @@ export class ComprasListaComponent implements OnInit {
   buscarMarcas = (termo: string) => this.marcasService.buscar(termo);
   buscarFornecedores = (termo: string) => this.contatosService.buscar(termo, 'Fornecedor');
 
-  totalEstimadoPagina = computed(() => {
+  private totalEstimadoBase = signal(0);
+  totalEstimadoGeral = computed(() => {
     const ajustes = this.ajustesLocais();
-    return this.itens().reduce((soma, item) => {
-      const qtd = ajustes[item.idProduto] ?? item.quantidadeAjustada ?? 0;
-      return soma + qtd * (item.precoCusto ?? 0);
+    const delta = this.itens().reduce((soma, item) => {
+      const override = ajustes[item.idProduto];
+      if (override == null) return soma;
+      return soma + (override - (item.quantidadeAjustada ?? 0)) * (item.precoCusto ?? 0);
     }, 0);
+    return this.totalEstimadoBase() + delta;
   });
 
   selecionados = new Map<number, SugestaoCompra>();
@@ -128,6 +129,7 @@ export class ComprasListaComponent implements OnInit {
         this.totalRegistros.set(res.dados?.totalRegistros ?? 0);
         this.paginaAtual.set(res.dados?.paginaAtual ?? 1);
         this.totalPaginas.set(res.dados?.totalPaginas ?? 1);
+        this.totalEstimadoBase.set(res.dados?.dados?.[0]?.valorTotalAjustadoGeral ?? 0);
         this.carregando.set(false);
       },
       error: err => {
@@ -375,9 +377,10 @@ export class ComprasListaComponent implements OnInit {
 
   exportarRelatorio(formato: 'xlsx' | 'csv') {
     this.exportando.set(true);
-    this.buscarTodasPaginas(1, []).subscribe({
-      next: itens => {
+    this.comprasService.exportarSugestoes(this.filtro).subscribe({
+      next: res => {
         this.exportando.set(false);
+        const itens = res.dados ?? [];
         if (itens.length === 0) {
           this.toast.erro('Nenhum produto encontrado com os filtros atuais.');
           return;
@@ -413,15 +416,4 @@ export class ComprasListaComponent implements OnInit {
       }
     });
   }
-
-  private buscarTodasPaginas(pagina: number, acumulado: SugestaoCompra[]): Observable<SugestaoCompra[]> {
-    return this.comprasService.listarSugestoes({ pagina, tamanho: 100 }, this.filtro).pipe(
-      switchMap(res => {
-        const itens = [...acumulado, ...(res.dados?.dados ?? [])];
-        const totalPaginas = res.dados?.totalPaginas ?? 1;
-        return pagina < totalPaginas ? this.buscarTodasPaginas(pagina + 1, itens) : of(itens);
-      })
-    );
-  }
-
 }

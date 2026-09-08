@@ -34,21 +34,27 @@
       (paginaMudou)="aoMudarPagina($event)"
       (tamanhoPaginaMudou)="aoMudarTamanhoPagina($event)">
 
-      @if (qtdSelecionados() > 0) {
-        <div entreFiltrosEGrid class="mt-6 flex items-center justify-between bg-primary/10 border border-primary/20 rounded-xl px-4 py-3">
-          <p class="text-sm font-bold text-primary">{{ qtdSelecionados() }} produto(s) selecionado(s)</p>
-          <div class="flex gap-2">
-            <button (click)="abrirGerarPedido()"
-                    class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-xs hover:bg-primary/90 transition-all">
-              Gerar pedido de compra
-            </button>
-            <button (click)="limparSelecao()"
-                    class="px-4 py-2 rounded-lg bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-xs hover:bg-slate-100 dark:hover:bg-slate-700 transition-all">
-              Limpar seleção
-            </button>
+      <div entreFiltrosEGrid class="mt-6 flex items-center justify-between gap-4 flex-wrap">
+        @if (qtdSelecionados() > 0) {
+          <div class="flex items-center gap-4 bg-primary/10 border border-primary/20 rounded-xl px-4 py-3">
+            <p class="text-sm font-bold text-primary">{{ qtdSelecionados() }} produto(s) selecionado(s)</p>
+            <div class="flex gap-2">
+              <button (click)="abrirGerarPedido()"
+                      class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-xs hover:bg-primary/90 transition-all">
+                Gerar pedido de compra
+              </button>
+              <button (click)="limparSelecao()"
+                      class="px-4 py-2 rounded-lg bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-xs hover:bg-slate-100 dark:hover:bg-slate-700 transition-all">
+                Limpar seleção
+              </button>
+            </div>
           </div>
+        }
+        <div class="ml-auto flex items-center gap-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 px-6 py-3">
+          <p class="text-xs font-bold text-slate-400 uppercase tracking-wide">Total estimado</p>
+          <p class="text-xl font-bold text-slate-900 dark:text-slate-100">{{ formatarReais(totalEstimadoGeral()) }}</p>
         </div>
-      }
+      </div>
 
       <div filtros class="space-y-4">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
@@ -73,7 +79,7 @@
             <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Sugestão</label>
             <select [ngModel]="filtro.comSugestao" (ngModelChange)="aoMudarComSugestao($event)"
                     class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none">
-              <option value="">Todos</option>
+              <option [ngValue]="undefined">Todos</option>
               <option value="com_sugestao">Com sugestão</option>
               <option value="sem_sugestao">Sem sugestão</option>
             </select>
@@ -249,13 +255,6 @@
       </ng-template>
 
     </app-listagem-paginada>
-
-    <div class="flex justify-end">
-      <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 px-6 py-4">
-        <p class="text-xs font-bold text-slate-400 uppercase tracking-wide">Total estimado (produtos desta página)</p>
-        <p class="text-xl font-bold text-slate-900 dark:text-slate-100">{{ formatarReais(totalEstimadoPagina()) }}</p>
-      </div>
-    </div>
 
   </div>
 </div>

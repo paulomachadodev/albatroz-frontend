@@ -46,6 +46,10 @@ export class ComprasService {
     return this.api.getPaginado<SugestaoCompra>(`${this.endpoint}/sugestoes`, paginacao, filtros);
   }
 
+  exportarSugestoes(filtros?: SugestaoCompraFiltro): Observable<Resultado<SugestaoCompra[]>> {
+    return this.api.get<SugestaoCompra[]>(`${this.endpoint}/sugestoes/exportar`, filtros);
+  }
+
   listarPainelFornecedores(paginacao: ParametrosPaginacao, filtros?: PainelFornecedorFiltro): Observable<Resultado<Paginacao<PainelFornecedor>>> {
     return this.api.getPaginado<PainelFornecedor>(`${this.endpoint}/fornecedores`, paginacao, filtros);
   }

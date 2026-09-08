@@ -34,4 +34,6 @@ export interface SugestaoCompra {
   dataUltimaVenda?: string;
   dataUltimaCompra?: string;
   precoUltimaCompra?: number;
+
+  valorTotalAjustadoGeral: number;
 }

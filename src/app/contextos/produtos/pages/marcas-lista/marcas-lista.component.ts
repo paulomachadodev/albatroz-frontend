@@ -38,6 +38,11 @@ export class MarcasListaComponent implements OnInit {
   nome = '';
   descricao = '';
   ativa = true;
+  bannerUrl = '';
+  bannerLink = '';
+  seoTitle = '';
+  seoDescription = '';
+  seoSlug = '';
 
   constructor(
     private marcasService: MarcasService,
@@ -98,6 +103,11 @@ export class MarcasListaComponent implements OnInit {
     this.nome = '';
     this.descricao = '';
     this.ativa = true;
+    this.bannerUrl = '';
+    this.bannerLink = '';
+    this.seoTitle = '';
+    this.seoDescription = '';
+    this.seoSlug = '';
     this.drawerAberto.set(true);
   }
 
@@ -107,6 +117,11 @@ export class MarcasListaComponent implements OnInit {
     this.nome = marca.nome;
     this.descricao = marca.descricao ?? '';
     this.ativa = marca.ativa;
+    this.bannerUrl = marca.bannerUrl ?? '';
+    this.bannerLink = marca.bannerLink ?? '';
+    this.seoTitle = marca.seoTitle ?? '';
+    this.seoDescription = marca.seoDescription ?? '';
+    this.seoSlug = marca.seoSlug ?? '';
     this.drawerAberto.set(true);
   }
 
@@ -122,6 +137,16 @@ export class MarcasListaComponent implements OnInit {
     this.ativa = valor;
   }
 
+  private normalizarSlug(valor: string): string {
+    return valor
+      .trim()
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  }
+
   salvar() {
     const nome = this.nome.trim();
     if (!nome) {
@@ -133,7 +158,12 @@ export class MarcasListaComponent implements OnInit {
     const payload = {
       nome,
       descricao: this.descricao.trim() || null,
-      ativa: this.ativa
+      ativa: this.ativa,
+      bannerUrl: this.bannerUrl.trim() || null,
+      bannerLink: this.bannerLink.trim() || null,
+      seoTitle: this.seoTitle.trim() || null,
+      seoDescription: this.seoDescription.trim() || null,
+      seoSlug: this.normalizarSlug(this.seoSlug) || null
     };
 
     const aoConcluir = () => {

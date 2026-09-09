@@ -1,6 +1,8 @@
 import { Component, inject, signal, computed } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { NgTemplateOutlet } from '@angular/common';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
+import { ThemeService } from '../../core/theme/theme.service';
 import { ToggleComponent } from '../../shared/components/toggle/toggle.component';
 
 export interface ItemMenu {
@@ -14,8 +16,7 @@ export interface ItemMenu {
 
 export interface GrupoMenu {
   titulo: string;
-  icone?: string;
-  colapsavel?: boolean;
+  icone: string;
   itens: ItemMenu[];
 }
 
@@ -24,28 +25,41 @@ const CHAVE_LOCALSTORAGE_FIXADO = 'menu-fixado';
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, ToggleComponent],
+  imports: [RouterLink, RouterLinkActive, ToggleComponent, NgTemplateOutlet],
   templateUrl: './sidebar.component.html'
 })
 export class SidebarComponent {
-  private auth = inject(AuthService);
+  private auth   = inject(AuthService);
+  private router = inject(Router);
+  theme = inject(ThemeService);
 
   fixado = signal(this.carregarFixado());
-  hoverAberto = signal(false);
-  expandida = computed(() => this.fixado() || this.hoverAberto());
+  contextoHover = signal<string | null>(null);
 
-  private expandidosPorGrupo = new Map<string, ReturnType<typeof signal<boolean>>>();
-  private expandidosPorItem  = new Map<string, ReturnType<typeof signal<boolean>>>();
+  private expandidosPorItem = new Map<string, ReturnType<typeof signal<boolean>>>();
 
   grupos: GrupoMenu[] = [
     {
+      titulo: 'Cadastros',
+      icone: 'folder_open',
+      itens: [
+        { label: 'Produtos',     rota: '/produtos',            icone: 'inventory_2', permissao: 'produtos:ler' },
+        { label: 'Contatos',     rota: '/cadastros/contatos',  icone: 'contacts' },
+        { label: 'Escolas',      rota: '/cadastros/escolas',   icone: 'apartment' },
+        { label: 'Séries',       rota: '/cadastros/series',    icone: 'auto_stories' },
+        { label: 'Empresas',     rota: '/cadastros/empresas',  icone: 'business' }
+      ]
+    },
+    {
       titulo: 'Visão geral',
+      icone: 'space_dashboard',
       itens: [
         { label: 'Dashboard',  rota: '/dashboard', icone: 'dashboard' }
       ]
     },
     {
       titulo: 'Operacional',
+      icone: 'bolt',
       itens: [
         {
           label: 'Orçamentos', icone: 'request_quote',
@@ -67,34 +81,22 @@ export class SidebarComponent {
       ]
     },
     {
-      titulo: 'Cadastros',
-      itens: [
-        { label: 'Produtos',     rota: '/produtos',            icone: 'inventory_2', permissao: 'produtos:ler' },
-        { label: 'Contatos',     rota: '/cadastros/contatos',  icone: 'contacts' },
-        { label: 'Escolas',      rota: '/cadastros/escolas',   icone: 'apartment' },
-        { label: 'Séries',       rota: '/cadastros/series',    icone: 'auto_stories' },
-        { label: 'Empresas',     rota: '/cadastros/empresas',  icone: 'business' }
-      ]
-    },
-    {
       titulo: 'WhatsApp',
+      icone: 'forum',
       itens: [
-        {
-          label: 'WhatsApp', icone: 'forum',
-          subItens: [
-            { label: 'Atendimentos', rota: '/whatsapp/atendimentos', icone: 'support_agent' }
-          ]
-        }
+        { label: 'Atendimentos', rota: '/whatsapp/atendimentos', icone: 'support_agent' }
       ]
     },
     {
       titulo: 'Financeiro',
+      icone: 'payments',
       itens: [
         { label: 'Cartões', rota: '/financeiro/cartoes', icone: 'credit_card' }
       ]
     },
     {
       titulo: 'Administração',
+      icone: 'admin_panel_settings',
       itens: [
         { label: 'Usuários',     rota: '/usuarios',     icone: 'group', permissao: 'usuarios:ler' },
         { label: 'Perfis',       rota: '/perfis',       icone: 'shield', permissao: 'perfis:ler' },
@@ -105,68 +107,11 @@ export class SidebarComponent {
     {
       titulo: 'Integrações',
       icone: 'integration_instructions',
-      colapsavel: true,
       itens: [
         { label: 'ERP Tiny', rota: '/integracoes/tiny', icone: 'dashboard' }
       ]
     }
   ];
-
-  constructor() {
-    this.grupos.forEach(grupo => {
-      if (grupo.colapsavel) {
-        this.expandidosPorGrupo.set(grupo.titulo, signal(false));
-      }
-    });
-  }
-
-  private carregarFixado(): boolean {
-    try {
-      const bruto = localStorage.getItem(CHAVE_LOCALSTORAGE_FIXADO);
-      return bruto === null ? true : bruto === 'true';
-    } catch {
-      return true;
-    }
-  }
-
-  alternarFixado(fixar: boolean): void {
-    this.fixado.set(fixar);
-    try { localStorage.setItem(CHAVE_LOCALSTORAGE_FIXADO, String(fixar)); } catch { }
-  }
-
-  aoEntrarMouse(): void {
-    if (!this.fixado()) this.hoverAberto.set(true);
-  }
-
-  aoSairMouse(): void {
-    this.hoverAberto.set(false);
-  }
-
-  expandirGrupo(titulo: string): void {
-    const sig = this.expandidosPorGrupo.get(titulo);
-    if (sig) sig.set(true);
-  }
-
-  recolherGrupo(titulo: string): void {
-    const sig = this.expandidosPorGrupo.get(titulo);
-    if (sig) sig.set(false);
-  }
-
-  grupoExpandido(titulo: string): boolean {
-    const sig = this.expandidosPorGrupo.get(titulo);
-    return sig ? sig() : true;
-  }
-
-  toggleItem(label: string): void {
-    const sig = this.expandidosPorItem.get(label) ?? signal(true);
-    sig.set(!sig());
-    this.expandidosPorItem.set(label, sig);
-  }
-
-  itemExpandido(label: string): boolean {
-    const sig = this.expandidosPorItem.get(label);
-    return sig ? sig() : true;
-  }
 
   gruposVisiveis = computed<GrupoMenu[]>(() => {
     const permitido = (item: ItemMenu): boolean =>
@@ -182,4 +127,91 @@ export class SidebarComponent {
       .map(grupo => ({ ...grupo, itens: filtrarItens(grupo.itens) }))
       .filter(grupo => grupo.itens.length > 0);
   });
+
+  contextoAtivo = signal(this.grupos[0].titulo);
+  contextoExibido = computed(() => this.contextoHover() ?? this.contextoAtivo());
+  colBVisivel = computed(() => this.fixado() || this.contextoHover() !== null);
+
+  grupoExibido = computed<GrupoMenu | null>(() => {
+    const titulo = this.contextoExibido();
+    return this.gruposVisiveis().find(g => g.titulo === titulo) ?? null;
+  });
+
+  usuario    = this.auth.usuario;
+  usuarioMenuAberto = signal(false);
+
+  iniciais = computed(() => {
+    const u = this.usuario();
+    if (!u?.nome) return '?';
+    const partes = u.nome.trim().split(/\s+/);
+    const ini = partes.length >= 2
+      ? partes[0][0] + partes[partes.length - 1][0]
+      : partes[0].slice(0, 2);
+    return ini.toUpperCase();
+  });
+
+  private carregarFixado(): boolean {
+    try {
+      const bruto = localStorage.getItem(CHAVE_LOCALSTORAGE_FIXADO);
+      return bruto === null ? true : bruto === 'true';
+    } catch {
+      return true;
+    }
+  }
+
+  alternarFixado(fixar: boolean): void {
+    this.fixado.set(fixar);
+    try { localStorage.setItem(CHAVE_LOCALSTORAGE_FIXADO, String(fixar)); } catch { }
+  }
+
+  aoHoverContexto(titulo: string): void {
+    this.contextoHover.set(titulo);
+  }
+
+  aoSairAreaMenu(): void {
+    this.contextoHover.set(null);
+  }
+
+  selecionarContexto(titulo: string): void {
+    this.contextoAtivo.set(titulo);
+  }
+
+  aoClicarItem(): void {
+    this.contextoAtivo.set(this.contextoExibido());
+    this.contextoHover.set(null);
+  }
+
+  toggleItem(label: string): void {
+    const sig = this.expandidosPorItem.get(label) ?? signal(true);
+    sig.set(!sig());
+    this.expandidosPorItem.set(label, sig);
+  }
+
+  itemExpandido(label: string): boolean {
+    const sig = this.expandidosPorItem.get(label);
+    return sig ? sig() : true;
+  }
+
+  toggleUsuarioMenu(): void {
+    this.usuarioMenuAberto.update(v => !v);
+  }
+
+  fecharUsuarioMenu(): void {
+    this.usuarioMenuAberto.set(false);
+  }
+
+  irParaMeuPerfil(): void {
+    this.fecharUsuarioMenu();
+    this.router.navigate(['/meu-perfil']);
+  }
+
+  irParaConfiguracoes(): void {
+    this.fecharUsuarioMenu();
+    this.router.navigate(['/configuracoes']);
+  }
+
+  sair(): void {
+    this.auth.logout();
+    this.router.navigate(['/login']);
+  }
 }

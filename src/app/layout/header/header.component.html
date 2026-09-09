@@ -12,66 +12,10 @@
 
   <div class="flex-1"></div>
 
-  <button (click)="theme.alternar()"
-          class="size-10 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-slate-100
-                 transition-colors flex items-center justify-center"
-          [attr.aria-label]="theme.temaAtual() === 'dark' ? 'Ativar modo claro' : 'Ativar modo escuro'">
-    <span class="material-symbols-outlined">{{ theme.temaAtual() === 'dark' ? 'light_mode' : 'dark_mode' }}</span>
-  </button>
-
   <button class="relative size-10 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-slate-100
                  transition-colors flex items-center justify-center"
           aria-label="Notificações">
     <span class="material-symbols-outlined">notifications</span>
     <span class="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full ring-2 ring-white dark:ring-background-dark"></span>
   </button>
-
-  <div class="relative">
-    <button (click)="toggleMenu()"
-            class="flex items-center gap-2.5 pl-2 pr-3 py-1.5 rounded-lg
-                   hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-      <div class="size-9 rounded-lg bg-primary text-white text-sm font-semibold flex items-center justify-center shadow-sm">
-        {{ iniciais() }}
-      </div>
-      <div class="text-left hidden md:block">
-        <div class="text-sm font-medium text-slate-800 dark:text-slate-100 leading-tight">
-          {{ usuario()?.nome ?? 'Visitante' }}
-        </div>
-        <div class="text-xs text-slate-400 leading-tight">
-          {{ usuario()?.perfis?.[0] ?? '—' }}
-        </div>
-      </div>
-      <span class="material-symbols-outlined text-slate-400 text-xl transition-transform"
-            [class.rotate-180]="menuAberto()">expand_more</span>
-    </button>
-
-    @if (menuAberto()) {
-      <div class="fixed inset-0 z-30" (click)="fechar()"></div>
-      <div class="absolute right-0 mt-2 w-56 card p-1.5 z-40">
-        <div class="px-3 py-2 border-b border-slate-100 dark:border-slate-800">
-          <div class="text-sm font-semibold text-slate-800 dark:text-slate-100">{{ usuario()?.nome }}</div>
-          <div class="text-xs text-slate-400 truncate">{{ usuario()?.email }}</div>
-        </div>
-        <button (click)="irParaMeuPerfil()"
-                class="w-full text-left px-3 py-2 rounded-lg text-sm
-                       text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2">
-          <span class="material-symbols-outlined text-lg">person</span>
-          Meu perfil
-        </button>
-        <button (click)="irParaConfiguracoes()"
-                class="w-full text-left px-3 py-2 rounded-lg text-sm
-                       text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2">
-          <span class="material-symbols-outlined text-lg">settings</span>
-          Configurações
-        </button>
-        <div class="h-px bg-slate-100 dark:bg-slate-800 my-1"></div>
-        <button (click)="sair()"
-                class="w-full text-left px-3 py-2 rounded-lg text-sm
-                       text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 flex items-center gap-2">
-          <span class="material-symbols-outlined text-lg">logout</span>
-          Sair
-        </button>
-      </div>
-    }
-  </div>
 </header>

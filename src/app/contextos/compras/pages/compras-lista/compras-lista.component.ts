@@ -28,8 +28,8 @@ const PT_TOGGLE_SELECIONAR_TODOS = {
 };
 
 const CHAVE_LOCALSTORAGE = 'compras-sugestoes-ajustadas-v1';
-const CHAVE_LOCALSTORAGE_COLUNAS = 'compras-colunas-visiveis-v2';
-const COLUNAS_VISIVEIS_PADRAO = ['cobertura', 'marca', 'fornecedor', 'ultimaCompra', 'ultimaVenda'];
+const CHAVE_LOCALSTORAGE_COLUNAS = 'compras-colunas-visiveis-v3';
+const COLUNAS_VISIVEIS_PADRAO = ['cobertura', 'ultimaCompra', 'ultimaVenda'];
 
 @Component({
   selector: 'app-compras-lista',

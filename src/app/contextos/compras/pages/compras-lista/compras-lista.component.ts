@@ -2,7 +2,6 @@ import { Component, OnInit, signal, computed } from '@angular/core';
 import { formatDate } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { MultiSelectModule, MultiSelectFilterEvent } from 'primeng/multiselect';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { exportarPlanilha } from '../../../../shared/utils/exportar-planilha';
 import { ComprasService, SugestaoCompraFiltro, ComSugestaoFiltro } from '../../services/compras.service';
@@ -13,26 +12,11 @@ import { ListagemPaginadaComponent } from '../../../../shared/components/listage
 import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 import { Ordenacao, ThOrdenavelComponent } from '../../../../shared/components/th-ordenavel/th-ordenavel.component';
 import { SelectBuscaComponent, OpcaoSelectBusca } from '../../../../shared/components/select-busca/select-busca.component';
+import { SelectBuscaMultiComponent } from '../../../../shared/components/select-busca-multi/select-busca-multi.component';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 import { ColunasConfiguraveisComponent, ColunaConfiguravel } from '../../../../shared/components/colunas-configuraveis/colunas-configuraveis.component';
 import { MarcasService } from '../../../produtos/services/marcas.service';
 import { ContatosService } from '../../../cadastros/contatos/services/contatos.service';
-
-const PT_MULTISELECT_MARCA = {
-  root: 'relative mt-1 w-full flex items-center justify-between gap-2 px-3 py-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-sm cursor-pointer flex-wrap min-h-[38px]',
-  labelContainer: 'flex-1 flex flex-wrap gap-1',
-  label: 'truncate text-slate-900 dark:text-slate-100',
-  chipItem: 'inline-flex',
-  pcChip: { root: 'inline-flex items-center gap-1 pl-2 pr-1 py-0.5 rounded-md bg-primary/10 text-primary text-xs font-semibold' },
-  chipIcon: 'text-sm cursor-pointer hover:text-primary/70',
-  dropdownIcon: 'text-slate-400 text-base material-symbols-outlined',
-  overlay: 'mt-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg z-20',
-  header: 'p-2 border-b border-slate-100 dark:border-slate-700',
-  pcFilter: { root: 'w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none' },
-  list: 'max-h-56 overflow-y-auto py-1',
-  option: 'px-3 py-2 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer flex items-center gap-2',
-  emptyMessage: 'px-3 py-2 text-sm text-slate-400'
-};
 
 const PT_TOGGLE_SELECIONAR_TODOS = {
   root: 'inline-flex items-center cursor-pointer align-middle',
@@ -50,7 +34,7 @@ const COLUNAS_VISIVEIS_PADRAO = ['cobertura', 'marca', 'fornecedor'];
 @Component({
   selector: 'app-compras-lista',
   standalone: true,
-  imports: [RouterLink, FormsModule, MultiSelectModule, ToggleSwitchModule, ListagemPaginadaComponent, PageHeaderComponent, ThOrdenavelComponent, SelectBuscaComponent, ModalComponent, ColunasConfiguraveisComponent],
+  imports: [RouterLink, FormsModule, ToggleSwitchModule, ListagemPaginadaComponent, PageHeaderComponent, ThOrdenavelComponent, SelectBuscaComponent, SelectBuscaMultiComponent, ModalComponent, ColunasConfiguraveisComponent],
   templateUrl: './compras-lista.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
@@ -70,11 +54,8 @@ export class ComprasListaComponent implements OnInit {
   periodoPreset: '' | 'dez_mar' | 'personalizado' = '';
 
   buscarFornecedores = (termo: string) => this.contatosService.buscar(termo, 'Fornecedor');
+  buscarMarcas = (termo: string) => this.marcasService.buscar(termo);
 
-  marcasOpcoes = signal<OpcaoSelectBusca[]>([]);
-  marcasCarregando = signal(false);
-
-  readonly ptMarcas = PT_MULTISELECT_MARCA;
   readonly ptToggleTodos = PT_TOGGLE_SELECIONAR_TODOS;
 
   ajustesLocais = signal<Record<number, number>>(this.carregarAjustesLocais());
@@ -101,6 +82,7 @@ export class ComprasListaComponent implements OnInit {
 
   selecionados = new Map<number, SugestaoCompra>();
   qtdSelecionados = signal(0);
+  selecionandoTodos = signal(false);
   modalPedidoAberto = signal(false);
   fornecedorPedido: OpcaoSelectBusca | null = null;
   observacoesPedido = '';
@@ -154,25 +136,6 @@ export class ComprasListaComponent implements OnInit {
     };
   }
 
-  carregarMarcas(texto?: string) {
-    this.marcasCarregando.set(true);
-    this.marcasService.buscar(texto ?? '').subscribe({
-      next: opcoes => {
-        this.marcasOpcoes.set(opcoes);
-        this.marcasCarregando.set(false);
-      },
-      error: () => this.marcasCarregando.set(false)
-    });
-  }
-
-  aoAbrirMarcas() {
-    this.carregarMarcas();
-  }
-
-  aoFiltrarMarcas(evento: MultiSelectFilterEvent) {
-    this.carregarMarcas(evento.filter ?? '');
-  }
-
   carregar(pagina = 1) {
     this.carregando.set(true);
     this.aindaNaoFiltrado.set(false);
@@ -194,12 +157,14 @@ export class ComprasListaComponent implements OnInit {
   }
 
   aplicarFiltros() {
+    this.limparSelecao();
     this.filtro.idsMarca = this.marcasSelecionadas.length > 0 ? this.marcasSelecionadas.map(m => m.id) : undefined;
     this.filtro.idFornecedor = this.fornecedorSelecionado?.id;
     this.carregar(1);
   }
 
   limparFiltros() {
+    this.limparSelecao();
     this.filtro = {};
     this.marcasSelecionadas = [];
     this.fornecedorSelecionado = null;
@@ -347,17 +312,29 @@ export class ComprasListaComponent implements OnInit {
     this.qtdSelecionados.set(0);
   }
 
-  todosSelecionadosNaPagina(): boolean {
-    const itens = this.itens();
-    return itens.length > 0 && itens.every(item => this.selecionados.has(item.idProduto));
+  todosSelecionados(): boolean {
+    return this.totalRegistros() > 0 && this.qtdSelecionados() === this.totalRegistros();
   }
 
   aoAlternarTodos(marcado: boolean) {
-    for (const item of this.itens()) {
-      if (marcado) this.selecionados.set(item.idProduto, item);
-      else this.selecionados.delete(item.idProduto);
+    if (!marcado) {
+      this.limparSelecao();
+      return;
     }
-    this.qtdSelecionados.set(this.selecionados.size);
+    this.selecionandoTodos.set(true);
+    this.comprasService.exportarSugestoes(this.filtro).subscribe({
+      next: res => {
+        for (const item of res.dados ?? []) {
+          this.selecionados.set(item.idProduto, item);
+        }
+        this.qtdSelecionados.set(this.selecionados.size);
+        this.selecionandoTodos.set(false);
+      },
+      error: err => {
+        this.selecionandoTodos.set(false);
+        this.toast.erroServidor(err, 'Não foi possível selecionar todos os produtos do filtro.');
+      }
+    });
   }
 
   abrirGerarPedido() {

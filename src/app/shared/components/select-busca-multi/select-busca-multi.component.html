@@ -1,0 +1,38 @@
+<div class="relative">
+  <div class="min-h-[38px] w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 rounded-lg flex flex-wrap items-center gap-1 cursor-text"
+       (click)="aoFocar()">
+    @for (opcao of valoresSelecionados(); track opcao.id) {
+      <span class="inline-flex items-center gap-1 pl-2 pr-1 py-0.5 rounded-md bg-primary/10 text-primary text-xs font-semibold">
+        {{ opcao.nome }}
+        <button type="button" (mousedown)="remover(opcao, $event)" class="hover:text-primary/70">
+          <span class="material-symbols-outlined text-sm">close</span>
+        </button>
+      </span>
+    }
+    <input type="text"
+           [ngModel]="termo()"
+           (ngModelChange)="aoDigitar($event)"
+           (focus)="aoFocar()"
+           (blur)="aoFecharComAtraso()"
+           [placeholder]="valoresSelecionados().length === 0 ? placeholder() : ''"
+           class="flex-1 min-w-[80px] bg-transparent border-none text-sm outline-none"/>
+  </div>
+
+  @if (aberto()) {
+    <ul class="mt-1 max-h-56 overflow-y-auto rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg absolute z-20 w-full">
+      @if (buscando()) {
+        <li class="px-3 py-2 text-sm text-slate-400">Buscando...</li>
+      } @else if (resultados().length === 0) {
+        <li class="px-3 py-2 text-sm text-slate-400">Nenhum resultado.</li>
+      } @else {
+        @for (opcao of resultados(); track opcao.id) {
+          <li (mousedown)="alternar(opcao)"
+              class="px-3 py-2 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer flex items-center gap-2">
+            <span class="material-symbols-outlined text-base" [class.opacity-0]="!estaSelecionado(opcao)">check</span>
+            {{ opcao.nome }}
+          </li>
+        }
+      }
+    </ul>
+  }
+</div>

@@ -100,21 +100,11 @@
           </div>
           <div>
             <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Marca</label>
-            <p-multiSelect
-              [(ngModel)]="marcasSelecionadas"
-              [options]="marcasOpcoes()"
-              optionLabel="nome"
-              dataKey="id"
-              display="chip"
-              [showToggleAll]="false"
-              [filter]="true"
-              filterPlaceHolder="Buscar marca..."
-              placeholder="Todas..."
-              [loading]="marcasCarregando()"
-              (onPanelShow)="aoAbrirMarcas()"
-              (onFilter)="aoFiltrarMarcas($event)"
-              [unstyled]="true"
-              [pt]="ptMarcas"></p-multiSelect>
+            <app-select-busca-multi
+              [valoresSelecionados]="marcasSelecionadas"
+              placeholder="Buscar marca..."
+              [buscar]="buscarMarcas"
+              (selecionadosChange)="marcasSelecionadas = $event"></app-select-busca-multi>
           </div>
 
           <div>
@@ -165,8 +155,9 @@
       <ng-template #cabecalho>
         <tr class="uppercase">
           <th class="px-6 py-4 w-10">
-            <p-toggleSwitch [ngModel]="todosSelecionadosNaPagina()" (onChange)="aoAlternarTodos($event.checked)"
-              ariaLabel="Selecionar todos desta página"
+            <p-toggleSwitch [ngModel]="todosSelecionados()" (onChange)="aoAlternarTodos($event.checked)"
+              [disabled]="selecionandoTodos()"
+              ariaLabel="Selecionar todos os produtos do filtro"
               [unstyled]="true"
               [pt]="ptToggleTodos"></p-toggleSwitch>
           </th>
@@ -209,9 +200,10 @@
       <ng-template #linha let-item>
         <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
           <td class="px-6 py-4" (click)="$event.stopPropagation()">
-            <input type="checkbox" [checked]="estaSelecionado(item)"
-                   (change)="aoAlternarSelecao(item, $any($event.target).checked)"
-                   class="rounded border-slate-300 text-primary focus:ring-primary/20"/>
+            <p-toggleSwitch [ngModel]="estaSelecionado(item)" (onChange)="aoAlternarSelecao(item, $event.checked)"
+              [ariaLabel]="'Selecionar ' + item.nome"
+              [unstyled]="true"
+              [pt]="ptToggleTodos"></p-toggleSwitch>
           </td>
           <td class="px-6 py-4 cursor-pointer" (click)="abrirProduto(item)">
             <p class="text-sm font-bold text-slate-900 dark:text-slate-100">{{ item.nome }}</p>

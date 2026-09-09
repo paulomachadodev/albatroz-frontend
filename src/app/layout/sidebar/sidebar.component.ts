@@ -1,6 +1,7 @@
-import { Component, inject, input, output, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
+import { ToggleComponent } from '../../shared/components/toggle/toggle.component';
 
 export interface ItemMenu {
   label: string;
@@ -18,17 +19,20 @@ export interface GrupoMenu {
   itens: ItemMenu[];
 }
 
+const CHAVE_LOCALSTORAGE_FIXADO = 'menu-fixado';
+
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive],
+  imports: [RouterLink, RouterLinkActive, ToggleComponent],
   templateUrl: './sidebar.component.html'
 })
 export class SidebarComponent {
   private auth = inject(AuthService);
 
-  colapsada = input<boolean>(false);
-  toggle    = output<void>();
+  fixado = signal(this.carregarFixado());
+  hoverAberto = signal(false);
+  expandida = computed(() => this.fixado() || this.hoverAberto());
 
   private expandidosPorGrupo = new Map<string, ReturnType<typeof signal<boolean>>>();
   private expandidosPorItem  = new Map<string, ReturnType<typeof signal<boolean>>>();
@@ -114,6 +118,28 @@ export class SidebarComponent {
         this.expandidosPorGrupo.set(grupo.titulo, signal(false));
       }
     });
+  }
+
+  private carregarFixado(): boolean {
+    try {
+      const bruto = localStorage.getItem(CHAVE_LOCALSTORAGE_FIXADO);
+      return bruto === null ? true : bruto === 'true';
+    } catch {
+      return true;
+    }
+  }
+
+  alternarFixado(fixar: boolean): void {
+    this.fixado.set(fixar);
+    try { localStorage.setItem(CHAVE_LOCALSTORAGE_FIXADO, String(fixar)); } catch { }
+  }
+
+  aoEntrarMouse(): void {
+    if (!this.fixado()) this.hoverAberto.set(true);
+  }
+
+  aoSairMouse(): void {
+    this.hoverAberto.set(false);
   }
 
   expandirGrupo(titulo: string): void {

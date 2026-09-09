@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { HeaderComponent } from '../header/header.component';
 import { SidebarComponent } from '../sidebar/sidebar.component';
@@ -11,7 +11,7 @@ import { ConfirmDialogComponent } from '../../core/feedback/confirm-dialog.compo
   imports: [RouterOutlet, SidebarComponent, HeaderComponent, ToastContainerComponent, ConfirmDialogComponent],
   template: `
     <div class="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark">
-      <app-sidebar [colapsada]="colapsada()" (toggle)="alternar()"></app-sidebar>
+      <app-sidebar></app-sidebar>
       <div class="flex-1 flex flex-col min-w-0">
         <app-header></app-header>
         <router-outlet></router-outlet>
@@ -21,7 +21,4 @@ import { ConfirmDialogComponent } from '../../core/feedback/confirm-dialog.compo
     <app-confirm-dialog></app-confirm-dialog>
   `
 })
-export class ShellComponent {
-  colapsada = signal(false);
-  alternar(): void { this.colapsada.update(v => !v); }
-}
+export class ShellComponent {}

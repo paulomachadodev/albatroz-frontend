@@ -54,7 +54,7 @@
     </app-page-header>
 
     @if (qtdSelecionados() > 0) {
-      <div class="flex items-center justify-between bg-primary/10 border border-primary/20 rounded-xl px-4 py-3">
+      <div style="animation: fade-in 200ms ease-out" class="flex items-center justify-between bg-primary/10 border border-primary/20 rounded-xl px-4 py-3">
         <p class="text-sm font-bold text-primary">{{ qtdSelecionados() }} produto(s) selecionado(s)</p>
         <div class="flex gap-2">
           <button (click)="abrirAlterarEmMassa()"
@@ -167,7 +167,13 @@
 
       <ng-template #cabecalho>
         <tr>
-          <th class="px-6 py-4 w-10"></th>
+          <th class="px-6 py-4 w-10">
+            <p-toggleSwitch [ngModel]="todosSelecionados()" (onChange)="aoAlternarTodos($event.checked)"
+              [disabled]="selecionandoTodos()"
+              ariaLabel="Selecionar todos os produtos do filtro"
+              [unstyled]="true"
+              [pt]="ptToggleTodos"></p-toggleSwitch>
+          </th>
           <th class="px-6 py-4 w-16"></th>
           <th class="px-6 py-4">
             <app-th-ordenavel campo="nome" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Nome / Código</app-th-ordenavel>
@@ -201,9 +207,10 @@
         <tr (click)="abrirDetalhe(item)"
             class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors cursor-pointer">
           <td class="px-6 py-4" (click)="$event.stopPropagation()">
-            <input type="checkbox" [checked]="estaSelecionado(item)"
-                   (change)="aoAlternarSelecao(item, $any($event.target).checked)"
-                   class="rounded border-slate-300 text-primary focus:ring-primary/20"/>
+            <p-toggleSwitch [ngModel]="estaSelecionado(item)" (onChange)="aoAlternarSelecao(item, $event.checked)"
+              [ariaLabel]="'Selecionar ' + item.nome"
+              [unstyled]="true"
+              [pt]="ptToggleTodos"></p-toggleSwitch>
           </td>
           <td class="px-6 py-4" (click)="$event.stopPropagation(); abrirDetalheAba(item, 'web')">
             <div class="w-10 h-10 relative overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-800">

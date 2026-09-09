@@ -164,12 +164,27 @@ export class SidebarComponent {
     try { localStorage.setItem(CHAVE_LOCALSTORAGE_FIXADO, String(fixar)); } catch { }
   }
 
+  private timeoutFecharMenu?: ReturnType<typeof setTimeout>;
+
+  private cancelarFechamento(): void {
+    if (this.timeoutFecharMenu) {
+      clearTimeout(this.timeoutFecharMenu);
+      this.timeoutFecharMenu = undefined;
+    }
+  }
+
   aoHoverContexto(titulo: string): void {
+    this.cancelarFechamento();
     this.contextoHover.set(titulo);
   }
 
+  aoEntrarAreaMenu(): void {
+    this.cancelarFechamento();
+  }
+
   aoSairAreaMenu(): void {
-    this.contextoHover.set(null);
+    this.cancelarFechamento();
+    this.timeoutFecharMenu = setTimeout(() => this.contextoHover.set(null), 150);
   }
 
   aoClicarItem(): void {

@@ -1,8 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { ChartModule } from 'primeng/chart';
 import { AuthService } from '../../core/auth/auth.service';
-import { DashboardService, DashboardResumo } from './dashboard.service';
+import { ThemeService } from '../../core/theme/theme.service';
+import { DashboardService, DashboardResumo, GranularidadeDashboard } from './dashboard.service';
 import { ToastService } from '../../core/feedback/toast.service';
 
 interface Kpi {
@@ -17,17 +18,24 @@ interface Kpi {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, ChartModule],
   templateUrl: './dashboard.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
 export class DashboardComponent implements OnInit {
   private auth = inject(AuthService);
+  private theme = inject(ThemeService);
   private dashboardService = inject(DashboardService);
   private toast = inject(ToastService);
 
   carregando = signal(true);
   resumo = signal<DashboardResumo | null>(null);
+  granularidade = signal<GranularidadeDashboard>('mes');
+  granularidades: { valor: GranularidadeDashboard; rotulo: string }[] = [
+    { valor: 'dia', rotulo: 'Dia' },
+    { valor: 'mes', rotulo: 'Mês' },
+    { valor: 'ano', rotulo: 'Ano' }
+  ];
 
   saudacao = computed(() => {
     const h = new Date().getHours();
@@ -45,7 +53,7 @@ export class DashboardComponent implements OnInit {
 
   carregar(): void {
     this.carregando.set(true);
-    this.dashboardService.obter().subscribe({
+    this.dashboardService.obter(this.granularidade()).subscribe({
       next: res => {
         this.resumo.set(res.dados ?? null);
         this.carregando.set(false);
@@ -55,6 +63,12 @@ export class DashboardComponent implements OnInit {
         this.carregando.set(false);
       }
     });
+  }
+
+  mudarGranularidade(g: GranularidadeDashboard): void {
+    if (this.granularidade() === g) return;
+    this.granularidade.set(g);
+    this.carregar();
   }
 
   private percentual(atual: number, anterior: number): { texto: string; positivo: boolean } {
@@ -73,7 +87,7 @@ export class DashboardComponent implements OnInit {
 
     return [
       {
-        titulo: 'Faturamento do mês', valor: this.formatarReaisCompacto(r.faturamentoMes),
+        titulo: 'Faturamento do mês', valor: this.formatarReais(r.faturamentoMes),
         delta: deltaFaturamento.texto, positivo: deltaFaturamento.positivo,
         icone: 'payments', cor: 'text-emerald-600 bg-emerald-100 dark:bg-emerald-900/40'
       },
@@ -97,25 +111,81 @@ export class DashboardComponent implements OnInit {
 
   private nomesMeses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 
-  serieRotulos = computed(() => (this.resumo()?.faturamentoPorMes ?? []).map(f => `${this.nomesMeses[f.mes - 1]}/${String(f.ano).slice(2)}`));
-  serieValores = computed(() => (this.resumo()?.faturamentoPorMes ?? []).map(f => f.faturamento));
-  serieMax = computed(() => Math.max(1, ...this.serieValores()));
+  private formatarRotulo(chave: string): string {
+    const g = this.granularidade();
+    if (g === 'dia') {
+      const [, mes, dia] = chave.split('-');
+      return `${dia}/${mes}`;
+    }
+    if (g === 'ano') return chave;
+    const [ano, mes] = chave.split('-');
+    return `${this.nomesMeses[Number(mes) - 1]}/${ano.slice(2)}`;
+  }
 
-  pathLinha = computed(() => {
-    const valores = this.serieValores();
-    if (valores.length < 2) return { linha: '', area: '', pontos: [] as (readonly [number, number])[] };
+  rotuloPeriodoAnterior = computed(() => {
+    const g = this.granularidade();
+    if (g === 'dia') return '30 dias anteriores';
+    if (g === 'ano') return '5 anos anteriores';
+    return 'Mesmo período, ano passado';
+  });
 
-    const w = 600, h = 180, pad = 20;
-    const max = this.serieMax();
-    const step = (w - pad * 2) / (valores.length - 1);
-    const pontos = valores.map((v, i) => {
-      const x = pad + i * step;
-      const y = h - pad - ((v / max) * (h - pad * 2));
-      return [x, y] as const;
-    });
-    const linha = pontos.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p[0]} ${p[1]}`).join(' ');
-    const area  = `${linha} L ${pontos[pontos.length-1][0]} ${h-pad} L ${pontos[0][0]} ${h-pad} Z`;
-    return { linha, area, pontos };
+  chartData = computed(() => {
+    const r = this.resumo();
+    if (!r) return null;
+
+    const corTexto = this.theme.temaAtual() === 'dark' ? '#94a3b8' : '#64748b';
+    const corAnterior = this.theme.temaAtual() === 'dark' ? '#475569' : '#cbd5e1';
+
+    return {
+      labels: r.serieAtual.map(p => this.formatarRotulo(p.chave)),
+      datasets: [
+        {
+          label: 'Período atual',
+          data: r.serieAtual.map(p => p.valor),
+          borderColor: '#1754cf',
+          backgroundColor: 'rgba(23, 84, 207, 0.12)',
+          fill: true,
+          tension: 0.35,
+          pointRadius: 3,
+          pointBackgroundColor: '#1754cf'
+        },
+        {
+          label: this.rotuloPeriodoAnterior(),
+          data: r.seriePeriodoAnterior.map(p => p.valor),
+          borderColor: corAnterior,
+          backgroundColor: 'transparent',
+          borderDash: [5, 4],
+          fill: false,
+          tension: 0.35,
+          pointRadius: 0
+        }
+      ],
+      _corTexto: corTexto
+    };
+  });
+
+  chartOptions = computed(() => {
+    const corTexto = this.theme.temaAtual() === 'dark' ? '#94a3b8' : '#64748b';
+    const corGrade = this.theme.temaAtual() === 'dark' ? '#1e293b' : '#f1f5f9';
+
+    return {
+      maintainAspectRatio: false,
+      responsive: true,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: true, position: 'bottom', labels: { color: corTexto, usePointStyle: true, boxWidth: 8, padding: 16 } },
+        tooltip: {
+          callbacks: {
+            label: (ctx: { dataset: { label?: string }; parsed: { y: number } }) =>
+              `${ctx.dataset.label}: ${this.formatarReais(ctx.parsed.y)}`
+          }
+        }
+      },
+      scales: {
+        x: { ticks: { color: corTexto }, grid: { display: false } },
+        y: { ticks: { color: corTexto, callback: (v: number) => this.formatarReaisCompacto(v) }, grid: { color: corGrade } }
+      }
+    };
   });
 
   formatarReais(valor?: number): string {
@@ -123,10 +193,9 @@ export class DashboardComponent implements OnInit {
     return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   }
 
-  formatarReaisCompacto(valor?: number): string {
-    if (!valor) return 'R$0';
-    if (valor >= 1000) return `R$${(valor / 1000).toFixed(1)}k`;
-    return `R$${Math.round(valor)}`;
+  private formatarReaisCompacto(valor: number): string {
+    if (valor >= 1000) return `${(valor / 1000).toFixed(0)}k`;
+    return String(valor);
   }
 
   formatarData(valor: string): string {

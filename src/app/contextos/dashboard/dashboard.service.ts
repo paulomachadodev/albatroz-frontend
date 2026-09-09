@@ -3,10 +3,11 @@ import { Observable } from 'rxjs';
 import { ApiService } from '../../core/http/api.service';
 import { Resultado } from '../../core/models';
 
-export interface FaturamentoMesItem {
-  ano: number;
-  mes: number;
-  faturamento: number;
+export type GranularidadeDashboard = 'dia' | 'mes' | 'ano';
+
+export interface SeriePonto {
+  chave: string;
+  valor: number;
 }
 
 export interface VendaRecente {
@@ -24,7 +25,8 @@ export interface DashboardResumo {
   pedidosMesAnterior: number;
   ticketMedioMes: number;
   produtosEstoqueCritico: number;
-  faturamentoPorMes: FaturamentoMesItem[];
+  serieAtual: SeriePonto[];
+  seriePeriodoAnterior: SeriePonto[];
   ultimasVendas: VendaRecente[];
 }
 
@@ -34,7 +36,7 @@ export class DashboardService {
 
   constructor(private api: ApiService) {}
 
-  obter(): Observable<Resultado<DashboardResumo>> {
-    return this.api.get<DashboardResumo>(this.endpoint);
+  obter(granularidade: GranularidadeDashboard): Observable<Resultado<DashboardResumo>> {
+    return this.api.get<DashboardResumo>(this.endpoint, { granularidade });
   }
 }

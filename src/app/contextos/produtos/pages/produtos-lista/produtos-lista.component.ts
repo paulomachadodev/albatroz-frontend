@@ -2,6 +2,7 @@ import { Component, OnInit, signal } from '@angular/core';
 
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import * as XLSX from 'xlsx';
 import { exportarPlanilha } from '../../../../shared/utils/exportar-planilha';
 import { ProdutosService, ProdutoFiltro } from '../../services/produtos.service';
@@ -19,6 +20,15 @@ import { SelectBuscaComponent, OpcaoSelectBusca } from '../../../../shared/compo
 import { MarcasService } from '../../services/marcas.service';
 import { ContatosService } from '../../../cadastros/contatos/services/contatos.service';
 
+const PT_TOGGLE_SELECIONAR_TODOS = {
+  root: 'inline-flex items-center cursor-pointer align-middle',
+  input: 'absolute opacity-0 w-0 h-0',
+  slider: ({ instance }: { instance: { checked(): boolean } }) =>
+    'relative inline-block w-9 h-5 rounded-full transition-colors ' + (instance.checked() ? 'bg-primary' : 'bg-slate-300 dark:bg-slate-600'),
+  handle: ({ instance }: { instance: { checked(): boolean } }) =>
+    'absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ' + (instance.checked() ? 'translate-x-4' : '')
+};
+
 interface LinhaPlanilhaMassa {
   Codigo: string;
   Nome: string;
@@ -35,7 +45,7 @@ interface LinhaPlanilhaFornecedores {
 @Component({
   selector: 'app-produtos-lista',
   standalone: true,
-  imports: [RouterLink, FormsModule, ListagemPaginadaComponent, PageHeaderComponent, ThOrdenavelComponent, MenuDropdownComponent, ModalComponent, BtnIconeComponent, SelectBuscaComponent],
+  imports: [RouterLink, FormsModule, ToggleSwitchModule, ListagemPaginadaComponent, PageHeaderComponent, ThOrdenavelComponent, MenuDropdownComponent, ModalComponent, BtnIconeComponent, SelectBuscaComponent],
   templateUrl: './produtos-lista.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
@@ -57,6 +67,8 @@ export class ProdutosListaComponent implements OnInit {
 
   selecionados = new Map<number, ProdutoResumo>();
   qtdSelecionados = signal(0);
+  selecionandoTodos = signal(false);
+  readonly ptToggleTodos = PT_TOGGLE_SELECIONAR_TODOS;
 
   modalMassaAberto = signal(false);
   processandoMassa = signal(false);
@@ -125,12 +137,14 @@ export class ProdutosListaComponent implements OnInit {
   }
 
   aplicarFiltros() {
+    this.limparSelecao();
     this.filtro.idMarca = this.marcaFiltro()?.id;
     this.filtro.idFornecedor = this.fornecedorFiltro()?.id;
     this.carregar(1);
   }
 
   limparFiltros() {
+    this.limparSelecao();
     this.filtro = { situacao: 'A' };
     this.marcaFiltro.set(null);
     this.fornecedorFiltro.set(null);
@@ -210,6 +224,31 @@ export class ProdutosListaComponent implements OnInit {
   limparSelecao() {
     this.selecionados.clear();
     this.qtdSelecionados.set(0);
+  }
+
+  todosSelecionados(): boolean {
+    return this.totalRegistros() > 0 && this.qtdSelecionados() === this.totalRegistros();
+  }
+
+  aoAlternarTodos(marcado: boolean) {
+    if (!marcado) {
+      this.limparSelecao();
+      return;
+    }
+    this.selecionandoTodos.set(true);
+    this.produtosService.listar({ pagina: 1, tamanho: this.totalRegistros() }, this.filtro).subscribe({
+      next: res => {
+        for (const item of res.dados?.dados ?? []) {
+          this.selecionados.set(item.id, item);
+        }
+        this.qtdSelecionados.set(this.selecionados.size);
+        this.selecionandoTodos.set(false);
+      },
+      error: err => {
+        this.selecionandoTodos.set(false);
+        this.toast.erroServidor(err, 'Não foi possível selecionar todos os produtos do filtro.');
+      }
+    });
   }
 
   abrirAlterarEmMassa() {

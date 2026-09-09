@@ -8,10 +8,6 @@
         </h1>
         <p class="text-slate-500 dark:text-slate-400 mt-1">Resumo geral do seu ERP em tempo real.</p>
       </div>
-      <a routerLink="/cotacoes/listas-escolares"
-         class="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all">
-        <span class="material-symbols-outlined text-sm">add</span> Novo orçamento
-      </a>
     </div>
 
     @if (carregando()) {
@@ -35,7 +31,7 @@
               }
             </div>
             <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">{{ k.titulo }}</p>
-            <p class="text-2xl font-black mt-1 text-slate-900 dark:text-slate-100">{{ k.valor }}</p>
+            <p class="text-2xl font-semibold mt-1 text-slate-900 dark:text-slate-100">{{ k.valor }}</p>
             <p class="text-[11px] text-slate-400 mt-1">vs mês anterior</p>
           </div>
         }
@@ -45,38 +41,30 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
       <div class="lg:col-span-2 bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-        <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
           <div>
             <h3 class="font-bold text-slate-900 dark:text-slate-100">Faturamento</h3>
-            <p class="text-xs text-slate-400 mt-0.5">Últimos 12 meses</p>
+            <p class="text-xs text-slate-400 mt-0.5">{{ rotuloPeriodoAnterior() }}</p>
+          </div>
+          <div class="flex gap-1 text-xs bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
+            @for (g of granularidades; track g.valor) {
+              <button type="button" (click)="mudarGranularidade(g.valor)"
+                      class="px-3 py-1.5 rounded-md transition-colors"
+                      [class.bg-white]="granularidade() === g.valor" [class.dark:bg-slate-700]="granularidade() === g.valor"
+                      [class.shadow-sm]="granularidade() === g.valor" [class.font-semibold]="granularidade() === g.valor"
+                      [class.text-slate-900]="granularidade() === g.valor" [class.dark:text-slate-100]="granularidade() === g.valor"
+                      [class.text-slate-500]="granularidade() !== g.valor">{{ g.rotulo }}</button>
+            }
           </div>
         </div>
 
-        @if (!carregando() && serieValores().length > 1) {
-          <svg viewBox="0 0 600 200" class="w-full h-48" preserveAspectRatio="none">
-            <defs>
-              <linearGradient id="grad-area" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%"   stop-color="#1754cf" stop-opacity="0.35"/>
-                <stop offset="100%" stop-color="#1754cf" stop-opacity="0"/>
-              </linearGradient>
-            </defs>
-            @for (y of [0.25, 0.5, 0.75]; track y) {
-              <line [attr.x1]="20" [attr.x2]="580"
-                    [attr.y1]="20 + y * 160" [attr.y2]="20 + y * 160"
-                    stroke="currentColor" class="text-slate-200 dark:text-slate-700" stroke-dasharray="3 4"/>
-            }
-            <path [attr.d]="pathLinha().area" fill="url(#grad-area)"/>
-            <path [attr.d]="pathLinha().linha" fill="none"
-                  stroke="#1754cf" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-            @for (p of pathLinha().pontos; track $index) {
-              <circle [attr.cx]="p[0]" [attr.cy]="p[1]" r="4" class="fill-white dark:fill-slate-900" stroke="#1754cf" stroke-width="2"/>
-            }
-          </svg>
-
-          <div class="grid mt-2 text-[10px] text-slate-400 text-center font-medium" [style.grid-template-columns]="'repeat(' + serieRotulos().length + ', minmax(0, 1fr))'">
-            @for (r of serieRotulos(); track $index) { <div>{{ r }}</div> }
+        @if (carregando()) {
+          <div class="h-64 animate-pulse bg-slate-100 dark:bg-slate-800 rounded-lg"></div>
+        } @else if (chartData()) {
+          <div class="h-64">
+            <p-chart type="line" [data]="chartData()" [options]="chartOptions()" [height]="'100%'"></p-chart>
           </div>
-        } @else if (!carregando()) {
+        } @else {
           <p class="text-sm text-slate-400 text-center py-16">Sem vendas suficientes pra montar o gráfico ainda.</p>
         }
       </div>

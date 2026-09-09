@@ -58,12 +58,12 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div class="sm:col-span-2">
-            <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Servidor SMTP</label>
+            <label class="text-xs font-semibold text-slate-500">Servidor SMTP</label>
             <input type="text" [(ngModel)]="smtpHost" placeholder="mail.albatrozpapelaria.com.br"
                    class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
           </div>
           <div>
-            <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Porta</label>
+            <label class="text-xs font-semibold text-slate-500">Porta</label>
             <input type="text" [(ngModel)]="smtpPort" placeholder="465"
                    class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
           </div>
@@ -77,12 +77,12 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Usuário</label>
+            <label class="text-xs font-semibold text-slate-500">Usuário</label>
             <input type="text" [(ngModel)]="smtpUsuario" placeholder="noreply@albatrozpapelaria.com.br"
                    class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
           </div>
           <div>
-            <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">
+            <label class="text-xs font-semibold text-slate-500">
               Senha {{ senhaJaConfigurada ? '(já configurada — deixe em branco pra manter)' : '' }}
             </label>
             <input type="password" [(ngModel)]="smtpSenha" [placeholder]="senhaJaConfigurada ? '••••••••' : 'Senha SMTP'"
@@ -92,12 +92,12 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">E-mail remetente</label>
+            <label class="text-xs font-semibold text-slate-500">E-mail remetente</label>
             <input type="email" [(ngModel)]="smtpRemetente" placeholder="noreply@albatrozpapelaria.com.br"
                    class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
           </div>
           <div>
-            <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Nome remetente</label>
+            <label class="text-xs font-semibold text-slate-500">Nome remetente</label>
             <input type="text" [(ngModel)]="smtpNomeRemetente" placeholder="Albatroz Papelaria"
                    class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
           </div>
@@ -124,7 +124,7 @@
 
         <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
           <table class="w-full text-left">
-            <thead class="bg-slate-50 dark:bg-slate-800/50 text-xs font-bold text-slate-500 uppercase tracking-wide">
+            <thead class="bg-slate-50 dark:bg-slate-800/50 text-xs font-semibold text-slate-500">
               <tr>
                 <th class="px-6 py-4">Lista</th>
                 <th class="px-6 py-4">Tipo</th>
@@ -169,12 +169,12 @@
           <p class="text-sm font-bold text-slate-900 dark:text-slate-100">Google Merchant Center</p>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Merchant ID</label>
+              <label class="text-xs font-semibold text-slate-500">Merchant ID</label>
               <input type="text" [(ngModel)]="googleMerchantId" placeholder="123456789"
                      class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
             </div>
             <div>
-              <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Modo de envio</label>
+              <label class="text-xs font-semibold text-slate-500">Modo de envio</label>
               <select [(ngModel)]="googleFeedModo" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none">
                 <option value="url">Feed por URL (mais simples)</option>
                 <option value="api">Content API (Service Account)</option>
@@ -183,13 +183,13 @@
           </div>
           @if (googleFeedModo === 'api') {
             <div>
-              <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Service Account (JSON)</label>
+              <label class="text-xs font-semibold text-slate-500">Service Account (JSON)</label>
               <textarea rows="4" [(ngModel)]="googleServiceAccountJson" placeholder="Cole aqui o JSON da service account com acesso ao Merchant Center"
                         class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-xs font-mono outline-none resize-none"></textarea>
             </div>
           } @else {
             <div>
-              <label class="text-xs font-bold text-slate-500 uppercase tracking-wide inline-flex items-center gap-1">
+              <label class="text-xs font-semibold text-slate-500 inline-flex items-center gap-1">
                 Token do feed
                 <app-campo-hint texto="Vai como parte da URL que você cadastra no Merchant Center — invente uma string aleatória, só serve pra impedir que outros vejam seu catálogo."></app-campo-hint>
               </label>
@@ -206,12 +206,12 @@
           <p class="text-sm font-bold text-slate-900 dark:text-slate-100">Meta (Instagram/Facebook)</p>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Catalog ID</label>
+              <label class="text-xs font-semibold text-slate-500">Catalog ID</label>
               <input type="text" [(ngModel)]="metaCatalogId" placeholder="123456789"
                      class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
             </div>
             <div>
-              <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Modo de envio</label>
+              <label class="text-xs font-semibold text-slate-500">Modo de envio</label>
               <select [(ngModel)]="metaFeedModo" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none">
                 <option value="url">Feed por URL (mais simples)</option>
                 <option value="api">Catalog API (Token de sistema)</option>
@@ -220,13 +220,13 @@
           </div>
           @if (metaFeedModo === 'api') {
             <div>
-              <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Token de sistema</label>
+              <label class="text-xs font-semibold text-slate-500">Token de sistema</label>
               <input type="password" [(ngModel)]="metaTokenSistema" placeholder="Token de usuário de sistema com catalog_management"
                      class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
             </div>
           } @else {
             <div>
-              <label class="text-xs font-bold text-slate-500 uppercase tracking-wide inline-flex items-center gap-1">
+              <label class="text-xs font-semibold text-slate-500 inline-flex items-center gap-1">
                 Token do feed
                 <app-campo-hint texto="Vai como parte da URL que você cadastra no Catalog Manager — invente uma string aleatória."></app-campo-hint>
               </label>
@@ -242,7 +242,7 @@
         <div class="space-y-4 pt-6 border-t border-slate-200 dark:border-slate-800">
           <p class="text-sm font-bold text-slate-900 dark:text-slate-100">Site</p>
           <div>
-            <label class="text-xs font-bold text-slate-500 uppercase tracking-wide inline-flex items-center gap-1">
+            <label class="text-xs font-semibold text-slate-500 inline-flex items-center gap-1">
               URL base do site
               <app-campo-hint texto="Usada pra montar o link de cada produto no feed (ex: https://loja.albatrozpapelaria.com.br). Deixe em branco até o site/vitrine existir."></app-campo-hint>
             </label>
@@ -266,7 +266,7 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label class="text-xs font-bold text-slate-500 uppercase tracking-wide inline-flex items-center gap-1">
+            <label class="text-xs font-semibold text-slate-500 inline-flex items-center gap-1">
               Chave de API {{ googleCustomSearchChaveConfigurada ? '(já configurada — deixe em branco pra manter)' : '' }}
               <app-campo-hint largura="w-80" texto="Passo a passo:
 1. console.cloud.google.com → escolha ou crie um projeto (pode reusar o mesmo do BigQuery, se já tiver).
@@ -281,7 +281,7 @@
                    class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
           </div>
           <div>
-            <label class="text-xs font-bold text-slate-500 uppercase tracking-wide inline-flex items-center gap-1">
+            <label class="text-xs font-semibold text-slate-500 inline-flex items-center gap-1">
               ID do mecanismo de pesquisa (cx)
               <app-campo-hint texto="Search engine ID da Programmable Search Engine criada em cse.google.com/cse/all — não é a API key."></app-campo-hint>
             </label>
@@ -291,7 +291,7 @@
         </div>
 
         <div>
-          <label class="text-xs font-bold text-slate-500 uppercase tracking-wide inline-flex items-center gap-1">
+          <label class="text-xs font-semibold text-slate-500 inline-flex items-center gap-1">
             Limite de buscas por dia
             <app-campo-hint texto="Trava o job pra nunca gastar mais que isso por dia. 100 é o teto do plano gratuito do Google — só suba se tiver ativado billing e cota maior no Cloud Console."></app-campo-hint>
           </label>
@@ -314,12 +314,12 @@
 <app-modal [aberto]="modalListaAberto()" [titulo]="listaEditandoId ? 'Editar lista de preço' : 'Nova lista de preço'" tamanho="md" (fechar)="fecharModalLista()">
   <div class="px-6 pb-6 space-y-4">
     <div>
-      <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Nome</label>
+      <label class="text-xs font-semibold text-slate-500">Nome</label>
       <input type="text" [(ngModel)]="formLista.nome"
              class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
     </div>
     <div>
-      <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Tipo</label>
+      <label class="text-xs font-semibold text-slate-500">Tipo</label>
       <select [(ngModel)]="formLista.tipo" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none">
         <option value="empresa">Empresa</option>
         <option value="escola">Escola</option>
@@ -330,14 +330,14 @@
     </div>
     <div class="grid grid-cols-2 gap-4">
       <div>
-        <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Cálculo</label>
+        <label class="text-xs font-semibold text-slate-500">Cálculo</label>
         <select [(ngModel)]="formLista.modoCalculo" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none">
           <option value="percentual_venda">Sobre preço de venda</option>
           <option value="percentual_custo">Sobre preço de custo</option>
         </select>
       </div>
       <div>
-        <label class="text-xs font-bold text-slate-500 uppercase tracking-wide inline-flex items-center gap-1">
+        <label class="text-xs font-semibold text-slate-500 inline-flex items-center gap-1">
           Percentual
           <app-campo-hint texto="Positivo (Soma) = acréscimo sobre o preço base. Negativo (Diminui) = desconto. Aplicado sobre venda ou custo, conforme o Cálculo ao lado."></app-campo-hint>
         </label>

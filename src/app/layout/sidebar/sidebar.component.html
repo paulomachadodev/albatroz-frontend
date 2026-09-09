@@ -31,7 +31,7 @@
         <div (mouseenter)="expandirGrupo(grupo.titulo)"
              (mouseleave)="recolherGrupo(grupo.titulo)"
              class="relative">
-          <div class="px-3 mb-2 flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+          <div class="px-3 mb-2 flex items-center gap-2 text-[10px] font-semibold text-slate-400">
             @if (expandida()) {
               <span>{{ grupo.titulo }}</span>
             } @else {
@@ -98,7 +98,7 @@
       } @else {
         <div>
           @if (expandida()) {
-            <div class="px-3 mb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+            <div class="px-3 mb-2 text-[10px] font-semibold text-slate-400">
               {{ grupo.titulo }}
             </div>
           } @else {

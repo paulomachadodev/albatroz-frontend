@@ -69,39 +69,39 @@
         <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-6">
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Nome / Razão social</label>
+              <label class="text-xs font-semibold text-slate-500">Nome / Razão social</label>
               <input type="text" [(ngModel)]="nome"
                      class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
             </div>
             <div>
-              <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Nome fantasia</label>
+              <label class="text-xs font-semibold text-slate-500">Nome fantasia</label>
               <input type="text" [(ngModel)]="fantasia"
                      class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
             </div>
             <div>
-              <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">CPF/CNPJ</label>
+              <label class="text-xs font-semibold text-slate-500">CPF/CNPJ</label>
               <input type="text" [(ngModel)]="cpfCnpj"
                      class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
             </div>
             <div>
-              <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Telefone</label>
+              <label class="text-xs font-semibold text-slate-500">Telefone</label>
               <input type="text" [(ngModel)]="telefone"
                      class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
             </div>
             <div>
-              <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Celular</label>
+              <label class="text-xs font-semibold text-slate-500">Celular</label>
               <input type="text" [(ngModel)]="celular"
                      class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
             </div>
             <div>
-              <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">E-mail</label>
+              <label class="text-xs font-semibold text-slate-500">E-mail</label>
               <input type="email" [(ngModel)]="email"
                      class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
             </div>
           </div>
 
           <div>
-            <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Tipos</label>
+            <label class="text-xs font-semibold text-slate-500">Tipos</label>
             <div class="mt-2 flex flex-wrap gap-3">
               @for (tipo of todosTipos; track tipo) {
                 <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
@@ -129,7 +129,7 @@
           <div class="border-t border-slate-100 dark:border-slate-800 pt-4">
             <div class="flex items-center gap-2 mb-3">
               <span class="material-symbols-outlined text-slate-400 text-base">sync</span>
-              <p class="text-xs font-bold text-slate-400 uppercase tracking-wide">Sincronizado do Tiny — somente leitura</p>
+              <p class="text-xs font-semibold text-slate-400">Sincronizado do Tiny — somente leitura</p>
             </div>
             <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
               <div><p class="text-xs text-slate-400">Tipo pessoa</p><p class="font-bold text-slate-700 dark:text-slate-300">{{ rotuloTipoPessoa(contato()!.tipoPessoa) }}</p></div>
@@ -160,7 +160,7 @@
             </button>
           </div>
           <table class="w-full text-left">
-            <thead class="bg-slate-50 dark:bg-slate-800/50 text-xs font-bold text-slate-500 uppercase tracking-wide">
+            <thead class="bg-slate-50 dark:bg-slate-800/50 text-xs font-semibold text-slate-500">
               <tr>
                 <th class="px-6 py-4">Tipo</th>
                 <th class="px-6 py-4">Endereço</th>
@@ -200,12 +200,12 @@
           <p class="text-sm text-slate-500 dark:text-slate-400">Essas informações entram no cálculo da sugestão de compra desse fornecedor.</p>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Prazo de entrega (dias)</label>
+              <label class="text-xs font-semibold text-slate-500">Prazo de entrega (dias)</label>
               <input type="number" min="0" [(ngModel)]="prazoEntregaDias"
                      class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
             </div>
             <div>
-              <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Valor de pedido mínimo</label>
+              <label class="text-xs font-semibold text-slate-500">Valor de pedido mínimo</label>
               <input type="number" min="0" step="0.01" [(ngModel)]="valorPedidoMinimo"
                      class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
             </div>
@@ -229,7 +229,7 @@
             </button>
           </div>
           <table class="w-full text-left">
-            <thead class="bg-slate-50 dark:bg-slate-800/50 text-xs font-bold text-slate-500 uppercase tracking-wide">
+            <thead class="bg-slate-50 dark:bg-slate-800/50 text-xs font-semibold text-slate-500">
               <tr>
                 <th class="px-6 py-4">Nome</th>
                 <th class="px-6 py-4">Cargo</th>
@@ -263,7 +263,7 @@
       @if (abaAtiva() === 'produtos') {
         <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
           <table class="w-full text-left">
-            <thead class="bg-slate-50 dark:bg-slate-800/50 text-xs font-bold text-slate-500 uppercase tracking-wide">
+            <thead class="bg-slate-50 dark:bg-slate-800/50 text-xs font-semibold text-slate-500">
               <tr>
                 <th class="px-6 py-4">Código</th>
                 <th class="px-6 py-4">Produto</th>
@@ -295,7 +295,7 @@
 <app-modal [aberto]="modalEnderecoAberto()" [titulo]="enderecoEmEdicao() ? 'Editar endereço' : 'Novo endereço'" tamanho="md" (fechar)="fecharModalEndereco()">
   <div class="space-y-4">
     <div>
-      <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Tipo</label>
+      <label class="text-xs font-semibold text-slate-500">Tipo</label>
       <select [(ngModel)]="formEndereco.tipo" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none">
         <option [ngValue]="1">Principal</option>
         <option [ngValue]="2">Cobrança</option>

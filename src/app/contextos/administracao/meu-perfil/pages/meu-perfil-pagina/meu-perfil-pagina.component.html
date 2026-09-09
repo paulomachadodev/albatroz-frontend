@@ -11,11 +11,11 @@
 
     <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-4">
       <div>
-        <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Nome</label>
+        <label class="text-xs font-semibold text-slate-500">Nome</label>
         <p class="mt-1 text-sm text-slate-800 dark:text-slate-200">{{ usuario()?.nome }}</p>
       </div>
       <div>
-        <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">E-mail</label>
+        <label class="text-xs font-semibold text-slate-500">E-mail</label>
         <p class="mt-1 text-sm text-slate-800 dark:text-slate-200">{{ usuario()?.email }}</p>
       </div>
       <p class="text-xs text-slate-400">Nome e e-mail só podem ser alterados por um administrador, em Usuários.</p>
@@ -26,7 +26,7 @@
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Senha atual</label>
+          <label class="text-xs font-semibold text-slate-500">Senha atual</label>
           <input type="password" [(ngModel)]="senhaAtual" placeholder="Senha atual"
                  class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
         </div>
@@ -34,12 +34,12 @@
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Nova senha</label>
+          <label class="text-xs font-semibold text-slate-500">Nova senha</label>
           <input type="password" [(ngModel)]="novaSenha" placeholder="Mín. 8 caracteres, maiúscula, número e símbolo"
                  class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
         </div>
         <div>
-          <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Confirmar nova senha</label>
+          <label class="text-xs font-semibold text-slate-500">Confirmar nova senha</label>
           <input type="password" [(ngModel)]="confirmarNovaSenha" placeholder="Repita a nova senha"
                  class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
         </div>

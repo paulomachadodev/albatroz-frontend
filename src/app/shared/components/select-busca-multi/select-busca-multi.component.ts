@@ -28,7 +28,7 @@ export class SelectBuscaMultiComponent {
 
   aoFocar() {
     this.aberto.set(true);
-    this.executarBusca(this.termo());
+    if (this.termo().trim().length > 0) this.executarBusca(this.termo());
   }
 
   aoFecharComAtraso() {
@@ -60,7 +60,7 @@ export class SelectBuscaMultiComponent {
       : [...atuais, opcao];
     this.selecionadosChange.emit(novo);
     this.termo.set('');
-    this.executarBusca('');
+    this.resultados.set([]);
   }
 
   remover(opcao: OpcaoSelectBusca, evento: Event) {

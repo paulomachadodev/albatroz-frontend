@@ -139,7 +139,9 @@
             <p class="text-xs font-bold text-slate-400 uppercase tracking-wide">Total estimado</p>
             <p class="text-xl font-bold text-slate-900 dark:text-slate-100">{{ formatarReais(totalEstimadoGeral()) }}</p>
           </div>
-          <div class="flex gap-2">
+          <div class="flex items-center gap-2">
+            <app-colunas-configuraveis [colunas]="colunasConfiguraveis" [visiveis]="colunasVisiveis()"
+                                        (visivelMudou)="aoAlternarColuna($event)"></app-colunas-configuraveis>
             <button (click)="aplicarFiltros()"
                     class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all">
               Filtrar
@@ -190,10 +192,7 @@
           @if (colunaVisivel('ultimaVenda')) {
             <th class="px-6 py-4 text-right">Última Venda</th>
           }
-          <th class="px-3 py-4 w-10 text-right">
-            <app-colunas-configuraveis [colunas]="colunasConfiguraveis" [visiveis]="colunasVisiveis()"
-                                        (visivelMudou)="aoAlternarColuna($event)"></app-colunas-configuraveis>
-          </th>
+          <th class="px-3 py-4 w-10"></th>
         </tr>
       </ng-template>
 

@@ -30,7 +30,7 @@ export class SelectBuscaComponent {
 
   aoFocar() {
     this.aberto.set(true);
-    this.executarBusca(this.termo());
+    if (this.termo().trim().length > 0) this.executarBusca(this.termo());
   }
 
   aoFecharComAtraso() {

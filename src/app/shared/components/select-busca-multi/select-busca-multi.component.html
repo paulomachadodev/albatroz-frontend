@@ -22,6 +22,8 @@
     <ul class="mt-1 max-h-56 overflow-y-auto rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg absolute z-20 w-full">
       @if (buscando()) {
         <li class="px-3 py-2 text-sm text-slate-400">Buscando...</li>
+      } @else if (termo().trim().length === 0) {
+        <li class="px-3 py-2 text-sm text-slate-400">Digite para buscar...</li>
       } @else if (resultados().length === 0) {
         <li class="px-3 py-2 text-sm text-slate-400">Nenhum resultado.</li>
       } @else {

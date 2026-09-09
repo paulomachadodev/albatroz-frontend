@@ -2,9 +2,9 @@
   <div class="min-h-[38px] w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 rounded-lg flex flex-wrap items-center gap-1 cursor-text"
        (click)="aoFocar()">
     @for (opcao of valoresSelecionados(); track opcao.id) {
-      <span class="inline-flex items-center gap-1 pl-2 pr-1 py-0.5 rounded-md bg-primary/10 text-primary text-xs font-semibold">
+      <span class="inline-flex items-center gap-1 pl-2 pr-1 py-0.5 rounded-md bg-primary/15 dark:bg-primary text-primary dark:text-white text-xs font-semibold">
         {{ opcao.nome }}
-        <button type="button" (mousedown)="remover(opcao, $event)" class="hover:text-primary/70">
+        <button type="button" (mousedown)="remover(opcao, $event)" class="hover:text-primary/70 dark:hover:text-white/70">
           <span class="material-symbols-outlined text-sm">close</span>
         </button>
       </span>

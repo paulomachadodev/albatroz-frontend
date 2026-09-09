@@ -59,6 +59,8 @@ export class SelectBuscaMultiComponent {
       ? atuais.filter(v => v.id !== opcao.id)
       : [...atuais, opcao];
     this.selecionadosChange.emit(novo);
+    this.termo.set('');
+    this.executarBusca('');
   }
 
   remover(opcao: OpcaoSelectBusca, evento: Event) {

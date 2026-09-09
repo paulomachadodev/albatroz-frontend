@@ -17,8 +17,14 @@ export class BreadcrumbComponent {
   private location = inject(Location);
 
   itens = input.required<BreadcrumbItem[]>();
+  aoVoltar = input<() => void>();
 
   voltar(): void {
+    const handler = this.aoVoltar();
+    if (handler) {
+      handler();
+      return;
+    }
     this.location.back();
   }
 }

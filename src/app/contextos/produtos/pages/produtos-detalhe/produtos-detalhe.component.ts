@@ -1,5 +1,6 @@
 import { Component, OnInit, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { firstValueFrom } from 'rxjs';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -117,7 +118,8 @@ export class ProdutosDetalheComponent implements OnInit {
     private contatosService: ContatosService,
     private toast: ToastService,
     private confirm: ConfirmService,
-    private theme: ThemeService
+    private theme: ThemeService,
+    private sanitizer: DomSanitizer
   ) {}
 
   ngOnInit() {
@@ -598,6 +600,7 @@ export class ProdutosDetalheComponent implements OnInit {
         seoTitle: e.seoTitle ?? null,
         seoDescription: e.seoDescription ?? null,
         seoSlug: e.seoSlug ?? null,
+        seoLinkVideo: e.seoLinkVideo ?? null,
         googleProductCategory: e.googleProductCategory ?? null,
         googleBrand: e.googleBrand ?? null,
         googleGtin: e.googleGtin ?? null,
@@ -644,6 +647,16 @@ export class ProdutosDetalheComponent implements OnInit {
         this.toast.erroServidor(err, 'Não foi possível reenriquecer agora — tente novamente em instantes.');
       }
     });
+  }
+
+  idYoutube(url?: string | null): string | null {
+    if (!url) return null;
+    const match = /(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|shorts\/|embed\/))([\w-]{11})/.exec(url);
+    return match ? match[1] : null;
+  }
+
+  urlVideoSeguro(videoId: string): SafeResourceUrl {
+    return this.sanitizer.bypassSecurityTrustResourceUrl(`https://www.youtube.com/embed/${videoId}`);
   }
 
   carregarMarketplaces() {

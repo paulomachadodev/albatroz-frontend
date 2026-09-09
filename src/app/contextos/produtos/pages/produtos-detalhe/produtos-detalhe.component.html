@@ -1,7 +1,7 @@
 <div class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark px-4 sm:px-6 lg:px-8 xl:px-10 py-6 lg:py-8">
   <div class="w-full space-y-8">
 
-    <app-breadcrumb [itens]="[{label:'Início',rota:'/dashboard'},{label:'Cadastros'},{label:'Produtos',rota:'/produtos'},{label: produto()?.nome ?? '...'}]"></app-breadcrumb>
+    <app-breadcrumb [itens]="[{label:'Início',rota:'/dashboard'},{label:'Cadastros'},{label:'Produtos',rota:'/produtos'},{label: produto()?.nome ?? '...'}]" [aoVoltar]="voltar.bind(this)"></app-breadcrumb>
 
     @if (carregando()) {
       <div class="text-sm text-slate-500">Carregando...</div>
@@ -32,10 +32,6 @@
               Concluir edição
             </button>
           }
-          <button (click)="voltar()"
-                  class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
-            Voltar
-          </button>
         </div>
       </div>
 
@@ -201,7 +197,6 @@
         </div>
       }
 
-      <!-- Aba Web — Imagens + SEO + Google Shopping + Tags/Enriquecimento -->
       @if (abaAtiva() === 'web') {
         <div class="space-y-6">
 
@@ -271,6 +266,49 @@
               </button>
             </div>
           </div>
+
+          @if (enriquecimento(); as vc) {
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-3">
+                <p class="text-xs font-semibold text-slate-500">Vídeo</p>
+                <p class="text-xs text-slate-400">Link do YouTube (formato Shorts recomendado) — aparece na galeria do produto no site.</p>
+                <input type="url" [(ngModel)]="vc.seoLinkVideo" (ngModelChange)="marcarSujo()" [disabled]="!modoEdicao()"
+                       placeholder="https://youtube.com/shorts/..."
+                       class="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none disabled:opacity-60"/>
+                @if (idYoutube(vc.seoLinkVideo); as videoId) {
+                  <div class="aspect-[9/16] max-w-[220px] mx-auto rounded-lg overflow-hidden bg-black">
+                    <iframe [src]="urlVideoSeguro(videoId)"
+                            class="w-full h-full" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                  </div>
+                } @else if (vc.seoLinkVideo) {
+                  <p class="text-xs text-amber-600 dark:text-amber-400">Não consegui identificar o ID do vídeo nesse link.</p>
+                }
+              </div>
+
+              @if (marketplaces().length > 0) {
+                <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6">
+                  <p class="text-xs font-semibold text-slate-500 mb-3">Marketplaces</p>
+                  <div class="flex flex-wrap gap-3">
+                    @for (mkt of marketplaces(); track mkt.codigo) {
+                      <div class="flex flex-col gap-1 px-4 py-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 min-w-[200px]">
+                        <div class="flex items-center gap-2">
+                          <app-toggle [valor]="mkt.habilitado"
+                                      [desabilitado]="alterandoMarketplace() === mkt.codigo || (!mkt.elegivel && !mkt.habilitado)"
+                                      (valorMudou)="alternarMarketplace(mkt)"></app-toggle>
+                          <p class="text-sm font-bold text-slate-900 dark:text-slate-100">{{ mkt.nome }}</p>
+                        </div>
+                        @if (mkt.elegivel) {
+                          <span class="text-xs text-emerald-600 dark:text-emerald-400">Elegível</span>
+                        } @else {
+                          <span class="text-xs text-amber-600 dark:text-amber-400">{{ mkt.motivoNaoElegivel }}</span>
+                        }
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          }
 
           @if (carregandoEnriquecimento()) {
             <div class="text-sm text-slate-500">Carregando dados de SEO/enriquecimento...</div>
@@ -417,29 +455,6 @@
             </div>
           }
 
-          <!-- Marketplaces — só aparece o que estiver configurado em Configurações > Integrações -->
-          @if (marketplaces().length > 0) {
-            <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6">
-              <p class="text-xs font-semibold text-slate-500 mb-3">Marketplaces</p>
-              <div class="flex flex-wrap gap-3">
-                @for (mkt of marketplaces(); track mkt.codigo) {
-                  <div class="flex flex-col gap-1 px-4 py-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 min-w-[200px]">
-                    <div class="flex items-center gap-2">
-                      <app-toggle [valor]="mkt.habilitado"
-                                  [desabilitado]="alterandoMarketplace() === mkt.codigo || (!mkt.elegivel && !mkt.habilitado)"
-                                  (valorMudou)="alternarMarketplace(mkt)"></app-toggle>
-                      <p class="text-sm font-bold text-slate-900 dark:text-slate-100">{{ mkt.nome }}</p>
-                    </div>
-                    @if (mkt.elegivel) {
-                      <span class="text-xs text-emerald-600 dark:text-emerald-400">Elegível</span>
-                    } @else {
-                      <span class="text-xs text-amber-600 dark:text-amber-400">{{ mkt.motivoNaoElegivel }}</span>
-                    }
-                  </div>
-                }
-              </div>
-            </div>
-          }
         </div>
       }
 

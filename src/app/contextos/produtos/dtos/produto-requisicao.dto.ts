@@ -35,6 +35,7 @@ export interface AtualizarEnriquecimentoProdutoRequisicao {
   seoTitle: string | null;
   seoDescription: string | null;
   seoSlug: string | null;
+  seoLinkVideo: string | null;
   googleProductCategory: string | null;
   googleBrand: string | null;
   googleGtin: string | null;

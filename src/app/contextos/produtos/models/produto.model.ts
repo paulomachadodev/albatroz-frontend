@@ -145,6 +145,7 @@ export interface ProdutoEnriquecimento {
   seoTitle?: string;
   seoDescription?: string;
   seoSlug?: string;
+  seoLinkVideo?: string;
   googleProductCategory?: string;
   googleBrand?: string;
   googleGtin?: string;

@@ -110,12 +110,8 @@
               [filter]="true"
               filterPlaceHolder="Buscar marca..."
               placeholder="Todas..."
-              [lazy]="true"
-              [virtualScroll]="true"
-              [virtualScrollItemSize]="36"
-              scrollHeight="224px"
               [loading]="marcasCarregando()"
-              (onLazyLoad)="carregarMarcas($event)"
+              (onPanelShow)="aoAbrirMarcas()"
               (onFilter)="aoFiltrarMarcas($event)"
               [unstyled]="true"
               [pt]="ptMarcas"></p-multiSelect>
@@ -123,24 +119,11 @@
 
           <div>
             <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Fornecedor</label>
-            <p-select
-              [(ngModel)]="fornecedorSelecionado"
-              [options]="fornecedoresOpcoes()"
-              optionLabel="nome"
-              dataKey="id"
-              [filter]="true"
-              filterPlaceHolder="Buscar fornecedor..."
-              placeholder="Todos..."
-              [showClear]="true"
-              [lazy]="true"
-              [virtualScroll]="true"
-              [virtualScrollItemSize]="36"
-              scrollHeight="224px"
-              [loading]="fornecedoresCarregando()"
-              (onLazyLoad)="carregarFornecedores($event)"
-              (onFilter)="aoFiltrarFornecedores($event)"
-              [unstyled]="true"
-              [pt]="ptFornecedor"></p-select>
+            <app-select-busca
+              [valorSelecionado]="fornecedorSelecionado"
+              placeholder="Buscar fornecedor..."
+              [buscar]="buscarFornecedores"
+              (selecionado)="fornecedorSelecionado = $event"></app-select-busca>
           </div>
           <div>
             <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Comprar para quantos dias</label>

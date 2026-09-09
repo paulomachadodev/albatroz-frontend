@@ -22,7 +22,7 @@ import { ContatosService } from '../../../cadastros/contatos/services/contatos.s
 const TAMANHO_PAGINA_LAZY = 50;
 
 const PT_MULTISELECT_MARCA = {
-  root: 'mt-1 w-full flex items-center justify-between gap-2 px-3 py-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-sm cursor-pointer',
+  root: 'relative mt-1 w-full flex items-center justify-between gap-2 px-3 py-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-sm cursor-pointer',
   labelContainer: 'flex-1 overflow-hidden',
   label: 'truncate text-slate-900 dark:text-slate-100',
   dropdownIcon: 'text-slate-400 text-base material-symbols-outlined',
@@ -35,7 +35,7 @@ const PT_MULTISELECT_MARCA = {
 };
 
 const PT_SELECT_FORNECEDOR = {
-  root: 'mt-1 w-full flex items-center justify-between gap-2 px-3 py-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-sm cursor-pointer',
+  root: 'relative mt-1 w-full flex items-center justify-between gap-2 px-3 py-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-sm cursor-pointer',
   label: 'truncate text-slate-900 dark:text-slate-100',
   dropdownIcon: 'text-slate-400 text-base material-symbols-outlined',
   listContainer: 'mt-1 max-h-56 overflow-y-auto rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg z-20',
@@ -49,9 +49,9 @@ const PT_TOGGLE_SELECIONAR_TODOS = {
   root: 'inline-flex items-center cursor-pointer align-middle',
   input: 'absolute opacity-0 w-0 h-0',
   slider: ({ instance }: { instance: { checked(): boolean } }) =>
-    'relative inline-block w-8 h-4.5 rounded-full transition-colors ' + (instance.checked() ? 'bg-primary' : 'bg-slate-300 dark:bg-slate-700'),
+    'relative inline-block w-9 h-5 rounded-full transition-colors ' + (instance.checked() ? 'bg-primary' : 'bg-slate-300 dark:bg-slate-600'),
   handle: ({ instance }: { instance: { checked(): boolean } }) =>
-    'absolute top-0.5 left-0.5 w-3.5 h-3.5 rounded-full bg-white shadow transition-transform ' + (instance.checked() ? 'translate-x-3.5' : '')
+    'absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ' + (instance.checked() ? 'translate-x-4' : '')
 };
 
 const CHAVE_LOCALSTORAGE = 'compras-sugestoes-ajustadas-v1';

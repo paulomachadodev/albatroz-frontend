@@ -18,3 +18,10 @@ export const publicoGuard: CanActivateFn = () => {
   const router = inject(Router);
   return auth.isAuthenticated() ? router.createUrlTree(['/dashboard']) : true;
 };
+
+export const dashboardAccessGuard: CanActivateFn = () => {
+  const auth = inject(AuthService);
+  const router = inject(Router);
+  const ehAdministrador = auth.usuario()?.perfis?.includes('Administrador') ?? false;
+  return ehAdministrador ? true : router.createUrlTree(['/cadastros/contatos']);
+};

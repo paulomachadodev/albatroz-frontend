@@ -19,7 +19,8 @@
   </div>
 
   @if (aberto()) {
-    <ul class="mt-1 max-h-56 overflow-y-auto rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg absolute z-20 w-full">
+    <ul style="animation: dropdown-in 150ms ease-out"
+        class="mt-1 max-h-56 overflow-y-auto rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg absolute z-20 w-full">
       @if (buscando()) {
         <li class="px-3 py-2 text-sm text-slate-400">Buscando...</li>
       } @else if (termo().trim().length === 0) {

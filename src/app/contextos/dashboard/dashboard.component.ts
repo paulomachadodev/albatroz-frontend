@@ -1,6 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
+import { DashboardService, DashboardResumo } from './dashboard.service';
+import { ToastService } from '../../core/feedback/toast.service';
 
 interface Kpi {
   titulo: string;
@@ -11,23 +14,20 @@ interface Kpi {
   cor:    string;
 }
 
-interface Atividade {
-  quem:    string;
-  acao:    string;
-  alvo:    string;
-  quando:  string;
-  tipo:    'criou' | 'editou' | 'aprovou' | 'cancelou';
-}
-
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './dashboard.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
-export class DashboardComponent {
+export class DashboardComponent implements OnInit {
   private auth = inject(AuthService);
+  private dashboardService = inject(DashboardService);
+  private toast = inject(ToastService);
+
+  carregando = signal(true);
+  resumo = signal<DashboardResumo | null>(null);
 
   saudacao = computed(() => {
     const h = new Date().getHours();
@@ -39,22 +39,76 @@ export class DashboardComponent {
 
   primeiroNome = computed(() => this.auth.usuario()?.nome?.split(' ')[0] ?? 'Visitante');
 
-  kpis: Kpi[] = [
-    { titulo: 'Receita do mês',     valor: 'R$ 284.530', delta: '+12,4%',   positivo: true,  icone: 'payments',      cor: 'text-emerald-600 bg-emerald-100 dark:bg-emerald-900/40' },
-    { titulo: 'Orçamentos abertos', valor: '47',         delta: '+8 novos', positivo: true,  icone: 'request_quote', cor: 'text-primary bg-primary/10' },
-    { titulo: 'Produtos ativos',    valor: '1.284',      delta: '+23',      positivo: true,  icone: 'inventory_2',   cor: 'text-violet-600 bg-violet-100 dark:bg-violet-900/40' },
-    { titulo: 'Estoque crítico',    valor: '12 itens',   delta: '−3',       positivo: false, icone: 'warning',       cor: 'text-rose-600 bg-rose-100 dark:bg-rose-900/40' }
-  ];
+  ngOnInit(): void {
+    this.carregar();
+  }
 
-  serieMeses  = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-  serieValores = [142, 168, 155, 198, 212, 245, 232, 268, 281, 295, 312, 285];
-  serieMax    = computed(() => Math.max(...this.serieValores));
+  carregar(): void {
+    this.carregando.set(true);
+    this.dashboardService.obter().subscribe({
+      next: res => {
+        this.resumo.set(res.dados ?? null);
+        this.carregando.set(false);
+      },
+      error: err => {
+        this.toast.erroServidor(err, 'Não foi possível carregar o dashboard.');
+        this.carregando.set(false);
+      }
+    });
+  }
+
+  private percentual(atual: number, anterior: number): { texto: string; positivo: boolean } {
+    if (anterior <= 0) return { texto: atual > 0 ? '+100%' : '0%', positivo: atual >= 0 };
+    const pct = ((atual - anterior) / anterior) * 100;
+    const sinal = pct >= 0 ? '+' : '';
+    return { texto: `${sinal}${pct.toFixed(1)}%`, positivo: pct >= 0 };
+  }
+
+  kpis = computed<Kpi[]>(() => {
+    const r = this.resumo();
+    if (!r) return [];
+
+    const deltaFaturamento = this.percentual(r.faturamentoMes, r.faturamentoMesAnterior);
+    const deltaPedidos = this.percentual(r.pedidosMes, r.pedidosMesAnterior);
+
+    return [
+      {
+        titulo: 'Faturamento do mês', valor: this.formatarReaisCompacto(r.faturamentoMes),
+        delta: deltaFaturamento.texto, positivo: deltaFaturamento.positivo,
+        icone: 'payments', cor: 'text-emerald-600 bg-emerald-100 dark:bg-emerald-900/40'
+      },
+      {
+        titulo: 'Pedidos do mês', valor: r.pedidosMes.toLocaleString('pt-BR'),
+        delta: deltaPedidos.texto, positivo: deltaPedidos.positivo,
+        icone: 'shopping_cart', cor: 'text-primary bg-primary/10'
+      },
+      {
+        titulo: 'Ticket médio', valor: this.formatarReais(r.ticketMedioMes),
+        delta: '', positivo: true,
+        icone: 'receipt_long', cor: 'text-violet-600 bg-violet-100 dark:bg-violet-900/40'
+      },
+      {
+        titulo: 'Risco de ruptura', valor: `${r.produtosEstoqueCritico} produto(s)`,
+        delta: r.produtosEstoqueCritico > 0 ? 'atenção' : 'ok', positivo: r.produtosEstoqueCritico === 0,
+        icone: 'warning', cor: 'text-rose-600 bg-rose-100 dark:bg-rose-900/40'
+      }
+    ];
+  });
+
+  private nomesMeses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+
+  serieRotulos = computed(() => (this.resumo()?.faturamentoPorMes ?? []).map(f => `${this.nomesMeses[f.mes - 1]}/${String(f.ano).slice(2)}`));
+  serieValores = computed(() => (this.resumo()?.faturamentoPorMes ?? []).map(f => f.faturamento));
+  serieMax = computed(() => Math.max(1, ...this.serieValores()));
 
   pathLinha = computed(() => {
+    const valores = this.serieValores();
+    if (valores.length < 2) return { linha: '', area: '', pontos: [] as (readonly [number, number])[] };
+
     const w = 600, h = 180, pad = 20;
     const max = this.serieMax();
-    const step = (w - pad * 2) / (this.serieValores.length - 1);
-    const pontos = this.serieValores.map((v, i) => {
+    const step = (w - pad * 2) / (valores.length - 1);
+    const pontos = valores.map((v, i) => {
       const x = pad + i * step;
       const y = h - pad - ((v / max) * (h - pad * 2));
       return [x, y] as const;
@@ -64,21 +118,20 @@ export class DashboardComponent {
     return { linha, area, pontos };
   });
 
-  atividades: Atividade[] = [
-    { quem: 'Maria Souza',  acao: 'aprovou',  alvo: 'Orçamento #1248', quando: 'há 3 min',  tipo: 'aprovou' },
-    { quem: 'João Lima',    acao: 'criou',    alvo: 'Produto "Cabo HDMI 2.1"', quando: 'há 12 min', tipo: 'criou' },
-    { quem: 'Ana Pereira',  acao: 'editou',   alvo: 'Estoque "Filial Centro"', quando: 'há 27 min', tipo: 'editou' },
-    { quem: 'Carlos Reis',  acao: 'cancelou', alvo: 'Orçamento #1247', quando: 'há 1 h',   tipo: 'cancelou' },
-    { quem: 'Paulo Machado',acao: 'criou',    alvo: 'Perfil "Vendedor Sênior"', quando: 'há 2 h', tipo: 'criou' }
-  ];
+  formatarReais(valor?: number): string {
+    if (valor == null) return '-';
+    return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  }
 
-  corTipo(tipo: Atividade['tipo']): string {
-    return ({
-      criou:    'bg-primary/10 text-primary',
-      editou:   'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400',
-      aprovou:  'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400',
-      cancelou: 'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-400'
-    } as const)[tipo];
+  formatarReaisCompacto(valor?: number): string {
+    if (!valor) return 'R$0';
+    if (valor >= 1000) return `R$${(valor / 1000).toFixed(1)}k`;
+    return `R$${Math.round(valor)}`;
+  }
+
+  formatarData(valor: string): string {
+    const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(valor);
+    return m ? `${m[3]}/${m[2]}` : '-';
   }
 
   iniciais(nome: string): string {

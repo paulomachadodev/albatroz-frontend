@@ -1,5 +1,4 @@
 import { Component, inject, signal, computed } from '@angular/core';
-import { NgTemplateOutlet } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 import { ThemeService } from '../../core/theme/theme.service';
@@ -25,7 +24,7 @@ const CHAVE_LOCALSTORAGE_FIXADO = 'menu-fixado';
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, ToggleComponent, NgTemplateOutlet],
+  imports: [RouterLink, RouterLinkActive, ToggleComponent],
   templateUrl: './sidebar.component.html'
 })
 export class SidebarComponent {
@@ -36,9 +35,18 @@ export class SidebarComponent {
   fixado = signal(this.carregarFixado());
   contextoHover = signal<string | null>(null);
 
+  colunaAExpandida = computed(() => this.fixado() || this.contextoHover() !== null);
+
   private expandidosPorItem = new Map<string, ReturnType<typeof signal<boolean>>>();
 
   grupos: GrupoMenu[] = [
+    {
+      titulo: 'Visão geral',
+      icone: 'space_dashboard',
+      itens: [
+        { label: 'Dashboard',  rota: '/dashboard', icone: 'dashboard' }
+      ]
+    },
     {
       titulo: 'Cadastros',
       icone: 'folder_open',
@@ -48,13 +56,6 @@ export class SidebarComponent {
         { label: 'Escolas',      rota: '/cadastros/escolas',   icone: 'apartment' },
         { label: 'Séries',       rota: '/cadastros/series',    icone: 'auto_stories' },
         { label: 'Empresas',     rota: '/cadastros/empresas',  icone: 'business' }
-      ]
-    },
-    {
-      titulo: 'Visão geral',
-      icone: 'space_dashboard',
-      itens: [
-        { label: 'Dashboard',  rota: '/dashboard', icone: 'dashboard' }
       ]
     },
     {
@@ -123,17 +124,17 @@ export class SidebarComponent {
         .map(item => item.subItens ? { ...item, subItens: filtrarItens(item.subItens) } : item)
         .filter(item => !item.subItens || item.subItens.length > 0);
 
+    const ehAdministrador = this.usuario()?.perfis?.includes('Administrador') ?? false;
+
     return this.grupos
+      .filter(grupo => grupo.titulo !== 'Visão geral' || ehAdministrador)
       .map(grupo => ({ ...grupo, itens: filtrarItens(grupo.itens) }))
       .filter(grupo => grupo.itens.length > 0);
   });
 
-  contextoAtivo = signal(this.grupos[0].titulo);
-  contextoExibido = computed(() => this.contextoHover() ?? this.contextoAtivo());
-  colBVisivel = computed(() => this.fixado() || this.contextoHover() !== null);
-
   grupoExibido = computed<GrupoMenu | null>(() => {
-    const titulo = this.contextoExibido();
+    const titulo = this.contextoHover();
+    if (!titulo) return null;
     return this.gruposVisiveis().find(g => g.titulo === titulo) ?? null;
   });
 
@@ -152,10 +153,9 @@ export class SidebarComponent {
 
   private carregarFixado(): boolean {
     try {
-      const bruto = localStorage.getItem(CHAVE_LOCALSTORAGE_FIXADO);
-      return bruto === null ? true : bruto === 'true';
+      return localStorage.getItem(CHAVE_LOCALSTORAGE_FIXADO) === 'true';
     } catch {
-      return true;
+      return false;
     }
   }
 
@@ -172,12 +172,7 @@ export class SidebarComponent {
     this.contextoHover.set(null);
   }
 
-  selecionarContexto(titulo: string): void {
-    this.contextoAtivo.set(titulo);
-  }
-
   aoClicarItem(): void {
-    this.contextoAtivo.set(this.contextoExibido());
     this.contextoHover.set(null);
   }
 

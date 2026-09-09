@@ -1,6 +1,5 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { HeaderComponent } from '../header/header.component';
 import { SidebarComponent } from '../sidebar/sidebar.component';
 import { ToastContainerComponent } from '../../core/feedback/toast-container.component';
 import { ConfirmDialogComponent } from '../../core/feedback/confirm-dialog.component';
@@ -8,12 +7,11 @@ import { ConfirmDialogComponent } from '../../core/feedback/confirm-dialog.compo
 @Component({
   selector: 'app-shell',
   standalone: true,
-  imports: [RouterOutlet, SidebarComponent, HeaderComponent, ToastContainerComponent, ConfirmDialogComponent],
+  imports: [RouterOutlet, SidebarComponent, ToastContainerComponent, ConfirmDialogComponent],
   template: `
     <div class="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark">
       <app-sidebar></app-sidebar>
       <div class="flex-1 flex flex-col min-w-0">
-        <app-header></app-header>
         <router-outlet></router-outlet>
       </div>
     </div>

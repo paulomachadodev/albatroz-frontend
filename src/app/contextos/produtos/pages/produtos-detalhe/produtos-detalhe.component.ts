@@ -18,6 +18,7 @@ import { ModalComponent } from '../../../../shared/components/modal/modal.compon
 import { ToggleComponent } from '../../../../shared/components/toggle/toggle.component';
 import { CampoHintComponent } from '../../../../shared/components/campo-hint/campo-hint.component';
 import { GraficoBarrasComponent, DatasetGraficoBarras } from '../../../../shared/components/grafico-barras/grafico-barras.component';
+import { BreadcrumbComponent } from '../../../../shared/components/breadcrumb/breadcrumb.component';
 import { ThemeService } from '../../../../core/theme/theme.service';
 
 type Aba = 'geral' | 'complementos' | 'web' | 'preco' | 'fornecedores' | 'analise' | 'variacoes' | 'estoque';
@@ -30,7 +31,7 @@ type SaidaEscolha = 'cancelar' | 'descartar' | 'salvar';
   imports: [
     CommonModule, RouterLink, FormsModule, BtnIconeComponent, ListagemPaginadaComponent,
     SelectBuscaComponent, OverlayProgressoComponent, ModalComponent, ToggleComponent, CampoHintComponent,
-    GraficoBarrasComponent
+    GraficoBarrasComponent, BreadcrumbComponent
   ],
   templateUrl: './produtos-detalhe.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }

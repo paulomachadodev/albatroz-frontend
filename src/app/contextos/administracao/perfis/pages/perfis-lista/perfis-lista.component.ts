@@ -1,6 +1,5 @@
 import { Component, OnInit, signal, computed } from '@angular/core';
 
-import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { PerfisService } from '../../services/perfis.service';
 import { Perfil, Permissao } from '../../models/perfil.model';
@@ -8,13 +7,14 @@ import { ToastService } from '../../../../../core/feedback/toast.service';
 import { DrawerComponent } from '../../../../../shared/components/drawer/drawer.component';
 import { PageHeaderComponent } from '../../../../../shared/components/page-header/page-header.component';
 import { Ordenacao, ThOrdenavelComponent } from '../../../../../shared/components/th-ordenavel/th-ordenavel.component';
+import { BreadcrumbComponent } from '../../../../../shared/components/breadcrumb/breadcrumb.component';
 
 type ModoDrawer = 'criar' | 'editar';
 
 @Component({
   selector: 'app-perfis-lista',
   standalone: true,
-  imports: [RouterLink, FormsModule, DrawerComponent, PageHeaderComponent, ThOrdenavelComponent],
+  imports: [FormsModule, DrawerComponent, PageHeaderComponent, ThOrdenavelComponent, BreadcrumbComponent],
   templateUrl: './perfis-lista.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })

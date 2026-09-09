@@ -1,6 +1,6 @@
 import { Component, OnInit, signal, computed } from '@angular/core';
 import { formatDate } from '@angular/common';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { exportarPlanilha } from '../../../../shared/utils/exportar-planilha';
@@ -15,6 +15,7 @@ import { SelectBuscaComponent, OpcaoSelectBusca } from '../../../../shared/compo
 import { SelectBuscaMultiComponent } from '../../../../shared/components/select-busca-multi/select-busca-multi.component';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 import { ColunasConfiguraveisComponent, ColunaConfiguravel } from '../../../../shared/components/colunas-configuraveis/colunas-configuraveis.component';
+import { BreadcrumbComponent } from '../../../../shared/components/breadcrumb/breadcrumb.component';
 import { MarcasService } from '../../../produtos/services/marcas.service';
 import { ContatosService } from '../../../cadastros/contatos/services/contatos.service';
 
@@ -34,7 +35,7 @@ const COLUNAS_VISIVEIS_PADRAO = ['cobertura', 'ultimaCompra', 'ultimaVenda'];
 @Component({
   selector: 'app-compras-lista',
   standalone: true,
-  imports: [RouterLink, FormsModule, ToggleSwitchModule, ListagemPaginadaComponent, PageHeaderComponent, ThOrdenavelComponent, SelectBuscaComponent, SelectBuscaMultiComponent, ModalComponent, ColunasConfiguraveisComponent],
+  imports: [FormsModule, ToggleSwitchModule, ListagemPaginadaComponent, PageHeaderComponent, ThOrdenavelComponent, SelectBuscaComponent, SelectBuscaMultiComponent, ModalComponent, ColunasConfiguraveisComponent, BreadcrumbComponent],
   templateUrl: './compras-lista.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })

@@ -9,6 +9,7 @@ import { ConfirmService } from '../../../../core/feedback/confirm.service';
 import { ListagemPaginadaComponent } from '../../../../shared/components/listagem-paginada/listagem-paginada.component';
 import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 import { Ordenacao, ThOrdenavelComponent } from '../../../../shared/components/th-ordenavel/th-ordenavel.component';
+import { BreadcrumbComponent } from '../../../../shared/components/breadcrumb/breadcrumb.component';
 
 const ROTULOS_SITUACAO: Record<number, string> = { 1: 'Rascunho', 2: 'Pronto', 3: 'Enviado', 4: 'Cancelado' };
 const CLASSES_SITUACAO: Record<number, string> = {
@@ -21,7 +22,7 @@ const CLASSES_SITUACAO: Record<number, string> = {
 @Component({
   selector: 'app-pedidos-compra-lista',
   standalone: true,
-  imports: [RouterLink, FormsModule, DatePipe, ListagemPaginadaComponent, PageHeaderComponent, ThOrdenavelComponent],
+  imports: [RouterLink, FormsModule, DatePipe, ListagemPaginadaComponent, PageHeaderComponent, ThOrdenavelComponent, BreadcrumbComponent],
   templateUrl: './pedidos-compra-lista.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })

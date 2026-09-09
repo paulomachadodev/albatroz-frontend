@@ -1,16 +1,16 @@
 import { Component, inject, signal } from '@angular/core';
 
-import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../../../core/auth/auth.service';
 import { ToastService } from '../../../../../core/feedback/toast.service';
 import { PageHeaderComponent } from '../../../../../shared/components/page-header/page-header.component';
+import { BreadcrumbComponent } from '../../../../../shared/components/breadcrumb/breadcrumb.component';
 import { MeuPerfilService } from '../../services/meu-perfil.service';
 
 @Component({
   selector: 'app-meu-perfil-pagina',
   standalone: true,
-  imports: [RouterLink, FormsModule, PageHeaderComponent],
+  imports: [FormsModule, PageHeaderComponent, BreadcrumbComponent],
   templateUrl: './meu-perfil-pagina.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })

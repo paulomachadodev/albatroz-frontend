@@ -1,6 +1,5 @@
 import { Component, OnInit, signal } from '@angular/core';
 
-import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { MarcasService, Marca } from '../../services/marcas.service';
 import { ToastService } from '../../../../core/feedback/toast.service';
@@ -9,13 +8,14 @@ import { DrawerComponent } from '../../../../shared/components/drawer/drawer.com
 import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 import { ToggleComponent } from '../../../../shared/components/toggle/toggle.component';
 import { Ordenacao, ThOrdenavelComponent } from '../../../../shared/components/th-ordenavel/th-ordenavel.component';
+import { BreadcrumbComponent } from '../../../../shared/components/breadcrumb/breadcrumb.component';
 
 type ModoDrawer = 'criar' | 'editar';
 
 @Component({
   selector: 'app-marcas-lista',
   standalone: true,
-  imports: [RouterLink, FormsModule, ListagemPaginadaComponent, DrawerComponent, PageHeaderComponent, ToggleComponent, ThOrdenavelComponent],
+  imports: [FormsModule, ListagemPaginadaComponent, DrawerComponent, PageHeaderComponent, ToggleComponent, ThOrdenavelComponent, BreadcrumbComponent],
   templateUrl: './marcas-lista.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })

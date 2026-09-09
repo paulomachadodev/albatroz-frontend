@@ -1,6 +1,6 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import {
   ContatosService, ContatoDetalhe, TipoContato, ContatoEndereco, ContatoEnderecoRequisicao,
@@ -10,6 +10,7 @@ import { ToastService } from '../../../../../core/feedback/toast.service';
 import { ConfirmService } from '../../../../../core/feedback/confirm.service';
 import { ModalComponent } from '../../../../../shared/components/modal/modal.component';
 import { ToggleComponent } from '../../../../../shared/components/toggle/toggle.component';
+import { BreadcrumbComponent } from '../../../../../shared/components/breadcrumb/breadcrumb.component';
 
 type Aba = 'geral' | 'enderecos' | 'compras' | 'representantes' | 'produtos';
 
@@ -19,7 +20,7 @@ const ROTULOS_TIPO_ENDERECO: Record<number, string> = { 1: 'Principal', 2: 'Cobr
 @Component({
   selector: 'app-contatos-detalhe',
   standalone: true,
-  imports: [RouterLink, FormsModule, DatePipe, ModalComponent, ToggleComponent],
+  imports: [FormsModule, DatePipe, ModalComponent, ToggleComponent, BreadcrumbComponent],
   templateUrl: './contatos-detalhe.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })

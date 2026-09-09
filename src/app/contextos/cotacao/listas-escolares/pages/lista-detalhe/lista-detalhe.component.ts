@@ -1,6 +1,6 @@
 import { Component, OnInit, computed, signal } from '@angular/core';
 
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { map, of } from 'rxjs';
 import * as XLSX from 'xlsx';
@@ -11,11 +11,12 @@ import { ToastService } from '../../../../../core/feedback/toast.service';
 import { ConfirmService } from '../../../../../core/feedback/confirm.service';
 import { SelectBuscaComponent, OpcaoSelectBusca } from '../../../../../shared/components/select-busca/select-busca.component';
 import { BtnIconeComponent } from '../../../../../shared/components/btn-icone/btn-icone.component';
+import { BreadcrumbComponent } from '../../../../../shared/components/breadcrumb/breadcrumb.component';
 
 @Component({
   selector: 'app-lista-detalhe',
   standalone: true,
-  imports: [RouterLink, FormsModule, SelectBuscaComponent, BtnIconeComponent],
+  imports: [FormsModule, SelectBuscaComponent, BtnIconeComponent, BreadcrumbComponent],
   templateUrl: './lista-detalhe.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })

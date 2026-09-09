@@ -1,17 +1,17 @@
 import { Component, OnInit, signal } from '@angular/core';
 
-import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CondicoesComerciaisService } from '../../services/condicoes-comerciais.service';
 import { ToastService } from '../../../../../core/feedback/toast.service';
 import { PageHeaderComponent } from '../../../../../shared/components/page-header/page-header.component';
+import { BreadcrumbComponent } from '../../../../../shared/components/breadcrumb/breadcrumb.component';
 
 type Aba = 'condicoes-comerciais';
 
 @Component({
   selector: 'app-cotacao-configuracoes-pagina',
   standalone: true,
-  imports: [RouterLink, FormsModule, PageHeaderComponent],
+  imports: [FormsModule, PageHeaderComponent, BreadcrumbComponent],
   templateUrl: './configuracoes-pagina.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })

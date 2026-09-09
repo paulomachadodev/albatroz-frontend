@@ -1,6 +1,5 @@
 import { Component, OnInit, signal } from '@angular/core';
 
-import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { map } from 'rxjs';
 import { SeriesService } from '../../services/series.service';
@@ -13,13 +12,14 @@ import { PageHeaderComponent } from '../../../../../shared/components/page-heade
 import { ToggleComponent } from '../../../../../shared/components/toggle/toggle.component';
 import { SelectBuscaComponent, OpcaoSelectBusca } from '../../../../../shared/components/select-busca/select-busca.component';
 import { Ordenacao, ThOrdenavelComponent } from '../../../../../shared/components/th-ordenavel/th-ordenavel.component';
+import { BreadcrumbComponent } from '../../../../../shared/components/breadcrumb/breadcrumb.component';
 
 type ModoDrawer = 'criar' | 'editar';
 
 @Component({
   selector: 'app-series-lista',
   standalone: true,
-  imports: [RouterLink, FormsModule, ListagemPaginadaComponent, DrawerComponent, PageHeaderComponent, ToggleComponent, SelectBuscaComponent, ThOrdenavelComponent],
+  imports: [FormsModule, ListagemPaginadaComponent, DrawerComponent, PageHeaderComponent, ToggleComponent, SelectBuscaComponent, ThOrdenavelComponent, BreadcrumbComponent],
   templateUrl: './series-lista.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })

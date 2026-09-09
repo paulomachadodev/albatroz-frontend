@@ -10,11 +10,12 @@ import { CategoriaModalComponent } from '../categoria-modal/categoria-modal.comp
 import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 import { SpinnerComponent } from '../../../../shared/components/spinner/spinner.component';
 import { Ordenacao, ThOrdenavelComponent } from '../../../../shared/components/th-ordenavel/th-ordenavel.component';
+import { BreadcrumbComponent } from '../../../../shared/components/breadcrumb/breadcrumb.component';
 
 @Component({
   selector: 'app-cartoes-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink, CartaoModalComponent, CategoriaModalComponent, PageHeaderComponent, SpinnerComponent, ThOrdenavelComponent],
+  imports: [CommonModule, RouterLink, CartaoModalComponent, CategoriaModalComponent, PageHeaderComponent, SpinnerComponent, ThOrdenavelComponent, BreadcrumbComponent],
   templateUrl: './cartoes-dashboard.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })

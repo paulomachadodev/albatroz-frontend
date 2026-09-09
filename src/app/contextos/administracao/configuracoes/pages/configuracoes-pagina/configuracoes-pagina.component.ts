@@ -1,6 +1,5 @@
 import { Component, OnInit, signal } from '@angular/core';
 
-import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { ConfiguracoesService } from '../../services/configuracoes.service';
@@ -14,13 +13,14 @@ import { ListaPreco } from '../../../../produtos/models/produto.model';
 import { CriarListaPrecoRequisicao, AtualizarListaPrecoRequisicao } from '../../../../produtos/dtos/produto-requisicao.dto';
 import { ModalComponent } from '../../../../../shared/components/modal/modal.component';
 import { CampoHintComponent } from '../../../../../shared/components/campo-hint/campo-hint.component';
+import { BreadcrumbComponent } from '../../../../../shared/components/breadcrumb/breadcrumb.component';
 
 type Aba = 'email' | 'venda' | 'integracoes' | 'busca-imagens';
 
 @Component({
   selector: 'app-configuracoes-pagina',
   standalone: true,
-  imports: [RouterLink, FormsModule, PageHeaderComponent, ModalComponent, CampoHintComponent],
+  imports: [FormsModule, PageHeaderComponent, ModalComponent, CampoHintComponent, BreadcrumbComponent],
   templateUrl: './configuracoes-pagina.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })

@@ -1,0 +1,18 @@
+<nav class="flex items-center gap-2 text-sm text-slate-500">
+  <button type="button" (click)="voltar()" title="Voltar"
+          class="flex items-center justify-center size-6 -ml-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 hover:text-primary transition-colors">
+    <span class="material-symbols-outlined text-lg">arrow_back</span>
+  </button>
+  @for (item of itens(); track $index) {
+    @if (!$last && item.rota) {
+      <a class="hover:text-primary" [routerLink]="item.rota">{{ item.label }}</a>
+    } @else if (!$last) {
+      <span>{{ item.label }}</span>
+    } @else {
+      <span class="text-slate-900 dark:text-slate-100 font-medium">{{ item.label }}</span>
+    }
+    @if (!$last) {
+      <span class="material-symbols-outlined text-xs">chevron_right</span>
+    }
+  }
+</nav>

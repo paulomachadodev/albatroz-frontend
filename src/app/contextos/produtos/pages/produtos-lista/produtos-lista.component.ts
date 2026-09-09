@@ -17,6 +17,7 @@ import { MenuDropdownComponent } from '../../../../shared/components/menu-dropdo
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 import { BtnIconeComponent } from '../../../../shared/components/btn-icone/btn-icone.component';
 import { SelectBuscaComponent, OpcaoSelectBusca } from '../../../../shared/components/select-busca/select-busca.component';
+import { BreadcrumbComponent } from '../../../../shared/components/breadcrumb/breadcrumb.component';
 import { MarcasService } from '../../services/marcas.service';
 import { ContatosService } from '../../../cadastros/contatos/services/contatos.service';
 
@@ -45,7 +46,7 @@ interface LinhaPlanilhaFornecedores {
 @Component({
   selector: 'app-produtos-lista',
   standalone: true,
-  imports: [RouterLink, FormsModule, ToggleSwitchModule, ListagemPaginadaComponent, PageHeaderComponent, ThOrdenavelComponent, MenuDropdownComponent, ModalComponent, BtnIconeComponent, SelectBuscaComponent],
+  imports: [RouterLink, FormsModule, ToggleSwitchModule, ListagemPaginadaComponent, PageHeaderComponent, ThOrdenavelComponent, MenuDropdownComponent, ModalComponent, BtnIconeComponent, SelectBuscaComponent, BreadcrumbComponent],
   templateUrl: './produtos-lista.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })

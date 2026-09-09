@@ -1,6 +1,5 @@
 import { Component, OnInit, signal } from '@angular/core';
 
-import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { EscolasService } from '../../services/escolas.service';
 import { Escola } from '../../models/escola.model';
@@ -10,13 +9,14 @@ import { DrawerComponent } from '../../../../../shared/components/drawer/drawer.
 import { PageHeaderComponent } from '../../../../../shared/components/page-header/page-header.component';
 import { ToggleComponent } from '../../../../../shared/components/toggle/toggle.component';
 import { Ordenacao, ThOrdenavelComponent } from '../../../../../shared/components/th-ordenavel/th-ordenavel.component';
+import { BreadcrumbComponent } from '../../../../../shared/components/breadcrumb/breadcrumb.component';
 
 type ModoDrawer = 'criar' | 'editar';
 
 @Component({
   selector: 'app-escolas-lista',
   standalone: true,
-  imports: [RouterLink, FormsModule, ListagemPaginadaComponent, DrawerComponent, PageHeaderComponent, ToggleComponent, ThOrdenavelComponent],
+  imports: [FormsModule, ListagemPaginadaComponent, DrawerComponent, PageHeaderComponent, ToggleComponent, ThOrdenavelComponent, BreadcrumbComponent],
   templateUrl: './escolas-lista.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })

@@ -1,6 +1,6 @@
 import { Component, OnInit, signal } from '@angular/core';
 
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ContatosService, Contato, TipoContato } from '../../services/contatos.service';
 import { ToastService } from '../../../../../core/feedback/toast.service';
@@ -9,6 +9,7 @@ import { DrawerComponent } from '../../../../../shared/components/drawer/drawer.
 import { PageHeaderComponent } from '../../../../../shared/components/page-header/page-header.component';
 import { ToggleComponent } from '../../../../../shared/components/toggle/toggle.component';
 import { Ordenacao, ThOrdenavelComponent } from '../../../../../shared/components/th-ordenavel/th-ordenavel.component';
+import { BreadcrumbComponent } from '../../../../../shared/components/breadcrumb/breadcrumb.component';
 
 type ModoDrawer = 'criar' | 'editar';
 
@@ -17,7 +18,7 @@ const TODOS_TIPOS: TipoContato[] = ['Cliente', 'Fornecedor', 'Transportador', 'P
 @Component({
   selector: 'app-contatos-lista',
   standalone: true,
-  imports: [RouterLink, FormsModule, ListagemPaginadaComponent, DrawerComponent, PageHeaderComponent, ToggleComponent, ThOrdenavelComponent],
+  imports: [FormsModule, ListagemPaginadaComponent, DrawerComponent, PageHeaderComponent, ToggleComponent, ThOrdenavelComponent, BreadcrumbComponent],
   templateUrl: './contatos-lista.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })

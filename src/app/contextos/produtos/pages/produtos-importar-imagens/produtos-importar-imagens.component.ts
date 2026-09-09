@@ -1,6 +1,6 @@
 import { Component, computed, signal } from '@angular/core';
 
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { timeout } from 'rxjs';
 import { ProdutosService } from '../../services/produtos.service';
 import { ProdutoImportarImagensCorrespondido, ProdutoImportarImagensResposta } from '../../dtos/produto-resposta.dto';
@@ -11,6 +11,7 @@ import { ListagemPaginadaComponent } from '../../../../shared/components/listage
 import { OverlayProgressoComponent } from '../../../../shared/components/overlay-progresso/overlay-progresso.component';
 import { ToggleComponent } from '../../../../shared/components/toggle/toggle.component';
 import { DrawerComponent } from '../../../../shared/components/drawer/drawer.component';
+import { BreadcrumbComponent } from '../../../../shared/components/breadcrumb/breadcrumb.component';
 
 interface ResumoImportacao {
   sucesso: number;
@@ -21,7 +22,7 @@ interface ResumoImportacao {
 @Component({
   selector: 'app-produtos-importar-imagens',
   standalone: true,
-  imports: [RouterLink, PageHeaderComponent, ListagemPaginadaComponent, OverlayProgressoComponent, ToggleComponent, DrawerComponent],
+  imports: [PageHeaderComponent, ListagemPaginadaComponent, OverlayProgressoComponent, ToggleComponent, DrawerComponent, BreadcrumbComponent],
   templateUrl: './produtos-importar-imagens.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })

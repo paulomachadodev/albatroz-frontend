@@ -1,13 +1,7 @@
 <div class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark px-4 sm:px-6 lg:px-8 xl:px-10 py-6 lg:py-8">
   <div class="w-full space-y-8">
 
-    <nav class="flex items-center gap-2 text-sm text-slate-500">
-      <a class="hover:text-primary" routerLink="/dashboard">Início</a>
-      <span class="material-symbols-outlined text-xs">chevron_right</span>
-      <span class="text-slate-900 dark:text-slate-100 font-medium">Administração</span>
-      <span class="material-symbols-outlined text-xs">chevron_right</span>
-      <span class="text-slate-900 dark:text-slate-100 font-medium">Configurações</span>
-    </nav>
+    <app-breadcrumb [itens]="[{label:'Início',rota:'/dashboard'},{label:'Administração'},{label:'Configurações'}]"></app-breadcrumb>
 
     <app-page-header titulo="Configurações" subtitulo="Ajustes gerais do sistema, organizados por contexto."></app-page-header>
 

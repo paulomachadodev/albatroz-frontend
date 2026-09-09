@@ -1,6 +1,5 @@
 import { Component, OnInit, signal, computed, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { AtendimentosWhatsappService, AtendimentoWhatsappFiltro } from '../../services/atendimentos-whatsapp.service';
@@ -20,6 +19,7 @@ import { SpinnerComponent } from '../../../../../shared/components/spinner/spinn
 import { ListagemPaginadaComponent } from '../../../../../shared/components/listagem-paginada/listagem-paginada.component';
 import { DrawerComponent } from '../../../../../shared/components/drawer/drawer.component';
 import { ThOrdenavelComponent, Ordenacao } from '../../../../../shared/components/th-ordenavel/th-ordenavel.component';
+import { BreadcrumbComponent } from '../../../../../shared/components/breadcrumb/breadcrumb.component';
 
 const MESES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 
@@ -49,14 +49,14 @@ const REMETENTE_BOLHA_CLASSES: Record<string, string> = {
   standalone: true,
   imports: [
     CommonModule,
-    RouterLink,
     FormsModule,
     ModalComponent,
     PageHeaderComponent,
     SpinnerComponent,
     ListagemPaginadaComponent,
     DrawerComponent,
-    ThOrdenavelComponent
+    ThOrdenavelComponent,
+    BreadcrumbComponent
   ],
   templateUrl: './atendimentos-dashboard.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }

@@ -6,11 +6,12 @@ import { ImagemCandidata, STATUS_IMAGEM_CANDIDATA } from '../../models/produto.m
 import { ToastService } from '../../../../core/feedback/toast.service';
 import { ListagemPaginadaComponent } from '../../../../shared/components/listagem-paginada/listagem-paginada.component';
 import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
+import { BreadcrumbComponent } from '../../../../shared/components/breadcrumb/breadcrumb.component';
 
 @Component({
   selector: 'app-produtos-revisar-imagens',
   standalone: true,
-  imports: [RouterLink, FormsModule, ListagemPaginadaComponent, PageHeaderComponent],
+  imports: [RouterLink, FormsModule, ListagemPaginadaComponent, PageHeaderComponent, BreadcrumbComponent],
   templateUrl: './produtos-revisar-imagens.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })

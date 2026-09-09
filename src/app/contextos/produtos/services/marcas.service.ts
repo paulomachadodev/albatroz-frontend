@@ -9,25 +9,13 @@ import { OpcaoSelectBusca } from '../../../shared/components/select-busca/select
 export interface Marca {
   id: number;
   nome: string;
-  descricao?: string;
   ativa: boolean;
   sincronizadaTiny: boolean;
-  bannerUrl: string | null;
-  bannerLink: string | null;
-  seoTitle: string | null;
-  seoDescription: string | null;
-  seoSlug: string | null;
 }
 
 export interface MarcaRequisicao {
   nome: string;
-  descricao: string | null;
   ativa: boolean;
-  bannerUrl: string | null;
-  bannerLink: string | null;
-  seoTitle: string | null;
-  seoDescription: string | null;
-  seoSlug: string | null;
 }
 
 export interface MarcaFiltro {

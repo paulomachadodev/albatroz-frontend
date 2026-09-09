@@ -29,6 +29,7 @@ model: sonnet
 
 - Não decide arquitetura — consulta `frontend-architect`
 - Não cria componentes DS de apresentação — colabora com `ds-engineer`
+- Não cria novo uso de `app-select-busca`/`app-toggle` — PrimeNG (`p-select`/`p-multiSelect`/`p-toggleswitch`) é a primeira opção, ADR-0006
 - Não usa NgRx, Promises, ou constructor injection
 - Não adiciona comentários no código
 
@@ -52,6 +53,9 @@ model: sonnet
 - @standards/angular/mensagens-feedback.md
 - @standards/angular/confirmacao-acao-critica.md
 - @standards/angular/timezone-exibicao.md
+- @standards/angular/listagem-padrao.md
+- @adr/0006-primeng-first.md
+- @specs/migracao-primeng.md
 - @contexts/projeto/frontend.md
 - @skills/angular-components
 - @skills/angular-pages

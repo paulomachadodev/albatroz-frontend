@@ -1,5 +1,9 @@
 # Listagem Padrão — Filtro + Tabela Paginada + Drawer
 
+## PrimeNG first (ADR-0006)
+
+Antes de construir qualquer campo de busca/seleção ou controle liga-desliga do zero em Tailwind, checar se o PrimeNG já cobre — `p-select`/`p-multiSelect` (busca + seleção, single ou multi) e `p-toggleswitch` (liga-desliga) são a primeira opção, sempre unstyled + Tailwind via PassThrough (ADR-0003). Só cai pra componente custom quando o PrimeNG genuinamente não cobre o caso. `app-select-busca` e `app-toggle` estão em migração pra esse padrão (ver spec `migracao-primeng.md`) — não criar novo uso deles em tela nova, usar PrimeNG direto.
+
 ## Regra geral — checar `shared/components/` antes de criar UI nova
 
 Antes de escrever markup de tabela, paginação, modal, drawer, cabeçalho de página ou spinner numa tela nova, checar `src/app/shared/components/` — se o padrão já existe lá, usar, nunca duplicar hand-rolled. Componentes disponíveis hoje: `listagem-paginada`, `drawer`, `modal`, `page-header`, `spinner`. Se a tela precisa de algo parecido mas não idêntico, preferir estender o componente existente (novo input) a criar um paralelo.
@@ -144,9 +148,11 @@ Link de texto é pra **1 ação só** por linha/card. A partir de 2 ações no m
 
 Ainda não migrado (não é regressão, é lacuna): `produtos-lista` não tem coluna de ações — a linha inteira navega pro detalhe no click. Quando a tela ganhar ações rápidas (ex: excluir sem abrir detalhe), usar `app-btn-icone` desde o início, não link de texto.
 
-## `app-toggle` — liga/desliga (nunca checkbox cru pra isso)
+## Liga/desliga — toggle, nunca checkbox cru (em migração pra `p-toggleswitch`)
 
-`shared/components/toggle/` — switch estilo slider (`role="switch"`, bolinha desliza), não é `<input type="checkbox">` estilizado. Único componente aceito pra qualquer liga/desliga binário do sistema (habilitar/desabilitar produto num marketplace, ativo/inativo, etc.) — nunca criar checkbox cru pra isso, nem outro switch do zero.
+Único padrão aceito pra qualquer liga/desliga binário do sistema — habilitar/desabilitar produto num marketplace, ativo/inativo, **e também controle de "selecionar tudo"/"habilitar todos" em cabeçalho de listagem/tabela** (regra estendida 2026-09-09, gatilho: checkbox de header em `compras-lista`). Nunca `<input type="checkbox">` cru estilizado à mão pra nenhum desses casos, nem outro switch do zero.
+
+Componente de destino é `p-toggleswitch` (PrimeNG unstyled + Tailwind, ver ADR-0006) — hoje ainda existe `app-toggle` (`shared/components/toggle/`, switch estilo slider `role="switch"`) em 19 arquivos, em migração faseada (spec `migracao-primeng.md`). Não criar novo uso de `app-toggle` em tela nova — usar `p-toggleswitch` direto.
 
 ```html
 <app-toggle [valor]="produto.habilitado" [label]="'Habilitado'" [desabilitado]="salvando()"
@@ -154,6 +160,8 @@ Ainda não migrado (não é regressão, é lacuna): `produtos-lista` não tem co
 ```
 
 `valor`/`label`/`desabilitado` são inputs; `valorMudou` emite o novo booleano no clique — a tela decide se isso dispara request imediato (ação de lista, como os itens de lista escolar) ou só marca estado sujo (campo de formulário atrás do botão Salvar, ver seção acima).
+
+**Não confundir com checkbox de seleção de linha** (marcar 1+ itens numa listagem pra ação em lote, ex: gerar pedido de compra em `compras-lista`) — isso é seleção múltipla de itens, não liga-desliga binário, continua checkbox comum por linha (avaliar migração pra `p-checkbox` unstyled só por consistência visual, sem trocar a semântica).
 
 ## `app-campo-hint` — explicação de campo (balãozinho "?")
 
@@ -274,12 +282,14 @@ abrirEditar(escola: Escola) {
 }
 ```
 
-## Filtros populados — dropdown com busca (padrão atual — 2026-07-31)
+## Filtros populados — dropdown com busca (atualizado 2026-09-09 — PrimeNG first)
 
-Todo filtro cujo valor vem de uma lista de opções do backend (escola, série, status vindo de tabela, etc.) deve ser um **select com busca embutida** (searchable combobox/autocomplete) — nunca um `<input>` de texto livre torcendo pra bater com ILIKE no backend, e nunca um `<select>` HTML simples quando a lista de opções pode crescer (dezenas+).
+Todo filtro cujo valor vem de uma lista de opções do backend (escola, série, status vindo de tabela, marca, fornecedor, etc.) deve ser um **select com busca embutida** (searchable combobox/autocomplete) — nunca um `<input>` de texto livre torcendo pra bater com ILIKE no backend, e nunca um `<select>` HTML simples quando a lista de opções pode crescer (dezenas+).
 
-- Fonte das opções: endpoint dedicado do domínio (ex: `GET /cotacao/listas-escolares/filtros/escolas?termo=`), **não** o cadastro inteiro — o filtro só deve oferecer valores que realmente existem no recorte listado (ex: só escolas que têm ao menos 1 lista cotada), não todo o cadastro mestre.
-- Componente: usar/criar um `app-select-busca` genérico em `shared/components/` (mesma lógica de reuso do `app-listagem-paginada`) — digita, debounce ~300ms, chama o endpoint, mostra resultados num dropdown, seleciona um item, guarda o `id`.
+- Fonte das opções: endpoint dedicado do domínio, **não** o cadastro inteiro — o filtro só deve oferecer valores que realmente existem no recorte listado, não todo o cadastro mestre. Excecão: quando o endpoint dedicado já é o cadastro paginado com filtro de texto (ex: `/v1/marcas`, `/v1/contatos?tipo=Fornecedor`), reusar esse em vez de criar um `/busca` capado (ver caso Compras abaixo).
+- Componente: `p-select` (single) ou `p-multiSelect` (multi) do PrimeNG, unstyled + Tailwind via PassThrough (ADR-0006) — nunca criar novo uso de `app-select-busca` (legado, em migração, ver spec `migracao-primeng.md`).
+- Volume grande de opções (centenas/milhares — ex: 469 marcas, 3908 fornecedores em Compras): `[lazy]="true" [virtualScroll]="true"` no `p-select`/`p-multiSelect`, backend servindo via endpoint paginado com filtro de texto (`onFilter`/`onLazyLoad` chamando a API com offset/página). Nunca tentar carregar a lista inteira de uma vez nesse volume, nem travar num `LIMIT` fixo baixo (ex: 20) que corta opção sem aviso — isso é exatamente a queixa que motivou essa regra (marca sumindo da lista ao abrir o filtro em branco).
+- Multi-seleção (`p-multiSelect`) quando o negócio pedir filtrar por mais de um valor ao mesmo tempo (ex: várias marcas de uma vez) — decisão por campo, não padrão automático; a maioria dos filtros continua single-select.
 - Filtro de texto livre continua OK só quando o campo é realmente texto livre no domínio (não vem de uma lista fechada de opções).
 
 ## Preservar estado da listagem ao voltar da tela de detalhe (padrão 2026-08-31)

@@ -2,6 +2,9 @@ import { Component, OnInit, signal, computed } from '@angular/core';
 import { formatDate } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { MultiSelectModule, MultiSelectFilterEvent, MultiSelectLazyLoadEvent } from 'primeng/multiselect';
+import { SelectModule, SelectFilterEvent, SelectLazyLoadEvent } from 'primeng/select';
+import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { exportarPlanilha } from '../../../../shared/utils/exportar-planilha';
 import { ComprasService, SugestaoCompraFiltro, ComSugestaoFiltro } from '../../services/compras.service';
 import { PedidosCompraService } from '../../services/pedidos-compra.service';
@@ -16,6 +19,41 @@ import { ColunasConfiguraveisComponent, ColunaConfiguravel } from '../../../../s
 import { MarcasService } from '../../../produtos/services/marcas.service';
 import { ContatosService } from '../../../cadastros/contatos/services/contatos.service';
 
+const TAMANHO_PAGINA_LAZY = 50;
+
+const PT_MULTISELECT_MARCA = {
+  root: 'mt-1 w-full flex items-center justify-between gap-2 px-3 py-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-sm cursor-pointer',
+  labelContainer: 'flex-1 overflow-hidden',
+  label: 'truncate text-slate-900 dark:text-slate-100',
+  dropdownIcon: 'text-slate-400 text-base material-symbols-outlined',
+  overlay: 'mt-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg z-20',
+  header: 'p-2 border-b border-slate-100 dark:border-slate-700',
+  pcFilter: { root: 'w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none' },
+  list: 'max-h-56 overflow-y-auto py-1',
+  option: 'px-3 py-2 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer flex items-center gap-2',
+  emptyMessage: 'px-3 py-2 text-sm text-slate-400'
+};
+
+const PT_SELECT_FORNECEDOR = {
+  root: 'mt-1 w-full flex items-center justify-between gap-2 px-3 py-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-sm cursor-pointer',
+  label: 'truncate text-slate-900 dark:text-slate-100',
+  dropdownIcon: 'text-slate-400 text-base material-symbols-outlined',
+  listContainer: 'mt-1 max-h-56 overflow-y-auto rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg z-20',
+  header: 'p-2 border-b border-slate-100 dark:border-slate-700',
+  pcFilter: { root: 'w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none' },
+  option: 'px-3 py-2 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer',
+  emptyMessage: 'px-3 py-2 text-sm text-slate-400'
+};
+
+const PT_TOGGLE_SELECIONAR_TODOS = {
+  root: 'inline-flex items-center cursor-pointer align-middle',
+  input: 'absolute opacity-0 w-0 h-0',
+  slider: ({ instance }: { instance: { checked(): boolean } }) =>
+    'relative inline-block w-8 h-4.5 rounded-full transition-colors ' + (instance.checked() ? 'bg-primary' : 'bg-slate-300 dark:bg-slate-700'),
+  handle: ({ instance }: { instance: { checked(): boolean } }) =>
+    'absolute top-0.5 left-0.5 w-3.5 h-3.5 rounded-full bg-white shadow transition-transform ' + (instance.checked() ? 'translate-x-3.5' : '')
+};
+
 const CHAVE_LOCALSTORAGE = 'compras-sugestoes-ajustadas-v1';
 const CHAVE_LOCALSTORAGE_COLUNAS = 'compras-colunas-visiveis-v1';
 const COLUNAS_VISIVEIS_PADRAO = ['cobertura', 'marca', 'fornecedor'];
@@ -23,7 +61,7 @@ const COLUNAS_VISIVEIS_PADRAO = ['cobertura', 'marca', 'fornecedor'];
 @Component({
   selector: 'app-compras-lista',
   standalone: true,
-  imports: [RouterLink, FormsModule, ListagemPaginadaComponent, PageHeaderComponent, ThOrdenavelComponent, SelectBuscaComponent, ModalComponent, ColunasConfiguraveisComponent],
+  imports: [RouterLink, FormsModule, MultiSelectModule, SelectModule, ToggleSwitchModule, ListagemPaginadaComponent, PageHeaderComponent, ThOrdenavelComponent, SelectBuscaComponent, ModalComponent, ColunasConfiguraveisComponent],
   templateUrl: './compras-lista.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
@@ -38,9 +76,21 @@ export class ComprasListaComponent implements OnInit {
   aindaNaoFiltrado = signal(false);
 
   filtro: SugestaoCompraFiltro = {};
-  marcaSelecionada: OpcaoSelectBusca | null = null;
+  marcasSelecionadas: OpcaoSelectBusca[] = [];
   fornecedorSelecionado: OpcaoSelectBusca | null = null;
   periodoPreset: '' | 'dez_mar' | 'personalizado' = '';
+
+  marcasOpcoes = signal<OpcaoSelectBusca[]>([]);
+  marcasCarregando = signal(false);
+  private marcaFiltroTexto = '';
+
+  fornecedoresOpcoes = signal<OpcaoSelectBusca[]>([]);
+  fornecedoresCarregando = signal(false);
+  private fornecedorFiltroTexto = '';
+
+  readonly ptMarcas = PT_MULTISELECT_MARCA;
+  readonly ptFornecedor = PT_SELECT_FORNECEDOR;
+  readonly ptToggleTodos = PT_TOGGLE_SELECIONAR_TODOS;
 
   ajustesLocais = signal<Record<number, number>>(this.carregarAjustesLocais());
 
@@ -52,9 +102,6 @@ export class ComprasListaComponent implements OnInit {
     { chave: 'ultimaVenda', rotulo: 'Última Venda' }
   ];
   colunasVisiveis = signal<Set<string>>(this.carregarColunasVisiveis());
-
-  buscarMarcas = (termo: string) => this.marcasService.buscar(termo);
-  buscarFornecedores = (termo: string) => this.contatosService.buscar(termo, 'Fornecedor');
 
   private totalEstimadoBase = signal(0);
   totalEstimadoGeral = computed(() => {
@@ -143,14 +190,60 @@ export class ComprasListaComponent implements OnInit {
   }
 
   aplicarFiltros() {
-    this.filtro.idMarca = this.marcaSelecionada?.id;
+    this.filtro.idsMarca = this.marcasSelecionadas.length > 0 ? this.marcasSelecionadas.map(m => m.id) : undefined;
     this.filtro.idFornecedor = this.fornecedorSelecionado?.id;
     this.carregar(1);
   }
 
+  carregarMarcas(evento: MultiSelectLazyLoadEvent) {
+    const pagina = Math.floor(evento.first / TAMANHO_PAGINA_LAZY) + 1;
+    this.marcasCarregando.set(true);
+    this.marcasService.listar({ pagina, tamanho: TAMANHO_PAGINA_LAZY }, { texto: this.marcaFiltroTexto || undefined }).subscribe({
+      next: res => {
+        const total = res.dados?.totalRegistros ?? 0;
+        const itensPagina = res.dados?.dados ?? [];
+        const atual = [...this.marcasOpcoes()];
+        if (atual.length !== total) atual.length = total;
+        itensPagina.forEach((m, i) => { atual[evento.first + i] = { id: m.id, nome: m.nome }; });
+        this.marcasOpcoes.set(atual);
+        this.marcasCarregando.set(false);
+      },
+      error: () => this.marcasCarregando.set(false)
+    });
+  }
+
+  aoFiltrarMarcas(evento: MultiSelectFilterEvent) {
+    this.marcaFiltroTexto = evento.filter ?? '';
+    this.marcasOpcoes.set([]);
+    this.carregarMarcas({ first: 0, last: TAMANHO_PAGINA_LAZY });
+  }
+
+  carregarFornecedores(evento: SelectLazyLoadEvent) {
+    const pagina = Math.floor(evento.first / TAMANHO_PAGINA_LAZY) + 1;
+    this.fornecedoresCarregando.set(true);
+    this.contatosService.listar({ pagina, tamanho: TAMANHO_PAGINA_LAZY }, { texto: this.fornecedorFiltroTexto || undefined, tipo: 'Fornecedor' }).subscribe({
+      next: res => {
+        const total = res.dados?.totalRegistros ?? 0;
+        const itensPagina = res.dados?.dados ?? [];
+        const atual = [...this.fornecedoresOpcoes()];
+        if (atual.length !== total) atual.length = total;
+        itensPagina.forEach((f, i) => { atual[evento.first + i] = { id: f.id, nome: f.nome }; });
+        this.fornecedoresOpcoes.set(atual);
+        this.fornecedoresCarregando.set(false);
+      },
+      error: () => this.fornecedoresCarregando.set(false)
+    });
+  }
+
+  aoFiltrarFornecedores(evento: SelectFilterEvent) {
+    this.fornecedorFiltroTexto = evento.filter ?? '';
+    this.fornecedoresOpcoes.set([]);
+    this.carregarFornecedores({ first: 0, last: TAMANHO_PAGINA_LAZY });
+  }
+
   limparFiltros() {
     this.filtro = {};
-    this.marcaSelecionada = null;
+    this.marcasSelecionadas = [];
     this.fornecedorSelecionado = null;
     this.periodoPreset = '';
     this.ordenacaoAtual.set(null);

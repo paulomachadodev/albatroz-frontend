@@ -46,6 +46,8 @@ model: opus
 - @adr/0003-primeng-unstyled.md
 - @adr/0004-signals-state.md
 - @adr/0005-lazy-loading-routes.md
+- @adr/0006-primeng-first.md
+- @specs/migracao-primeng.md
 - @standards/angular/conventions.md
 - @standards/angular/routing.md
 - @standards/angular/signals.md

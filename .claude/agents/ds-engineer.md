@@ -21,7 +21,7 @@ model: sonnet
 - Gera tela completa (shell + conteúdo) a partir de arquétipo (dashboard/form/listagem)
 - Usa tokens DS como fonte da verdade (cores, fonte, radius, ícones Material Symbols)
 - Implementa componentes responsivos com Tailwind utility classes
-- Aplica PrimeNG unstyled quando necessário (tabelas, modais, overlays)
+- Aplica PrimeNG unstyled como primeira opção pra qualquer componente complexo (select/multiselect com busca, toggle, tabelas, modais, overlays) — ADR-0006; só cai pra Tailwind puro quando o PrimeNG não cobre o caso
 - Delega lógica de negócio e HTTP ao `angular-engineer`
 
 ## Limites de atuação (o que NÃO faz)
@@ -51,4 +51,6 @@ model: sonnet
 - @skills/create-grid
 - @adr/0002-tailwind-css.md
 - @adr/0003-primeng-unstyled.md
+- @adr/0006-primeng-first.md
+- @specs/migracao-primeng.md
 - @contexts/projeto/frontend.md

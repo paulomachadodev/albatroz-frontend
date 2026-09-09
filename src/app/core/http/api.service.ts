@@ -17,8 +17,12 @@ export class ApiService {
     let httpParams = new HttpParams();
     if (params) {
       Object.keys(params).forEach(key => {
-        if (params[key] != null) {
-          httpParams = httpParams.set(key, params[key]);
+        const valor = params[key];
+        if (valor == null) return;
+        if (Array.isArray(valor)) {
+          valor.forEach(item => { httpParams = httpParams.append(key, item); });
+        } else {
+          httpParams = httpParams.set(key, valor);
         }
       });
     }

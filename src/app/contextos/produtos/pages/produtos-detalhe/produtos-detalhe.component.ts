@@ -235,16 +235,7 @@ export class ProdutosDetalheComponent implements OnInit {
 
   async finalizarEdicao() {
     if (!this.sujo()) { this.modoEdicao.set(false); return; }
-
-    const escolha = await this.pedirEscolhaSaida();
-    if (escolha === 'cancelar') return;
-    if (escolha === 'salvar') {
-      await this.salvarTudo();
-    } else {
-      this.modoEdicao.set(false);
-      this.sujo.set(false);
-      this.carregar();
-    }
+    await this.salvarTudo();
   }
 
   private pedirEscolhaSaida(): Promise<SaidaEscolha> {
@@ -655,8 +646,15 @@ export class ProdutosDetalheComponent implements OnInit {
     return match ? match[1] : null;
   }
 
+  private cacheUrlVideo = new Map<string, SafeResourceUrl>();
+
   urlVideoSeguro(videoId: string): SafeResourceUrl {
-    return this.sanitizer.bypassSecurityTrustResourceUrl(`https://www.youtube.com/embed/${videoId}`);
+    let url = this.cacheUrlVideo.get(videoId);
+    if (!url) {
+      url = this.sanitizer.bypassSecurityTrustResourceUrl(`https://www.youtube.com/embed/${videoId}`);
+      this.cacheUrlVideo.set(videoId, url);
+    }
+    return url;
   }
 
   carregarMarketplaces() {

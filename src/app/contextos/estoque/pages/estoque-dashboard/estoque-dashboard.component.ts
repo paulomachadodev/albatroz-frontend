@@ -1,13 +1,15 @@
 import { Component, OnInit, computed, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { SaudeEstoqueService } from '../../services/saude-estoque.service';
-import { CorteGiroCritico, SaudeEstoqueResumo } from '../../models/saude-estoque.model';
+import { BlocoResumoSaudeEstoque, CorteGiroCritico, SaudeEstoqueResumo } from '../../models/saude-estoque.model';
 import { ToastService } from '../../../../core/feedback/toast.service';
 import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 import { BreadcrumbComponent } from '../../../../shared/components/breadcrumb/breadcrumb.component';
 
+type ChaveBlocoSaudeEstoque = 'semGiro' | 'candidatosParaComprar' | 'candidatosInativacao' | 'criticos';
+
 interface CardResumo {
-  chave: keyof SaudeEstoqueResumo;
+  chave: ChaveBlocoSaudeEstoque;
   titulo: string;
   descricao: string;
   icone: string;
@@ -93,7 +95,7 @@ export class EstoqueDashboardComponent implements OnInit {
     this.carregar();
   }
 
-  bloco(chave: keyof SaudeEstoqueResumo) {
+  bloco(chave: ChaveBlocoSaudeEstoque): BlocoResumoSaudeEstoque {
     return this.resumo()?.[chave] ?? { quantidadeSkus: 0, capitalParadoCusto: 0 };
   }
 

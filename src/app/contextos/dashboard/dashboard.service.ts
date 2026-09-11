@@ -57,6 +57,13 @@ export interface CurvaAbcResumo {
   skusCurvaCQuantidade: number;
 }
 
+export interface ContasAPagarResumo {
+  valorVencido: number;
+  quantidadeVencidas: number;
+  valorVenceHoje: number;
+  quantidadeVenceHoje: number;
+}
+
 export interface DashboardResumo {
   faturamentoMes: number;
   faturamentoMesAnterior: number;
@@ -71,6 +78,7 @@ export interface DashboardResumo {
   metaPorVendedor: MetaVendedor[];
   vendasPorFormaPagamento: FormaPagamento[];
   curvaAbc: CurvaAbcResumo;
+  contasAPagar: ContasAPagarResumo;
 }
 
 @Injectable({ providedIn: 'root' })

@@ -240,6 +240,35 @@
           </ul>
         </div>
 
+        <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <h3 class="font-bold text-slate-900 dark:text-slate-100 mb-4">Contas a pagar</h3>
+          @if (resumo()!.contasAPagar.quantidadeVencidas === 0 && resumo()!.contasAPagar.quantidadeVenceHoje === 0) {
+            <div class="flex flex-col items-center py-8 text-center">
+              <span class="material-symbols-outlined text-emerald-600 bg-emerald-100 dark:bg-emerald-900/40 p-2 rounded-lg mb-3">task_alt</span>
+              <p class="text-sm font-semibold text-emerald-600">Nada vencido, tudo em dia</p>
+            </div>
+          } @else {
+            <div class="grid grid-cols-2 gap-4">
+              <div class="p-4 rounded-lg bg-rose-50 dark:bg-rose-900/20">
+                <div class="flex items-center gap-1.5 mb-2">
+                  <span class="material-symbols-outlined text-rose-600 text-[18px]">error</span>
+                  <p class="text-[11px] font-semibold uppercase text-rose-600">Vencido</p>
+                </div>
+                <p class="text-lg font-bold text-rose-600">{{ formatarReais(resumo()!.contasAPagar.valorVencido) }}</p>
+                <p class="text-[11px] text-slate-400 mt-0.5">{{ resumo()!.contasAPagar.quantidadeVencidas }} título(s)</p>
+              </div>
+              <div class="p-4 rounded-lg bg-amber-50 dark:bg-amber-900/20">
+                <div class="flex items-center gap-1.5 mb-2">
+                  <span class="material-symbols-outlined text-amber-600 text-[18px]">schedule</span>
+                  <p class="text-[11px] font-semibold uppercase text-amber-600">Vence hoje</p>
+                </div>
+                <p class="text-lg font-bold text-amber-600">{{ formatarReais(resumo()!.contasAPagar.valorVenceHoje) }}</p>
+                <p class="text-[11px] text-slate-400 mt-0.5">{{ resumo()!.contasAPagar.quantidadeVenceHoje }} título(s)</p>
+              </div>
+            </div>
+          }
+        </div>
+
       </div>
     }
 

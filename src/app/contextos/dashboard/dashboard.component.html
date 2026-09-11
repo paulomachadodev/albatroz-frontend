@@ -40,7 +40,7 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-      <div class="lg:col-span-2 bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+      <div class="lg:col-span-2 bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col">
         <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
           <div>
             <h3 class="font-bold text-slate-900 dark:text-slate-100">Faturamento</h3>
@@ -59,13 +59,13 @@
         </div>
 
         @if (carregando()) {
-          <div class="h-44 animate-pulse bg-slate-100 dark:bg-slate-800 rounded-lg"></div>
+          <div class="flex-1 min-h-[220px] animate-pulse bg-slate-100 dark:bg-slate-800 rounded-lg"></div>
         } @else if (chartData()) {
-          <div class="h-44">
+          <div class="flex-1 min-h-[220px]">
             <p-chart type="line" [data]="chartData()" [options]="chartOptions()" [height]="'100%'"></p-chart>
           </div>
         } @else {
-          <p class="text-sm text-slate-400 text-center py-16">Sem vendas suficientes pra montar o gráfico ainda.</p>
+          <p class="flex-1 flex items-center justify-center text-sm text-slate-400 text-center">Sem vendas suficientes pra montar o gráfico ainda.</p>
         }
       </div>
 
@@ -207,7 +207,7 @@
         </div>
 
         <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-          <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center justify-between mb-1">
             <h3 class="font-bold text-slate-900 dark:text-slate-100">Curva ABC</h3>
             <div class="flex gap-1 text-xs bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
               <button type="button" (click)="mudarCurvaAbcModo('valor')"
@@ -224,6 +224,7 @@
                       [class.text-slate-500]="curvaAbcModo() !== 'quantidade'">Por quantidade</button>
             </div>
           </div>
+          <p class="text-[11px] text-slate-400 mb-4">Últimos 12 meses — não muda com o filtro Dia/Mês/Ano acima.</p>
           <ul class="space-y-3">
             @for (item of curvaAbcItens(); track item.rotulo) {
               <li>

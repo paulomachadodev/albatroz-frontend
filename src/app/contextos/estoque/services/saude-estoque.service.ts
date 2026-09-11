@@ -7,7 +7,6 @@ import {
   CategoriaSaudeEstoque,
   CorteGiroCritico,
   ProdutoSaudeEstoque,
-  ResultadoInativacaoLote,
   SaudeEstoqueResumo
 } from '../models/saude-estoque.model';
 
@@ -28,13 +27,5 @@ export class SaudeEstoqueService {
   ): Observable<Resultado<Paginacao<ProdutoSaudeEstoque>>> {
     const filtros = categoria === 'criticos' ? { corteGiroCritico } : undefined;
     return this.api.getPaginado<ProdutoSaudeEstoque>(`${this.endpoint}/saude-estoque/${categoria}`, paginacao, filtros);
-  }
-
-  inativar(idProduto: number): Observable<Resultado<void>> {
-    return this.api.post<void>(`${this.endpoint}/${idProduto}/inativar`, {});
-  }
-
-  inativarLote(ids: number[]): Observable<Resultado<ResultadoInativacaoLote>> {
-    return this.api.post<ResultadoInativacaoLote>(`${this.endpoint}/inativar-lote`, ids);
   }
 }

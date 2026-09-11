@@ -6,43 +6,43 @@ import { CategoriaSaudeEstoque, CorteGiroCritico, ProdutoSaudeEstoque } from '..
 import { ToastService } from '../../../../core/feedback/toast.service';
 import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 import { BreadcrumbComponent } from '../../../../shared/components/breadcrumb/breadcrumb.component';
-import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 import { ListagemPaginadaComponent } from '../../../../shared/components/listagem-paginada/listagem-paginada.component';
 import { ToggleComponent } from '../../../../shared/components/toggle/toggle.component';
+import { exportarPlanilha } from '../../../../shared/utils/exportar-planilha';
 
 interface ConfigCategoria {
   titulo: string;
   subtitulo: string;
-  permiteInativar: boolean;
+  permiteSelecao: boolean;
 }
 
 const CONFIGS: Record<CategoriaSaudeEstoque, ConfigCategoria> = {
   'sem-giro': {
     titulo: 'Sem giro',
     subtitulo: 'Sem venda há 90+ dias, com ou sem estoque.',
-    permiteInativar: true
+    permiteSelecao: true
   },
   'candidatos-parar-comprar': {
     titulo: 'Candidatos a não repor',
     subtitulo: 'Sem venda há 90+ dias, mas ainda tem estoque — deixar vender o que tem antes de comprar mais.',
-    permiteInativar: true
+    permiteSelecao: true
   },
   'candidatos-inativacao': {
     titulo: 'Candidatos a inativação',
     subtitulo: 'Sem venda e sem estoque há 12 meses, ou nunca vendeu desde o cadastro há 12+ meses.',
-    permiteInativar: true
+    permiteSelecao: true
   },
   criticos: {
     titulo: 'Críticos',
     subtitulo: 'Curva A com giro alto — não pode faltar, ponto de atenção pra não perder venda por ruptura.',
-    permiteInativar: false
+    permiteSelecao: false
   }
 };
 
 @Component({
   selector: 'app-estoque-listagem',
   standalone: true,
-  imports: [PageHeaderComponent, BreadcrumbComponent, ModalComponent, ListagemPaginadaComponent, ToggleComponent],
+  imports: [PageHeaderComponent, BreadcrumbComponent, ListagemPaginadaComponent, ToggleComponent],
   templateUrl: './estoque-listagem.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
@@ -62,10 +62,6 @@ export class EstoqueListagemComponent implements OnInit {
 
   selecionados = new Map<number, ProdutoSaudeEstoque>();
   qtdSelecionados = signal(0);
-
-  produtoParaInativar = signal<ProdutoSaudeEstoque | null>(null);
-  modalLoteAberto = signal(false);
-  inativando = signal(false);
 
   constructor(
     private saudeEstoqueService: SaudeEstoqueService,
@@ -147,69 +143,21 @@ export class EstoqueListagemComponent implements OnInit {
     this.qtdSelecionados.set(0);
   }
 
-  abrirConfirmacaoInativarIndividual(item: ProdutoSaudeEstoque) {
-    this.produtoParaInativar.set(item);
-  }
-
-  fecharConfirmacaoInativarIndividual() {
-    if (this.inativando()) return;
-    this.produtoParaInativar.set(null);
-  }
-
-  confirmarInativarIndividual() {
-    const produto = this.produtoParaInativar();
-    if (!produto) return;
-
-    this.inativando.set(true);
-    this.saudeEstoqueService.inativar(produto.idProduto).subscribe({
-      next: () => {
-        this.inativando.set(false);
-        this.toast.sucesso('Produto inativado.', `${produto.nome} foi inativado no Albatroz e no Tiny.`);
-        this.produtoParaInativar.set(null);
-        this.selecionados.delete(produto.idProduto);
-        this.qtdSelecionados.set(this.selecionados.size);
-        this.carregar(this.paginaAtual());
-      },
-      error: err => {
-        this.inativando.set(false);
-        this.toast.erroServidor(err, 'Não foi possível inativar o produto.');
-      }
-    });
-  }
-
-  abrirConfirmacaoInativarLote() {
+  exportarSelecionados() {
     if (this.selecionados.size === 0) return;
-    this.modalLoteAberto.set(true);
-  }
 
-  fecharConfirmacaoInativarLote() {
-    if (this.inativando()) return;
-    this.modalLoteAberto.set(false);
-  }
+    const linhas = Array.from(this.selecionados.values()).map(item => ({
+      Codigo: item.codigo,
+      Nome: item.nome,
+      Marca: item.marca ?? '',
+      EstoqueAtual: item.estoqueAtual,
+      PrecoCusto: item.precoCusto ?? '',
+      UltimaVenda: item.dataUltimaVenda ?? '',
+      Motivo: item.motivo ?? ''
+    }));
 
-  confirmarInativarLote() {
-    const ids = Array.from(this.selecionados.keys());
-    if (ids.length === 0) return;
-
-    this.inativando.set(true);
-    this.saudeEstoqueService.inativarLote(ids).subscribe({
-      next: res => {
-        this.inativando.set(false);
-        this.modalLoteAberto.set(false);
-        const resultado = res.dados;
-        if (resultado && resultado.falharam.length > 0) {
-          this.toast.erro(`${resultado.sucesso} inativado(s), ${resultado.falharam.length} falharam.`);
-        } else {
-          this.toast.sucesso('Produtos inativados.', `${resultado?.sucesso ?? ids.length} produto(s) inativado(s).`);
-        }
-        this.limparSelecao();
-        this.carregar(this.paginaAtual());
-      },
-      error: err => {
-        this.inativando.set(false);
-        this.toast.erroServidor(err, 'Não foi possível inativar os produtos selecionados.');
-      }
-    });
+    exportarPlanilha(linhas, `estoque-${this.categoria}`, 'Produtos');
+    this.toast.sucesso('Planilha exportada.', `${linhas.length} produto(s) exportado(s).`);
   }
 
   formatarReais(valor: number | null): string {

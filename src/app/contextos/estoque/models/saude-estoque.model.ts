@@ -25,8 +25,3 @@ export interface SaudeEstoqueResumo {
 export type CorteGiroCritico = 20 | 40 | 60;
 
 export type CategoriaSaudeEstoque = 'sem-giro' | 'candidatos-parar-comprar' | 'candidatos-inativacao' | 'criticos';
-
-export interface ResultadoInativacaoLote {
-  sucesso: number;
-  falharam: number[];
-}

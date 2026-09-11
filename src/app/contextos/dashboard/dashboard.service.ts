@@ -18,6 +18,45 @@ export interface VendaRecente {
   vendedor?: string;
 }
 
+export interface MetaMensal {
+  valorMeta: number;
+  origemMeta: string;
+  faturamentoAtual: number;
+  percentualAtingido: number;
+  faturamentoProjetado: number;
+  pedidosAtuais: number;
+  pedidosProjetados: number;
+  ticketMedioReal: number;
+  ticketMedioNecessario: number;
+}
+
+export interface MetaVendedor {
+  idVendedor: string | null;
+  nome: string;
+  pedidos: number;
+  valor: number;
+  ticketMedio: number;
+  valorMeta: number | null;
+  percentualAtingido: number | null;
+  semVendedor: boolean;
+}
+
+export interface FormaPagamento {
+  forma: string;
+  quantidade: number;
+  valor: number;
+  ticketMedio: number;
+}
+
+export interface CurvaAbcResumo {
+  skusCurvaAValor: number;
+  skusCurvaBValor: number;
+  skusCurvaCValor: number;
+  skusCurvaAQuantidade: number;
+  skusCurvaBQuantidade: number;
+  skusCurvaCQuantidade: number;
+}
+
 export interface DashboardResumo {
   faturamentoMes: number;
   faturamentoMesAnterior: number;
@@ -28,6 +67,10 @@ export interface DashboardResumo {
   serieAtual: SeriePonto[];
   seriePeriodoAnterior: SeriePonto[];
   ultimasVendas: VendaRecente[];
+  meta: MetaMensal;
+  metaPorVendedor: MetaVendedor[];
+  vendasPorFormaPagamento: FormaPagamento[];
+  curvaAbc: CurvaAbcResumo;
 }
 
 @Injectable({ providedIn: 'root' })

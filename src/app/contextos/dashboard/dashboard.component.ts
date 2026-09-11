@@ -209,4 +209,36 @@ export class DashboardComponent implements OnInit {
     const b = partes.length > 1 ? partes[partes.length - 1][0] : '';
     return (a + b).toUpperCase();
   }
+
+  corBarraMeta(perc: number): string {
+    if (perc >= 100) return 'bg-emerald-500';
+    if (perc >= 70) return 'bg-primary';
+    return 'bg-amber-500';
+  }
+
+  curvaAbcModo = signal<'valor' | 'quantidade'>('valor');
+
+  mudarCurvaAbcModo(modo: 'valor' | 'quantidade'): void {
+    this.curvaAbcModo.set(modo);
+  }
+
+  curvaAbcItens = computed(() => {
+    const c = this.resumo()?.curvaAbc;
+    if (!c) return [];
+    const modo = this.curvaAbcModo();
+    if (modo === 'valor') {
+      return [
+        { rotulo: 'Curva A', valor: c.skusCurvaAValor, cor: 'bg-emerald-500' },
+        { rotulo: 'Curva B', valor: c.skusCurvaBValor, cor: 'bg-amber-500' },
+        { rotulo: 'Curva C', valor: c.skusCurvaCValor, cor: 'bg-slate-400' }
+      ];
+    }
+    return [
+      { rotulo: 'Curva A', valor: c.skusCurvaAQuantidade, cor: 'bg-emerald-500' },
+      { rotulo: 'Curva B', valor: c.skusCurvaBQuantidade, cor: 'bg-amber-500' },
+      { rotulo: 'Curva C', valor: c.skusCurvaCQuantidade, cor: 'bg-slate-400' }
+    ];
+  });
+
+  curvaAbcTotal = computed(() => this.curvaAbcItens().reduce((soma, item) => soma + item.valor, 0));
 }

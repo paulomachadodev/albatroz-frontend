@@ -96,5 +96,152 @@
       </div>
     </div>
 
+    @if (!carregando() && resumo()) {
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+        <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <div class="flex items-center justify-between mb-1">
+            <h3 class="font-bold text-slate-900 dark:text-slate-100">Meta do mês</h3>
+            <span class="text-lg font-bold"
+                  [class.text-emerald-600]="resumo()!.meta.percentualAtingido >= 100"
+                  [class.text-primary]="resumo()!.meta.percentualAtingido < 100">
+              {{ resumo()!.meta.percentualAtingido | number:'1.0-1' }}%
+            </span>
+          </div>
+          <p class="text-[11px] text-slate-400 mb-4">{{ resumo()!.meta.origemMeta }}</p>
+
+          <div class="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+            <div class="h-full rounded-full transition-all duration-700"
+                 [class]="corBarraMeta(resumo()!.meta.percentualAtingido)"
+                 [style.width.%]="resumo()!.meta.percentualAtingido > 100 ? 100 : resumo()!.meta.percentualAtingido"></div>
+          </div>
+          <div class="flex justify-between text-[11px] text-slate-400 mt-1.5 mb-5">
+            <span>{{ formatarReais(resumo()!.meta.faturamentoAtual) }} realizado</span>
+            <span>meta {{ formatarReais(resumo()!.meta.valorMeta) }}</span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+            <div>
+              <p class="text-[11px] text-slate-400">Ticket médio real</p>
+              <p class="text-lg font-semibold text-slate-900 dark:text-slate-100">{{ formatarReais(resumo()!.meta.ticketMedioReal) }}</p>
+            </div>
+            <div>
+              <p class="text-[11px] text-slate-400">Ticket médio necessário</p>
+              <p class="text-lg font-semibold"
+                 [class.text-rose-600]="resumo()!.meta.ticketMedioReal < resumo()!.meta.ticketMedioNecessario"
+                 [class.text-slate-900]="resumo()!.meta.ticketMedioReal >= resumo()!.meta.ticketMedioNecessario"
+                 [class.dark:text-slate-100]="resumo()!.meta.ticketMedioReal >= resumo()!.meta.ticketMedioNecessario">
+                {{ formatarReais(resumo()!.meta.ticketMedioNecessario) }}
+              </p>
+            </div>
+            <div>
+              <p class="text-[11px] text-slate-400">Pedidos até agora</p>
+              <p class="text-sm font-semibold text-slate-700 dark:text-slate-300">{{ resumo()!.meta.pedidosAtuais }}</p>
+            </div>
+            <div>
+              <p class="text-[11px] text-slate-400">Faturamento projetado</p>
+              <p class="text-sm font-semibold text-slate-700 dark:text-slate-300">{{ formatarReais(resumo()!.meta.faturamentoProjetado) }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <h3 class="font-bold text-slate-900 dark:text-slate-100 mb-4">Meta por vendedor</h3>
+          @if (resumo()!.metaPorVendedor.length === 0) {
+            <p class="text-sm text-slate-400 py-8 text-center">Nenhum dado de vendedor no período.</p>
+          }
+          <ul class="space-y-4">
+            @for (v of resumo()!.metaPorVendedor; track v.idVendedor ?? v.nome) {
+              <li [class]="v.semVendedor ? 'p-2 -mx-2 rounded-xl bg-slate-50 dark:bg-slate-800/40' : 'p-2 -mx-2 rounded-xl'">
+                <div class="flex items-center justify-between gap-3">
+                  <div class="min-w-0 flex-1">
+                    <p class="text-sm font-semibold truncate"
+                       [class.text-slate-400]="v.semVendedor"
+                       [class.italic]="v.semVendedor"
+                       [class.text-slate-900]="!v.semVendedor"
+                       [class.dark:text-slate-100]="!v.semVendedor">
+                      {{ v.nome }}
+                    </p>
+                    <p class="text-[11px] text-slate-400">{{ v.pedidos }} pedido(s) · ticket {{ formatarReais(v.ticketMedio) }}</p>
+                  </div>
+                  <span class="text-sm font-bold text-slate-900 dark:text-slate-100 shrink-0">{{ formatarReais(v.valor) }}</span>
+                </div>
+                @if (v.valorMeta !== null) {
+                  <div class="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden mt-2">
+                    <div class="h-full rounded-full transition-all duration-700"
+                         [class]="corBarraMeta(v.percentualAtingido ?? 0)"
+                         [style.width.%]="(v.percentualAtingido ?? 0) > 100 ? 100 : (v.percentualAtingido ?? 0)"></div>
+                  </div>
+                }
+              </li>
+            }
+          </ul>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <h3 class="font-bold text-slate-900 dark:text-slate-100 mb-4">Vendas por forma de pagamento</h3>
+          @if (resumo()!.vendasPorFormaPagamento.length === 0) {
+            <p class="text-sm text-slate-400 py-8 text-center">Nenhuma venda no período.</p>
+          } @else {
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="text-[11px] uppercase text-slate-400 text-left">
+                  <th class="pb-2 font-semibold">Forma</th>
+                  <th class="pb-2 font-semibold text-right">Qtd.</th>
+                  <th class="pb-2 font-semibold text-right">Valor</th>
+                  <th class="pb-2 font-semibold text-right">Ticket médio</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (f of resumo()!.vendasPorFormaPagamento; track f.forma) {
+                  <tr class="border-t border-slate-100 dark:border-slate-800">
+                    <td class="py-2 text-slate-700 dark:text-slate-300">{{ f.forma }}</td>
+                    <td class="py-2 text-right text-slate-700 dark:text-slate-300">{{ f.quantidade }}</td>
+                    <td class="py-2 text-right font-semibold text-slate-900 dark:text-slate-100">{{ formatarReais(f.valor) }}</td>
+                    <td class="py-2 text-right text-slate-500 dark:text-slate-400">{{ formatarReais(f.ticketMedio) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-bold text-slate-900 dark:text-slate-100">Curva ABC</h3>
+            <div class="flex gap-1 text-xs bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
+              <button type="button" (click)="mudarCurvaAbcModo('valor')"
+                      class="px-3 py-1.5 rounded-md transition-colors"
+                      [class.bg-white]="curvaAbcModo() === 'valor'" [class.dark:bg-slate-700]="curvaAbcModo() === 'valor'"
+                      [class.shadow-sm]="curvaAbcModo() === 'valor'" [class.font-semibold]="curvaAbcModo() === 'valor'"
+                      [class.text-slate-900]="curvaAbcModo() === 'valor'" [class.dark:text-slate-100]="curvaAbcModo() === 'valor'"
+                      [class.text-slate-500]="curvaAbcModo() !== 'valor'">Por valor</button>
+              <button type="button" (click)="mudarCurvaAbcModo('quantidade')"
+                      class="px-3 py-1.5 rounded-md transition-colors"
+                      [class.bg-white]="curvaAbcModo() === 'quantidade'" [class.dark:bg-slate-700]="curvaAbcModo() === 'quantidade'"
+                      [class.shadow-sm]="curvaAbcModo() === 'quantidade'" [class.font-semibold]="curvaAbcModo() === 'quantidade'"
+                      [class.text-slate-900]="curvaAbcModo() === 'quantidade'" [class.dark:text-slate-100]="curvaAbcModo() === 'quantidade'"
+                      [class.text-slate-500]="curvaAbcModo() !== 'quantidade'">Por quantidade</button>
+            </div>
+          </div>
+          <ul class="space-y-3">
+            @for (item of curvaAbcItens(); track item.rotulo) {
+              <li>
+                <div class="flex items-center justify-between text-sm mb-1">
+                  <span class="font-medium text-slate-700 dark:text-slate-300">{{ item.rotulo }}</span>
+                  <span class="font-semibold text-slate-900 dark:text-slate-100">{{ item.valor }} SKU(s)</span>
+                </div>
+                <div class="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                  <div class="h-full rounded-full transition-all duration-700" [class]="item.cor"
+                       [style.width.%]="curvaAbcTotal() > 0 ? (item.valor / curvaAbcTotal()) * 100 : 0"></div>
+                </div>
+              </li>
+            }
+          </ul>
+        </div>
+
+      </div>
+    }
+
   </div>
 </div>

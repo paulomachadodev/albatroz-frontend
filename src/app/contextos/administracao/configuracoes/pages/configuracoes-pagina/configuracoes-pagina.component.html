@@ -39,6 +39,14 @@
                 [class.text-slate-500]="abaAtiva() !== 'busca-imagens'">
           Busca de imagens
         </button>
+        <button (click)="trocarAba('metas')"
+                class="pb-3 text-sm font-bold border-b-2 transition-colors"
+                [class.border-primary]="abaAtiva() === 'metas'"
+                [class.text-primary]="abaAtiva() === 'metas'"
+                [class.border-transparent]="abaAtiva() !== 'metas'"
+                [class.text-slate-500]="abaAtiva() !== 'metas'">
+          Metas
+        </button>
       </nav>
     </div>
 
@@ -299,6 +307,168 @@
             {{ salvandoBuscaImagens() ? 'Salvando...' : 'Salvar' }}
           </button>
         </div>
+      </div>
+    } @else if (abaAtiva() === 'metas') {
+      <div class="space-y-6">
+
+        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-4">
+          <p class="text-sm font-bold text-slate-900 dark:text-slate-100">Regra padrão de meta mensal</p>
+          <p class="text-sm text-slate-500 dark:text-slate-400">
+            Usada em todo mês que não tiver um override específico cadastrado abaixo.
+          </p>
+
+          <div class="flex items-center gap-4">
+            <label class="inline-flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+              <input type="radio" name="meta-regra-modo" value="valor" [(ngModel)]="metaRegraModo" class="text-primary focus:ring-primary/20"/>
+              Valor fixo
+            </label>
+            <label class="inline-flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+              <input type="radio" name="meta-regra-modo" value="percentual" [(ngModel)]="metaRegraModo" class="text-primary focus:ring-primary/20"/>
+              Percentual sobre ano anterior
+            </label>
+          </div>
+
+          @if (metaRegraModo === 'valor') {
+            <div class="sm:w-64">
+              <label class="text-xs font-semibold text-slate-500">Meta mensal (R$)</label>
+              <input type="number" min="0" step="0.01" [(ngModel)]="metaRegraValor"
+                     class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+            </div>
+          } @else {
+            <div class="sm:w-64">
+              <label class="text-xs font-semibold text-slate-500 inline-flex items-center gap-1">
+                Percentual sobre o ano anterior (%)
+                <app-campo-hint texto="Meta do mês = faturamento do mesmo mês do ano anterior + este percentual."></app-campo-hint>
+              </label>
+              <input type="number" step="0.1" [(ngModel)]="metaRegraPercentual"
+                     class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+            </div>
+          }
+
+          <div class="pt-2">
+            <button type="button" (click)="salvarMetaRegra()" [disabled]="salvandoMetaRegra()"
+                    class="px-5 py-2.5 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all">
+              {{ salvandoMetaRegra() ? 'Salvando...' : 'Salvar' }}
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-4">
+          <p class="text-sm font-bold text-slate-900 dark:text-slate-100">Meta alternativa (sem histórico)</p>
+          <p class="text-sm text-slate-500 dark:text-slate-400">
+            Usada quando a regra é percentual mas o mês não tem faturamento no ano anterior pra comparar (ex: mês novo, sem venda ainda).
+          </p>
+          <div class="sm:w-64">
+            <label class="text-xs font-semibold text-slate-500">Meta mensal (R$)</label>
+            <input type="number" min="0" step="0.01" [(ngModel)]="metaFallbackValor"
+                   class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+          </div>
+          <div class="pt-2">
+            <button type="button" (click)="salvarMetaFallback()" [disabled]="salvandoMetaFallback()"
+                    class="px-5 py-2.5 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all">
+              {{ salvandoMetaFallback() ? 'Salvando...' : 'Salvar' }}
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-4">
+          <p class="text-sm font-bold text-slate-900 dark:text-slate-100">Overrides por mês</p>
+          <p class="text-sm text-slate-500 dark:text-slate-400">
+            Meta específica pra um mês, sobrescreve a regra padrão só nele.
+          </p>
+
+          @if (metaOverrides().length > 0) {
+            <div class="divide-y divide-slate-100 dark:divide-slate-800 border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
+              @for (override of metaOverrides(); track override.chave) {
+                <div class="flex items-center justify-between px-4 py-3">
+                  <div class="text-sm">
+                    <span class="font-bold text-slate-900 dark:text-slate-100">{{ formatarMesOverride(override.mes) }}</span>
+                    <span class="text-slate-500 dark:text-slate-400 ml-2">
+                      @if (override.modo === 'percentual') {
+                        {{ override.percentual >= 0 ? '+' : '' }}{{ override.percentual }}% sobre ano anterior
+                      } @else {
+                        R$ {{ override.valor }}
+                      }
+                    </span>
+                  </div>
+                  <button type="button" (click)="removerOverrideMeta(override.chave)" [disabled]="removendoOverrideChave === override.chave"
+                          class="text-xs font-bold text-red-500 hover:underline disabled:opacity-50">
+                    {{ removendoOverrideChave === override.chave ? 'Removendo...' : 'Remover' }}
+                  </button>
+                </div>
+              }
+            </div>
+          }
+
+          <div class="pt-2 border-t border-slate-200 dark:border-slate-800 space-y-4">
+            <p class="text-xs font-semibold text-slate-500">Adicionar override</p>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label class="text-xs font-semibold text-slate-500">Mês</label>
+                <input type="month" [(ngModel)]="novoOverrideMes"
+                       class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+              </div>
+              <div>
+                <label class="text-xs font-semibold text-slate-500">Modo</label>
+                <select [(ngModel)]="novoOverrideModo" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none">
+                  <option value="valor">Valor fixo</option>
+                  <option value="percentual">Percentual sobre ano anterior</option>
+                </select>
+              </div>
+              @if (novoOverrideModo === 'valor') {
+                <div>
+                  <label class="text-xs font-semibold text-slate-500">Meta (R$)</label>
+                  <input type="number" min="0" step="0.01" [(ngModel)]="novoOverrideValor"
+                         class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+                </div>
+              } @else {
+                <div>
+                  <label class="text-xs font-semibold text-slate-500">Percentual (%)</label>
+                  <input type="number" step="0.1" [(ngModel)]="novoOverridePercentual"
+                         class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+                </div>
+              }
+            </div>
+            <button type="button" (click)="adicionarOverrideMeta()" [disabled]="salvandoOverride()"
+                    class="px-5 py-2.5 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all">
+              {{ salvandoOverride() ? 'Salvando...' : 'Adicionar override' }}
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-4">
+          <p class="text-sm font-bold text-slate-900 dark:text-slate-100">Metas por vendedor</p>
+          <p class="text-sm text-slate-500 dark:text-slate-400">
+            Meta mensal individual de cada vendedor. Deixe em branco ou zero pra vendedor sem meta.
+          </p>
+
+          @if (carregandoVendedores()) {
+            <div class="text-sm text-slate-500">Carregando vendedores...</div>
+          } @else if (vendedoresMetas().length === 0) {
+            <div class="text-sm text-slate-500">Nenhum vendedor encontrado.</div>
+          } @else {
+            <div class="divide-y divide-slate-100 dark:divide-slate-800 border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
+              @for (vendedor of vendedoresMetas(); track vendedor.id) {
+                <div class="flex items-center justify-between gap-4 px-4 py-3">
+                  <span class="text-sm text-slate-900 dark:text-slate-100">
+                    {{ vendedor.nome }}
+                    @if (!vendedor.vendaRecente) { <span class="ml-2 text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-500 uppercase">Sem venda recente</span> }
+                  </span>
+                  <input type="number" min="0" step="0.01" [(ngModel)]="vendedor.meta" placeholder="0"
+                         class="w-40 px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm text-right outline-none"/>
+                </div>
+              }
+            </div>
+
+            <div class="pt-2">
+              <button type="button" (click)="salvarMetasVendedores()" [disabled]="salvandoMetasVendedores()"
+                      class="px-5 py-2.5 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all">
+                {{ salvandoMetasVendedores() ? 'Salvando...' : 'Salvar' }}
+              </button>
+            </div>
+          }
+        </div>
+
       </div>
     }
 

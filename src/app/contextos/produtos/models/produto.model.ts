@@ -96,6 +96,8 @@ export interface ProdutoAnalise {
   faturamentoTotal?: number;
   percentualParticipacao?: number;
   giroDiarioReal?: number;
+  categoriaSaudeEstoque?: string;
+  motivoSaudeEstoque?: string;
 
   faturamentoAnual?: number;
   lucroAnual?: number;

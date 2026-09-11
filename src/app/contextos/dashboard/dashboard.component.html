@@ -196,7 +196,8 @@
               </thead>
               <tbody>
                 @for (f of resumo()!.vendasPorFormaPagamento; track f.forma) {
-                  <tr class="border-t border-slate-100 dark:border-slate-800">
+                  <tr class="border-t border-slate-100 dark:border-slate-800 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors"
+                      [routerLink]="['/vendas/por-forma-pagamento']" [queryParams]="{ forma: f.forma }">
                     <td class="py-2 text-slate-700 dark:text-slate-300">{{ f.forma }}</td>
                     <td class="py-2 text-right text-slate-700 dark:text-slate-300">{{ f.quantidade }}</td>
                     <td class="py-2 text-right font-semibold text-slate-900 dark:text-slate-100">{{ formatarReais(f.valor) }}</td>
@@ -252,7 +253,8 @@
             </div>
           } @else {
             <div class="grid grid-cols-2 gap-4">
-              <div class="p-4 rounded-lg bg-rose-50 dark:bg-rose-900/20">
+              <div class="p-4 rounded-lg bg-rose-50 dark:bg-rose-900/20 cursor-pointer hover:opacity-90 transition-opacity"
+                   [routerLink]="['/financeiro/contas-pagar']" [queryParams]="{ filtro: 'vencidas' }">
                 <div class="flex items-center gap-1.5 mb-2">
                   <span class="material-symbols-outlined text-rose-600 text-[18px]">error</span>
                   <p class="text-[11px] font-semibold uppercase text-rose-600">Vencido</p>
@@ -260,7 +262,8 @@
                 <p class="text-lg font-bold text-rose-600">{{ formatarReais(resumo()!.contasAPagar.valorVencido) }}</p>
                 <p class="text-[11px] text-slate-400 mt-0.5">{{ resumo()!.contasAPagar.quantidadeVencidas }} título(s)</p>
               </div>
-              <div class="p-4 rounded-lg bg-amber-50 dark:bg-amber-900/20">
+              <div class="p-4 rounded-lg bg-amber-50 dark:bg-amber-900/20 cursor-pointer hover:opacity-90 transition-opacity"
+                   [routerLink]="['/financeiro/contas-pagar']" [queryParams]="{ filtro: 'vence-hoje' }">
                 <div class="flex items-center gap-1.5 mb-2">
                   <span class="material-symbols-outlined text-amber-600 text-[18px]">schedule</span>
                   <p class="text-[11px] font-semibold uppercase text-amber-600">Vence hoje</p>

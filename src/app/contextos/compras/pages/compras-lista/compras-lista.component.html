@@ -213,7 +213,13 @@
               <p class="mt-0.5 text-[11px] font-bold text-amber-600 dark:text-amber-400">abaixo do pedido mínimo</p>
             }
           </td>
-          <td class="px-3 py-4 text-center text-sm font-bold cursor-pointer" (click)="abrirProduto(item)">{{ item.curvaAbc || '-' }}</td>
+          <td class="px-3 py-4 text-center cursor-pointer" (click)="abrirProduto(item)">
+            @if (item.curvaAbc) {
+              <span class="inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold" [class]="classeCurvaAbc(item.curvaAbc)">{{ item.curvaAbc }}</span>
+            } @else {
+              <span class="text-sm text-slate-400">-</span>
+            }
+          </td>
           <td class="px-3 py-4 text-right text-sm cursor-pointer" (click)="abrirProduto(item)">{{ formatarNumero(item.estoqueAtual) }}</td>
           <td class="px-3 py-4 text-right text-sm cursor-pointer" (click)="abrirProduto(item)">{{ formatarNumero(item.vendidoPeriodo) }}</td>
           <td class="px-6 py-4 text-right text-sm cursor-pointer" (click)="abrirProduto(item)">{{ formatarReais(item.precoCusto) }}</td>

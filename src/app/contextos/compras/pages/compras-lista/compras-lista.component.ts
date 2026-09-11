@@ -407,6 +407,15 @@ export class ComprasListaComponent implements OnInit {
     return valor.toLocaleString('pt-BR');
   }
 
+  classeCurvaAbc(curva: string): string {
+    switch (curva) {
+      case 'A': return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400';
+      case 'B': return 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400';
+      case 'C': return 'bg-slate-200 text-slate-600 dark:bg-slate-800 dark:text-slate-400';
+      default: return 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400';
+    }
+  }
+
   formatarData(valor?: string): string {
     if (!valor) return '-';
     try {

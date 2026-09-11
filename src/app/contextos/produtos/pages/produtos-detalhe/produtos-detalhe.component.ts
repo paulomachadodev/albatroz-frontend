@@ -889,4 +889,13 @@ export class ProdutosDetalheComponent implements OnInit {
     if (valor == null) return '-';
     return valor.toLocaleString('pt-BR');
   }
+
+  rotuloCategoriaSaudeEstoque(categoria: string): string {
+    switch (categoria) {
+      case 'sem-giro': return 'Sem giro há 90+ dias';
+      case 'candidatos-parar-comprar': return 'Candidato a não repor';
+      case 'candidatos-inativacao': return 'Candidato a inativação';
+      default: return 'Ponto de atenção na saúde de estoque';
+    }
+  }
 }

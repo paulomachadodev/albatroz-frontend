@@ -79,6 +79,16 @@ export const routes: Routes = [
           import('./contextos/financeiro/cartoes/cartoes.routes').then(m => m.CARTOES_ROUTES)
       },
       {
+        path: 'financeiro/contas-pagar',
+        loadChildren: () =>
+          import('./contextos/financeiro/contas-pagar/contas-pagar.routes').then(m => m.CONTAS_PAGAR_ROUTES)
+      },
+      {
+        path: 'vendas',
+        loadChildren: () =>
+          import('./contextos/vendas/vendas.routes').then(m => m.VENDAS_ROUTES)
+      },
+      {
         path: 'integracoes',
         loadChildren: () =>
           import('./contextos/etl/etl.routes').then(m => m.ETL_ROUTES)

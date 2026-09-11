@@ -1,0 +1,44 @@
+<div class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark px-4 sm:px-6 lg:px-8 xl:px-10 py-6 lg:py-8">
+  <div class="w-full space-y-8">
+
+    <app-breadcrumb [itens]="[{label:'Início',rota:'/dashboard'},{label:titulo}]"></app-breadcrumb>
+
+    <app-page-header [titulo]="titulo" subtitulo="Vendas confirmadas do mês atual."></app-page-header>
+
+    <app-listagem-paginada
+      [itens]="itens()"
+      [carregando]="carregando()"
+      [totalRegistros]="totalRegistros()"
+      [paginaAtual]="paginaAtual()"
+      [totalPaginas]="totalPaginas()"
+      [tamanhoPagina]="tamanhoPagina()"
+      tituloVazio="Nenhuma venda encontrada."
+      (paginaMudou)="aoMudarPagina($event)"
+      (tamanhoPaginaMudou)="aoMudarTamanhoPagina($event)">
+
+      <ng-template #cabecalho>
+        <tr>
+          <th class="px-6 py-4">Número</th>
+          <th class="px-6 py-4">Cliente</th>
+          <th class="px-6 py-4">Vendedor</th>
+          <th class="px-6 py-4">Data</th>
+          <th class="px-6 py-4">Forma</th>
+          <th class="px-6 py-4 text-right">Valor</th>
+        </tr>
+      </ng-template>
+
+      <ng-template #linha let-item>
+        <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+          <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{{ item.numero }}</td>
+          <td class="px-6 py-4 text-sm font-bold text-slate-900 dark:text-slate-100">{{ item.cliente }}</td>
+          <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{{ item.vendedor || '-' }}</td>
+          <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{{ formatarData(item.data) }}</td>
+          <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{{ item.forma }}</td>
+          <td class="px-6 py-4 text-sm font-semibold text-slate-900 dark:text-slate-100 text-right">{{ formatarReais(item.valor) }}</td>
+        </tr>
+      </ng-template>
+
+    </app-listagem-paginada>
+
+  </div>
+</div>

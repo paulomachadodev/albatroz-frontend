@@ -47,6 +47,14 @@
                 [class.text-slate-500]="abaAtiva() !== 'metas'">
           Metas
         </button>
+        <button (click)="trocarAba('condicoes-comerciais')"
+                class="pb-3 text-sm font-bold border-b-2 transition-colors"
+                [class.border-primary]="abaAtiva() === 'condicoes-comerciais'"
+                [class.text-primary]="abaAtiva() === 'condicoes-comerciais'"
+                [class.border-transparent]="abaAtiva() !== 'condicoes-comerciais'"
+                [class.text-slate-500]="abaAtiva() !== 'condicoes-comerciais'">
+          Condições Comerciais
+        </button>
       </nav>
     </div>
 
@@ -469,6 +477,54 @@
           }
         </div>
 
+      </div>
+    } @else if (abaAtiva() === 'condicoes-comerciais') {
+      <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-4">
+        <p class="text-sm text-slate-500 dark:text-slate-400">
+          Parâmetros usados pra calcular parcelamento e desconto na cotação de lista escolar.
+        </p>
+
+        @if (!condicoesComerciaisCadastradas()) {
+          <div class="px-4 py-3 rounded-lg bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-sm font-medium">
+            Ainda não cadastrado pra esta empresa — a geração de PDF de cotação fica bloqueada até salvar aqui.
+          </div>
+        }
+
+        <div>
+          <label class="text-xs font-semibold text-slate-500">Valor mínimo da parcela (cartão de crédito)</label>
+          <div class="mt-1 relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">R$</span>
+            <input type="number" min="0" step="0.01" [(ngModel)]="parcelaMinimaValor"
+                   class="w-full pl-9 pr-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+          </div>
+        </div>
+
+        <div>
+          <label class="text-xs font-semibold text-slate-500">Máximo de parcelas (cartão de crédito)</label>
+          <input type="number" min="1" [(ngModel)]="parcelasMaximas"
+                 class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+        </div>
+
+        <div>
+          <label class="text-xs font-semibold text-slate-500">Desconto Pix/Dinheiro — padrão (%)</label>
+          <input type="number" min="0" max="100" step="0.01" [(ngModel)]="descontoPixDinheiroPercentual"
+                 class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+          <p class="text-xs text-slate-400 mt-1">Aplicado na compra da lista completa, quando a escola não é parceira.</p>
+        </div>
+
+        <div>
+          <label class="text-xs font-semibold text-slate-500">Desconto Pix/Dinheiro — escola parceira (%)</label>
+          <input type="number" min="0" max="100" step="0.01" [(ngModel)]="descontoEscolaParceiraPercentual"
+                 class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+          <p class="text-xs text-slate-400 mt-1">Substitui o desconto padrão (não soma) quando a escola está marcada como parceira.</p>
+        </div>
+
+        <div class="pt-2">
+          <button type="button" (click)="salvarCondicoesComerciais()" [disabled]="salvandoCondicoesComerciais()"
+                  class="px-5 py-2.5 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all">
+            {{ salvandoCondicoesComerciais() ? 'Salvando...' : 'Salvar' }}
+          </button>
+        </div>
       </div>
     }
 

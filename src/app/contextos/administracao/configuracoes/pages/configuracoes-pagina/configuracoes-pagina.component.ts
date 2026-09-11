@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { ConfiguracoesService } from '../../services/configuracoes.service';
 import { VendedoresService } from '../../services/vendedores.service';
+import { CondicoesComerciaisService } from '../../../../cotacao/configuracoes/services/condicoes-comerciais.service';
 import { AuthService } from '../../../../../core/auth/auth.service';
 import { environment } from '../../../../../../environments/environment';
 import { Configuracao } from '../../models/configuracao.model';
@@ -16,7 +17,7 @@ import { ModalComponent } from '../../../../../shared/components/modal/modal.com
 import { CampoHintComponent } from '../../../../../shared/components/campo-hint/campo-hint.component';
 import { BreadcrumbComponent } from '../../../../../shared/components/breadcrumb/breadcrumb.component';
 
-type Aba = 'email' | 'venda' | 'integracoes' | 'busca-imagens' | 'metas';
+type Aba = 'email' | 'venda' | 'integracoes' | 'busca-imagens' | 'metas' | 'condicoes-comerciais';
 type ModoMeta = 'valor' | 'percentual';
 
 interface RegraMeta {
@@ -109,6 +110,14 @@ export class ConfiguracoesPaginaComponent implements OnInit {
   salvandoMetasVendedores = signal(false);
   private metasVendedoresMapa: Record<string, number> = {};
 
+  carregandoCondicoesComerciais = signal(true);
+  salvandoCondicoesComerciais = signal(false);
+  condicoesComerciaisCadastradas = signal(false);
+  parcelaMinimaValor = 40;
+  parcelasMaximas = 6;
+  descontoPixDinheiroPercentual = 5;
+  descontoEscolaParceiraPercentual = 10;
+
   // Percentual sempre assinado no backend (+ acréscimo / - desconto) — na UI vira
   // dropdown Soma/Diminui + número sem sinal, o "%" só aparece na exibição depois de salvo.
   formListaOperacao: 'soma' | 'diminui' = 'soma';
@@ -124,6 +133,7 @@ export class ConfiguracoesPaginaComponent implements OnInit {
     private configuracoesService: ConfiguracoesService,
     private produtosService: ProdutosService,
     private vendedoresService: VendedoresService,
+    private condicoesComerciaisService: CondicoesComerciaisService,
     private auth: AuthService,
     private toast: ToastService
   ) {}
@@ -142,6 +152,7 @@ export class ConfiguracoesPaginaComponent implements OnInit {
     this.abaAtiva.set(aba);
     if (aba === 'venda' && this.listasPreco().length === 0) this.carregarListasPreco();
     if (aba === 'metas' && this.vendedoresMetas().length === 0) this.carregarVendedores();
+    if (aba === 'condicoes-comerciais') this.carregarCondicoesComerciais();
   }
 
   carregar() {
@@ -354,6 +365,49 @@ export class ConfiguracoesPaginaComponent implements OnInit {
       error: err => {
         this.salvandoMetasVendedores.set(false);
         this.toast.erroServidor(err, 'Não foi possível salvar as metas por vendedor.');
+      }
+    });
+  }
+
+  carregarCondicoesComerciais() {
+    this.carregandoCondicoesComerciais.set(true);
+    this.condicoesComerciaisService.obter().subscribe({
+      next: res => {
+        const dados = res.dados;
+        if (dados) {
+          this.condicoesComerciaisCadastradas.set(true);
+          this.parcelaMinimaValor = dados.parcelaMinimaValor;
+          this.parcelasMaximas = dados.parcelasMaximas;
+          this.descontoPixDinheiroPercentual = dados.descontoPixDinheiroPercentual;
+          this.descontoEscolaParceiraPercentual = dados.descontoEscolaParceiraPercentual;
+        } else {
+          this.condicoesComerciaisCadastradas.set(false);
+        }
+        this.carregandoCondicoesComerciais.set(false);
+      },
+      error: err => {
+        this.toast.erroServidor(err, 'Não foi possível carregar as condições comerciais.');
+        this.carregandoCondicoesComerciais.set(false);
+      }
+    });
+  }
+
+  salvarCondicoesComerciais() {
+    this.salvandoCondicoesComerciais.set(true);
+    this.condicoesComerciaisService.atualizar({
+      parcelaMinimaValor: this.parcelaMinimaValor,
+      parcelasMaximas: this.parcelasMaximas,
+      descontoPixDinheiroPercentual: this.descontoPixDinheiroPercentual,
+      descontoEscolaParceiraPercentual: this.descontoEscolaParceiraPercentual
+    }).subscribe({
+      next: () => {
+        this.salvandoCondicoesComerciais.set(false);
+        this.condicoesComerciaisCadastradas.set(true);
+        this.toast.sucesso('Condições comerciais salvas.');
+      },
+      error: err => {
+        this.salvandoCondicoesComerciais.set(false);
+        this.toast.erroServidor(err, 'Não foi possível salvar as condições comerciais.');
       }
     });
   }

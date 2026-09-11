@@ -30,6 +30,11 @@ export const routes: Routes = [
           import('./contextos/compras/compras.routes').then(m => m.COMPRAS_ROUTES)
       },
       {
+        path: 'estoque',
+        loadChildren: () =>
+          import('./contextos/estoque/estoque.routes').then(m => m.ESTOQUE_ROUTES)
+      },
+      {
         path: 'albia',
         loadChildren: () =>
           import('./contextos/albia/albia.routes').then(m => m.ALBIA_ROUTES)
@@ -46,8 +51,7 @@ export const routes: Routes = [
       },
       {
         path: 'cotacoes/configuracoes',
-        loadChildren: () =>
-          import('./contextos/cotacao/configuracoes/configuracoes.routes').then(m => m.COTACAO_CONFIGURACOES_ROUTES)
+        redirectTo: 'configuracoes'
       },
       {
         path: 'cadastros/escolas',

@@ -62,13 +62,7 @@ export class SidebarComponent {
       titulo: 'Operacional',
       icone: 'bolt',
       itens: [
-        {
-          label: 'Orçamentos', icone: 'request_quote',
-          subItens: [
-            { label: 'Lista Escolar', rota: '/cotacoes/listas-escolares', icone: 'school' },
-            { label: 'Configurações', rota: '/cotacoes/configuracoes', icone: 'tune' }
-          ]
-        },
+        { label: 'Orçamentos', rota: '/cotacoes/listas-escolares', icone: 'request_quote' },
         { label: 'Estoque',    rota: '/estoque',   icone: 'package_2', permissao: 'estoque:ler' },
         {
           label: 'Compras', icone: 'shopping_cart',

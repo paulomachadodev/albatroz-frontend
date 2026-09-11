@@ -72,29 +72,32 @@
       </div>
 
       <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="font-bold text-slate-900 dark:text-slate-100">Últimas vendas</h3>
-        </div>
-        @if (!carregando() && (resumo()?.ultimasVendas?.length ?? 0) === 0) {
-          <p class="text-sm text-slate-400 py-8 text-center">Nenhuma venda registrada ainda.</p>
+        <h3 class="font-bold text-slate-900 dark:text-slate-100 mb-4">Vendas por forma de pagamento</h3>
+        @if (resumo()!.vendasPorFormaPagamento.length === 0) {
+          <p class="text-sm text-slate-400 py-8 text-center">Nenhuma venda no período.</p>
+        } @else {
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="text-[11px] uppercase text-slate-400 text-left">
+                <th class="pb-2 font-semibold">Forma</th>
+                <th class="pb-2 font-semibold text-right">Qtd.</th>
+                <th class="pb-2 font-semibold text-right">Valor</th>
+                <th class="pb-2 font-semibold text-right">Ticket médio</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (f of resumo()!.vendasPorFormaPagamento; track f.forma) {
+                <tr class="border-t border-slate-100 dark:border-slate-800 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors"
+                    [routerLink]="['/vendas/por-forma-pagamento']" [queryParams]="{ forma: f.forma }">
+                  <td class="py-2 text-slate-700 dark:text-slate-300">{{ f.forma }}</td>
+                  <td class="py-2 text-right text-slate-700 dark:text-slate-300">{{ f.quantidade }}</td>
+                  <td class="py-2 text-right font-semibold text-slate-900 dark:text-slate-100">{{ formatarReais(f.valor) }}</td>
+                  <td class="py-2 text-right text-slate-500 dark:text-slate-400">{{ formatarReais(f.ticketMedio) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
         }
-        <ul class="space-y-3">
-          @for (v of resumo()?.ultimasVendas; track v.numero) {
-            <li class="flex items-start gap-3 p-2 -mx-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
-              <div class="size-8 rounded-lg flex items-center justify-center text-[11px] font-bold shrink-0 bg-primary/10 text-primary">
-                {{ iniciais(v.cliente) }}
-              </div>
-              <div class="min-w-0 flex-1">
-                <p class="text-sm text-slate-700 dark:text-slate-300 leading-snug">
-                  <span class="font-semibold text-slate-900 dark:text-slate-100">{{ v.cliente }}</span>
-                  <span class="text-slate-500 dark:text-slate-400"> · pedido #{{ v.numero }}</span>
-                </p>
-                <p class="text-[11px] text-slate-400 mt-0.5">{{ formatarData(v.data) }}@if (v.vendedor) { · {{ v.vendedor }} }</p>
-              </div>
-              <span class="text-sm font-bold text-slate-900 dark:text-slate-100 shrink-0">{{ formatarReais(v.valor) }}</span>
-            </li>
-          }
-        </ul>
       </div>
     </div>
 
@@ -181,32 +184,29 @@
         </div>
 
         <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-          <h3 class="font-bold text-slate-900 dark:text-slate-100 mb-4">Vendas por forma de pagamento</h3>
-          @if (resumo()!.vendasPorFormaPagamento.length === 0) {
-            <p class="text-sm text-slate-400 py-8 text-center">Nenhuma venda no período.</p>
-          } @else {
-            <table class="w-full text-sm">
-              <thead>
-                <tr class="text-[11px] uppercase text-slate-400 text-left">
-                  <th class="pb-2 font-semibold">Forma</th>
-                  <th class="pb-2 font-semibold text-right">Qtd.</th>
-                  <th class="pb-2 font-semibold text-right">Valor</th>
-                  <th class="pb-2 font-semibold text-right">Ticket médio</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (f of resumo()!.vendasPorFormaPagamento; track f.forma) {
-                  <tr class="border-t border-slate-100 dark:border-slate-800 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors"
-                      [routerLink]="['/vendas/por-forma-pagamento']" [queryParams]="{ forma: f.forma }">
-                    <td class="py-2 text-slate-700 dark:text-slate-300">{{ f.forma }}</td>
-                    <td class="py-2 text-right text-slate-700 dark:text-slate-300">{{ f.quantidade }}</td>
-                    <td class="py-2 text-right font-semibold text-slate-900 dark:text-slate-100">{{ formatarReais(f.valor) }}</td>
-                    <td class="py-2 text-right text-slate-500 dark:text-slate-400">{{ formatarReais(f.ticketMedio) }}</td>
-                  </tr>
-                }
-              </tbody>
-            </table>
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-bold text-slate-900 dark:text-slate-100">Últimas vendas</h3>
+          </div>
+          @if (!carregando() && (resumo()?.ultimasVendas?.length ?? 0) === 0) {
+            <p class="text-sm text-slate-400 py-8 text-center">Nenhuma venda registrada ainda.</p>
           }
+          <ul class="space-y-3">
+            @for (v of resumo()?.ultimasVendas; track v.numero) {
+              <li class="flex items-start gap-3 p-2 -mx-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                <div class="size-8 rounded-lg flex items-center justify-center text-[11px] font-bold shrink-0 bg-primary/10 text-primary">
+                  {{ iniciais(v.cliente) }}
+                </div>
+                <div class="min-w-0 flex-1">
+                  <p class="text-sm text-slate-700 dark:text-slate-300 leading-snug">
+                    <span class="font-semibold text-slate-900 dark:text-slate-100">{{ v.cliente }}</span>
+                    <span class="text-slate-500 dark:text-slate-400"> · pedido #{{ v.numero }}</span>
+                  </p>
+                  <p class="text-[11px] text-slate-400 mt-0.5">{{ formatarData(v.data) }}@if (v.vendedor) { · {{ v.vendedor }} }</p>
+                </div>
+                <span class="text-sm font-bold text-slate-900 dark:text-slate-100 shrink-0">{{ formatarReais(v.valor) }}</span>
+              </li>
+            }
+          </ul>
         </div>
 
         <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">

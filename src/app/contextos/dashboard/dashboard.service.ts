@@ -64,6 +64,11 @@ export interface ContasAPagarResumo {
   quantidadeVenceHoje: number;
 }
 
+export interface CategoriaVenda {
+  categoria: string;
+  valor: number;
+}
+
 export interface DashboardResumo {
   faturamentoMes: number;
   faturamentoMesAnterior: number;
@@ -79,6 +84,7 @@ export interface DashboardResumo {
   vendasPorFormaPagamento: FormaPagamento[];
   curvaAbc: CurvaAbcResumo;
   contasAPagar: ContasAPagarResumo;
+  vendasPorCategoria: CategoriaVenda[];
 }
 
 @Injectable({ providedIn: 'root' })

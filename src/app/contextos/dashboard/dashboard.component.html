@@ -99,7 +99,7 @@
     </div>
 
     @if (!carregando() && resumo()) {
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
         <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
           <div class="flex items-center justify-between mb-1">
@@ -242,6 +242,36 @@
               </li>
             }
           </ul>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <div class="flex items-center justify-between mb-1">
+            <h3 class="font-bold text-slate-900 dark:text-slate-100">Vendas por categoria</h3>
+            @if (categoriaPaiSelecionada()) {
+              <button type="button" (click)="voltarCategoriaPai()" class="text-xs font-semibold text-primary hover:underline flex items-center gap-0.5">
+                <span class="material-symbols-outlined text-[14px]">arrow_back</span> voltar
+              </button>
+            }
+          </div>
+          <p class="text-[11px] text-slate-400 mb-4">
+            @if (categoriaPaiSelecionada()) {
+              Subcategorias de <span class="font-semibold">{{ categoriaPaiSelecionada() }}</span> — mês atual.
+            } @else {
+              Top 10 categorias — mês atual. Clique numa barra pra ver as subcategorias.
+            }
+          </p>
+          @if (carregandoSubcategoria()) {
+            <div class="h-48 animate-pulse bg-slate-100 dark:bg-slate-800 rounded-lg"></div>
+          } @else if (categoriaItens().length === 0) {
+            <p class="text-sm text-slate-400 py-8 text-center">Nenhuma venda no período.</p>
+          } @else {
+            <app-grafico-barras
+              [labels]="categoriaLabels()"
+              [datasets]="categoriaDatasets()"
+              formatoValor="reais"
+              altura="192px"
+              (barraClicada)="aoClicarCategoria($event)"></app-grafico-barras>
+          }
         </div>
 
         <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">

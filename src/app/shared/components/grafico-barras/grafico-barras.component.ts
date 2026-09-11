@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, input } from '@angular/core';
+import { Component, computed, effect, inject, input, output } from '@angular/core';
 
 import { ChartModule } from 'primeng/chart';
 import { ThemeService } from '../../../core/theme/theme.service';
@@ -24,8 +24,18 @@ export class GraficoBarrasComponent {
   formatoValor = input<'numero' | 'reais'>('numero');
   altura = input<string>('192px');
 
+  barraClicada = output<{ label: string; index: number }>();
+
   constructor() {
     effect(() => this.theme.temaAtual());
+  }
+
+  aoSelecionarDado(evento: { element?: { index: number } }): void {
+    const indice = evento.element?.index;
+    if (indice == null) return;
+    const label = this.labels()[indice];
+    if (label == null) return;
+    this.barraClicada.emit({ label, index: indice });
   }
 
   private formatar(valor: number): string {

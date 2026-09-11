@@ -4,6 +4,7 @@ import { ApiService } from '../../../core/http/api.service';
 import { Resultado } from '../../../core/models';
 import { Paginacao, ParametrosPaginacao } from '../../../core/models/paginacao.model';
 import { VendaPagamento } from '../models/venda-pagamento.model';
+import { CategoriaVenda } from '../../dashboard/dashboard.service';
 
 @Injectable({ providedIn: 'root' })
 export class VendasService {
@@ -13,5 +14,9 @@ export class VendasService {
 
   listarPorFormaPagamento(forma: string | null, paginacao: ParametrosPaginacao): Observable<Resultado<Paginacao<VendaPagamento>>> {
     return this.api.getPaginado<VendaPagamento>(`${this.endpoint}/por-forma-pagamento`, paginacao, { forma });
+  }
+
+  listarSubcategorias(categoriaPai: string): Observable<Resultado<CategoriaVenda[]>> {
+    return this.api.get<CategoriaVenda[]>(`${this.endpoint}/por-categoria/subcategorias`, { categoriaPai });
   }
 }

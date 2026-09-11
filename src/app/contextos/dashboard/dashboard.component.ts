@@ -4,8 +4,10 @@ import { RouterLink } from '@angular/router';
 import { ChartModule } from 'primeng/chart';
 import { AuthService } from '../../core/auth/auth.service';
 import { ThemeService } from '../../core/theme/theme.service';
-import { DashboardService, DashboardResumo, GranularidadeDashboard } from './dashboard.service';
+import { DashboardService, DashboardResumo, GranularidadeDashboard, CategoriaVenda } from './dashboard.service';
 import { ToastService } from '../../core/feedback/toast.service';
+import { GraficoBarrasComponent } from '../../shared/components/grafico-barras/grafico-barras.component';
+import { VendasService } from '../vendas/services/vendas.service';
 
 interface Kpi {
   titulo: string;
@@ -20,7 +22,7 @@ interface Kpi {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, ChartModule, RouterLink],
+  imports: [CommonModule, ChartModule, RouterLink, GraficoBarrasComponent],
   templateUrl: './dashboard.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
@@ -28,6 +30,7 @@ export class DashboardComponent implements OnInit {
   private auth = inject(AuthService);
   private theme = inject(ThemeService);
   private dashboardService = inject(DashboardService);
+  private vendasService = inject(VendasService);
   private toast = inject(ToastService);
 
   carregando = signal(true);
@@ -243,4 +246,35 @@ export class DashboardComponent implements OnInit {
   });
 
   curvaAbcTotal = computed(() => this.curvaAbcItens().reduce((soma, item) => soma + item.valor, 0));
+
+  categoriaPaiSelecionada = signal<string | null>(null);
+  subcategorias = signal<CategoriaVenda[] | null>(null);
+  carregandoSubcategoria = signal(false);
+
+  categoriaItens = computed<CategoriaVenda[]>(() => this.subcategorias() ?? this.resumo()?.vendasPorCategoria ?? []);
+  categoriaLabels = computed(() => this.categoriaItens().map(c => c.categoria));
+  categoriaDatasets = computed(() => [{ label: 'Vendas', data: this.categoriaItens().map(c => c.valor), color: '#1754cf' }]);
+
+  aoClicarCategoria(evento: { label: string }): void {
+    if (this.categoriaPaiSelecionada()) return;
+
+    this.categoriaPaiSelecionada.set(evento.label);
+    this.carregandoSubcategoria.set(true);
+    this.vendasService.listarSubcategorias(evento.label).subscribe({
+      next: res => {
+        this.subcategorias.set(res.dados ?? []);
+        this.carregandoSubcategoria.set(false);
+      },
+      error: err => {
+        this.toast.erroServidor(err, 'Não foi possível carregar as subcategorias.');
+        this.subcategorias.set([]);
+        this.carregandoSubcategoria.set(false);
+      }
+    });
+  }
+
+  voltarCategoriaPai(): void {
+    this.categoriaPaiSelecionada.set(null);
+    this.subcategorias.set(null);
+  }
 }

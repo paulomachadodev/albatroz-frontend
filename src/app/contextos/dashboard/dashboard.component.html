@@ -19,7 +19,9 @@
     } @else {
       <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
         @for (k of kpis(); track k.titulo) {
-          <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <div [routerLink]="k.rota ?? null"
+               class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm"
+               [class.cursor-pointer]="k.rota" [class.hover:border-primary]="k.rota" [class.transition-colors]="k.rota">
             <div class="flex justify-between items-start mb-4">
               <span class="material-symbols-outlined p-2 rounded-lg" [ngClass]="k.cor">{{ k.icone }}</span>
               @if (k.delta) {
@@ -32,7 +34,7 @@
             </div>
             <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">{{ k.titulo }}</p>
             <p class="text-2xl font-semibold mt-1 text-slate-900 dark:text-slate-100">{{ k.valor }}</p>
-            <p class="text-[11px] text-slate-400 mt-1">vs mês anterior</p>
+            <p class="text-[11px] text-slate-400 mt-1">{{ k.rota ? 'ver detalhe' : 'vs mês anterior' }}</p>
           </div>
         }
       </div>

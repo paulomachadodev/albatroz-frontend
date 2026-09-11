@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { ChartModule } from 'primeng/chart';
 import { AuthService } from '../../core/auth/auth.service';
 import { ThemeService } from '../../core/theme/theme.service';
@@ -13,12 +14,13 @@ interface Kpi {
   positivo: boolean;
   icone:  string;
   cor:    string;
+  rota?:  string;
 }
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, ChartModule],
+  imports: [CommonModule, ChartModule, RouterLink],
   templateUrl: './dashboard.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
@@ -104,7 +106,7 @@ export class DashboardComponent implements OnInit {
       {
         titulo: 'Risco de ruptura', valor: `${r.produtosEstoqueCritico} produto(s)`,
         delta: r.produtosEstoqueCritico > 0 ? 'atenção' : 'ok', positivo: r.produtosEstoqueCritico === 0,
-        icone: 'warning', cor: 'text-rose-600 bg-rose-100 dark:bg-rose-900/40'
+        icone: 'warning', cor: 'text-rose-600 bg-rose-100 dark:bg-rose-900/40', rota: '/estoque'
       }
     ];
   });

@@ -59,9 +59,9 @@
         </div>
 
         @if (carregando()) {
-          <div class="h-64 animate-pulse bg-slate-100 dark:bg-slate-800 rounded-lg"></div>
+          <div class="h-44 animate-pulse bg-slate-100 dark:bg-slate-800 rounded-lg"></div>
         } @else if (chartData()) {
-          <div class="h-64">
+          <div class="h-44">
             <p-chart type="line" [data]="chartData()" [options]="chartOptions()" [height]="'100%'"></p-chart>
           </div>
         } @else {

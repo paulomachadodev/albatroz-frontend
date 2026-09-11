@@ -51,7 +51,7 @@
           <h3 class="font-bold text-slate-900 dark:text-slate-100">Capital parado</h3>
           <span class="text-lg font-bold text-slate-900 dark:text-slate-100">{{ formatarReais(capitalParadoTotal()) }}</span>
         </div>
-        <p class="text-[11px] text-slate-400 mb-4">Soma do custo de estoque parado em Sem giro, Candidatos a não repor e Candidatos a inativação — Críticos fica de fora por ser estoque saudável.</p>
+        <p class="text-[11px] text-slate-400 mb-4">Custo de estoque parado (SKUs únicos) considerando Sem giro, Candidatos a não repor e Candidatos a inativação — Críticos fica de fora por ser estoque saudável. Um produto que aparece em mais de uma categoria só entra uma vez no total.</p>
         <ul class="space-y-3">
           @if (resumo(); as r) {
             <li>

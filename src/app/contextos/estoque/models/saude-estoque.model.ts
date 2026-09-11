@@ -20,6 +20,8 @@ export interface SaudeEstoqueResumo {
   candidatosParaComprar: BlocoResumoSaudeEstoque;
   candidatosInativacao: BlocoResumoSaudeEstoque;
   criticos: BlocoResumoSaudeEstoque;
+  skusParadosTotal: number;
+  capitalParadoTotal: number;
 }
 
 export type CorteGiroCritico = 20 | 40 | 60;

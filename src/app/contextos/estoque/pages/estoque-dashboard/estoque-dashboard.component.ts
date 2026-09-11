@@ -65,11 +65,7 @@ export class EstoqueDashboardComponent implements OnInit {
   resumo = signal<SaudeEstoqueResumo | null>(null);
   corteGiroCritico = signal<CorteGiroCritico>(20);
 
-  capitalParadoTotal = computed(() => {
-    const r = this.resumo();
-    if (!r) return 0;
-    return r.semGiro.capitalParadoCusto + r.candidatosParaComprar.capitalParadoCusto + r.candidatosInativacao.capitalParadoCusto;
-  });
+  capitalParadoTotal = computed(() => this.resumo()?.capitalParadoTotal ?? 0);
 
   constructor(private saudeEstoqueService: SaudeEstoqueService, private toast: ToastService) {}
 

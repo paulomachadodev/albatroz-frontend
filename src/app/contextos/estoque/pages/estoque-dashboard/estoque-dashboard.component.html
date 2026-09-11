@@ -1,0 +1,93 @@
+<div class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark px-4 sm:px-6 lg:px-8 xl:px-10 py-6 lg:py-8">
+  <div class="w-full space-y-8">
+
+    <app-breadcrumb [itens]="[{label:'Início',rota:'/dashboard'},{label:'Estoque'}]"></app-breadcrumb>
+
+    <app-page-header titulo="Saúde de Estoque" subtitulo="Produtos sem giro, candidatos a inativação e itens críticos que não podem faltar."></app-page-header>
+
+    @if (carregando()) {
+      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+        @for (i of [0,1,2,3]; track i) {
+          <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm h-32 animate-pulse"></div>
+        }
+      </div>
+    } @else {
+      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+        @for (card of cards; track card.chave) {
+          <a [routerLink]="card.rota"
+             class="block bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm hover:border-primary transition-colors cursor-pointer">
+            <div class="flex justify-between items-start mb-4">
+              <span class="material-symbols-outlined p-2 rounded-lg" [class]="card.cor">{{ card.icone }}</span>
+              <span class="material-symbols-outlined text-slate-300 dark:text-slate-600 text-[18px]">chevron_right</span>
+            </div>
+            <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">{{ card.titulo }}</p>
+            <p class="text-2xl font-semibold mt-1 text-slate-900 dark:text-slate-100">{{ bloco(card.chave).quantidadeSkus }} SKU(s)</p>
+            <p class="text-xs text-slate-400 mt-1">{{ formatarReais(bloco(card.chave).capitalParadoCusto) }} em custo parado</p>
+
+            @if (card.chave === 'criticos') {
+              <div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800" (click)="$event.preventDefault(); $event.stopPropagation()">
+                <p class="text-[11px] font-semibold text-slate-500 mb-1.5">Corte de giro crítico</p>
+                <div class="flex gap-1">
+                  @for (opcao of opcoesCorteGiroCritico; track opcao) {
+                    <button type="button" (click)="aoMudarCorte(opcao)"
+                            class="px-2.5 py-1 rounded-lg text-xs font-bold transition-colors"
+                            [class]="corteGiroCritico() === opcao
+                              ? 'bg-primary text-white'
+                              : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'">
+                      {{ opcao }}%
+                    </button>
+                  }
+                </div>
+              </div>
+            } @else {
+              <p class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-400">{{ card.descricao }}</p>
+            }
+          </a>
+        }
+      </div>
+
+      <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <div class="flex items-center justify-between mb-1">
+          <h3 class="font-bold text-slate-900 dark:text-slate-100">Capital parado</h3>
+          <span class="text-lg font-bold text-slate-900 dark:text-slate-100">{{ formatarReais(capitalParadoTotal()) }}</span>
+        </div>
+        <p class="text-[11px] text-slate-400 mb-4">Soma do custo de estoque parado em Sem giro, Candidatos a não repor e Candidatos a inativação — Críticos fica de fora por ser estoque saudável.</p>
+        <ul class="space-y-3">
+          @if (resumo(); as r) {
+            <li>
+              <div class="flex items-center justify-between text-sm mb-1">
+                <span class="font-medium text-slate-700 dark:text-slate-300">Sem giro</span>
+                <span class="font-semibold text-slate-900 dark:text-slate-100">{{ formatarReais(r.semGiro.capitalParadoCusto) }}</span>
+              </div>
+              <div class="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                <div class="h-full rounded-full bg-slate-400 transition-all duration-700"
+                     [style.width.%]="capitalParadoTotal() > 0 ? (r.semGiro.capitalParadoCusto / capitalParadoTotal()) * 100 : 0"></div>
+              </div>
+            </li>
+            <li>
+              <div class="flex items-center justify-between text-sm mb-1">
+                <span class="font-medium text-slate-700 dark:text-slate-300">Candidatos a não repor</span>
+                <span class="font-semibold text-slate-900 dark:text-slate-100">{{ formatarReais(r.candidatosParaComprar.capitalParadoCusto) }}</span>
+              </div>
+              <div class="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                <div class="h-full rounded-full bg-amber-500 transition-all duration-700"
+                     [style.width.%]="capitalParadoTotal() > 0 ? (r.candidatosParaComprar.capitalParadoCusto / capitalParadoTotal()) * 100 : 0"></div>
+              </div>
+            </li>
+            <li>
+              <div class="flex items-center justify-between text-sm mb-1">
+                <span class="font-medium text-slate-700 dark:text-slate-300">Candidatos a inativação</span>
+                <span class="font-semibold text-slate-900 dark:text-slate-100">{{ formatarReais(r.candidatosInativacao.capitalParadoCusto) }}</span>
+              </div>
+              <div class="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                <div class="h-full rounded-full bg-violet-500 transition-all duration-700"
+                     [style.width.%]="capitalParadoTotal() > 0 ? (r.candidatosInativacao.capitalParadoCusto / capitalParadoTotal()) * 100 : 0"></div>
+              </div>
+            </li>
+          }
+        </ul>
+      </div>
+    }
+
+  </div>
+</div>

@@ -1,0 +1,145 @@
+<div class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark px-4 sm:px-6 lg:px-8 xl:px-10 py-6 lg:py-8">
+  <div class="w-full space-y-8">
+
+    <app-breadcrumb [itens]="[{label:'Início',rota:'/dashboard'},{label:'Estoque',rota:'/estoque'},{label:config.titulo}]"></app-breadcrumb>
+
+    <app-page-header [titulo]="config.titulo" [subtitulo]="config.subtitulo"></app-page-header>
+
+    <app-listagem-paginada
+      [itens]="itens()"
+      [carregando]="carregando()"
+      [totalRegistros]="totalRegistros()"
+      [paginaAtual]="paginaAtual()"
+      [totalPaginas]="totalPaginas()"
+      [tamanhoPagina]="tamanhoPagina()"
+      tituloVazio="Nenhum produto nessa categoria."
+      (paginaMudou)="aoMudarPagina($event)"
+      (tamanhoPaginaMudou)="aoMudarTamanhoPagina($event)">
+
+      @if (categoria === 'criticos') {
+        <div filtros class="flex items-center gap-2">
+          <span class="text-xs font-semibold text-slate-500">Corte de giro crítico:</span>
+          <div class="flex gap-1">
+            @for (opcao of opcoesCorteGiroCritico; track opcao) {
+              <button type="button" (click)="aoMudarCorte(opcao)"
+                      class="px-3 py-1 rounded-lg text-xs font-bold transition-colors"
+                      [class]="corteGiroCritico() === opcao
+                        ? 'bg-primary text-white'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'">
+                {{ opcao }}%
+              </button>
+            }
+          </div>
+        </div>
+      }
+
+      @if (config.permiteInativar && qtdSelecionados() > 0) {
+        <div entreFiltrosEGrid class="mt-6 flex items-center gap-4">
+          <div class="flex items-center gap-4 bg-primary/10 border border-primary/20 rounded-xl px-4 py-3">
+            <p class="text-sm font-bold text-primary">{{ qtdSelecionados() }} produto(s) selecionado(s)</p>
+            <div class="flex gap-2">
+              <button (click)="abrirConfirmacaoInativarLote()"
+                      class="px-4 py-2 rounded-lg bg-rose-600 text-white font-bold text-xs hover:bg-rose-700 transition-all">
+                Inativar {{ qtdSelecionados() }} selecionado(s)
+              </button>
+              <button (click)="limparSelecao()"
+                      class="px-4 py-2 rounded-lg bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-xs hover:bg-slate-100 dark:hover:bg-slate-700 transition-all">
+                Limpar seleção
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+
+      <ng-template #cabecalho>
+        <tr>
+          @if (config.permiteInativar) {
+            <th class="px-6 py-4 w-10">
+              <app-toggle [valor]="todosDaPaginaSelecionados()" [label]="''"
+                          (valorMudou)="aoAlternarTodosDaPagina($event)"></app-toggle>
+            </th>
+          }
+          <th class="px-6 py-4">Código</th>
+          <th class="px-6 py-4">Nome</th>
+          <th class="px-6 py-4">Marca</th>
+          <th class="px-6 py-4 text-right">Estoque Atual</th>
+          <th class="px-6 py-4">Última Venda</th>
+          <th class="px-6 py-4">{{ categoria === 'criticos' ? '% Dias com Venda' : 'Motivo' }}</th>
+          @if (config.permiteInativar) {
+            <th class="px-6 py-4 text-right">Ações</th>
+          }
+        </tr>
+      </ng-template>
+
+      <ng-template #linha let-item>
+        <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+          @if (config.permiteInativar) {
+            <td class="px-6 py-4" (click)="$event.stopPropagation()">
+              <input type="checkbox" [checked]="estaSelecionado(item)" (change)="aoAlternarSelecao(item, $any($event.target).checked)"
+                     class="size-4 rounded border-slate-300 dark:border-slate-600 text-primary focus:ring-primary/30"/>
+            </td>
+          }
+          <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 cursor-pointer" (click)="abrirProduto(item)">{{ item.codigo }}</td>
+          <td class="px-6 py-4 text-sm font-bold text-slate-900 dark:text-slate-100 cursor-pointer" (click)="abrirProduto(item)">{{ item.nome }}</td>
+          <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 cursor-pointer" (click)="abrirProduto(item)">{{ item.marca || '-' }}</td>
+          <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 text-right cursor-pointer" (click)="abrirProduto(item)">{{ item.estoqueAtual }}</td>
+          <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 cursor-pointer" (click)="abrirProduto(item)">{{ formatarData(item.dataUltimaVenda) }}</td>
+          <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 cursor-pointer" (click)="abrirProduto(item)">
+            {{ categoria === 'criticos' ? formatarPercentual(item.pctDiasComVenda) : (item.motivo || '-') }}
+          </td>
+          @if (config.permiteInativar) {
+            <td class="px-6 py-4 text-right">
+              <button (click)="abrirConfirmacaoInativarIndividual(item)" class="text-xs font-bold text-primary hover:underline">Inativar</button>
+            </td>
+          }
+        </tr>
+      </ng-template>
+
+    </app-listagem-paginada>
+
+  </div>
+</div>
+
+<app-modal [aberto]="produtoParaInativar() !== null" titulo="Inativar produto" tamanho="sm" (fechar)="fecharConfirmacaoInativarIndividual()">
+  @if (produtoParaInativar(); as produto) {
+    <div class="px-6 pb-6 space-y-4">
+      <p class="text-sm text-slate-600 dark:text-slate-400">
+        Tem certeza que deseja inativar <span class="font-bold text-slate-900 dark:text-slate-100">{{ produto.nome }}</span> ({{ produto.codigo }})?
+      </p>
+      <p class="text-xs text-amber-600 dark:text-amber-500 bg-amber-50 dark:bg-amber-900/20 rounded-lg px-3 py-2">
+        O produto também será marcado como inativo no Tiny e sai do catálogo.
+      </p>
+      <div class="flex gap-2">
+        <button type="button" (click)="fecharConfirmacaoInativarIndividual()" [disabled]="inativando()"
+                class="flex-1 px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50 transition-all">
+          Cancelar
+        </button>
+        <button type="button" (click)="confirmarInativarIndividual()" [disabled]="inativando()"
+                class="flex-1 px-4 py-2 rounded-lg bg-rose-600 text-white font-bold text-sm hover:bg-rose-700 disabled:opacity-50 transition-all">
+          {{ inativando() ? 'Inativando...' : 'Inativar' }}
+        </button>
+      </div>
+    </div>
+  }
+</app-modal>
+
+<app-modal [aberto]="modalLoteAberto()" titulo="Inativar produtos selecionados" tamanho="sm" (fechar)="fecharConfirmacaoInativarLote()">
+  <div class="px-6 pb-6 space-y-4">
+    <p class="text-sm text-slate-600 dark:text-slate-400">
+      Tem certeza que deseja inativar <span class="font-bold text-slate-900 dark:text-slate-100">{{ qtdSelecionados() }} produto(s)</span> selecionado(s)?
+    </p>
+    <p class="text-xs text-amber-600 dark:text-amber-500 bg-amber-50 dark:bg-amber-900/20 rounded-lg px-3 py-2">
+      Os produtos também serão marcados como inativos no Tiny e saem do catálogo.
+    </p>
+    <div class="flex gap-2">
+      <button type="button" (click)="fecharConfirmacaoInativarLote()" [disabled]="inativando()"
+              class="flex-1 px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50 transition-all">
+        Cancelar
+      </button>
+      <button type="button" (click)="confirmarInativarLote()" [disabled]="inativando()"
+              class="flex-1 px-4 py-2 rounded-lg bg-rose-600 text-white font-bold text-sm hover:bg-rose-700 disabled:opacity-50 transition-all">
+        {{ inativando() ? 'Inativando...' : 'Inativar' }}
+      </button>
+    </div>
+  </div>
+</app-modal>

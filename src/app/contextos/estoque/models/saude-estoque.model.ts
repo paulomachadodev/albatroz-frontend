@@ -10,11 +10,23 @@ export interface ProdutoSaudeEstoque {
   pctDiasComVenda: number | null;
 }
 
-export interface SaudeEstoque {
-  semGiro: ProdutoSaudeEstoque[];
-  candidatosParaComprar: ProdutoSaudeEstoque[];
-  candidatosInativacao: ProdutoSaudeEstoque[];
-  criticos: ProdutoSaudeEstoque[];
+export interface BlocoResumoSaudeEstoque {
+  quantidadeSkus: number;
+  capitalParadoCusto: number;
+}
+
+export interface SaudeEstoqueResumo {
+  semGiro: BlocoResumoSaudeEstoque;
+  candidatosParaComprar: BlocoResumoSaudeEstoque;
+  candidatosInativacao: BlocoResumoSaudeEstoque;
+  criticos: BlocoResumoSaudeEstoque;
 }
 
 export type CorteGiroCritico = 20 | 40 | 60;
+
+export type CategoriaSaudeEstoque = 'sem-giro' | 'candidatos-parar-comprar' | 'candidatos-inativacao' | 'criticos';
+
+export interface ResultadoInativacaoLote {
+  sucesso: number;
+  falharam: number[];
+}

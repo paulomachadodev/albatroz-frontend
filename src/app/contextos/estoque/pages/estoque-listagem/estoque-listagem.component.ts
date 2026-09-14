@@ -25,6 +25,7 @@ export class EstoqueListagemComponent implements OnInit {
 
   categoria!: CategoriaSaudeEstoque;
   config!: ConfigCategoriaSaudeEstoque;
+  faixaAging = '';
 
   carregando = signal(true);
   itens = signal<ProdutoSaudeEstoque[]>([]);
@@ -48,8 +49,21 @@ export class EstoqueListagemComponent implements OnInit {
 
   ngOnInit() {
     this.categoria = this.route.snapshot.data['categoria'];
-    this.config = CONFIGS_SAUDE_ESTOQUE[this.categoria];
-    this.carregar(1);
+    this.config = { ...CONFIGS_SAUDE_ESTOQUE[this.categoria] };
+
+    if (this.categoria !== 'aging') {
+      this.carregar(1);
+      return;
+    }
+
+    this.route.paramMap.subscribe(params => {
+      this.faixaAging = params.get('faixa') ?? '';
+      this.config = {
+        ...CONFIGS_SAUDE_ESTOQUE[this.categoria],
+        descricao: `Produtos com estoque disponível, parados há ${this.faixaAging} dias sem venda.`
+      };
+      this.carregar(1);
+    });
   }
 
   carregar(pagina: number) {
@@ -58,6 +72,7 @@ export class EstoqueListagemComponent implements OnInit {
       .listar(this.categoria, { pagina, tamanho: this.tamanhoPagina() }, {
         corteGiroCritico: this.corteGiroCritico(),
         janelaDias: this.janelaRuptura(),
+        faixaAging: this.faixaAging,
         ordenacao: this.ordenacaoAtual()
       })
       .subscribe({

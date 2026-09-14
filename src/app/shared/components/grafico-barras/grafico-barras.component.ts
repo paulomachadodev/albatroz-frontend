@@ -21,6 +21,7 @@ export class GraficoBarrasComponent {
   labels = input<string[]>([]);
   datasets = input<DatasetGraficoBarras[]>([]);
   stacked = input<boolean>(false);
+  horizontal = input<boolean>(false);
   formatoValor = input<'numero' | 'reais'>('numero');
   altura = input<string>('192px');
 
@@ -64,7 +65,15 @@ export class GraficoBarrasComponent {
     const corGrade = escuro ? '#334155' : '#e2e8f0';
     const mostrarLegenda = this.datasets().length > 1;
 
+    const eixoCategoria = { stacked: this.stacked(), ticks: { color: corTexto, font: { size: 10 } }, grid: { display: false } };
+    const eixoValor = {
+      stacked: this.stacked(),
+      ticks: { color: corTexto, font: { size: 10 }, callback: (valor: number) => this.formatar(valor) },
+      grid: { color: corGrade }
+    };
+
     return {
+      indexAxis: (this.horizontal() ? 'y' : 'x') as 'x' | 'y',
       responsive: true,
       maintainAspectRatio: false,
       animation: { duration: 300 },
@@ -77,27 +86,14 @@ export class GraficoBarrasComponent {
         },
         tooltip: {
           callbacks: {
-            label: (ctx: { dataset: { label?: string }; parsed: { y: number } }) =>
-              `${ctx.dataset.label ?? ''}: ${this.formatar(ctx.parsed.y)}`
+            label: (ctx: { dataset: { label?: string }; parsed: { x: number; y: number } }) =>
+              `${ctx.dataset.label ?? ''}: ${this.formatar(this.horizontal() ? ctx.parsed.x : ctx.parsed.y)}`
           }
         }
       },
-      scales: {
-        x: {
-          stacked: this.stacked(),
-          ticks: { color: corTexto, font: { size: 10 } },
-          grid: { display: false }
-        },
-        y: {
-          stacked: this.stacked(),
-          ticks: {
-            color: corTexto,
-            font: { size: 10 },
-            callback: (valor: number) => this.formatar(valor)
-          },
-          grid: { color: corGrade }
-        }
-      }
+      scales: this.horizontal()
+        ? { x: eixoValor, y: eixoCategoria }
+        : { x: eixoCategoria, y: eixoValor }
     };
   });
 }

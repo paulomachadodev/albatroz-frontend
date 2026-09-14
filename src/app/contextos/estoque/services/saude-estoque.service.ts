@@ -28,6 +28,7 @@ export class SaudeEstoqueService {
     opcoes?: {
       corteGiroCritico?: CorteGiroCritico;
       janelaDias?: JanelaRuptura;
+      faixaAging?: string;
       ordenacao?: OrdenacaoSaudeEstoque | null;
     }
   ): Observable<Resultado<Paginacao<ProdutoSaudeEstoque>>> {
@@ -38,6 +39,7 @@ export class SaudeEstoqueService {
       filtros['ordenarPor'] = opcoes.ordenacao.campo;
       filtros['direcao'] = opcoes.ordenacao.direcao;
     }
-    return this.api.getPaginado<ProdutoSaudeEstoque>(`${this.endpoint}/saude-estoque/${categoria}`, paginacao, filtros);
+    const segmento = categoria === 'aging' ? `aging/${encodeURIComponent(opcoes?.faixaAging ?? '')}` : categoria;
+    return this.api.getPaginado<ProdutoSaudeEstoque>(`${this.endpoint}/saude-estoque/${segmento}`, paginacao, filtros);
   }
 }

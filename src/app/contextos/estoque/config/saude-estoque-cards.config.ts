@@ -28,7 +28,7 @@ export const CONFIGS_SAUDE_ESTOQUE: Record<CategoriaSaudeEstoque, ConfigCategori
   },
   'candidatos-parar-comprar': {
     titulo: 'Candidatos a não repor',
-    descricao: 'Sem venda há 90+ dias, mas ainda tem estoque — deixar vender o que tem antes de comprar mais.',
+    descricao: 'Sem venda há 180+ dias, mas ainda tem estoque — deixar vender o que tem antes de comprar mais.',
     icone: 'pause_circle',
     cor: 'text-amber-600 bg-amber-100 dark:bg-amber-900/40',
     rota: '/estoque/candidatos-parar-comprar',
@@ -36,7 +36,7 @@ export const CONFIGS_SAUDE_ESTOQUE: Record<CategoriaSaudeEstoque, ConfigCategori
   },
   'sem-giro': {
     titulo: 'Sem giro',
-    descricao: 'Sem venda há 90+ dias, com estoque disponível.',
+    descricao: 'Sem venda entre 90 e 180 dias, com estoque disponível — watchlist antes de virar candidato a não repor.',
     icone: 'trending_down',
     cor: 'text-slate-600 bg-slate-100 dark:bg-slate-800',
     rota: '/estoque/sem-giro',
@@ -49,5 +49,13 @@ export const CONFIGS_SAUDE_ESTOQUE: Record<CategoriaSaudeEstoque, ConfigCategori
     cor: 'text-violet-600 bg-violet-100 dark:bg-violet-900/40',
     rota: '/estoque/candidatos-inativacao',
     permiteSelecao: true
+  },
+  aging: {
+    titulo: 'Aging de capital parado',
+    descricao: 'Estoque disponível agrupado por dias desde a última venda.',
+    icone: 'hourglass_bottom',
+    cor: 'text-orange-600 bg-orange-100 dark:bg-orange-900/40',
+    rota: '/estoque/aging',
+    permiteSelecao: false
   }
 };

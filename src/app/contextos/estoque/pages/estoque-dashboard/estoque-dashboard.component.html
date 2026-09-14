@@ -58,11 +58,10 @@
           <div class="relative w-full max-w-xs mx-auto" style="height: 170px">
             <p-chart type="doughnut" [data]="gaugeData()" [options]="gaugeOptions" [plugins]="gaugePlugins" [style]="{ width: '100%', height: '100%' }"></p-chart>
           </div>
-          <div class="flex justify-between max-w-xs mx-auto -mt-2 px-2 text-[10px] text-slate-400">
-            <span>0%</span>
-            <span>70%</span>
-            <span>130%</span>
-            <span>200%+</span>
+          <div class="relative max-w-xs mx-auto -mt-2 h-4">
+            @for (tick of ticksGauge; track tick.valor) {
+              <span class="absolute -translate-x-1/2 text-[10px] text-slate-400" [style.left.%]="tick.posicaoPct">{{ tick.valor }}%</span>
+            }
           </div>
 
           <div class="text-center mt-3">
@@ -73,10 +72,11 @@
 
         <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
           <h3 class="font-bold text-slate-900 dark:text-slate-100 mb-1">Aging de capital parado</h3>
-          <p class="text-[11px] text-slate-400 mb-4">Custo de estoque disponível, agrupado por dias desde a última venda — mostra onde o capital parado está concentrado.</p>
-          <div style="height: 220px">
-            <p-chart type="bar" [data]="agingChartData()" [options]="agingChartOptions" [style]="{ width: '100%', height: '100%' }"></p-chart>
-          </div>
+          <p class="text-[11px] text-slate-400 mb-4">Custo de estoque disponível, agrupado por dias desde a última venda — clique numa barra pra ver os produtos daquela faixa.</p>
+          <app-grafico-barras
+            [labels]="agingLabels()" [datasets]="agingDatasets()"
+            [horizontal]="true" formatoValor="reais" altura="220px"
+            (barraClicada)="aoClicarBarraAging($event)"></app-grafico-barras>
         </div>
       </div>
     }

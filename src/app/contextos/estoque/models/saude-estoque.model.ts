@@ -52,7 +52,8 @@ export type CategoriaSaudeEstoque =
   | 'candidatos-parar-comprar'
   | 'candidatos-inativacao'
   | 'criticos'
-  | 'em-ruptura';
+  | 'em-ruptura'
+  | 'aging';
 
 export interface OrdenacaoSaudeEstoque {
   campo: string;

@@ -1,5 +1,5 @@
 import { Component, OnInit, computed, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { ChartModule } from 'primeng/chart';
 import { SaudeEstoqueService } from '../../services/saude-estoque.service';
 import { BlocoResumoSaudeEstoque, CorteGiroCritico, FaixaAgingEstoqueResumo, SaudeEstoqueResumo } from '../../models/saude-estoque.model';
@@ -7,6 +7,7 @@ import { CONFIGS_SAUDE_ESTOQUE, ConfigCategoriaSaudeEstoque } from '../../config
 import { ToastService } from '../../../../core/feedback/toast.service';
 import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 import { BreadcrumbComponent } from '../../../../shared/components/breadcrumb/breadcrumb.component';
+import { GraficoBarrasComponent } from '../../../../shared/components/grafico-barras/grafico-barras.component';
 
 type ChaveBlocoSaudeEstoque = 'semGiro' | 'candidatosParaComprar' | 'candidatosInativacao' | 'criticos' | 'emRuptura';
 
@@ -23,8 +24,8 @@ const CARDS: CardResumo[] = [
 ];
 
 const LIMITE_RISCO_RUPTURA_PCT = 70;
-const LIMITE_EXCESSO_PCT = 130;
-const ESCALA_MAXIMA_GAUGE_PCT = 200;
+const LIMITE_EXCESSO_PCT = 150;
+const ESCALA_MAXIMA_GAUGE_PCT = 1000;
 
 const CORES_AGING: Record<string, string> = {
   '0-30': '#10b981',
@@ -34,29 +35,59 @@ const CORES_AGING: Record<string, string> = {
   '180+': '#e11d48'
 };
 
+interface ArcoGauge {
+  x: number;
+  y: number;
+  innerRadius: number;
+  outerRadius: number;
+}
+
 interface GaugeChartComDados {
-  getDatasetMeta(index: number): { data: Array<{ x: number; y: number; outerRadius: number }> };
+  getDatasetMeta(index: number): { data: ArcoGauge[] };
   data: { ponteiroPercentual?: number };
+}
+
+function anguloGauge(valorFracao: number): number {
+  return Math.PI - valorFracao * Math.PI;
+}
+
+function pontoNoAngulo(arco: ArcoGauge, angulo: number, raio: number): { x: number; y: number } {
+  return { x: arco.x + raio * Math.cos(angulo), y: arco.y - raio * Math.sin(angulo) };
+}
+
+function desenharTraco(ctx: CanvasRenderingContext2D, arco: ArcoGauge, valorFracao: number) {
+  const angulo = anguloGauge(valorFracao);
+  const pInterno = pontoNoAngulo(arco, angulo, arco.innerRadius - 2);
+  const pExterno = pontoNoAngulo(arco, angulo, arco.outerRadius + 2);
+
+  ctx.beginPath();
+  ctx.moveTo(pInterno.x, pInterno.y);
+  ctx.lineTo(pExterno.x, pExterno.y);
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = '#ffffff';
+  ctx.stroke();
 }
 
 const agulhaGaugePlugin = {
   id: 'agulhaGauge',
   afterDatasetsDraw(chart: GaugeChartComDados & { ctx: CanvasRenderingContext2D }) {
     const arco = chart.getDatasetMeta(0).data[0];
-    const valor = chart.data.ponteiroPercentual ?? 0;
     if (!arco) return;
-
-    const angulo = Math.PI - valor * Math.PI;
-    const raioPonta = arco.outerRadius * 0.85;
-    const pontaX = arco.x + raioPonta * Math.cos(angulo);
-    const pontaY = arco.y - raioPonta * Math.sin(angulo);
 
     const ctx = chart.ctx;
     ctx.save();
 
+    desenharTraco(ctx, arco, LIMITE_RISCO_RUPTURA_PCT / ESCALA_MAXIMA_GAUGE_PCT);
+    desenharTraco(ctx, arco, LIMITE_EXCESSO_PCT / ESCALA_MAXIMA_GAUGE_PCT);
+
+    const valor = chart.data.ponteiroPercentual ?? 0;
+    const angulo = anguloGauge(valor);
+    const raioPonta = arco.outerRadius * 0.85;
+    const ponta = pontoNoAngulo(arco, angulo, raioPonta);
+
     ctx.beginPath();
     ctx.moveTo(arco.x, arco.y);
-    ctx.lineTo(pontaX, pontaY);
+    ctx.lineTo(ponta.x, ponta.y);
     ctx.lineWidth = 6;
     ctx.strokeStyle = '#ffffff';
     ctx.lineCap = 'round';
@@ -64,7 +95,7 @@ const agulhaGaugePlugin = {
 
     ctx.beginPath();
     ctx.moveTo(arco.x, arco.y);
-    ctx.lineTo(pontaX, pontaY);
+    ctx.lineTo(ponta.x, ponta.y);
     ctx.lineWidth = 3;
     ctx.strokeStyle = '#0f172a';
     ctx.lineCap = 'round';
@@ -85,7 +116,7 @@ const agulhaGaugePlugin = {
 @Component({
   selector: 'app-estoque-dashboard',
   standalone: true,
-  imports: [PageHeaderComponent, BreadcrumbComponent, RouterLink, ChartModule],
+  imports: [PageHeaderComponent, BreadcrumbComponent, RouterLink, ChartModule, GraficoBarrasComponent],
   templateUrl: './estoque-dashboard.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
@@ -119,36 +150,28 @@ export class EstoqueDashboardComponent implements OnInit {
 
   readonly gaugePlugins = [agulhaGaugePlugin];
 
+  readonly ticksGauge = [0, LIMITE_RISCO_RUPTURA_PCT, LIMITE_EXCESSO_PCT, ESCALA_MAXIMA_GAUGE_PCT].map(valor => ({
+    valor,
+    posicaoPct: ((Math.cos(anguloGauge(valor / ESCALA_MAXIMA_GAUGE_PCT)) + 1) / 2) * 100
+  }));
+
   gaugeOptions = {
     plugins: { legend: { display: false }, tooltip: { enabled: false } },
     responsive: true,
     maintainAspectRatio: false
   };
 
-  agingChartData = computed(() => {
-    const faixas: FaixaAgingEstoqueResumo[] = this.resumo()?.agingCapitalParado ?? [];
-    return {
-      labels: faixas.map(f => f.faixa + ' dias'),
-      datasets: [{
-        label: 'Capital parado (custo)',
-        data: faixas.map(f => f.capitalParadoCusto),
-        backgroundColor: faixas.map(f => CORES_AGING[f.faixa] ?? '#94a3b8'),
-        borderRadius: 6
-      }]
-    };
-  });
+  agingFaixas = computed<FaixaAgingEstoqueResumo[]>(() => this.resumo()?.agingCapitalParado ?? []);
 
-  agingChartOptions = {
-    indexAxis: 'y' as const,
-    plugins: { legend: { display: false } },
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: {
-      x: { ticks: { callback: (v: number) => this.formatarReaisCompacto(v) } }
-    }
-  };
+  agingLabels = computed(() => this.agingFaixas().map(f => f.faixa + ' dias'));
 
-  constructor(private saudeEstoqueService: SaudeEstoqueService, private toast: ToastService) {}
+  agingDatasets = computed(() => [{
+    label: 'Capital parado (custo)',
+    data: this.agingFaixas().map(f => f.capitalParadoCusto),
+    color: this.agingFaixas().map(f => CORES_AGING[f.faixa] ?? '#94a3b8')
+  }]);
+
+  constructor(private saudeEstoqueService: SaudeEstoqueService, private toast: ToastService, private router: Router) {}
 
   ngOnInit() {
     this.carregar();
@@ -166,6 +189,12 @@ export class EstoqueDashboardComponent implements OnInit {
         this.carregando.set(false);
       }
     });
+  }
+
+  aoClicarBarraAging(evento: { index: number }) {
+    const faixa = this.agingFaixas()[evento.index]?.faixa;
+    if (!faixa) return;
+    this.router.navigate(['/estoque/aging', faixa]);
   }
 
   aoMudarCorte(corte: CorteGiroCritico) {
@@ -194,9 +223,5 @@ export class EstoqueDashboardComponent implements OnInit {
 
   formatarReais(valor: number): string {
     return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-  }
-
-  formatarReaisCompacto(valor: number): string {
-    return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', notation: 'compact', maximumFractionDigits: 1 });
   }
 }

@@ -7,6 +7,7 @@ import { ThemeService } from '../../core/theme/theme.service';
 import { DashboardService, DashboardResumo, GranularidadeDashboard, CategoriaVenda } from './dashboard.service';
 import { ToastService } from '../../core/feedback/toast.service';
 import { GraficoBarrasComponent } from '../../shared/components/grafico-barras/grafico-barras.component';
+import { ModalComponent } from '../../shared/components/modal/modal.component';
 import { VendasService } from '../vendas/services/vendas.service';
 
 interface Kpi {
@@ -22,7 +23,7 @@ interface Kpi {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, ChartModule, RouterLink, GraficoBarrasComponent],
+  imports: [CommonModule, ChartModule, RouterLink, GraficoBarrasComponent, ModalComponent],
   templateUrl: './dashboard.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
@@ -213,6 +214,33 @@ export class DashboardComponent implements OnInit {
     const a = partes[0]?.[0] ?? '';
     const b = partes.length > 1 ? partes[partes.length - 1][0] : '';
     return (a + b).toUpperCase();
+  }
+
+  modalVendedoresAberto = signal(false);
+
+  abrirModalVendedores(): void {
+    this.modalVendedoresAberto.set(true);
+  }
+
+  fecharModalVendedores(): void {
+    this.modalVendedoresAberto.set(false);
+  }
+
+  vendedoresChartLabels = computed(() => (this.resumo()?.metaPorVendedor ?? []).map(v => v.nome));
+
+  vendedoresChartDatasets = computed(() => {
+    const vendedores = this.resumo()?.metaPorVendedor ?? [];
+    return [{
+      label: 'Faturamento',
+      data: vendedores.map(v => v.valor),
+      color: vendedores.map(v => v.valorMeta == null ? '#1754cf' : this.corHexBarraMeta(v.percentualAtingido ?? 0))
+    }];
+  });
+
+  private corHexBarraMeta(perc: number): string {
+    if (perc >= 100) return '#10b981';
+    if (perc >= 70) return '#1754cf';
+    return '#f59e0b';
   }
 
   corBarraMeta(perc: number): string {

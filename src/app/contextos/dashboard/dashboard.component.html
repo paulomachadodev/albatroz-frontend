@@ -151,37 +151,56 @@
         </div>
 
         <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-          <h3 class="font-bold text-slate-900 dark:text-slate-100 mb-4">Meta por vendedor</h3>
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-bold text-slate-900 dark:text-slate-100">Meta por vendedor</h3>
+            @if (resumo()!.metaPorVendedor.length > 0) {
+              <button type="button" class="text-xs font-medium text-primary hover:underline" (click)="abrirModalVendedores()">
+                ver detalhe
+              </button>
+            }
+          </div>
           @if (resumo()!.metaPorVendedor.length === 0) {
             <p class="text-sm text-slate-400 py-8 text-center">Nenhum dado de vendedor no período.</p>
+          } @else {
+            <app-grafico-barras
+              [labels]="vendedoresChartLabels()"
+              [datasets]="vendedoresChartDatasets()"
+              formatoValor="reais"
+              altura="192px"
+              (barraClicada)="abrirModalVendedores()" />
           }
-          <ul class="space-y-4">
-            @for (v of resumo()!.metaPorVendedor; track v.idVendedor ?? v.nome) {
-              <li [class]="v.semVendedor ? 'p-2 -mx-2 rounded-xl bg-slate-50 dark:bg-slate-800/40' : 'p-2 -mx-2 rounded-xl'">
-                <div class="flex items-center justify-between gap-3">
-                  <div class="min-w-0 flex-1">
-                    <p class="text-sm font-semibold truncate"
-                       [class.text-slate-400]="v.semVendedor"
-                       [class.italic]="v.semVendedor"
-                       [class.text-slate-900]="!v.semVendedor"
-                       [class.dark:text-slate-100]="!v.semVendedor">
-                      {{ v.nome }}
-                    </p>
-                    <p class="text-[11px] text-slate-400">{{ v.pedidos }} pedido(s) · ticket {{ formatarReais(v.ticketMedio) }}</p>
-                  </div>
-                  <span class="text-sm font-bold text-slate-900 dark:text-slate-100 shrink-0">{{ formatarReais(v.valor) }}</span>
-                </div>
-                @if (v.valorMeta !== null) {
-                  <div class="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden mt-2">
-                    <div class="h-full rounded-full transition-all duration-700"
-                         [class]="corBarraMeta(v.percentualAtingido ?? 0)"
-                         [style.width.%]="(v.percentualAtingido ?? 0) > 100 ? 100 : (v.percentualAtingido ?? 0)"></div>
-                  </div>
-                }
-              </li>
-            }
-          </ul>
         </div>
+
+        <app-modal [aberto]="modalVendedoresAberto()" titulo="Meta por vendedor" tamanho="lg" (fechar)="fecharModalVendedores()">
+          <div class="p-6 pt-0 overflow-y-auto">
+            <ul class="space-y-4">
+              @for (v of resumo()!.metaPorVendedor; track v.idVendedor ?? v.nome) {
+                <li [class]="v.semVendedor ? 'p-2 -mx-2 rounded-xl bg-slate-50 dark:bg-slate-800/40' : 'p-2 -mx-2 rounded-xl'">
+                  <div class="flex items-center justify-between gap-3">
+                    <div class="min-w-0 flex-1">
+                      <p class="text-sm font-semibold truncate"
+                         [class.text-slate-400]="v.semVendedor"
+                         [class.italic]="v.semVendedor"
+                         [class.text-slate-900]="!v.semVendedor"
+                         [class.dark:text-slate-100]="!v.semVendedor">
+                        {{ v.nome }}
+                      </p>
+                      <p class="text-[11px] text-slate-400">{{ v.pedidos }} pedido(s) · ticket {{ formatarReais(v.ticketMedio) }}</p>
+                    </div>
+                    <span class="text-sm font-bold text-slate-900 dark:text-slate-100 shrink-0">{{ formatarReais(v.valor) }}</span>
+                  </div>
+                  @if (v.valorMeta !== null) {
+                    <div class="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden mt-2">
+                      <div class="h-full rounded-full transition-all duration-700"
+                           [class]="corBarraMeta(v.percentualAtingido ?? 0)"
+                           [style.width.%]="(v.percentualAtingido ?? 0) > 100 ? 100 : (v.percentualAtingido ?? 0)"></div>
+                    </div>
+                  }
+                </li>
+              }
+            </ul>
+          </div>
+        </app-modal>
 
         <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
           <div class="flex items-center justify-between mb-4">

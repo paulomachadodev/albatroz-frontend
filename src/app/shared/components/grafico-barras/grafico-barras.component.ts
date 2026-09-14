@@ -6,7 +6,7 @@ import { ThemeService } from '../../../core/theme/theme.service';
 export interface DatasetGraficoBarras {
   label: string;
   data: number[];
-  color: string;
+  color: string | string[];
 }
 
 @Component({

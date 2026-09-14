@@ -6,6 +6,8 @@ import { Paginacao, ParametrosPaginacao } from '../../../core/models/paginacao.m
 import {
   CategoriaSaudeEstoque,
   CorteGiroCritico,
+  JanelaRuptura,
+  OrdenacaoSaudeEstoque,
   ProdutoSaudeEstoque,
   SaudeEstoqueResumo
 } from '../models/saude-estoque.model';
@@ -23,9 +25,19 @@ export class SaudeEstoqueService {
   listar(
     categoria: CategoriaSaudeEstoque,
     paginacao: ParametrosPaginacao,
-    corteGiroCritico?: CorteGiroCritico
+    opcoes?: {
+      corteGiroCritico?: CorteGiroCritico;
+      janelaDias?: JanelaRuptura;
+      ordenacao?: OrdenacaoSaudeEstoque | null;
+    }
   ): Observable<Resultado<Paginacao<ProdutoSaudeEstoque>>> {
-    const filtros = categoria === 'criticos' ? { corteGiroCritico } : undefined;
+    const filtros: Record<string, unknown> = {};
+    if (categoria === 'criticos') filtros['corteGiroCritico'] = opcoes?.corteGiroCritico;
+    if (categoria === 'em-ruptura') filtros['janelaDias'] = opcoes?.janelaDias;
+    if (opcoes?.ordenacao) {
+      filtros['ordenarPor'] = opcoes.ordenacao.campo;
+      filtros['direcao'] = opcoes.ordenacao.direcao;
+    }
     return this.api.getPaginado<ProdutoSaudeEstoque>(`${this.endpoint}/saude-estoque/${categoria}`, paginacao, filtros);
   }
 }

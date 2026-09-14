@@ -1,61 +1,43 @@
 import { Component, OnInit, computed, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { ChartModule } from 'primeng/chart';
 import { SaudeEstoqueService } from '../../services/saude-estoque.service';
-import { BlocoResumoSaudeEstoque, CorteGiroCritico, SaudeEstoqueResumo } from '../../models/saude-estoque.model';
+import { BlocoResumoSaudeEstoque, CorteGiroCritico, FaixaAgingEstoqueResumo, SaudeEstoqueResumo } from '../../models/saude-estoque.model';
+import { CONFIGS_SAUDE_ESTOQUE, ConfigCategoriaSaudeEstoque } from '../../config/saude-estoque-cards.config';
 import { ToastService } from '../../../../core/feedback/toast.service';
 import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 import { BreadcrumbComponent } from '../../../../shared/components/breadcrumb/breadcrumb.component';
 
-type ChaveBlocoSaudeEstoque = 'semGiro' | 'candidatosParaComprar' | 'candidatosInativacao' | 'criticos';
+type ChaveBlocoSaudeEstoque = 'semGiro' | 'candidatosParaComprar' | 'candidatosInativacao' | 'criticos' | 'emRuptura';
 
-interface CardResumo {
+interface CardResumo extends ConfigCategoriaSaudeEstoque {
   chave: ChaveBlocoSaudeEstoque;
-  titulo: string;
-  descricao: string;
-  icone: string;
-  cor: string;
-  rota: string;
 }
 
 const CARDS: CardResumo[] = [
-  {
-    chave: 'criticos',
-    titulo: 'Críticos',
-    descricao: 'Curva A com giro alto — não pode faltar, ponto de atenção pra não perder venda por ruptura.',
-    icone: 'priority_high',
-    cor: 'text-rose-600 bg-rose-100 dark:bg-rose-900/40',
-    rota: '/estoque/criticos'
-  },
-  {
-    chave: 'candidatosParaComprar',
-    titulo: 'Candidatos a não repor',
-    descricao: 'Sem venda há 90+ dias, mas ainda tem estoque — deixar vender o que tem antes de comprar mais.',
-    icone: 'pause_circle',
-    cor: 'text-amber-600 bg-amber-100 dark:bg-amber-900/40',
-    rota: '/estoque/candidatos-parar-comprar'
-  },
-  {
-    chave: 'semGiro',
-    titulo: 'Sem giro',
-    descricao: 'Sem venda há 90+ dias, com ou sem estoque.',
-    icone: 'trending_down',
-    cor: 'text-slate-600 bg-slate-100 dark:bg-slate-800',
-    rota: '/estoque/sem-giro'
-  },
-  {
-    chave: 'candidatosInativacao',
-    titulo: 'Candidatos a inativação',
-    descricao: 'Sem venda e sem estoque há 12 meses, ou nunca vendeu desde o cadastro há 12+ meses.',
-    icone: 'delete_sweep',
-    cor: 'text-violet-600 bg-violet-100 dark:bg-violet-900/40',
-    rota: '/estoque/candidatos-inativacao'
-  }
+  { chave: 'criticos', ...CONFIGS_SAUDE_ESTOQUE['criticos'] },
+  { chave: 'emRuptura', ...CONFIGS_SAUDE_ESTOQUE['em-ruptura'] },
+  { chave: 'candidatosParaComprar', ...CONFIGS_SAUDE_ESTOQUE['candidatos-parar-comprar'] },
+  { chave: 'semGiro', ...CONFIGS_SAUDE_ESTOQUE['sem-giro'] },
+  { chave: 'candidatosInativacao', ...CONFIGS_SAUDE_ESTOQUE['candidatos-inativacao'] }
 ];
+
+const LIMITE_RISCO_RUPTURA_PCT = 70;
+const LIMITE_EXCESSO_PCT = 130;
+const ESCALA_MAXIMA_GAUGE_PCT = 200;
+
+const CORES_AGING: Record<string, string> = {
+  '0-30': '#10b981',
+  '30-60': '#84cc16',
+  '60-90': '#f59e0b',
+  '90-180': '#f97316',
+  '180+': '#e11d48'
+};
 
 @Component({
   selector: 'app-estoque-dashboard',
   standalone: true,
-  imports: [PageHeaderComponent, BreadcrumbComponent, RouterLink],
+  imports: [PageHeaderComponent, BreadcrumbComponent, RouterLink, ChartModule],
   templateUrl: './estoque-dashboard.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
@@ -68,6 +50,55 @@ export class EstoqueDashboardComponent implements OnInit {
   corteGiroCritico = signal<CorteGiroCritico>(20);
 
   capitalParadoTotal = computed(() => this.resumo()?.capitalParadoTotal ?? 0);
+
+  gaugeData = computed(() => {
+    const percentual = Math.min(this.resumo()?.gaugeSaude?.percentualCoberturaMeta ?? 0, ESCALA_MAXIMA_GAUGE_PCT);
+    return {
+      labels: ['Risco de ruptura', 'Saudável', 'Excesso'],
+      datasets: [{
+        data: [
+          LIMITE_RISCO_RUPTURA_PCT,
+          LIMITE_EXCESSO_PCT - LIMITE_RISCO_RUPTURA_PCT,
+          ESCALA_MAXIMA_GAUGE_PCT - LIMITE_EXCESSO_PCT
+        ],
+        backgroundColor: ['#ef4444', '#10b981', '#f59e0b'],
+        borderWidth: 0,
+        circumference: 180,
+        rotation: 270,
+        cutout: '75%'
+      }],
+      ponteiroPercentual: Math.min(percentual / ESCALA_MAXIMA_GAUGE_PCT, 1)
+    };
+  });
+
+  gaugeOptions = {
+    plugins: { legend: { display: false }, tooltip: { enabled: false } },
+    responsive: true,
+    maintainAspectRatio: false
+  };
+
+  agingChartData = computed(() => {
+    const faixas: FaixaAgingEstoqueResumo[] = this.resumo()?.agingCapitalParado ?? [];
+    return {
+      labels: faixas.map(f => f.faixa + ' dias'),
+      datasets: [{
+        label: 'Capital parado (custo)',
+        data: faixas.map(f => f.capitalParadoCusto),
+        backgroundColor: faixas.map(f => CORES_AGING[f.faixa] ?? '#94a3b8'),
+        borderRadius: 6
+      }]
+    };
+  });
+
+  agingChartOptions = {
+    indexAxis: 'y' as const,
+    plugins: { legend: { display: false } },
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+      x: { ticks: { callback: (v: number) => this.formatarReaisCompacto(v) } }
+    }
+  };
 
   constructor(private saudeEstoqueService: SaudeEstoqueService, private toast: ToastService) {}
 
@@ -99,7 +130,25 @@ export class EstoqueDashboardComponent implements OnInit {
     return this.resumo()?.[chave] ?? { quantidadeSkus: 0, capitalParadoCusto: 0 };
   }
 
+  rotuloGauge(): string {
+    const classificacao = this.resumo()?.gaugeSaude?.classificacao;
+    if (classificacao === 'risco_ruptura') return 'Estoque abaixo do saudável — risco de ruptura';
+    if (classificacao === 'excesso') return 'Excesso de estoque — capital parado acima do ideal';
+    return 'Estoque saudável';
+  }
+
+  corGauge(): string {
+    const classificacao = this.resumo()?.gaugeSaude?.classificacao;
+    if (classificacao === 'risco_ruptura') return 'text-rose-600';
+    if (classificacao === 'excesso') return 'text-amber-600';
+    return 'text-emerald-600';
+  }
+
   formatarReais(valor: number): string {
     return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  }
+
+  formatarReaisCompacto(valor: number): string {
+    return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', notation: 'compact', maximumFractionDigits: 1 });
   }
 }

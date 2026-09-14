@@ -29,5 +29,11 @@ export const ESTOQUE_ROUTES: Routes = [
     data: { categoria: 'criticos' },
     loadComponent: () =>
       import('./pages/estoque-listagem/estoque-listagem.component').then(m => m.EstoqueListagemComponent)
+  },
+  {
+    path: 'em-ruptura',
+    data: { categoria: 'em-ruptura' },
+    loadComponent: () =>
+      import('./pages/estoque-listagem/estoque-listagem.component').then(m => m.EstoqueListagemComponent)
   }
 ];

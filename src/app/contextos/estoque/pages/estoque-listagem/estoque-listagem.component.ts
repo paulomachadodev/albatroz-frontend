@@ -1,56 +1,30 @@
 import { Component, OnInit, signal } from '@angular/core';
-import { formatDate } from '@angular/common';
+import { formatDate, NgTemplateOutlet } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SaudeEstoqueService } from '../../services/saude-estoque.service';
-import { CategoriaSaudeEstoque, CorteGiroCritico, ProdutoSaudeEstoque } from '../../models/saude-estoque.model';
+import { CategoriaSaudeEstoque, CorteGiroCritico, JanelaRuptura, OrdenacaoSaudeEstoque, ProdutoSaudeEstoque } from '../../models/saude-estoque.model';
+import { CONFIGS_SAUDE_ESTOQUE, ConfigCategoriaSaudeEstoque } from '../../config/saude-estoque-cards.config';
 import { ToastService } from '../../../../core/feedback/toast.service';
 import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 import { BreadcrumbComponent } from '../../../../shared/components/breadcrumb/breadcrumb.component';
 import { ListagemPaginadaComponent } from '../../../../shared/components/listagem-paginada/listagem-paginada.component';
 import { ToggleComponent } from '../../../../shared/components/toggle/toggle.component';
+import { ThOrdenavelComponent } from '../../../../shared/components/th-ordenavel/th-ordenavel.component';
 import { exportarPlanilha } from '../../../../shared/utils/exportar-planilha';
-
-interface ConfigCategoria {
-  titulo: string;
-  subtitulo: string;
-  permiteSelecao: boolean;
-}
-
-const CONFIGS: Record<CategoriaSaudeEstoque, ConfigCategoria> = {
-  'sem-giro': {
-    titulo: 'Sem giro',
-    subtitulo: 'Sem venda há 90+ dias, com ou sem estoque.',
-    permiteSelecao: true
-  },
-  'candidatos-parar-comprar': {
-    titulo: 'Candidatos a não repor',
-    subtitulo: 'Sem venda há 90+ dias, mas ainda tem estoque — deixar vender o que tem antes de comprar mais.',
-    permiteSelecao: true
-  },
-  'candidatos-inativacao': {
-    titulo: 'Candidatos a inativação',
-    subtitulo: 'Sem venda e sem estoque há 12 meses, ou nunca vendeu desde o cadastro há 12+ meses.',
-    permiteSelecao: true
-  },
-  criticos: {
-    titulo: 'Críticos',
-    subtitulo: 'Curva A com giro alto — não pode faltar, ponto de atenção pra não perder venda por ruptura.',
-    permiteSelecao: false
-  }
-};
 
 @Component({
   selector: 'app-estoque-listagem',
   standalone: true,
-  imports: [PageHeaderComponent, BreadcrumbComponent, ListagemPaginadaComponent, ToggleComponent],
+  imports: [PageHeaderComponent, BreadcrumbComponent, ListagemPaginadaComponent, ToggleComponent, ThOrdenavelComponent, NgTemplateOutlet],
   templateUrl: './estoque-listagem.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
 export class EstoqueListagemComponent implements OnInit {
   readonly opcoesCorteGiroCritico: CorteGiroCritico[] = [20, 40, 60];
+  readonly opcoesJanelaRuptura: JanelaRuptura[] = [90, 120, 180];
 
   categoria!: CategoriaSaudeEstoque;
-  config!: ConfigCategoria;
+  config!: ConfigCategoriaSaudeEstoque;
 
   carregando = signal(true);
   itens = signal<ProdutoSaudeEstoque[]>([]);
@@ -59,6 +33,8 @@ export class EstoqueListagemComponent implements OnInit {
   totalPaginas = signal(1);
   tamanhoPagina = signal(10);
   corteGiroCritico = signal<CorteGiroCritico>(20);
+  janelaRuptura = signal<JanelaRuptura>(90);
+  ordenacaoAtual = signal<OrdenacaoSaudeEstoque | null>(null);
 
   selecionados = new Map<number, ProdutoSaudeEstoque>();
   qtdSelecionados = signal(0);
@@ -72,14 +48,18 @@ export class EstoqueListagemComponent implements OnInit {
 
   ngOnInit() {
     this.categoria = this.route.snapshot.data['categoria'];
-    this.config = CONFIGS[this.categoria];
+    this.config = CONFIGS_SAUDE_ESTOQUE[this.categoria];
     this.carregar(1);
   }
 
   carregar(pagina: number) {
     this.carregando.set(true);
     this.saudeEstoqueService
-      .listar(this.categoria, { pagina, tamanho: this.tamanhoPagina() }, this.corteGiroCritico())
+      .listar(this.categoria, { pagina, tamanho: this.tamanhoPagina() }, {
+        corteGiroCritico: this.corteGiroCritico(),
+        janelaDias: this.janelaRuptura(),
+        ordenacao: this.ordenacaoAtual()
+      })
       .subscribe({
         next: res => {
           this.itens.set(res.dados?.dados ?? []);
@@ -108,6 +88,17 @@ export class EstoqueListagemComponent implements OnInit {
     if (this.corteGiroCritico() === corte) return;
     this.corteGiroCritico.set(corte);
     this.limparSelecao();
+    this.carregar(1);
+  }
+
+  aoMudarJanelaRuptura(janela: JanelaRuptura) {
+    if (this.janelaRuptura() === janela) return;
+    this.janelaRuptura.set(janela);
+    this.carregar(1);
+  }
+
+  aoOrdenar(ordenacao: OrdenacaoSaudeEstoque) {
+    this.ordenacaoAtual.set(ordenacao);
     this.carregar(1);
   }
 
@@ -166,8 +157,7 @@ export class EstoqueListagemComponent implements OnInit {
     return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   }
 
-  formatarData(valor: string | null): string {
-    if (!valor) return 'Nunca vendeu';
+  formatarData(valor: string): string {
     try {
       return formatDate(valor, 'dd/MM/yyyy', 'pt-BR', 'America/Sao_Paulo');
     } catch {

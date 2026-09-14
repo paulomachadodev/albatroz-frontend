@@ -8,6 +8,7 @@ export interface ProdutoSaudeEstoque {
   dataUltimaVenda: string | null;
   motivo: string | null;
   pctDiasComVenda: number | null;
+  diasEstoque: number | null;
 }
 
 export interface BlocoResumoSaudeEstoque {

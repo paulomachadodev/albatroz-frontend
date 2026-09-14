@@ -220,6 +220,47 @@ export class DashboardComponent implements OnInit {
     return (a + b).toUpperCase();
   }
 
+  modalFormaPagamentoAberto = signal(false);
+
+  abrirModalFormaPagamento(): void {
+    this.modalFormaPagamentoAberto.set(true);
+  }
+
+  fecharModalFormaPagamento(): void {
+    this.modalFormaPagamentoAberto.set(false);
+  }
+
+  private paletaFormaPagamento = ['#1754cf', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444', '#06b6d4'];
+
+  formaPagamentoChartData = computed(() => {
+    const formas = this.resumo()?.vendasPorFormaPagamento ?? [];
+    return {
+      labels: formas.map(f => f.forma),
+      datasets: [{
+        data: formas.map(f => f.valor),
+        backgroundColor: formas.map((_, i) => this.paletaFormaPagamento[i % this.paletaFormaPagamento.length]),
+        hoverOffset: 4
+      }]
+    };
+  });
+
+  formaPagamentoChartOptions = computed(() => {
+    const corTexto = this.theme.temaAtual() === 'dark' ? '#cbd5e1' : '#475569';
+    return {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '65%',
+      plugins: {
+        legend: { display: true, position: 'bottom' as const, labels: { color: corTexto, usePointStyle: true, boxWidth: 8, padding: 12 } },
+        tooltip: {
+          callbacks: {
+            label: (ctx: { label?: string; parsed: number }) => `${ctx.label}: ${this.formatarReais(ctx.parsed)}`
+          }
+        }
+      }
+    };
+  });
+
   modalVendedoresAberto = signal(false);
 
   abrirModalVendedores(): void {

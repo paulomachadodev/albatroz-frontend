@@ -153,7 +153,8 @@ export class EstoqueListagemComponent implements OnInit {
       EstoqueAtual: item.estoqueAtual,
       PrecoCusto: item.precoCusto ?? '',
       UltimaVenda: item.dataUltimaVenda ?? '',
-      Motivo: item.motivo ?? ''
+      Motivo: item.motivo ?? '',
+      DiasEstoque: item.diasEstoque ?? ''
     }));
 
     exportarPlanilha(linhas, `estoque-${this.categoria}`, 'Produtos');
@@ -172,6 +173,10 @@ export class EstoqueListagemComponent implements OnInit {
     } catch {
       return '-';
     }
+  }
+
+  corteDiasEstoque(dias: number, tetoDias = 180): number {
+    return Math.min((dias / tetoDias) * 100, 100);
   }
 
   formatarPercentual(valor: number | null): string {

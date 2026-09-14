@@ -72,34 +72,49 @@
       </div>
 
       <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-        <h3 class="font-bold text-slate-900 dark:text-slate-100 mb-4">Vendas por forma de pagamento</h3>
-        @if (resumo()!.vendasPorFormaPagamento.length === 0) {
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-bold text-slate-900 dark:text-slate-100">Vendas por forma de pagamento</h3>
+          @if ((resumo()?.vendasPorFormaPagamento?.length ?? 0) > 0) {
+            <button type="button" class="text-xs font-medium text-primary hover:underline" (click)="abrirModalFormaPagamento()">
+              ver detalhe
+            </button>
+          }
+        </div>
+        @if ((resumo()?.vendasPorFormaPagamento?.length ?? 0) === 0) {
           <p class="text-sm text-slate-400 py-8 text-center">Nenhuma venda no período.</p>
         } @else {
-          <table class="w-full text-sm">
-            <thead>
-              <tr class="text-[11px] uppercase text-slate-400 text-left">
-                <th class="pb-2 font-semibold">Forma</th>
-                <th class="pb-2 font-semibold text-right">Qtd.</th>
-                <th class="pb-2 font-semibold text-right">Valor</th>
-                <th class="pb-2 font-semibold text-right">Ticket médio</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (f of resumo()!.vendasPorFormaPagamento; track f.forma) {
-                <tr class="border-t border-slate-100 dark:border-slate-800 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors"
-                    [routerLink]="['/vendas/por-forma-pagamento']" [queryParams]="{ forma: f.forma }">
-                  <td class="py-2 text-slate-700 dark:text-slate-300">{{ f.forma }}</td>
-                  <td class="py-2 text-right text-slate-700 dark:text-slate-300">{{ f.quantidade }}</td>
-                  <td class="py-2 text-right font-semibold text-slate-900 dark:text-slate-100">{{ formatarReais(f.valor) }}</td>
-                  <td class="py-2 text-right text-slate-500 dark:text-slate-400">{{ formatarReais(f.ticketMedio) }}</td>
-                </tr>
-              }
-            </tbody>
-          </table>
+          <div class="h-48 flex items-center justify-center">
+            <p-chart type="doughnut" [data]="formaPagamentoChartData()" [options]="formaPagamentoChartOptions()" [height]="'100%'"></p-chart>
+          </div>
         }
       </div>
     </div>
+
+    <app-modal [aberto]="modalFormaPagamentoAberto()" titulo="Vendas por forma de pagamento" tamanho="md" (fechar)="fecharModalFormaPagamento()">
+      <div class="p-6 pt-0 overflow-y-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="text-[11px] uppercase text-slate-400 text-left">
+              <th class="pb-2 font-semibold">Forma</th>
+              <th class="pb-2 font-semibold text-right">Qtd.</th>
+              <th class="pb-2 font-semibold text-right">Valor</th>
+              <th class="pb-2 font-semibold text-right">Ticket médio</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (f of resumo()?.vendasPorFormaPagamento ?? []; track f.forma) {
+              <tr class="border-t border-slate-100 dark:border-slate-800 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors"
+                  [routerLink]="['/vendas/por-forma-pagamento']" [queryParams]="{ forma: f.forma }">
+                <td class="py-2 text-slate-700 dark:text-slate-300">{{ f.forma }}</td>
+                <td class="py-2 text-right text-slate-700 dark:text-slate-300">{{ f.quantidade }}</td>
+                <td class="py-2 text-right font-semibold text-slate-900 dark:text-slate-100">{{ formatarReais(f.valor) }}</td>
+                <td class="py-2 text-right text-slate-500 dark:text-slate-400">{{ formatarReais(f.ticketMedio) }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </app-modal>
 
     @if (!carregando() && resumo()) {
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">

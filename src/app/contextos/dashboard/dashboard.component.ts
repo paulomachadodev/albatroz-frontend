@@ -256,7 +256,7 @@ export class DashboardComponent implements OnInit {
           display: true,
           position: 'right' as const,
           align: 'center' as const,
-          labels: { color: corTexto, usePointStyle: true, boxWidth: 6, font: { size: 11 }, padding: 18 }
+          labels: { color: corTexto, usePointStyle: true, boxWidth: 6, boxPadding: 8, font: { size: 11 }, padding: 18 }
         },
         tooltip: {
           callbacks: {

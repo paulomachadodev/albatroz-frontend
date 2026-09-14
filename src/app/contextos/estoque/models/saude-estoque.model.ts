@@ -9,6 +9,7 @@ export interface ProdutoSaudeEstoque {
   motivo: string | null;
   pctDiasComVenda: number | null;
   diasEstoque: number | null;
+  metaDiasEstoque: number;
 }
 
 export interface BlocoResumoSaudeEstoque {

@@ -175,8 +175,19 @@ export class EstoqueListagemComponent implements OnInit {
     }
   }
 
-  corteDiasEstoque(dias: number, tetoDias = 180): number {
-    return Math.min((dias / tetoDias) * 100, 100);
+  corteDiasEstoque(dias: number, meta: number): number {
+    return Math.min((dias / (meta * 2)) * 100, 100);
+  }
+
+  corBarraDiasEstoque(dias: number, meta: number): string {
+    if (this.categoria === 'criticos') {
+      if (dias < meta * 0.7) return 'bg-rose-500';
+      if (dias < meta) return 'bg-amber-500';
+      return 'bg-emerald-500';
+    }
+    if (dias > meta) return 'bg-rose-500';
+    if (dias >= meta * 0.7) return 'bg-emerald-500';
+    return 'bg-amber-500';
   }
 
   formatarPercentual(valor: number | null): string {

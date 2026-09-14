@@ -239,6 +239,7 @@ export class DashboardComponent implements OnInit {
       datasets: [{
         data: formas.map(f => f.valor),
         backgroundColor: formas.map((_, i) => this.paletaFormaPagamento[i % this.paletaFormaPagamento.length]),
+        borderWidth: 0,
         hoverOffset: 4
       }]
     };
@@ -255,7 +256,7 @@ export class DashboardComponent implements OnInit {
           display: true,
           position: 'right' as const,
           align: 'center' as const,
-          labels: { color: corTexto, usePointStyle: true, boxWidth: 6, font: { size: 11 }, padding: 10 }
+          labels: { color: corTexto, usePointStyle: true, boxWidth: 6, font: { size: 11 }, padding: 18 }
         },
         tooltip: {
           callbacks: {

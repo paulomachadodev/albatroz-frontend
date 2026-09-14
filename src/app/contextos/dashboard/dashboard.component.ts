@@ -199,6 +199,10 @@ export class DashboardComponent implements OnInit {
     return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   }
 
+  formatarPercentual(valor: number): string {
+    return `${Math.abs(valor).toFixed(1)}%`;
+  }
+
   private formatarReaisCompacto(valor: number): string {
     if (valor >= 1000) return `${(valor / 1000).toFixed(0)}k`;
     return String(valor);
@@ -226,15 +230,32 @@ export class DashboardComponent implements OnInit {
     this.modalVendedoresAberto.set(false);
   }
 
-  vendedoresChartLabels = computed(() => (this.resumo()?.metaPorVendedor ?? []).map(v => v.nome));
+  vendedoresChartLabels = computed(() => {
+    const vendedores = this.resumo()?.metaPorVendedor ?? [];
+    const primeirosNomes = vendedores.map(v => v.nome.split(' ')[0]);
+    return vendedores.map((v, i) => {
+      const primeiroNome = primeirosNomes[i];
+      const duplicado = primeirosNomes.some((n, j) => j !== i && n === primeiroNome);
+      if (!duplicado) return primeiroNome;
+      const partes = v.nome.trim().split(/\s+/);
+      return partes.length > 1 ? `${primeiroNome} ${partes[1][0]}.` : primeiroNome;
+    });
+  });
 
   vendedoresChartDatasets = computed(() => {
     const vendedores = this.resumo()?.metaPorVendedor ?? [];
-    return [{
-      label: 'Faturamento',
-      data: vendedores.map(v => v.valor),
-      color: vendedores.map(v => v.valorMeta == null ? '#1754cf' : this.corHexBarraMeta(v.percentualAtingido ?? 0))
-    }];
+    return [
+      {
+        label: 'Vendido',
+        data: vendedores.map(v => v.valor),
+        color: vendedores.map(v => v.valorMeta == null ? '#1754cf' : this.corHexBarraMeta(v.percentualAtingido ?? 0))
+      },
+      {
+        label: 'Falta pra meta',
+        data: vendedores.map(v => v.valorMeta != null ? Math.max(v.valorMeta - v.valor, 0) : 0),
+        color: this.theme.temaAtual() === 'dark' ? '#334155' : '#e2e8f0'
+      }
+    ];
   });
 
   private corHexBarraMeta(perc: number): string {

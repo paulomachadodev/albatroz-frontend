@@ -39,6 +39,7 @@ export interface MetaVendedor {
   valorMeta: number | null;
   percentualAtingido: number | null;
   semVendedor: boolean;
+  percentualVsMesAnterior: number | null;
 }
 
 export interface FormaPagamento {

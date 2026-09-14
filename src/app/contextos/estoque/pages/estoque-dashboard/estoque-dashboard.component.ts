@@ -24,8 +24,8 @@ const CARDS: CardResumo[] = [
 ];
 
 const LIMITE_RISCO_RUPTURA_PCT = 70;
-const LIMITE_EXCESSO_PCT = 150;
-const ESCALA_MAXIMA_GAUGE_PCT = 1000;
+const LIMITE_EXCESSO_PCT = 130;
+const ESCALA_MAXIMA_GAUGE_PCT = 200;
 
 const CORES_AGING: Record<string, string> = {
   '0-30': '#10b981',

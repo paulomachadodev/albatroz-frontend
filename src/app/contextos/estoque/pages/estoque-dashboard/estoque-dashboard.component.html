@@ -50,63 +50,23 @@
         }
       </div>
 
-      <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-        <div class="flex items-center justify-between mb-1">
-          <h3 class="font-bold text-slate-900 dark:text-slate-100">Capital parado</h3>
-          <span class="text-lg font-bold text-slate-900 dark:text-slate-100">{{ formatarReais(capitalParadoTotal()) }}</span>
-        </div>
-        <p class="text-[11px] text-slate-400 mb-4">Custo de estoque parado (SKUs únicos) considerando Sem giro, Candidatos a não repor e Candidatos a inativação — Críticos fica de fora por ser estoque saudável. Um produto que aparece em mais de uma categoria só entra uma vez no total.</p>
-        <ul class="space-y-3">
-          @if (resumo(); as r) {
-            <li>
-              <div class="flex items-center justify-between text-sm mb-1">
-                <span class="font-medium text-slate-700 dark:text-slate-300">Sem giro</span>
-                <span class="font-semibold text-slate-900 dark:text-slate-100">{{ formatarReais(r.semGiro.capitalParadoCusto) }}</span>
-              </div>
-              <div class="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                <div class="h-full rounded-full bg-slate-400 transition-all duration-700"
-                     [style.width.%]="capitalParadoTotal() > 0 ? (r.semGiro.capitalParadoCusto / capitalParadoTotal()) * 100 : 0"></div>
-              </div>
-            </li>
-            <li>
-              <div class="flex items-center justify-between text-sm mb-1">
-                <span class="font-medium text-slate-700 dark:text-slate-300">Candidatos a não repor</span>
-                <span class="font-semibold text-slate-900 dark:text-slate-100">{{ formatarReais(r.candidatosParaComprar.capitalParadoCusto) }}</span>
-              </div>
-              <div class="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                <div class="h-full rounded-full bg-amber-500 transition-all duration-700"
-                     [style.width.%]="capitalParadoTotal() > 0 ? (r.candidatosParaComprar.capitalParadoCusto / capitalParadoTotal()) * 100 : 0"></div>
-              </div>
-            </li>
-            <li>
-              <div class="flex items-center justify-between text-sm mb-1">
-                <span class="font-medium text-slate-700 dark:text-slate-300">Candidatos a inativação</span>
-                <span class="font-semibold text-slate-900 dark:text-slate-100">{{ formatarReais(r.candidatosInativacao.capitalParadoCusto) }}</span>
-              </div>
-              <div class="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                <div class="h-full rounded-full bg-violet-500 transition-all duration-700"
-                     [style.width.%]="capitalParadoTotal() > 0 ? (r.candidatosInativacao.capitalParadoCusto / capitalParadoTotal()) * 100 : 0"></div>
-              </div>
-            </li>
-          }
-        </ul>
-      </div>
-
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
           <h3 class="font-bold text-slate-900 dark:text-slate-100 mb-1">Saúde geral do estoque</h3>
-          <p class="text-[11px] text-slate-400 mb-4">Cobertura de capital investido em SKUs com giro ativo, comparado à meta por curva ABC (A=30d / B=60d / C=90d).</p>
+          <p class="text-[11px] text-slate-400 mb-4">Cobertura de capital investido em SKUs com giro ativo, comparado à meta por curva ABC (A=30d / B=60d / C=90d). O ponteiro mostra quanto do capital investido está acima ou abaixo do necessário pra cobrir a meta de dias de estoque.</p>
 
-          <div class="relative w-full max-w-xs mx-auto" style="height: 160px">
-            <p-chart type="doughnut" [data]="gaugeData()" [options]="gaugeOptions" [style]="{ width: '100%', height: '100%' }"></p-chart>
-            <div class="absolute inset-x-0 bottom-0 flex justify-center">
-              <div class="w-1 h-16 origin-bottom rounded-full bg-slate-700 dark:bg-slate-200 transition-transform duration-700"
-                   [style.transform]="'rotate(' + (gaugeData().ponteiroPercentual * 180 - 90) + 'deg)'"></div>
-            </div>
+          <div class="relative w-full max-w-xs mx-auto" style="height: 170px">
+            <p-chart type="doughnut" [data]="gaugeData()" [options]="gaugeOptions" [plugins]="gaugePlugins" [style]="{ width: '100%', height: '100%' }"></p-chart>
+          </div>
+          <div class="flex justify-between max-w-xs mx-auto -mt-2 px-2 text-[10px] text-slate-400">
+            <span>0%</span>
+            <span>70%</span>
+            <span>130%</span>
+            <span>200%+</span>
           </div>
 
-          <div class="text-center mt-2">
-            <p class="text-2xl font-bold" [class]="corGauge()">{{ resumo()?.gaugeSaude?.percentualCoberturaMeta }}%</p>
+          <div class="text-center mt-3">
+            <p class="text-2xl font-bold" [class]="corGauge()">{{ resumo()?.gaugeSaude?.percentualCoberturaMeta }}% da meta</p>
             <p class="text-xs" [class]="corGauge()">{{ rotuloGauge() }}</p>
           </div>
         </div>

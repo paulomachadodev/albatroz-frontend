@@ -34,6 +34,54 @@ const CORES_AGING: Record<string, string> = {
   '180+': '#e11d48'
 };
 
+interface GaugeChartComDados {
+  getDatasetMeta(index: number): { data: Array<{ x: number; y: number; outerRadius: number }> };
+  data: { ponteiroPercentual?: number };
+}
+
+const agulhaGaugePlugin = {
+  id: 'agulhaGauge',
+  afterDatasetsDraw(chart: GaugeChartComDados & { ctx: CanvasRenderingContext2D }) {
+    const arco = chart.getDatasetMeta(0).data[0];
+    const valor = chart.data.ponteiroPercentual ?? 0;
+    if (!arco) return;
+
+    const angulo = Math.PI - valor * Math.PI;
+    const raioPonta = arco.outerRadius * 0.85;
+    const pontaX = arco.x + raioPonta * Math.cos(angulo);
+    const pontaY = arco.y - raioPonta * Math.sin(angulo);
+
+    const ctx = chart.ctx;
+    ctx.save();
+
+    ctx.beginPath();
+    ctx.moveTo(arco.x, arco.y);
+    ctx.lineTo(pontaX, pontaY);
+    ctx.lineWidth = 6;
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineCap = 'round';
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(arco.x, arco.y);
+    ctx.lineTo(pontaX, pontaY);
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = '#0f172a';
+    ctx.lineCap = 'round';
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(arco.x, arco.y, 7, 0, Math.PI * 2);
+    ctx.fillStyle = '#0f172a';
+    ctx.fill();
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.restore();
+  }
+};
+
 @Component({
   selector: 'app-estoque-dashboard',
   standalone: true,
@@ -48,8 +96,6 @@ export class EstoqueDashboardComponent implements OnInit {
   carregando = signal(true);
   resumo = signal<SaudeEstoqueResumo | null>(null);
   corteGiroCritico = signal<CorteGiroCritico>(20);
-
-  capitalParadoTotal = computed(() => this.resumo()?.capitalParadoTotal ?? 0);
 
   gaugeData = computed(() => {
     const percentual = Math.min(this.resumo()?.gaugeSaude?.percentualCoberturaMeta ?? 0, ESCALA_MAXIMA_GAUGE_PCT);
@@ -67,9 +113,11 @@ export class EstoqueDashboardComponent implements OnInit {
         rotation: 270,
         cutout: '75%'
       }],
-      ponteiroPercentual: Math.min(percentual / ESCALA_MAXIMA_GAUGE_PCT, 1)
+      ponteiroPercentual: percentual / ESCALA_MAXIMA_GAUGE_PCT
     };
   });
+
+  readonly gaugePlugins = [agulhaGaugePlugin];
 
   gaugeOptions = {
     plugins: { legend: { display: false }, tooltip: { enabled: false } },

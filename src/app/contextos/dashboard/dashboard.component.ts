@@ -251,7 +251,12 @@ export class DashboardComponent implements OnInit {
       maintainAspectRatio: false,
       cutout: '65%',
       plugins: {
-        legend: { display: true, position: 'bottom' as const, labels: { color: corTexto, usePointStyle: true, boxWidth: 8, padding: 12 } },
+        legend: {
+          display: true,
+          position: 'right' as const,
+          align: 'center' as const,
+          labels: { color: corTexto, usePointStyle: true, boxWidth: 6, font: { size: 11 }, padding: 10 }
+        },
         tooltip: {
           callbacks: {
             label: (ctx: { label?: string; parsed: number }) => `${ctx.label}: ${this.formatarReais(ctx.parsed)}`

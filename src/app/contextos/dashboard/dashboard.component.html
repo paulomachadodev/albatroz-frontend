@@ -83,7 +83,7 @@
         @if ((resumo()?.vendasPorFormaPagamento?.length ?? 0) === 0) {
           <p class="text-sm text-slate-400 py-8 text-center">Nenhuma venda no período.</p>
         } @else {
-          <div class="h-48 flex items-center justify-center">
+          <div class="h-64 flex items-center justify-center">
             <p-chart type="doughnut" [data]="formaPagamentoChartData()" [options]="formaPagamentoChartOptions()" [height]="'100%'"></p-chart>
           </div>
         }

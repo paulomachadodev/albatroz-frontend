@@ -34,6 +34,7 @@ export class SidebarComponent {
 
   fixado = signal(this.carregarFixado());
   contextoHover = signal<string | null>(null);
+  menuMobileAberto = signal(false);
 
   colunaAExpandida = computed(() => this.fixado() || this.contextoHover() !== null);
 
@@ -52,6 +53,7 @@ export class SidebarComponent {
       icone: 'folder_open',
       itens: [
         { label: 'Produtos',     rota: '/produtos',            icone: 'inventory_2', permissao: 'produtos:ler' },
+        { label: 'Busca preço',  rota: '/produtos/busca-preco', icone: 'qr_code_scanner', permissao: 'produtos:ler' },
         { label: 'Contatos',     rota: '/cadastros/contatos',  icone: 'contacts' },
         { label: 'Escolas',      rota: '/cadastros/escolas',   icone: 'apartment' },
         { label: 'Séries',       rota: '/cadastros/series',    icone: 'auto_stories' },
@@ -185,6 +187,14 @@ export class SidebarComponent {
     this.contextoHover.set(null);
   }
 
+  abrirMenuMobile(): void {
+    this.menuMobileAberto.set(true);
+  }
+
+  fecharMenuMobile(): void {
+    this.menuMobileAberto.set(false);
+  }
+
   toggleItem(label: string): void {
     const sig = this.expandidosPorItem.get(label) ?? signal(true);
     sig.set(!sig());
@@ -206,11 +216,13 @@ export class SidebarComponent {
 
   irParaMeuPerfil(): void {
     this.fecharUsuarioMenu();
+    this.fecharMenuMobile();
     this.router.navigate(['/meu-perfil']);
   }
 
   irParaConfiguracoes(): void {
     this.fecharUsuarioMenu();
+    this.fecharMenuMobile();
     this.router.navigate(['/configuracoes']);
   }
 

@@ -1,0 +1,53 @@
+<div class="fixed inset-0 z-[60] bg-black flex flex-col">
+  <div class="flex items-center justify-between gap-2 px-4 shrink-0" style="padding-top: max(0.75rem, env(safe-area-inset-top, 0px)); padding-bottom: 0.75rem">
+    <span class="text-white font-bold text-sm shrink-0">Bipar código de barras</span>
+    <div class="flex-1 flex items-center justify-end gap-2">
+      <ng-content select="[extraHeader]"></ng-content>
+      <button type="button" (click)="fecharLeitor()"
+              class="size-11 shrink-0 flex items-center justify-center rounded-full bg-white/10 text-white">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="flex-1 relative flex items-center justify-center overflow-hidden">
+    @if (!modoManual()) {
+      <video #video class="w-full h-full object-cover" muted playsinline></video>
+      @if (carregando()) {
+        <div class="absolute inset-0 flex items-center justify-center text-white text-sm">Abrindo câmera...</div>
+      }
+      @if (!carregando() && !erro()) {
+        <div class="absolute inset-8 border-2 border-white/70 rounded-2xl pointer-events-none"></div>
+      }
+      @if (erro()) {
+        <div class="absolute inset-0 bg-black/80 flex flex-col items-center justify-center gap-4 px-8 text-center">
+          <span class="material-symbols-outlined text-white text-4xl">videocam_off</span>
+          <p class="text-white text-sm">{{ erro() }}</p>
+          <button type="button" (click)="usarModoManual()"
+                  class="px-4 py-3 rounded-lg bg-white text-slate-900 font-bold text-sm">
+            Digitar código manualmente
+          </button>
+        </div>
+      }
+    } @else {
+      <div class="w-full px-6 flex flex-col items-center gap-4">
+        <span class="material-symbols-outlined text-white text-4xl">keyboard</span>
+        <input type="text" [(ngModel)]="codigoManual" (keyup.enter)="confirmarCodigoManual()"
+               placeholder="Digite o código de barras"
+               class="w-full px-4 py-3 rounded-lg text-base outline-none" autofocus/>
+        <button type="button" (click)="confirmarCodigoManual()"
+                class="w-full px-4 py-3 rounded-lg bg-primary text-white font-bold text-sm">
+          Buscar produto
+        </button>
+      </div>
+    }
+  </div>
+
+  @if (!modoManual() && !erro()) {
+    <div class="shrink-0 px-4 pb-4 pt-3 text-center">
+      <button type="button" (click)="usarModoManual()" class="text-white/70 text-sm underline">
+        Digitar código manualmente
+      </button>
+    </div>
+  }
+</div>

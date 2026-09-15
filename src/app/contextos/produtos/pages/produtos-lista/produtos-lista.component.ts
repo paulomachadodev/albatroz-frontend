@@ -18,6 +18,7 @@ import { ModalComponent } from '../../../../shared/components/modal/modal.compon
 import { BtnIconeComponent } from '../../../../shared/components/btn-icone/btn-icone.component';
 import { SelectBuscaComponent, OpcaoSelectBusca } from '../../../../shared/components/select-busca/select-busca.component';
 import { BreadcrumbComponent } from '../../../../shared/components/breadcrumb/breadcrumb.component';
+import { LeitorCodigoBarrasComponent } from '../../../../shared/components/leitor-codigo-barras/leitor-codigo-barras.component';
 import { MarcasService } from '../../services/marcas.service';
 import { ContatosService } from '../../../cadastros/contatos/services/contatos.service';
 
@@ -46,7 +47,7 @@ interface LinhaPlanilhaFornecedores {
 @Component({
   selector: 'app-produtos-lista',
   standalone: true,
-  imports: [RouterLink, FormsModule, ToggleSwitchModule, ListagemPaginadaComponent, PageHeaderComponent, ThOrdenavelComponent, MenuDropdownComponent, ModalComponent, BtnIconeComponent, SelectBuscaComponent, BreadcrumbComponent],
+  imports: [RouterLink, FormsModule, ToggleSwitchModule, ListagemPaginadaComponent, PageHeaderComponent, ThOrdenavelComponent, MenuDropdownComponent, ModalComponent, BtnIconeComponent, SelectBuscaComponent, BreadcrumbComponent, LeitorCodigoBarrasComponent],
   templateUrl: './produtos-lista.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
@@ -65,6 +66,9 @@ export class ProdutosListaComponent implements OnInit {
 
   buscarMarcas = (termo: string) => this.marcasService.buscar(termo);
   buscarFornecedores = (termo: string) => this.contatosService.buscar(termo, 'Fornecedor');
+
+  leitorAberto = signal(false);
+  buscandoPorCodigo = signal(false);
 
   selecionados = new Map<number, ProdutoResumo>();
   qtdSelecionados = signal(0);
@@ -151,6 +155,35 @@ export class ProdutosListaComponent implements OnInit {
     this.fornecedorFiltro.set(null);
     this.ordenacaoAtual.set(null);
     this.carregar(1);
+  }
+
+  abrirLeitor() {
+    this.leitorAberto.set(true);
+  }
+
+  fecharLeitor() {
+    this.leitorAberto.set(false);
+  }
+
+  aoLerCodigoBarras(codigo: string) {
+    if (this.buscandoPorCodigo()) return;
+    this.buscandoPorCodigo.set(true);
+    this.produtosService.listar({ pagina: 1, tamanho: 1 }, { texto: codigo, situacao: 'A' }).subscribe({
+      next: res => {
+        this.buscandoPorCodigo.set(false);
+        const produto = (res.dados?.dados ?? [])[0] ?? null;
+        if (produto) {
+          this.leitorAberto.set(false);
+          this.router.navigate(['/produtos', produto.id]);
+        } else {
+          this.toast.erro(`Código "${codigo}" não encontrado.`);
+        }
+      },
+      error: err => {
+        this.buscandoPorCodigo.set(false);
+        this.toast.erroServidor(err, 'Não foi possível buscar o produto.');
+      }
+    });
   }
 
   aoOrdenar(ordenacao: Ordenacao) {

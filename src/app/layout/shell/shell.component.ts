@@ -11,7 +11,7 @@ import { ConfirmDialogComponent } from '../../core/feedback/confirm-dialog.compo
   template: `
     <div class="flex h-screen overflow-hidden bg-background-light dark:bg-background-dark">
       <app-sidebar></app-sidebar>
-      <div class="flex-1 flex flex-col min-w-0">
+      <div class="flex-1 flex flex-col min-w-0 pt-14 md:pt-0">
         <router-outlet></router-outlet>
       </div>
     </div>

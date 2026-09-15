@@ -23,6 +23,7 @@ export class ListagemPaginadaComponent<T> {
 
   @ContentChild('cabecalho', { read: TemplateRef }) cabecalhoTpl?: TemplateRef<unknown>;
   @ContentChild('linha', { read: TemplateRef }) linhaTpl!: TemplateRef<unknown>;
+  @ContentChild('linhaMobile', { read: TemplateRef }) linhaMobileTpl?: TemplateRef<unknown>;
 
   paginaAnterior() {
     if (this.paginaAtual() > 1) this.paginaMudou.emit(this.paginaAtual() - 1);

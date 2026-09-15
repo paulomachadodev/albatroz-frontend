@@ -14,6 +14,7 @@ import { ThOrdenavelComponent } from '../../../../shared/components/th-ordenavel
 import { SelectBuscaComponent, OpcaoSelectBusca } from '../../../../shared/components/select-busca/select-busca.component';
 import { MarcasService } from '../../../produtos/services/marcas.service';
 import { exportarPlanilha } from '../../../../shared/utils/exportar-planilha';
+import { ContagemBipagemComponent } from '../contagem-bipagem/contagem-bipagem.component';
 
 interface LinhaPlanilhaContagem {
   Codigo: string;
@@ -33,7 +34,7 @@ interface LinhaImportada {
 @Component({
   selector: 'app-contagem-estoque',
   standalone: true,
-  imports: [FormsModule, PageHeaderComponent, BreadcrumbComponent, ListagemPaginadaComponent, ToggleComponent, ThOrdenavelComponent, SelectBuscaComponent],
+  imports: [FormsModule, PageHeaderComponent, BreadcrumbComponent, ListagemPaginadaComponent, ToggleComponent, ThOrdenavelComponent, SelectBuscaComponent, ContagemBipagemComponent],
   templateUrl: './contagem-estoque.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
@@ -54,6 +55,7 @@ export class ContagemEstoqueComponent implements OnInit {
   qtdSelecionados = signal(0);
 
   importando = signal(false);
+  bipagemAberta = signal(false);
 
   constructor(
     private contagemService: ContagemEstoqueService,
@@ -201,6 +203,14 @@ export class ContagemEstoqueComponent implements OnInit {
         }
       });
     });
+  }
+
+  abrirBipagem() {
+    this.bipagemAberta.set(true);
+  }
+
+  fecharBipagem() {
+    this.bipagemAberta.set(false);
   }
 
   limparSelecao() {

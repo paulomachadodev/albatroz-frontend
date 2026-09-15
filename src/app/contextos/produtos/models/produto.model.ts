@@ -16,6 +16,7 @@ export interface ProdutoResumo {
   urlImagemPrincipal?: string;
   estoqueAtual: number;
   preco?: number;
+  precoPromocional?: number;
 }
 
 export interface ProdutoImagem {

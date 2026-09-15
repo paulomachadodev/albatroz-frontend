@@ -260,6 +260,17 @@
   </div>
 </div>
 
+<button type="button" (click)="abrirLeitor()"
+        class="md:hidden fixed z-40 size-14 rounded-full bg-primary text-white shadow-xl flex items-center justify-center"
+        style="right: 1rem; bottom: max(1rem, env(safe-area-inset-bottom, 0px))"
+        title="Bipar código de barras">
+  <span class="material-symbols-outlined text-2xl">qr_code_scanner</span>
+</button>
+
+@if (leitorAberto()) {
+  <app-leitor-codigo-barras (codigoLido)="aoLerCodigoBarras($event)" (fechar)="fecharLeitor()"></app-leitor-codigo-barras>
+}
+
 <app-modal [aberto]="modalMassaAberto()" titulo="Alterar em massa" tamanho="md" (fechar)="fecharModalMassa()">
   <div class="space-y-4">
     @if (!resultadoMassa()) {

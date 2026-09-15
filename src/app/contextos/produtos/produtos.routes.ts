@@ -22,6 +22,11 @@ export const PRODUTOS_ROUTES: Routes = [
       import('./pages/marcas-lista/marcas-lista.component').then(m => m.MarcasListaComponent)
   },
   {
+    path: 'busca-preco',
+    loadComponent: () =>
+      import('./pages/busca-preco/busca-preco.component').then(m => m.BuscaPrecoComponent)
+  },
+  {
     path: ':id',
     loadComponent: () =>
       import('./pages/produtos-detalhe/produtos-detalhe.component').then(m => m.ProdutosDetalheComponent)

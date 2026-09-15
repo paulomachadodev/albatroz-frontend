@@ -1,0 +1,84 @@
+@if (passo() === 'leitor') {
+  <app-leitor-codigo-barras (codigoLido)="aoLerCodigo($event)" (fechar)="fecharTudo()">
+    <div extraHeader class="flex items-center gap-2">
+      <span class="text-white/80 text-xs font-semibold bg-white/10 rounded-full px-3 py-1.5">
+        {{ itens().length }}/{{ limite }} bipados
+      </span>
+      @if (itens().length > 0) {
+        <button type="button" (click)="verResumo()"
+                class="text-white/90 text-xs font-bold bg-white/10 rounded-full px-3 py-1.5">
+          Ver lista
+        </button>
+      }
+    </div>
+  </app-leitor-codigo-barras>
+}
+
+@if (passo() === 'quantidade' && produtoAtual) {
+  <div class="fixed inset-0 z-[60] bg-black/90 flex flex-col items-center justify-center px-6 gap-5">
+    <div class="text-center">
+      <div class="text-white/60 text-xs">{{ produtoAtual.codigo }}</div>
+      <div class="text-white text-lg font-bold">{{ produtoAtual.nome }}</div>
+      @if (modoAtualizacao === 'somar') {
+        <div class="text-amber-300 text-xs mt-1">Vai somar à quantidade já bipada</div>
+      } @else if (modoAtualizacao === 'substituir') {
+        <div class="text-amber-300 text-xs mt-1">Vai substituir a quantidade já bipada</div>
+      }
+    </div>
+    <input type="text" inputmode="decimal" [(ngModel)]="quantidadeInput" (keyup.enter)="confirmarQuantidade()"
+           placeholder="Quantidade contada" autofocus
+           class="w-full max-w-xs text-center text-3xl font-bold px-4 py-4 rounded-xl outline-none"/>
+    <div class="w-full max-w-xs flex gap-2">
+      <button type="button" (click)="cancelarQuantidade()"
+              class="flex-1 px-4 py-3 rounded-lg bg-white/10 text-white font-bold text-sm">
+        Cancelar
+      </button>
+      <button type="button" (click)="confirmarQuantidade()"
+              class="flex-[2] px-4 py-3 rounded-lg bg-primary text-white font-bold text-sm">
+        Confirmar
+      </button>
+    </div>
+  </div>
+}
+
+@if (passo() === 'resumo') {
+  <div class="fixed inset-0 z-[60] bg-white dark:bg-slate-900 flex flex-col">
+    <div class="flex items-center justify-between px-4 shrink-0 border-b border-slate-200 dark:border-slate-800"
+         style="padding-top: max(0.75rem, env(safe-area-inset-top, 0px)); padding-bottom: 0.75rem">
+      <span class="font-bold text-sm text-slate-900 dark:text-slate-100">{{ itens().length }}/{{ limite }} bipados</span>
+      <button type="button" (click)="fecharTudo()"
+              class="size-11 flex items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+
+    <div class="flex-1 overflow-y-auto p-3 space-y-2">
+      @for (item of itens(); track item.codigo) {
+        <div class="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-3 flex items-center gap-3">
+          <div class="flex-1 min-w-0">
+            <div class="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">{{ item.codigo }} — {{ item.nome }}</div>
+            <div class="text-sm text-primary font-bold">Contado: {{ item.quantidadeContada }}</div>
+          </div>
+          <button type="button" (click)="removerItem(item.codigo)"
+                  class="size-11 shrink-0 flex items-center justify-center rounded-full text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20">
+            <span class="material-symbols-outlined">delete</span>
+          </button>
+        </div>
+      } @empty {
+        <div class="text-center text-sm text-slate-400 py-8">Nenhum item bipado ainda.</div>
+      }
+    </div>
+
+    <div class="shrink-0 p-3 border-t border-slate-200 dark:border-slate-800 flex gap-2"
+         style="padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0px))">
+      <button type="button" (click)="voltarParaLeitor()"
+              class="flex-1 px-4 py-3 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm">
+        Continuar bipando
+      </button>
+      <button type="button" (click)="finalizar()" [disabled]="finalizando() || itens().length === 0"
+              class="flex-[2] px-4 py-3 rounded-lg bg-primary text-white font-bold text-sm disabled:opacity-50">
+        {{ finalizando() ? 'Processando...' : 'Finalizar contagem' }}
+      </button>
+    </div>
+  </div>
+}

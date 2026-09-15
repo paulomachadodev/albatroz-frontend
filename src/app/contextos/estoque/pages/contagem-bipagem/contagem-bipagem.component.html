@@ -27,7 +27,7 @@
     </div>
     <input type="text" inputmode="decimal" [(ngModel)]="quantidadeInput" (keyup.enter)="confirmarQuantidade()"
            placeholder="Quantidade contada" autofocus
-           class="w-full max-w-xs text-center text-3xl font-bold px-4 py-4 rounded-xl outline-none"/>
+           class="w-full max-w-xs text-center text-3xl font-bold px-4 py-4 rounded-xl bg-white text-slate-900 placeholder:text-slate-400 outline-none"/>
     <div class="w-full max-w-xs flex gap-2">
       <button type="button" (click)="cancelarQuantidade()"
               class="flex-1 px-4 py-3 rounded-lg bg-white/10 text-white font-bold text-sm">

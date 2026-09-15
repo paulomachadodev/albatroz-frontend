@@ -30,7 +30,15 @@ export class LeitorCodigoBarrasComponent implements AfterViewInit, OnDestroy {
 
   async ngAfterViewInit() {
     try {
-      this.controls = await this.reader.decodeFromVideoDevice(undefined, this.video().nativeElement, (resultado) => {
+      const constraints: MediaStreamConstraints = {
+        video: {
+          facingMode: { ideal: 'environment' },
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+          advanced: [{ focusMode: 'continuous' } as MediaTrackConstraintSet]
+        }
+      };
+      this.controls = await this.reader.decodeFromConstraints(constraints, this.video().nativeElement, (resultado) => {
         if (!resultado) return;
         const codigo = resultado.getText();
         const agora = Date.now();
@@ -39,6 +47,7 @@ export class LeitorCodigoBarrasComponent implements AfterViewInit, OnDestroy {
         }
         this.ultimoCodigoLido = codigo;
         this.ultimoLidoEm = agora;
+        this.tocarBipe();
         this.codigoLido.emit(codigo);
       });
       this.carregando.set(false);
@@ -57,6 +66,7 @@ export class LeitorCodigoBarrasComponent implements AfterViewInit, OnDestroy {
 
   ngOnDestroy() {
     this.controls?.stop();
+    this.audioContext?.close();
   }
 
   usarModoManual() {
@@ -73,5 +83,20 @@ export class LeitorCodigoBarrasComponent implements AfterViewInit, OnDestroy {
 
   fecharLeitor() {
     this.fechar.emit();
+  }
+
+  private audioContext?: AudioContext;
+
+  private tocarBipe(): void {
+    this.audioContext ??= new AudioContext();
+    const oscilador = this.audioContext.createOscillator();
+    const ganho = this.audioContext.createGain();
+    oscilador.type = 'square';
+    oscilador.frequency.value = 1800;
+    ganho.gain.value = 0.15;
+    oscilador.connect(ganho);
+    ganho.connect(this.audioContext.destination);
+    oscilador.start();
+    oscilador.stop(this.audioContext.currentTime + 0.08);
   }
 }

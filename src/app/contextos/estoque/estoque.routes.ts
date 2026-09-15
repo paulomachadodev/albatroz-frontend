@@ -41,5 +41,10 @@ export const ESTOQUE_ROUTES: Routes = [
     data: { categoria: 'aging' },
     loadComponent: () =>
       import('./pages/estoque-listagem/estoque-listagem.component').then(m => m.EstoqueListagemComponent)
+  },
+  {
+    path: 'contagem',
+    loadComponent: () =>
+      import('./pages/contagem-estoque/contagem-estoque.component').then(m => m.ContagemEstoqueComponent)
   }
 ];

@@ -54,7 +54,6 @@
         </nav>
       </div>
 
-      <!-- Aba Geral -->
       @if (abaAtiva() === 'geral') {
         <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-6">
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -140,7 +139,6 @@
         </div>
       }
 
-      <!-- Aba Endereços -->
       @if (abaAtiva() === 'enderecos') {
         <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
           <div class="p-4 flex justify-end border-b border-slate-100 dark:border-slate-800">
@@ -184,15 +182,21 @@
         </div>
       }
 
-      <!-- Aba Compras (Fornecedor) -->
       @if (abaAtiva() === 'compras') {
         <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-6">
           <p class="text-sm text-slate-500 dark:text-slate-400">Essas informações entram no cálculo da sugestão de compra desse fornecedor.</p>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label class="text-xs font-semibold text-slate-500">Prazo de entrega (dias)</label>
-              <input type="number" min="0" [(ngModel)]="prazoEntregaDias"
-                     class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+              <div class="flex items-center justify-between">
+                <label class="text-xs font-semibold text-slate-500">Prazo de entrega (dias)</label>
+                <app-toggle [valor]="prazoEntregaAutomatico()" label="Automático"
+                            (valorMudou)="aoAlternarPrazoEntregaAutomatico($event)"></app-toggle>
+              </div>
+              <input type="number" min="0" [(ngModel)]="prazoEntregaDias" [disabled]="prazoEntregaAutomatico()"
+                     class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none disabled:opacity-60"/>
+              @if (prazoEntregaAutomatico()) {
+                <p class="text-[11px] text-slate-400 mt-1">Calculado automaticamente pela mediana entre emissão e entrada das notas fiscais desse fornecedor.</p>
+              }
             </div>
             <div>
               <label class="text-xs font-semibold text-slate-500">Valor de pedido mínimo</label>
@@ -209,7 +213,6 @@
         </div>
       }
 
-      <!-- Aba Representantes (Fornecedor) -->
       @if (abaAtiva() === 'representantes') {
         <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
           <div class="p-4 flex justify-end border-b border-slate-100 dark:border-slate-800">
@@ -249,7 +252,6 @@
         </div>
       }
 
-      <!-- Aba Produtos Fornecidos (Fornecedor) -->
       @if (abaAtiva() === 'produtos') {
         <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
           <table class="w-full text-left">

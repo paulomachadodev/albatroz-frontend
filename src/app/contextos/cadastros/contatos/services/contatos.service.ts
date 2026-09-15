@@ -84,6 +84,7 @@ export interface ContatoRepresentanteRequisicao {
 export interface ContatoComprasRequisicao {
   prazoEntregaDias?: number | null;
   valorPedidoMinimo?: number | null;
+  prazoEntregaAutomatico: boolean;
 }
 
 export interface ProdutoFornecido {
@@ -115,6 +116,7 @@ export interface ContatoDetalhe {
   sincronizadoTiny: boolean;
   tipos: TipoContato[];
   prazoEntregaDias?: number;
+  prazoEntregaAutomatico: boolean;
   valorPedidoMinimo?: number;
   enderecos: ContatoEndereco[];
   representantes: ContatoRepresentante[];

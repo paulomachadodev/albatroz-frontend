@@ -34,7 +34,6 @@ export class ContatosDetalheComponent implements OnInit {
   abaAtiva = signal<Aba>('geral');
   salvando = signal(false);
 
-  // Geral (editável)
   nome = '';
   fantasia = '';
   cpfCnpj = '';
@@ -46,18 +45,16 @@ export class ContatosDetalheComponent implements OnInit {
 
   ehFornecedor = signal(false);
 
-  // Compras
   prazoEntregaDias: number | null = null;
+  prazoEntregaAutomatico = signal(true);
   valorPedidoMinimo: number | null = null;
   salvandoCompras = signal(false);
 
-  // Endereços
   modalEnderecoAberto = signal(false);
   enderecoEmEdicao = signal<ContatoEndereco | null>(null);
   formEndereco: ContatoEnderecoRequisicao = this.enderecoVazio();
   salvandoEndereco = signal(false);
 
-  // Representantes
   modalRepresentanteAberto = signal(false);
   representanteEmEdicao = signal<ContatoRepresentante | null>(null);
   formRepresentante: ContatoRepresentanteRequisicao = { nome: '', telefone: null, email: null, cargo: null };
@@ -96,6 +93,7 @@ export class ContatosDetalheComponent implements OnInit {
           this.tiposSelecionados = new Set(dados.tipos);
           this.ehFornecedor.set(dados.tipos.includes('Fornecedor'));
           this.prazoEntregaDias = dados.prazoEntregaDias ?? null;
+          this.prazoEntregaAutomatico.set(dados.prazoEntregaAutomatico);
           this.valorPedidoMinimo = dados.valorPedidoMinimo ?? null;
           if (!this.ehFornecedor() && (this.abaAtiva() === 'compras' || this.abaAtiva() === 'representantes' || this.abaAtiva() === 'produtos')) {
             this.abaAtiva.set('geral');
@@ -154,20 +152,21 @@ export class ContatosDetalheComponent implements OnInit {
     });
   }
 
-  // ---- Compras ----
+  aoAlternarPrazoEntregaAutomatico(automatico: boolean) {
+    this.prazoEntregaAutomatico.set(automatico);
+  }
 
   salvarCompras() {
     this.salvandoCompras.set(true);
     this.contatosService.atualizarCompras(this.idContato, {
       prazoEntregaDias: this.prazoEntregaDias,
-      valorPedidoMinimo: this.valorPedidoMinimo
+      valorPedidoMinimo: this.valorPedidoMinimo,
+      prazoEntregaAutomatico: this.prazoEntregaAutomatico()
     }).subscribe({
       next: () => { this.salvandoCompras.set(false); this.toast.sucesso('Configuração de compras salva.'); },
       error: err => { this.salvandoCompras.set(false); this.toast.erroServidor(err, 'Não foi possível salvar.'); }
     });
   }
-
-  // ---- Endereços ----
 
   private enderecoVazio(): ContatoEnderecoRequisicao {
     return { tipo: 1, logradouro: '', numero: '', complemento: '', bairro: '', municipio: '', uf: '', cep: '', pais: 'Brasil', principal: false };
@@ -224,8 +223,6 @@ export class ContatosDetalheComponent implements OnInit {
       error: err => this.toast.erroServidor(err, 'Não foi possível excluir o endereço.')
     });
   }
-
-  // ---- Representantes ----
 
   abrirNovoRepresentante() {
     this.representanteEmEdicao.set(null);

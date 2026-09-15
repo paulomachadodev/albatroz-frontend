@@ -1,4 +1,4 @@
-import { Component, output, signal } from '@angular/core';
+import { Component, ElementRef, ViewChild, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ProdutosService } from '../../../produtos/services/produtos.service';
@@ -32,9 +32,11 @@ export class ContagemBipagemComponent {
   buscando = signal(false);
   finalizando = signal(false);
 
-  produtoAtual: { codigo: string; nome: string } | null = null;
+  produtoAtual: { codigo: string; nome: string; urlImagemPrincipal?: string } | null = null;
   modoAtualizacao: 'novo' | 'somar' | 'substituir' = 'novo';
   quantidadeInput = '';
+
+  @ViewChild('inputQuantidade') inputQuantidadeRef?: ElementRef<HTMLInputElement>;
 
   constructor(
     private produtosService: ProdutosService,
@@ -68,9 +70,10 @@ export class ContagemBipagemComponent {
           this.modoAtualizacao = 'novo';
         }
 
-        this.produtoAtual = { codigo: produto.codigo, nome: produto.nome };
+        this.produtoAtual = { codigo: produto.codigo, nome: produto.nome, urlImagemPrincipal: produto.urlImagemPrincipal };
         this.quantidadeInput = '';
         this.passo.set('quantidade');
+        setTimeout(() => this.inputQuantidadeRef?.nativeElement.focus());
       },
       error: err => {
         this.buscando.set(false);

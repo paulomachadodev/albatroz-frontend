@@ -16,18 +16,21 @@
 
 @if (passo() === 'quantidade' && produtoAtual) {
   <div class="fixed inset-0 z-[60] bg-black/90 flex flex-col items-center justify-center px-6 gap-5">
-    <div class="text-center">
-      <div class="text-white/60 text-xs">{{ produtoAtual.codigo }}</div>
-      <div class="text-white text-lg font-bold">{{ produtoAtual.nome }}</div>
+    <div class="text-center max-w-xs w-full">
+      @if (produtoAtual.urlImagemPrincipal) {
+        <img [src]="produtoAtual.urlImagemPrincipal" [alt]="produtoAtual.nome"
+             class="mx-auto mb-3 size-24 rounded-xl object-cover bg-white/10"/>
+      }
+      <div class="text-white text-sm font-bold truncate">{{ produtoAtual.codigo }} — {{ produtoAtual.nome }}</div>
       @if (modoAtualizacao === 'somar') {
         <div class="text-amber-300 text-xs mt-1">Vai somar à quantidade já bipada</div>
       } @else if (modoAtualizacao === 'substituir') {
         <div class="text-amber-300 text-xs mt-1">Vai substituir a quantidade já bipada</div>
       }
     </div>
-    <input type="text" inputmode="decimal" [(ngModel)]="quantidadeInput" (keyup.enter)="confirmarQuantidade()"
-           placeholder="Quantidade contada" autofocus
-           class="w-full max-w-xs text-center text-3xl font-bold px-4 py-4 rounded-xl bg-white text-slate-900 placeholder:text-slate-400 outline-none"/>
+    <input #inputQuantidade type="text" inputmode="numeric" [(ngModel)]="quantidadeInput" (keyup.enter)="confirmarQuantidade()"
+           placeholder="Quantidade"
+           class="w-full max-w-xs text-center text-3xl font-bold px-4 py-4 rounded-xl bg-white text-slate-900 placeholder:text-slate-300 placeholder:font-normal placeholder:text-lg outline-none"/>
     <div class="w-full max-w-xs flex gap-2">
       <button type="button" (click)="cancelarQuantidade()"
               class="flex-1 px-4 py-3 rounded-lg bg-white/10 text-white font-bold text-sm">

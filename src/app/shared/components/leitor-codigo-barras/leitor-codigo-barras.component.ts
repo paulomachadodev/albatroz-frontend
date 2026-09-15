@@ -121,7 +121,7 @@ export class LeitorCodigoBarrasComponent implements AfterViewInit, OnDestroy {
     this.zoomSuportado.set(true);
     this.zoomMin.set(zoom.min);
     this.zoomMax.set(zoom.max);
-    this.zoomPasso.set(zoom.step || 0.5);
+    this.zoomPasso.set(zoom.step ?? 0.5);
 
     const valorInicial = Math.min(Math.max(LeitorCodigoBarrasComponent.ZOOM_INICIAL_IDEAL, zoom.min), zoom.max);
     this.aplicarZoom(valorInicial);

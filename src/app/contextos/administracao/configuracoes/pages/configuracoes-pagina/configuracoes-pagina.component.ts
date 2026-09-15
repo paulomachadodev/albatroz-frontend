@@ -17,7 +17,7 @@ import { ModalComponent } from '../../../../../shared/components/modal/modal.com
 import { CampoHintComponent } from '../../../../../shared/components/campo-hint/campo-hint.component';
 import { BreadcrumbComponent } from '../../../../../shared/components/breadcrumb/breadcrumb.component';
 
-type Aba = 'email' | 'venda' | 'integracoes' | 'busca-imagens' | 'metas' | 'condicoes-comerciais';
+type Aba = 'email' | 'venda' | 'integracoes' | 'busca-imagens' | 'metas' | 'condicoes-comerciais' | 'estoque';
 type ModoMeta = 'valor' | 'percentual';
 
 interface RegraMeta {
@@ -110,6 +110,9 @@ export class ConfiguracoesPaginaComponent implements OnInit {
   salvandoMetasVendedores = signal(false);
   private metasVendedoresMapa: Record<string, number> = {};
 
+  metaContagemDiaria = 15;
+  salvandoMetaContagem = signal(false);
+
   carregandoCondicoesComerciais = signal(true);
   salvandoCondicoesComerciais = signal(false);
   condicoesComerciaisCadastradas = signal(false);
@@ -187,6 +190,7 @@ export class ConfiguracoesPaginaComponent implements OnInit {
         this.googleCustomSearchLimiteDiario = mapa.get('google_custom_search_limite_diario') ?? '100';
 
         this.processarMetas(configs);
+        this.metaContagemDiaria = Number(mapa.get('estoque.meta_contagem_diaria') ?? '15') || 15;
 
         this.carregando.set(false);
       },
@@ -365,6 +369,21 @@ export class ConfiguracoesPaginaComponent implements OnInit {
       error: err => {
         this.salvandoMetasVendedores.set(false);
         this.toast.erroServidor(err, 'Não foi possível salvar as metas por vendedor.');
+      }
+    });
+  }
+
+  salvarMetaContagem() {
+    this.salvandoMetaContagem.set(true);
+    this.configuracoesService.atualizar('estoque.meta_contagem_diaria', String(this.metaContagemDiaria)).subscribe({
+      next: () => {
+        this.salvandoMetaContagem.set(false);
+        this.toast.sucesso('Meta de contagem salva.');
+        this.carregar();
+      },
+      error: err => {
+        this.salvandoMetaContagem.set(false);
+        this.toast.erroServidor(err, 'Não foi possível salvar a meta de contagem.');
       }
     });
   }

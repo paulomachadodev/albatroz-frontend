@@ -70,6 +70,12 @@ export interface CategoriaVenda {
   valor: number;
 }
 
+export interface ContagemEstoqueResumo {
+  contadosHoje: number;
+  metaDiaria: number;
+  percentualAtingido: number;
+}
+
 export interface DashboardResumo {
   faturamentoMes: number;
   faturamentoMesAnterior: number;
@@ -86,6 +92,7 @@ export interface DashboardResumo {
   curvaAbc: CurvaAbcResumo;
   contasAPagar: ContasAPagarResumo;
   vendasPorCategoria: CategoriaVenda[];
+  contagemEstoque: ContagemEstoqueResumo;
 }
 
 @Injectable({ providedIn: 'root' })

@@ -1,17 +1,9 @@
-<div class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark px-4 sm:px-6 lg:px-8 xl:px-10 py-6 lg:py-8">
+<div class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark px-4 sm:px-6 lg:px-8 xl:px-10 py-6 lg:py-8 pb-28 md:pb-6">
   <div class="w-full max-w-2xl mx-auto space-y-6">
 
     <app-breadcrumb [itens]="[{label:'Início',rota:'/dashboard'},{label:'Produtos',rota:'/produtos'},{label:'Busca preço'}]"></app-breadcrumb>
 
     <app-page-header titulo="Busca preço" subtitulo="Bipe o código de barras do produto pra ver preço e estoque na hora."></app-page-header>
-
-    <div class="md:hidden">
-      <button type="button" (click)="abrirLeitor()"
-              class="w-full px-4 py-4 rounded-xl bg-primary text-white font-bold text-base flex items-center justify-center gap-2">
-        <span class="material-symbols-outlined">qr_code_scanner</span>
-        Bipar código de barras
-      </button>
-    </div>
 
     <div class="hidden md:block bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 text-center text-sm text-slate-500">
       Busca preço com leitor de câmera é feita pelo celular — acesse essa tela pelo app instalado no seu telefone.
@@ -81,5 +73,14 @@
                                  (codigoLido)="aoLerCodigo($event)" (fechar)="fecharLeitor()"></app-leitor-codigo-barras>
     }
 
+  </div>
+
+  <div class="md:hidden fixed bottom-0 inset-x-0 z-30 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 p-3"
+       style="padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0px))">
+    <button type="button" (click)="abrirLeitor()"
+            class="w-full px-4 py-4 rounded-xl bg-primary text-white font-bold text-base flex items-center justify-center gap-2">
+      <span class="material-symbols-outlined">qr_code_scanner</span>
+      Bipar código de barras
+    </button>
   </div>
 </div>

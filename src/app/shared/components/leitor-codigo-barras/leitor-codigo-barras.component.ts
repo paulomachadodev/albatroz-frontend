@@ -32,6 +32,9 @@ export class LeitorCodigoBarrasComponent implements AfterViewInit, OnDestroy {
   private ultimoLidoEm = 0;
 
   async ngAfterViewInit() {
+    this.audioContext = new AudioContext();
+    this.audioContext.resume();
+
     try {
       const constraints: MediaStreamConstraints = {
         video: {
@@ -91,15 +94,17 @@ export class LeitorCodigoBarrasComponent implements AfterViewInit, OnDestroy {
   private audioContext?: AudioContext;
 
   private tocarBipe(): void {
-    this.audioContext ??= new AudioContext();
+    if (!this.audioContext) return;
+    if (this.audioContext.state === 'suspended') this.audioContext.resume();
+
     const oscilador = this.audioContext.createOscillator();
     const ganho = this.audioContext.createGain();
     oscilador.type = 'square';
     oscilador.frequency.value = 1800;
-    ganho.gain.value = 0.15;
+    ganho.gain.value = 0.5;
     oscilador.connect(ganho);
     ganho.connect(this.audioContext.destination);
     oscilador.start();
-    oscilador.stop(this.audioContext.currentTime + 0.08);
+    oscilador.stop(this.audioContext.currentTime + 0.12);
   }
 }

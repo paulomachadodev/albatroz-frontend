@@ -21,9 +21,12 @@ export class BuscaPrecoComponent {
   imagensProduto = signal<ProdutoImagem[]>([]);
   indiceImagemAtual = signal(0);
 
+  private timeoutNaoEncontrado?: ReturnType<typeof setTimeout>;
+
   constructor(private produtosService: ProdutosService, private toast: ToastService) {}
 
   abrirLeitor() {
+    clearTimeout(this.timeoutNaoEncontrado);
     this.ultimoCodigoNaoEncontrado.set(null);
     this.leitorAberto.set(true);
   }
@@ -35,6 +38,7 @@ export class BuscaPrecoComponent {
   aoLerCodigo(codigo: string) {
     if (this.buscando()) return;
     this.buscando.set(true);
+    clearTimeout(this.timeoutNaoEncontrado);
     this.ultimoCodigoNaoEncontrado.set(null);
 
     this.produtosService.listar({ pagina: 1, tamanho: 1 }, { texto: codigo, situacao: 'A' }).subscribe({
@@ -51,6 +55,8 @@ export class BuscaPrecoComponent {
           this.ultimoProduto.set(null);
           this.imagensProduto.set([]);
           this.ultimoCodigoNaoEncontrado.set(codigo);
+          clearTimeout(this.timeoutNaoEncontrado);
+          this.timeoutNaoEncontrado = setTimeout(() => this.ultimoCodigoNaoEncontrado.set(null), 5000);
         }
       },
       error: err => {

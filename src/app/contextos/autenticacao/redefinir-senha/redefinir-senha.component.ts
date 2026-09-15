@@ -4,6 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators, AbstractControl, Validati
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../../../core/auth/auth.service';
+import { LogoBadgeComponent } from '../../../shared/components/logo-badge/logo-badge.component';
 
 function senhasIguaisValidator(control: AbstractControl): ValidationErrors | null {
   const senha = control.get('novaSenha')?.value;
@@ -14,7 +15,7 @@ function senhasIguaisValidator(control: AbstractControl): ValidationErrors | nul
 @Component({
   selector: 'app-redefinir-senha',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, LogoBadgeComponent],
   templateUrl: './redefinir-senha.component.html'
 })
 export class RedefinirSenhaComponent {

@@ -3,6 +3,7 @@ import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 import { ThemeService } from '../../core/theme/theme.service';
 import { ToggleComponent } from '../../shared/components/toggle/toggle.component';
+import { LogoBadgeComponent } from '../../shared/components/logo-badge/logo-badge.component';
 
 export interface ItemMenu {
   label: string;
@@ -24,7 +25,7 @@ const CHAVE_LOCALSTORAGE_FIXADO = 'menu-fixado';
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, ToggleComponent],
+  imports: [RouterLink, RouterLinkActive, ToggleComponent, LogoBadgeComponent],
   templateUrl: './sidebar.component.html'
 })
 export class SidebarComponent {

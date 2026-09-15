@@ -3,11 +3,12 @@ import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
+import { LogoBadgeComponent } from '../../../shared/components/logo-badge/logo-badge.component';
 
 @Component({
   selector: 'app-esqueci-senha',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, LogoBadgeComponent],
   templateUrl: './esqueci-senha.component.html'
 })
 export class EsqueciSenhaComponent {

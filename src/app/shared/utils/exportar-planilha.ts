@@ -1,7 +1,16 @@
 import * as XLSX from 'xlsx';
 
-export function exportarPlanilha<T>(linhas: T[], nomeBase: string, nomeAba: string, formato: 'xlsx' | 'csv' = 'xlsx') {
+export function exportarPlanilha<T>(
+  linhas: T[],
+  nomeBase: string,
+  nomeAba: string,
+  formato: 'xlsx' | 'csv' = 'xlsx',
+  largurasColunas?: number[]
+) {
   const planilha = XLSX.utils.json_to_sheet(linhas);
+  if (largurasColunas) {
+    planilha['!cols'] = largurasColunas.map(wch => ({ wch }));
+  }
   if (formato === 'csv') {
     const csv = XLSX.utils.sheet_to_csv(planilha);
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });

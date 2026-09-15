@@ -3,16 +3,34 @@ import { Observable } from 'rxjs';
 import { ApiService } from '../../../core/http/api.service';
 import { Resultado } from '../../../core/models';
 import { Paginacao, ParametrosPaginacao } from '../../../core/models/paginacao.model';
-import { ItemConfirmarContagem, ItemImportacaoContagem, PreviewContagem, ProdutoPrioridadeContagem } from '../models/contagem-estoque.model';
+import {
+  FiltroPrioridadeContagem,
+  ItemConfirmarContagem,
+  ItemImportacaoContagem,
+  OrdenacaoPrioridadeContagem,
+  PreviewContagem,
+  ProdutoPrioridadeContagem
+} from '../models/contagem-estoque.model';
 
 @Injectable({ providedIn: 'root' })
 export class ContagemEstoqueService {
   private endpoint = '/v1/produtos/contagem';
 
+  previewPendente: PreviewContagem | null = null;
+
   constructor(private api: ApiService) {}
 
-  listarPrioritarios(paginacao: ParametrosPaginacao): Observable<Resultado<Paginacao<ProdutoPrioridadeContagem>>> {
-    return this.api.getPaginado<ProdutoPrioridadeContagem>(`${this.endpoint}/prioritarios`, paginacao);
+  listarPrioritarios(
+    paginacao: ParametrosPaginacao,
+    filtro?: FiltroPrioridadeContagem,
+    ordenacao?: OrdenacaoPrioridadeContagem | null
+  ): Observable<Resultado<Paginacao<ProdutoPrioridadeContagem>>> {
+    const filtros: Record<string, unknown> = { ...filtro };
+    if (ordenacao) {
+      filtros['ordenarPor'] = ordenacao.campo;
+      filtros['direcao'] = ordenacao.direcao;
+    }
+    return this.api.getPaginado<ProdutoPrioridadeContagem>(`${this.endpoint}/prioritarios`, paginacao, filtros);
   }
 
   importarPreview(itens: ItemImportacaoContagem[]): Observable<Resultado<PreviewContagem>> {

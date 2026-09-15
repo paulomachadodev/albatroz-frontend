@@ -1,6 +1,7 @@
 export interface ProdutoPrioridadeContagem {
   idProduto: number;
   codigo: string;
+  gtin: string | null;
   nome: string;
   marca: string | null;
   estoqueAtual: number;
@@ -8,6 +9,17 @@ export interface ProdutoPrioridadeContagem {
   diasSemVenda: number | null;
   score: number;
   ultimaContagemEm: string | null;
+}
+
+export interface FiltroPrioridadeContagem {
+  idMarca?: number;
+  comEstoque?: boolean;
+  curvaAbc?: string;
+}
+
+export interface OrdenacaoPrioridadeContagem {
+  campo: string;
+  direcao: 'asc' | 'desc';
 }
 
 export interface ItemImportacaoContagem {

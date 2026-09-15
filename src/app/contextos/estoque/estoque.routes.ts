@@ -46,5 +46,10 @@ export const ESTOQUE_ROUTES: Routes = [
     path: 'contagem',
     loadComponent: () =>
       import('./pages/contagem-estoque/contagem-estoque.component').then(m => m.ContagemEstoqueComponent)
+  },
+  {
+    path: 'contagem/revisao',
+    loadComponent: () =>
+      import('./pages/contagem-revisao/contagem-revisao.component').then(m => m.ContagemRevisaoComponent)
   }
 ];

@@ -1,0 +1,88 @@
+<div class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark px-4 sm:px-6 lg:px-8 xl:px-10 py-6 lg:py-8">
+  <div class="w-full space-y-6">
+
+    <app-breadcrumb [itens]="[{label:'Início',rota:'/dashboard'},{label:'Estoque',rota:'/estoque'},{label:'Contagem de estoque',rota:'/estoque/contagem'},{label:'Revisão da importação'}]"></app-breadcrumb>
+
+    <app-page-header titulo="Revisão da contagem importada" subtitulo="Confira as diferenças antes de aplicar — o que ficar de fora aqui não altera o saldo."></app-page-header>
+
+    @if (preview(); as p) {
+      <div class="flex gap-4 text-xs">
+        <span class="font-semibold text-emerald-600">{{ p.totalValidos }} válido(s)</span>
+        @if (p.totalComErro > 0) {
+          <span class="font-semibold text-rose-600">{{ p.totalComErro }} com erro (não serão aplicados)</span>
+        }
+      </div>
+
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm table-fixed">
+            <colgroup>
+              <col class="w-10"/>
+              <col class="w-24"/>
+              <col/>
+              <col class="w-28"/>
+              <col class="w-24"/>
+              <col class="w-24"/>
+              <col class="w-28"/>
+              <col class="w-28"/>
+            </colgroup>
+            <thead class="bg-slate-50 dark:bg-slate-800/60 sticky top-0">
+              <tr>
+                <th class="px-3 py-2 w-8"></th>
+                <th class="px-3 py-2 text-left">Código</th>
+                <th class="px-3 py-2 text-left">Descrição</th>
+                <th class="px-3 py-2 text-right">Na exportação</th>
+                <th class="px-3 py-2 text-right">Atual</th>
+                <th class="px-3 py-2 text-right">Contado</th>
+                <th class="px-3 py-2 text-right">Diferença real</th>
+                <th class="px-3 py-2 text-right">Novo saldo</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of p.itens; track $index) {
+                <tr [class]="item.erro ? 'opacity-50' : (item.requerAtencao ? 'bg-amber-50 dark:bg-amber-900/20' : '')">
+                  <td class="px-3 py-2">
+                    @if (!item.erro) {
+                      <input type="checkbox" [checked]="linhaIncluida($index)" (change)="aoAlternarLinhaIncluida($index, $any($event.target).checked)"
+                             class="size-4 rounded border-slate-300 dark:border-slate-600 text-primary focus:ring-primary/30"/>
+                    }
+                  </td>
+                  <td class="px-3 py-2 whitespace-nowrap">{{ item.codigo }}</td>
+                  <td class="px-3 py-2 truncate" [title]="item.nome || ''">
+                    <span class="truncate block">{{ item.nome || '-' }}</span>
+                    @if (item.erro) {
+                      <span class="block text-[11px] text-rose-600 truncate" [title]="item.erro">{{ item.erro }}</span>
+                    } @else if (item.usouSaldoAtualComoBase) {
+                      <span class="block text-[11px] text-amber-600">Sem referência da exportação — usou saldo atual como base</span>
+                    } @else if (item.requerAtencao) {
+                      <span class="block text-[11px] text-amber-600">Diferença grande — confira antes de aplicar</span>
+                    }
+                  </td>
+                  <td class="px-3 py-2 text-right">{{ item.quantidadeExportacao ?? '-' }}</td>
+                  <td class="px-3 py-2 text-right">{{ item.quantidadeAtual ?? '-' }}</td>
+                  <td class="px-3 py-2 text-right font-bold">{{ item.quantidadeContada }}</td>
+                  <td class="px-3 py-2 text-right" [class]="(item.diferencaReal ?? 0) < 0 ? 'text-rose-600' : (item.diferencaReal ?? 0) > 0 ? 'text-emerald-600' : ''">
+                    {{ item.diferencaReal ?? '-' }}
+                  </td>
+                  <td class="px-3 py-2 text-right">{{ item.novoSaldoEstimado ?? '-' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 pb-4">
+        <button type="button" (click)="cancelar()"
+                class="px-4 py-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-bold text-xs hover:bg-slate-100 dark:hover:bg-slate-700 transition-all">
+          Cancelar
+        </button>
+        <button type="button" (click)="confirmarAplicacao()" [disabled]="confirmando() || qtdIncluidas() === 0"
+                class="px-5 py-2 rounded-lg bg-primary text-white font-bold text-xs hover:bg-primary/90 disabled:opacity-50 transition-all">
+          {{ confirmando() ? 'Aplicando...' : 'Confirmar aplicação (' + qtdIncluidas() + ')' }}
+        </button>
+      </div>
+    }
+
+  </div>
+</div>

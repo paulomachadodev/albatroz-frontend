@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { ProdutosService } from '../../services/produtos.service';
 import { ProdutoResumo, ProdutoImagem } from '../../models/produto.model';
 import { ToastService } from '../../../../core/feedback/toast.service';
@@ -13,7 +13,7 @@ import { LeitorCodigoBarrasComponent } from '../../../../shared/components/leito
   templateUrl: './busca-preco.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
-export class BuscaPrecoComponent {
+export class BuscaPrecoComponent implements OnInit {
   leitorAberto = signal(false);
   buscando = signal(false);
   ultimoProduto = signal<ProdutoResumo | null>(null);
@@ -24,6 +24,12 @@ export class BuscaPrecoComponent {
   private timeoutNaoEncontrado?: ReturnType<typeof setTimeout>;
 
   constructor(private produtosService: ProdutosService, private toast: ToastService) {}
+
+  ngOnInit() {
+    if (window.matchMedia('(max-width: 767px)').matches) {
+      this.abrirLeitor();
+    }
+  }
 
   abrirLeitor() {
     clearTimeout(this.timeoutNaoEncontrado);

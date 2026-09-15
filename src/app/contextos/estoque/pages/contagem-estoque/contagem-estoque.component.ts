@@ -20,6 +20,7 @@ interface LinhaPlanilhaContagem {
 
 interface LinhaImportada {
   Codigo?: string | number;
+  EstoqueSistema?: string | number;
   'EstoqueContado (preencher)'?: string | number;
   EstoqueContado?: string | number;
 }
@@ -137,7 +138,10 @@ export class ContagemEstoqueComponent implements OnInit {
       const itensImportacao = linhas
         .map(l => ({
           codigo: (l.Codigo ?? '').toString().trim(),
-          quantidadeContada: Number(l['EstoqueContado (preencher)'] ?? l.EstoqueContado ?? '')
+          quantidadeContada: Number(l['EstoqueContado (preencher)'] ?? l.EstoqueContado ?? ''),
+          quantidadeSistemaExportacao: l.EstoqueSistema !== undefined && l.EstoqueSistema !== '' && !Number.isNaN(Number(l.EstoqueSistema))
+            ? Number(l.EstoqueSistema)
+            : null
         }))
         .filter(i => i.codigo.length > 0 && !Number.isNaN(i.quantidadeContada));
 
@@ -194,7 +198,11 @@ export class ContagemEstoqueComponent implements OnInit {
     const selecionados = itens
       .map((item, indice) => ({ item, indice }))
       .filter(x => this.linhasIncluidas.has(x.indice) && x.item.idProduto !== null)
-      .map(x => ({ idProduto: x.item.idProduto as number, quantidadeContada: x.item.quantidadeContada }));
+      .map(x => ({
+        idProduto: x.item.idProduto as number,
+        quantidadeContada: x.item.quantidadeContada,
+        quantidadeSistemaExportacao: x.item.quantidadeExportacao
+      }));
 
     if (selecionados.length === 0) {
       this.toast.erro('Selecione ao menos um item pra aplicar.');

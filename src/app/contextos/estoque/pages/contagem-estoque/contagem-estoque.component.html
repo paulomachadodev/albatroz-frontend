@@ -90,9 +90,11 @@
                   <th class="px-3 py-2 w-8"></th>
                   <th class="px-3 py-2 text-left">Código</th>
                   <th class="px-3 py-2 text-left">Descrição</th>
-                  <th class="px-3 py-2 text-right">Sistema</th>
+                  <th class="px-3 py-2 text-right">Na exportação</th>
+                  <th class="px-3 py-2 text-right">Atual</th>
                   <th class="px-3 py-2 text-right">Contado</th>
-                  <th class="px-3 py-2 text-right">Diferença</th>
+                  <th class="px-3 py-2 text-right">Diferença real</th>
+                  <th class="px-3 py-2 text-right">Novo saldo</th>
                 </tr>
               </thead>
               <tbody>
@@ -109,15 +111,19 @@
                       {{ item.nome || '-' }}
                       @if (item.erro) {
                         <span class="block text-[11px] text-rose-600">{{ item.erro }}</span>
+                      } @else if (item.usouSaldoAtualComoBase) {
+                        <span class="block text-[11px] text-amber-600">Sem referência da exportação — usou saldo atual como base</span>
                       } @else if (item.requerAtencao) {
                         <span class="block text-[11px] text-amber-600">Diferença grande — confira antes de aplicar</span>
                       }
                     </td>
-                    <td class="px-3 py-2 text-right">{{ item.quantidadeSistema ?? '-' }}</td>
+                    <td class="px-3 py-2 text-right">{{ item.quantidadeExportacao ?? '-' }}</td>
+                    <td class="px-3 py-2 text-right">{{ item.quantidadeAtual ?? '-' }}</td>
                     <td class="px-3 py-2 text-right font-bold">{{ item.quantidadeContada }}</td>
-                    <td class="px-3 py-2 text-right" [class]="(item.diferenca ?? 0) < 0 ? 'text-rose-600' : (item.diferenca ?? 0) > 0 ? 'text-emerald-600' : ''">
-                      {{ item.diferenca ?? '-' }}
+                    <td class="px-3 py-2 text-right" [class]="(item.diferencaReal ?? 0) < 0 ? 'text-rose-600' : (item.diferencaReal ?? 0) > 0 ? 'text-emerald-600' : ''">
+                      {{ item.diferencaReal ?? '-' }}
                     </td>
+                    <td class="px-3 py-2 text-right">{{ item.novoSaldoEstimado ?? '-' }}</td>
                   </tr>
                 }
               </tbody>

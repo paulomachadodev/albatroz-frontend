@@ -13,16 +13,20 @@ export interface ProdutoPrioridadeContagem {
 export interface ItemImportacaoContagem {
   codigo: string;
   quantidadeContada: number;
+  quantidadeSistemaExportacao: number | null;
 }
 
 export interface ItemPreviewContagem {
   idProduto: number | null;
   codigo: string;
   nome: string | null;
-  quantidadeSistema: number | null;
+  quantidadeExportacao: number | null;
+  quantidadeAtual: number | null;
   quantidadeContada: number;
-  diferenca: number | null;
+  diferencaReal: number | null;
+  novoSaldoEstimado: number | null;
   percentualDiferenca: number | null;
+  usouSaldoAtualComoBase: boolean;
   requerAtencao: boolean;
   erro: string | null;
 }
@@ -36,4 +40,5 @@ export interface PreviewContagem {
 export interface ItemConfirmarContagem {
   idProduto: number;
   quantidadeContada: number;
+  quantidadeSistemaExportacao: number | null;
 }

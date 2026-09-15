@@ -50,15 +50,46 @@ export class LeitorCodigoBarrasComponent implements AfterViewInit, OnDestroy {
   private lentesTraseiras: MediaDeviceInfo[] = [];
   private indiceLenteAtual = 0;
   private destruido = false;
+  private ultimoErroNome?: string;
 
   async ngAfterViewInit() {
     this.audioContext = new AudioContext();
     this.audioContext.resume();
-    await this.abrirCamera({ facingMode: { ideal: 'environment' } });
+    const lentePreferida = this.lerLentePreferida();
+    if (lentePreferida) {
+      await this.abrirCamera({ deviceId: { exact: lentePreferida } });
+      if (this.erro() && this.ultimoErroNome !== 'NotReadableError') {
+        this.limparLentePreferida();
+        await this.abrirCamera({ facingMode: { ideal: 'environment' } });
+      }
+    } else {
+      await this.abrirCamera({ facingMode: { ideal: 'environment' } });
+    }
   }
 
   private static readonly ESPERA_LIBERACAO_CAMERA_MS = 400;
   private static readonly EH_ANDROID = /Android/i.test(navigator.userAgent);
+  private static readonly CHAVE_LENTE_PREFERIDA = 'albatroz-leitor-lente-preferida';
+
+  private lerLentePreferida(): string | null {
+    try {
+      return localStorage.getItem(LeitorCodigoBarrasComponent.CHAVE_LENTE_PREFERIDA);
+    } catch {
+      return null;
+    }
+  }
+
+  private salvarLentePreferida(deviceId: string): void {
+    try {
+      localStorage.setItem(LeitorCodigoBarrasComponent.CHAVE_LENTE_PREFERIDA, deviceId);
+    } catch {}
+  }
+
+  private limparLentePreferida(): void {
+    try {
+      localStorage.removeItem(LeitorCodigoBarrasComponent.CHAVE_LENTE_PREFERIDA);
+    } catch {}
+  }
 
   private async pararCameraAtual(): Promise<void> {
     this.controls?.stop();
@@ -96,12 +127,14 @@ export class LeitorCodigoBarrasComponent implements AfterViewInit, OnDestroy {
       });
       this.carregando.set(false);
       this.erro.set(null);
+      this.ultimoErroNome = undefined;
       const stream = this.video().nativeElement.srcObject as MediaStream | null;
       this.track = stream?.getVideoTracks()[0];
       await this.mapearLentesTraseiras();
       this.configurarFallbacksDeFoco();
     } catch (e) {
       const nome = (e as DOMException)?.name;
+      this.ultimoErroNome = nome;
       if ((nome === 'NotFoundError' || nome === 'NotReadableError') && tentativa < 3) {
         await new Promise(resolve => setTimeout(resolve, LeitorCodigoBarrasComponent.ESPERA_LIBERACAO_CAMERA_MS * (tentativa + 1)));
         if (this.destruido) return;
@@ -148,6 +181,9 @@ export class LeitorCodigoBarrasComponent implements AfterViewInit, OnDestroy {
     this.zoomSuportado.set(false);
     this.zoomAtual.set(1);
     await this.abrirCamera({ deviceId: { exact: proximaLente.deviceId } });
+    if (!this.erro()) {
+      this.salvarLentePreferida(proximaLente.deviceId);
+    }
     this.trocandoLente.set(false);
   }
 

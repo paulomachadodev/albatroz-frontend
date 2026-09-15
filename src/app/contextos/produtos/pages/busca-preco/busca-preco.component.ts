@@ -20,6 +20,7 @@ export class BuscaPrecoComponent implements OnInit {
   ultimoCodigoNaoEncontrado = signal<string | null>(null);
   imagensProduto = signal<ProdutoImagem[]>([]);
   indiceImagemAtual = signal(0);
+  slugProduto = signal<string | null>(null);
 
   private timeoutNaoEncontrado?: ReturnType<typeof setTimeout>;
 
@@ -55,8 +56,10 @@ export class BuscaPrecoComponent implements OnInit {
           this.ultimoProduto.set(produto);
           this.imagensProduto.set([]);
           this.indiceImagemAtual.set(0);
+          this.slugProduto.set(null);
           this.fecharLeitor();
           this.carregarImagens(produto.id);
+          this.carregarSlug(produto.id);
         } else {
           this.ultimoProduto.set(null);
           this.imagensProduto.set([]);
@@ -81,11 +84,48 @@ export class BuscaPrecoComponent implements OnInit {
   private carregarImagens(idProduto: number) {
     this.produtosService.obter(idProduto).subscribe({
       next: res => {
+        if (this.ultimoProduto()?.id !== idProduto) return;
         const imagens = (res.dados?.imagens ?? []).slice().sort((a, b) => a.indice - b.indice);
         this.imagensProduto.set(imagens);
       },
-      error: () => this.imagensProduto.set([])
+      error: () => {
+        if (this.ultimoProduto()?.id === idProduto) this.imagensProduto.set([]);
+      }
     });
+  }
+
+  private carregarSlug(idProduto: number) {
+    this.produtosService.obterEnriquecimento(idProduto).subscribe({
+      next: res => {
+        if (this.ultimoProduto()?.id !== idProduto) return;
+        this.slugProduto.set(res.dados?.seoSlug ?? null);
+      },
+      error: () => {
+        if (this.ultimoProduto()?.id === idProduto) this.slugProduto.set(null);
+      }
+    });
+  }
+
+  fecharResultado() {
+    this.ultimoProduto.set(null);
+    this.imagensProduto.set([]);
+    this.indiceImagemAtual.set(0);
+    this.slugProduto.set(null);
+  }
+
+  compartilhar() {
+    const slug = this.slugProduto();
+    const produto = this.ultimoProduto();
+    if (!slug || !produto) return;
+
+    const url = `https://albatrozpapelaria.com.br/produto/${slug}`;
+    if (navigator.share) {
+      navigator.share({ title: produto.nome, url }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(url)
+        .then(() => this.toast.sucesso('Link copiado.'))
+        .catch(() => this.toast.erro('Não foi possível copiar o link.'));
+    }
   }
 
   formatarReais(valor: number | null | undefined): string {

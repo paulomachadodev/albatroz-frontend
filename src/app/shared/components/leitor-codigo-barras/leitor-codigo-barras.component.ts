@@ -2,6 +2,7 @@ import { AfterViewInit, Component, ElementRef, OnDestroy, input, output, signal,
 import { FormsModule } from '@angular/forms';
 import { BrowserMultiFormatReader } from '@zxing/browser';
 import type { IScannerControls } from '@zxing/browser';
+import { BarcodeFormat, DecodeHintType } from '@zxing/library';
 
 @Component({
   selector: 'app-leitor-codigo-barras',
@@ -37,7 +38,7 @@ export class LeitorCodigoBarrasComponent implements AfterViewInit, OnDestroy {
   private static readonly ZOOM_INICIAL_IDEAL = 2;
   private static readonly DISTANCIAS_FOCO_SWEEP = [0.02, 0.06, 0.1, 0.18, 0.3];
 
-  private reader = new BrowserMultiFormatReader();
+  private reader = new BrowserMultiFormatReader(LeitorCodigoBarrasComponent.criarHintsDecodificacao());
   private controls?: IScannerControls;
   private ultimoCodigoLido: string | null = null;
   private ultimoLidoEm = 0;
@@ -67,8 +68,21 @@ export class LeitorCodigoBarrasComponent implements AfterViewInit, OnDestroy {
     }
   }
 
+  private static criarHintsDecodificacao(): Map<DecodeHintType, unknown> {
+    const hints = new Map<DecodeHintType, unknown>();
+    hints.set(DecodeHintType.TRY_HARDER, true);
+    hints.set(DecodeHintType.POSSIBLE_FORMATS, [
+      BarcodeFormat.EAN_13,
+      BarcodeFormat.EAN_8,
+      BarcodeFormat.UPC_A,
+      BarcodeFormat.UPC_E,
+      BarcodeFormat.CODE_128,
+      BarcodeFormat.CODE_39
+    ]);
+    return hints;
+  }
+
   private static readonly ESPERA_LIBERACAO_CAMERA_MS = 400;
-  private static readonly EH_ANDROID = /Android/i.test(navigator.userAgent);
   private static readonly CHAVE_LENTE_PREFERIDA = 'albatroz-leitor-lente-preferida';
 
   private lerLentePreferida(): string | null {
@@ -107,8 +121,8 @@ export class LeitorCodigoBarrasComponent implements AfterViewInit, OnDestroy {
     try {
       const constraints: MediaStreamConstraints = {
         video: {
-          width: { ideal: LeitorCodigoBarrasComponent.EH_ANDROID ? 640 : 1280 },
-          height: { ideal: LeitorCodigoBarrasComponent.EH_ANDROID ? 480 : 720 },
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
           advanced: [{ focusMode: 'continuous' } as MediaTrackConstraintSet],
           ...videoConstraints
         }

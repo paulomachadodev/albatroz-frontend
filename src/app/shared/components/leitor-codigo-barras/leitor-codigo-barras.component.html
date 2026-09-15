@@ -1,3 +1,9 @@
+<style>
+  @keyframes leitor-laser {
+    0%, 100% { top: 8%; }
+    50% { top: 88%; }
+  }
+</style>
 <div class="fixed inset-0 z-[60] bg-black flex flex-col">
   <div class="flex items-center justify-between gap-2 px-4 shrink-0" style="padding-top: max(0.75rem, env(safe-area-inset-top, 0px)); padding-bottom: 0.75rem">
     <span class="text-white font-bold text-sm shrink-0">Bipar código de barras</span>
@@ -17,9 +23,9 @@
         <div class="absolute inset-0 flex items-center justify-center text-white text-sm">Abrindo câmera...</div>
       }
       @if (!carregando() && !erro()) {
-        <div class="absolute inset-8 border-2 border-white/70 rounded-2xl pointer-events-none"></div>
-        <div class="absolute bottom-24 inset-x-4 text-center text-white/80 text-xs pointer-events-none">
-          Afaste um pouco o celular do código (~10-15cm) e toque na tela pra focar
+        <div class="absolute inset-8 rounded-2xl overflow-hidden pointer-events-none">
+          <div class="absolute inset-0 border-2 border-white/70 rounded-2xl"></div>
+          <div class="absolute inset-x-0 top-[8%] h-0.5 bg-red-500/80 shadow-[0_0_6px_2px_rgba(239,68,68,0.7)]" style="animation: leitor-laser 1.8s ease-in-out infinite"></div>
         </div>
       }
       @if (temMultiplasLentes() && !carregando() && !erro()) {

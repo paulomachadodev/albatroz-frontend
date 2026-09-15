@@ -58,22 +58,22 @@
             }
           </div>
 
-          <div class="shrink-0 px-4 pt-3 space-y-2" style="padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0px))">
+          <div class="shrink-0 px-4 pt-3 space-y-3" style="padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0px))">
             <div>
-              <div class="text-xs text-slate-400">{{ p.codigo }}</div>
-              <div class="text-base font-bold text-slate-900 dark:text-slate-100 truncate">{{ p.nome }}</div>
+              <div class="text-sm font-mono font-semibold text-slate-500 dark:text-slate-400">{{ p.codigo }}</div>
+              <div class="text-xl font-bold text-slate-900 dark:text-slate-100 line-clamp-2">{{ p.nome }}</div>
               @if (p.marca) {
-                <div class="text-xs text-slate-500">{{ p.marca }}</div>
+                <div class="text-sm text-slate-500">{{ p.marca }}</div>
               }
             </div>
             <div class="grid grid-cols-2 gap-4">
               <div>
                 <div class="text-xs text-slate-400">Preço</div>
                 @if (p.precoPromocional) {
-                  <div class="text-xs line-through text-slate-400">{{ formatarReais(p.preco) }}</div>
-                  <div class="text-xl font-bold text-emerald-600">{{ formatarReais(p.precoPromocional) }}</div>
+                  <div class="text-sm line-through text-slate-400">{{ formatarReais(p.preco) }}</div>
+                  <div class="text-3xl font-bold text-emerald-600">{{ formatarReais(p.precoPromocional) }}</div>
                 } @else {
-                  <div class="text-xl font-bold text-primary">{{ formatarReais(p.preco) }}</div>
+                  <div class="text-3xl font-bold text-primary">{{ formatarReais(p.preco) }}</div>
                 }
               </div>
               <div>

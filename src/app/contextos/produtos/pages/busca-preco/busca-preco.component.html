@@ -28,7 +28,28 @@
     }
 
     @if (ultimoProduto(); as p) {
-      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-4">
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden space-y-4">
+        @if (imagensProduto().length > 0) {
+          <div class="relative">
+            <div #carrossel (scroll)="aoRolarCarrossel(carrossel)"
+                 class="flex overflow-x-auto snap-x snap-mandatory scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              @for (img of imagensProduto(); track img.id) {
+                <img [src]="img.url" [alt]="p.nome"
+                     class="w-full shrink-0 snap-center aspect-square object-cover bg-slate-50 dark:bg-slate-800"/>
+              }
+            </div>
+            @if (imagensProduto().length > 1) {
+              <div class="absolute bottom-2 inset-x-0 flex items-center justify-center gap-1.5">
+                @for (img of imagensProduto(); track img.id; let i = $index) {
+                  <span class="size-1.5 rounded-full" [class]="i === indiceImagemAtual() ? 'bg-white' : 'bg-white/50'"></span>
+                }
+              </div>
+            }
+          </div>
+        } @else if (p.temImagem && p.urlImagemPrincipal) {
+          <img [src]="p.urlImagemPrincipal" [alt]="p.nome" class="w-full aspect-square object-cover bg-slate-50 dark:bg-slate-800"/>
+        }
+        <div class="px-5 pb-5 space-y-4">
         <div>
           <div class="text-xs text-slate-400">{{ p.codigo }}</div>
           <div class="text-lg font-bold text-slate-900 dark:text-slate-100">{{ p.nome }}</div>
@@ -50,6 +71,7 @@
             <div class="text-xs text-slate-400">Estoque</div>
             <div class="text-2xl font-bold text-slate-900 dark:text-slate-100">{{ p.estoqueAtual }}</div>
           </div>
+        </div>
         </div>
       </div>
     }

@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { ProdutosService } from '../../services/produtos.service';
-import { ProdutoResumo } from '../../models/produto.model';
+import { ProdutoResumo, ProdutoImagem } from '../../models/produto.model';
 import { ToastService } from '../../../../core/feedback/toast.service';
 import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 import { BreadcrumbComponent } from '../../../../shared/components/breadcrumb/breadcrumb.component';
@@ -18,6 +18,8 @@ export class BuscaPrecoComponent {
   buscando = signal(false);
   ultimoProduto = signal<ProdutoResumo | null>(null);
   ultimoCodigoNaoEncontrado = signal<string | null>(null);
+  imagensProduto = signal<ProdutoImagem[]>([]);
+  indiceImagemAtual = signal(0);
 
   constructor(private produtosService: ProdutosService, private toast: ToastService) {}
 
@@ -41,9 +43,13 @@ export class BuscaPrecoComponent {
         const produto = (res.dados?.dados ?? [])[0] ?? null;
         if (produto && produto.tipo === 'simples') {
           this.ultimoProduto.set(produto);
+          this.imagensProduto.set([]);
+          this.indiceImagemAtual.set(0);
           this.fecharLeitor();
+          this.carregarImagens(produto.id);
         } else {
           this.ultimoProduto.set(null);
+          this.imagensProduto.set([]);
           this.ultimoCodigoNaoEncontrado.set(codigo);
         }
       },
@@ -51,6 +57,22 @@ export class BuscaPrecoComponent {
         this.buscando.set(false);
         this.toast.erroServidor(err, 'Não foi possível buscar o produto.');
       }
+    });
+  }
+
+  aoRolarCarrossel(elemento: HTMLDivElement) {
+    const largura = elemento.clientWidth;
+    if (!largura) return;
+    this.indiceImagemAtual.set(Math.round(elemento.scrollLeft / largura));
+  }
+
+  private carregarImagens(idProduto: number) {
+    this.produtosService.obter(idProduto).subscribe({
+      next: res => {
+        const imagens = (res.dados?.imagens ?? []).slice().sort((a, b) => a.indice - b.indice);
+        this.imagensProduto.set(imagens);
+      },
+      error: () => this.imagensProduto.set([])
     });
   }
 

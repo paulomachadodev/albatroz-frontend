@@ -4,7 +4,7 @@ import { Observable, catchError, finalize, shareReplay, tap, throwError } from '
 import { environment } from '../../../environments/environment';
 
 export interface LoginRequisicao {
-  email: string;
+  identificador: string;
   senha: string;
   empresaId: number;
 }
@@ -66,7 +66,7 @@ export class AuthService {
   }
 
   login(req: LoginRequisicao): Observable<AutenticacaoResposta> {
-    const body = { email: req.email, senha: req.senha, empresaId: req.empresaId };
+    const body = { identificador: req.identificador, senha: req.senha, empresaId: req.empresaId };
     return this.http.post<AutenticacaoResposta>(`${this.endpoint}/login`, body).pipe(
       tap(resp => this.persistirSessao(resp))
     );

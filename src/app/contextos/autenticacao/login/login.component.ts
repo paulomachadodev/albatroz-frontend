@@ -41,7 +41,7 @@ export class LoginComponent {
 
     const { email, senha, empresaId } = this.form.getRawValue();
 
-    this.auth.login({ email, senha, empresaId }).subscribe({
+    this.auth.login({ identificador: email, senha, empresaId }).subscribe({
       next: () => {
         this.carregando.set(false);
         const ret = new URLSearchParams(window.location.search).get('returnUrl');
@@ -50,7 +50,7 @@ export class LoginComponent {
       error: (err) => {
         this.carregando.set(false);
         const msg = err?.error?.mensagem ?? err?.error?.erro ?? null;
-        this.erro.set(msg ?? 'E-mail ou senha incorretos. Tente novamente.');
+        this.erro.set(msg ?? 'Usuário/e-mail ou senha incorretos. Tente novamente.');
       }
     });
   }

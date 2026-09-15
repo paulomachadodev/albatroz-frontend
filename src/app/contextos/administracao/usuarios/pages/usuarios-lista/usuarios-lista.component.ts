@@ -46,6 +46,7 @@ export class UsuariosListaComponent implements OnInit {
 
   nome = '';
   email = '';
+  nomeUsuario = '';
   senha = '';
   perfilIdsSelecionados = new Set<number>();
 
@@ -85,6 +86,7 @@ export class UsuariosListaComponent implements OnInit {
     this.usuarioEmEdicao.set(null);
     this.nome = '';
     this.email = '';
+    this.nomeUsuario = '';
     this.senha = '';
     this.perfilIdsSelecionados = new Set();
     this.drawerAberto.set(true);
@@ -95,6 +97,7 @@ export class UsuariosListaComponent implements OnInit {
     this.usuarioEmEdicao.set(usuario);
     this.nome = usuario.nome;
     this.email = usuario.email;
+    this.nomeUsuario = usuario.nomeUsuario ?? '';
     this.senha = '';
     this.perfilIdsSelecionados = new Set(
       this.perfisDisponiveis().filter(p => usuario.perfis.includes(p.nome)).map(p => p.id)
@@ -117,6 +120,7 @@ export class UsuariosListaComponent implements OnInit {
   salvar() {
     const nome = this.nome.trim();
     const email = this.email.trim();
+    const nomeUsuario = this.nomeUsuario.trim() || undefined;
     if (!nome || !email) {
       this.toast.erro('Nome e e-mail são obrigatórios.');
       return;
@@ -129,7 +133,7 @@ export class UsuariosListaComponent implements OnInit {
       }
 
       this.salvando.set(true);
-      this.usuariosService.criar({ nome, email, senha: this.senha }).subscribe({
+      this.usuariosService.criar({ nome, email, senha: this.senha, nomeUsuario }).subscribe({
         next: usuarioCriado => this.aplicarPerfisEFinalizar(usuarioCriado.dados!.id, 'Usuário criado.'),
         error: err => {
           this.salvando.set(false);
@@ -141,7 +145,7 @@ export class UsuariosListaComponent implements OnInit {
 
     this.salvando.set(true);
     const id = this.usuarioEmEdicao()!.id;
-    this.usuariosService.atualizar(id, { nome, email }).subscribe({
+    this.usuariosService.atualizar(id, { nome, email, nomeUsuario }).subscribe({
       next: () => this.aplicarPerfisEFinalizar(id, 'Usuário atualizado.'),
       error: err => {
         this.salvando.set(false);

@@ -49,6 +49,7 @@ export class LeitorCodigoBarrasComponent implements AfterViewInit, OnDestroy {
   private indiceModoFoco = 0;
   private lentesTraseiras: MediaDeviceInfo[] = [];
   private indiceLenteAtual = 0;
+  private destruido = false;
 
   async ngAfterViewInit() {
     this.audioContext = new AudioContext();
@@ -56,8 +57,21 @@ export class LeitorCodigoBarrasComponent implements AfterViewInit, OnDestroy {
     await this.abrirCamera({ facingMode: { ideal: 'environment' } });
   }
 
-  private async abrirCamera(videoConstraints: MediaTrackConstraints): Promise<void> {
+  private static readonly ESPERA_LIBERACAO_CAMERA_MS = 400;
+
+  private async pararCameraAtual(): Promise<void> {
     this.controls?.stop();
+    const stream = this.video().nativeElement.srcObject as MediaStream | null;
+    stream?.getTracks().forEach(t => t.stop());
+    this.video().nativeElement.srcObject = null;
+    if (stream) {
+      await new Promise(resolve => setTimeout(resolve, LeitorCodigoBarrasComponent.ESPERA_LIBERACAO_CAMERA_MS));
+    }
+  }
+
+  private async abrirCamera(videoConstraints: MediaTrackConstraints, tentativa = 1): Promise<void> {
+    await this.pararCameraAtual();
+    if (this.destruido) return;
     try {
       const constraints: MediaStreamConstraints = {
         video: {
@@ -86,8 +100,13 @@ export class LeitorCodigoBarrasComponent implements AfterViewInit, OnDestroy {
       await this.mapearLentesTraseiras();
       this.configurarFallbacksDeFoco();
     } catch (e) {
-      this.carregando.set(false);
       const nome = (e as DOMException)?.name;
+      if ((nome === 'NotFoundError' || nome === 'NotReadableError') && tentativa < 3) {
+        await new Promise(resolve => setTimeout(resolve, LeitorCodigoBarrasComponent.ESPERA_LIBERACAO_CAMERA_MS * (tentativa + 1)));
+        if (this.destruido) return;
+        return this.abrirCamera(videoConstraints, tentativa + 1);
+      }
+      this.carregando.set(false);
       if (nome === 'NotAllowedError') {
         this.erro.set('Permissão de câmera negada. Habilite o acesso à câmera nas configurações do navegador pra usar o leitor.');
       } else if (nome === 'NotFoundError' || nome === 'NotReadableError') {
@@ -132,6 +151,7 @@ export class LeitorCodigoBarrasComponent implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.destruido = true;
     clearInterval(this.intervalRetriggerFoco);
     clearInterval(this.intervalSweepFoco);
     this.controls?.stop();

@@ -58,6 +58,7 @@ export class LeitorCodigoBarrasComponent implements AfterViewInit, OnDestroy {
   }
 
   private static readonly ESPERA_LIBERACAO_CAMERA_MS = 400;
+  private static readonly EH_ANDROID = /Android/i.test(navigator.userAgent);
 
   private async pararCameraAtual(): Promise<void> {
     this.controls?.stop();
@@ -75,8 +76,8 @@ export class LeitorCodigoBarrasComponent implements AfterViewInit, OnDestroy {
     try {
       const constraints: MediaStreamConstraints = {
         video: {
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
+          width: { ideal: LeitorCodigoBarrasComponent.EH_ANDROID ? 640 : 1280 },
+          height: { ideal: LeitorCodigoBarrasComponent.EH_ANDROID ? 480 : 720 },
           advanced: [{ focusMode: 'continuous' } as MediaTrackConstraintSet],
           ...videoConstraints
         }

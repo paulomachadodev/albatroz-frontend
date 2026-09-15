@@ -28,6 +28,8 @@ export class LeitorCodigoBarrasComponent implements AfterViewInit, OnDestroy {
   zoomMin = signal(1);
   zoomMax = signal(1);
   zoomPasso = signal(0.5);
+  temMultiplasLentes = signal(false);
+  trocandoLente = signal(false);
 
   private static readonly JANELA_DEBOUNCE_MS = 2500;
   private static readonly INTERVALO_RETRIGGER_FOCO_MS = 1500;
@@ -45,18 +47,24 @@ export class LeitorCodigoBarrasComponent implements AfterViewInit, OnDestroy {
   private indiceSweepFoco = 0;
   private modosFocoAlternados: ('continuous' | 'single-shot')[] = ['single-shot', 'continuous'];
   private indiceModoFoco = 0;
+  private lentesTraseiras: MediaDeviceInfo[] = [];
+  private indiceLenteAtual = 0;
 
   async ngAfterViewInit() {
     this.audioContext = new AudioContext();
     this.audioContext.resume();
+    await this.abrirCamera({ facingMode: { ideal: 'environment' } });
+  }
 
+  private async abrirCamera(videoConstraints: MediaTrackConstraints): Promise<void> {
+    this.controls?.stop();
     try {
       const constraints: MediaStreamConstraints = {
         video: {
-          facingMode: { ideal: 'environment' },
           width: { ideal: 1280 },
           height: { ideal: 720 },
-          advanced: [{ focusMode: 'continuous' } as MediaTrackConstraintSet]
+          advanced: [{ focusMode: 'continuous' } as MediaTrackConstraintSet],
+          ...videoConstraints
         }
       };
       this.controls = await this.reader.decodeFromConstraints(constraints, this.video().nativeElement, (resultado) => {
@@ -72,6 +80,10 @@ export class LeitorCodigoBarrasComponent implements AfterViewInit, OnDestroy {
         this.codigoLido.emit(codigo);
       });
       this.carregando.set(false);
+      this.erro.set(null);
+      const stream = this.video().nativeElement.srcObject as MediaStream | null;
+      this.track = stream?.getVideoTracks()[0];
+      await this.mapearLentesTraseiras();
       this.configurarFallbacksDeFoco();
     } catch (e) {
       this.carregando.set(false);
@@ -84,6 +96,39 @@ export class LeitorCodigoBarrasComponent implements AfterViewInit, OnDestroy {
         this.erro.set('Não foi possível abrir a câmera.');
       }
     }
+  }
+
+  private async mapearLentesTraseiras(): Promise<void> {
+    if (this.lentesTraseiras.length) return;
+    try {
+      const dispositivos = await navigator.mediaDevices.enumerateDevices();
+      this.lentesTraseiras = dispositivos.filter(d => {
+        if (d.kind !== 'videoinput') return false;
+        const rotulo = d.label.toLowerCase();
+        return !rotulo.includes('front') && !rotulo.includes('frontal') && !rotulo.includes('user');
+      });
+      this.temMultiplasLentes.set(this.lentesTraseiras.length > 1);
+      const deviceIdAtual = this.track?.getSettings().deviceId;
+      if (deviceIdAtual) {
+        const indice = this.lentesTraseiras.findIndex(l => l.deviceId === deviceIdAtual);
+        if (indice >= 0) this.indiceLenteAtual = indice;
+      }
+    } catch {
+      this.temMultiplasLentes.set(false);
+    }
+  }
+
+  async trocarLente(): Promise<void> {
+    if (!this.lentesTraseiras.length || this.trocandoLente()) return;
+    this.trocandoLente.set(true);
+    clearInterval(this.intervalRetriggerFoco);
+    clearInterval(this.intervalSweepFoco);
+    this.indiceLenteAtual = (this.indiceLenteAtual + 1) % this.lentesTraseiras.length;
+    const proximaLente = this.lentesTraseiras[this.indiceLenteAtual];
+    this.zoomSuportado.set(false);
+    this.zoomAtual.set(1);
+    await this.abrirCamera({ deviceId: { exact: proximaLente.deviceId } });
+    this.trocandoLente.set(false);
   }
 
   ngOnDestroy() {

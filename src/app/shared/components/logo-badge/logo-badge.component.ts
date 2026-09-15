@@ -4,7 +4,7 @@ import { Component, input } from '@angular/core';
   selector: 'app-logo-badge',
   standalone: true,
   template: `
-    <div class="rounded-lg bg-gradient-to-br from-sky-500 via-indigo-500 to-violet-500 flex items-center justify-center shrink-0"
+    <div class="rounded-lg bg-primary flex items-center justify-center shrink-0"
          [class.size-8]="tamanho() === 'sm'" [class.size-9]="tamanho() === 'md'"
          [class.shadow-md]="comSombra()">
       <img src="/logo/albatroz-icon.svg" alt="Albatroz" class="size-5" />

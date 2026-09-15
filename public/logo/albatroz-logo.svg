@@ -1,13 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 64" fill="none">
-  <defs>
-    <linearGradient id="lg" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
-      <stop offset="0%"  stop-color="#0EA5E9"/>
-      <stop offset="50%" stop-color="#6366F1"/>
-      <stop offset="100%" stop-color="#8B5CF6"/>
-    </linearGradient>
-  </defs>
   <g transform="translate(4 8)">
-    <rect width="48" height="48" rx="12" fill="url(#lg)"/>
+    <rect width="48" height="48" rx="12" fill="#1754CF"/>
     <rect x="6" y="24" width="6" height="14" rx="2.5" fill="white" fill-opacity="0.95"/>
     <rect x="17" y="18" width="6" height="20" rx="2.5" fill="white" fill-opacity="0.95"/>
     <rect x="28" y="28" width="6" height="10" rx="2.5" fill="white" fill-opacity="0.95"/>
@@ -16,7 +9,6 @@
     <circle cx="9" cy="24" r="2.5" fill="white"/>
     <circle cx="42" cy="14" r="3" fill="white"/>
   </g>
-  <!-- wordmark -->
   <g transform="translate(64 0)" fill="currentColor" style="color:#ffffff">
     <text x="0" y="32" font-family="Inter, system-ui, sans-serif" font-size="22"
           font-weight="700" letter-spacing="-0.5" fill="#ffffff">Albatroz</text>

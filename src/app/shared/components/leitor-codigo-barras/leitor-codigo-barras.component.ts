@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, OnDestroy, output, signal, viewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnDestroy, input, output, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BrowserMultiFormatReader } from '@zxing/browser';
 import type { IScannerControls } from '@zxing/browser';
@@ -15,6 +15,9 @@ export class LeitorCodigoBarrasComponent implements AfterViewInit, OnDestroy {
 
   codigoLido = output<string>();
   fechar = output<void>();
+
+  buscandoProduto = input<boolean>(false);
+  mensagemErroBusca = input<string | null>(null);
 
   carregando = signal(true);
   erro = signal<string | null>(null);

@@ -41,6 +41,7 @@ export class BuscaPrecoComponent {
         const produto = (res.dados?.dados ?? [])[0] ?? null;
         if (produto && produto.tipo === 'simples') {
           this.ultimoProduto.set(produto);
+          this.fecharLeitor();
         } else {
           this.ultimoProduto.set(null);
           this.ultimoCodigoNaoEncontrado.set(codigo);

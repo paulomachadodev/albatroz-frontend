@@ -81,7 +81,7 @@ export class ContagemGuiadaInicioComponent implements OnInit {
   }
 
   continuar(sessao: ContagemSessaoResumo) {
-    this.router.navigate(['/estoque/contagem/guiada', sessao.id]);
+    this.router.navigate(['/balanco/guiada', sessao.id]);
   }
 
   irParaNovaContagem() {
@@ -97,7 +97,7 @@ export class ContagemGuiadaInicioComponent implements OnInit {
     this.contagemSessaoService.iniciar({ modo: 'prioridade' }).subscribe({
       next: res => {
         this.iniciando.set(false);
-        if (res.dados) this.router.navigate(['/estoque/contagem/guiada', res.dados.id]);
+        if (res.dados) this.router.navigate(['/balanco/guiada', res.dados.id]);
       },
       error: err => {
         this.iniciando.set(false);
@@ -158,7 +158,7 @@ export class ContagemGuiadaInicioComponent implements OnInit {
     this.contagemSessaoService.iniciar({ modo: 'selecao', idsProduto: Array.from(this.selecionados.keys()) }).subscribe({
       next: res => {
         this.iniciando.set(false);
-        if (res.dados) this.router.navigate(['/estoque/contagem/guiada', res.dados.id]);
+        if (res.dados) this.router.navigate(['/balanco/guiada', res.dados.id]);
       },
       error: err => {
         this.iniciando.set(false);

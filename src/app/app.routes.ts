@@ -35,6 +35,11 @@ export const routes: Routes = [
           import('./contextos/estoque/estoque.routes').then(m => m.ESTOQUE_ROUTES)
       },
       {
+        path: 'balanco',
+        loadChildren: () =>
+          import('./contextos/balanco/balanco.routes').then(m => m.BALANCO_ROUTES)
+      },
+      {
         path: 'albia',
         loadChildren: () =>
           import('./contextos/albia/albia.routes').then(m => m.ALBIA_ROUTES)

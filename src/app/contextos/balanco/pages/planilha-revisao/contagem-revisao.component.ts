@@ -28,7 +28,7 @@ export class ContagemRevisaoComponent implements OnInit {
     const preview = this.contagemService.previewPendente;
     this.contagemService.previewPendente = null;
     if (!preview) {
-      this.router.navigate(['/estoque/contagem']);
+      this.router.navigate(['/balanco/planilha']);
       return;
     }
     this.preview.set(preview);
@@ -55,7 +55,7 @@ export class ContagemRevisaoComponent implements OnInit {
 
   cancelar() {
     this.contagemService.previewPendente = null;
-    this.router.navigate(['/estoque/contagem']);
+    this.router.navigate(['/balanco/planilha']);
   }
 
   confirmarAplicacao() {
@@ -80,7 +80,7 @@ export class ContagemRevisaoComponent implements OnInit {
         this.confirmando.set(false);
         this.toast.sucesso('Contagem aplicada.', `${res.dados?.produtosAtualizados ?? 0} produto(s) atualizado(s).`);
         this.contagemService.previewPendente = null;
-        this.router.navigate(['/estoque/contagem']);
+        this.router.navigate(['/balanco/planilha']);
       },
       error: err => {
         this.confirmando.set(false);

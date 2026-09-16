@@ -113,10 +113,10 @@ export class DashboardComponent implements OnInit {
         icone: 'warning', cor: 'text-rose-600 bg-rose-100 dark:bg-rose-900/40', rota: '/estoque'
       },
       {
-        titulo: 'Contagem de estoque hoje', valor: `${r.contagemEstoque.contadosHoje}/${r.contagemEstoque.metaDiaria}`,
+        titulo: 'Balanço hoje', valor: `${r.contagemEstoque.contadosHoje}/${r.contagemEstoque.metaDiaria}`,
         delta: r.contagemEstoque.percentualAtingido >= 100 ? 'meta batida' : `${r.contagemEstoque.percentualAtingido.toFixed(0)}%`,
         positivo: r.contagemEstoque.percentualAtingido >= 100,
-        icone: 'inventory', cor: 'text-sky-600 bg-sky-100 dark:bg-sky-900/40', rota: '/estoque/contagem'
+        icone: 'inventory', cor: 'text-sky-600 bg-sky-100 dark:bg-sky-900/40', rota: '/balanco'
       }
     ];
   });
@@ -321,6 +321,11 @@ export class DashboardComponent implements OnInit {
     if (perc >= 100) return 'bg-emerald-500';
     if (perc >= 70) return 'bg-primary';
     return 'bg-amber-500';
+  }
+
+  percentualBarra(atual: number, meta: number): number {
+    if (meta <= 0) return 0;
+    return Math.min(100, Math.round((atual / meta) * 100));
   }
 
   curvaAbcModo = signal<'valor' | 'quantidade'>('valor');

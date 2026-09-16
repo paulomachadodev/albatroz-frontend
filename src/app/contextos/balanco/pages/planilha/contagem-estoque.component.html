@@ -1,12 +1,12 @@
 <div class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark px-4 sm:px-6 lg:px-8 xl:px-10 py-6 lg:py-8">
   <div class="w-full space-y-8">
 
-    <app-breadcrumb [itens]="[{label:'Início',rota:'/dashboard'},{label:'Estoque',rota:'/estoque'},{label:'Contagem de estoque'}]"></app-breadcrumb>
+    <app-breadcrumb [itens]="[{label:'Início',rota:'/dashboard'},{label:'Balanço',rota:'/balanco'},{label:'Planilha'}]"></app-breadcrumb>
 
     <div class="md:hidden space-y-4">
       <h1 class="text-xl font-bold text-slate-900 dark:text-slate-100">Contagem de estoque</h1>
       <div class="grid grid-cols-1 gap-3">
-        <a routerLink="/estoque/contagem/sessoes"
+        <a routerLink="/balanco/sessoes"
            class="flex items-center gap-3 p-5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
           <span class="material-symbols-outlined text-3xl text-primary">fact_check</span>
           <div>
@@ -14,7 +14,7 @@
             <div class="text-sm text-slate-500 dark:text-slate-400">Revisar e efetivar contagens já feitas</div>
           </div>
         </a>
-        <a routerLink="/estoque/contagem/guiada"
+        <a routerLink="/balanco/guiada"
            class="flex items-center gap-3 p-5 rounded-xl bg-primary text-white">
           <span class="material-symbols-outlined text-3xl">qr_code_scanner</span>
           <div>

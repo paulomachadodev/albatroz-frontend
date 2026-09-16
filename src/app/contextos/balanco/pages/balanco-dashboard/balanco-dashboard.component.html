@@ -1,0 +1,88 @@
+<div class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark px-4 sm:px-6 lg:px-8 xl:px-10 py-6 lg:py-8">
+  <div class="w-full space-y-6">
+
+    <app-breadcrumb [itens]="[{label:'Início',rota:'/dashboard'},{label:'Balanço'}]"></app-breadcrumb>
+
+    <app-page-header titulo="Balanço" subtitulo="Contagem de estoque guiada e revisão pra efetivação."></app-page-header>
+
+    @if (meta(); as m) {
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 space-y-4">
+        <h2 class="text-base font-bold text-slate-900 dark:text-slate-100">Meta de contagem</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <div class="flex justify-between text-sm text-slate-500 mb-1">
+              <span>Hoje</span><span>{{ m.contadosHoje }}/{{ m.metaDiaria }}</span>
+            </div>
+            <div class="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+              <div class="h-full bg-primary rounded-full transition-all" [style.width.%]="percentualBarra(m.contadosHoje, m.metaDiaria)"></div>
+            </div>
+          </div>
+          <div>
+            <div class="flex justify-between text-sm text-slate-500 mb-1">
+              <span>Essa semana</span><span>{{ m.contadosSemana }}/{{ m.metaSemanal }}</span>
+            </div>
+            <div class="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+              <div class="h-full bg-primary rounded-full transition-all" [style.width.%]="percentualBarra(m.contadosSemana, m.metaSemanal)"></div>
+            </div>
+          </div>
+          <div>
+            <div class="flex justify-between text-sm text-slate-500 mb-1">
+              <span>Esse mês</span><span>{{ m.contadosMes }}/{{ m.metaMensal }}</span>
+            </div>
+            <div class="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+              <div class="h-full bg-primary rounded-full transition-all" [style.width.%]="percentualBarra(m.contadosMes, m.metaMensal)"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <a routerLink="/balanco/guiada"
+         class="flex flex-col items-center gap-2 p-6 rounded-xl bg-primary text-white">
+        <span class="material-symbols-outlined text-3xl">qr_code_scanner</span>
+        <span class="text-base font-bold">Balanço Guiado</span>
+        <span class="text-sm text-white/80 text-center">Bipar produtos com o celular</span>
+      </a>
+      <a routerLink="/balanco/sessoes"
+         class="flex flex-col items-center gap-2 p-6 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+        <span class="material-symbols-outlined text-3xl text-primary">fact_check</span>
+        <span class="text-base font-bold text-slate-900 dark:text-slate-100">Balanço a Efetivar</span>
+        <span class="text-sm text-slate-500 text-center">Revisar e efetivar contagens</span>
+      </a>
+      <a routerLink="/balanco/planilha"
+         class="hidden md:flex flex-col items-center gap-2 p-6 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+        <span class="material-symbols-outlined text-3xl text-primary">description</span>
+        <span class="text-base font-bold text-slate-900 dark:text-slate-100">Planilha</span>
+        <span class="text-sm text-slate-500 text-center">Exportar/importar contagem via Excel</span>
+      </a>
+    </div>
+
+    <div class="space-y-3">
+      <h2 class="text-base font-bold text-slate-900 dark:text-slate-100">Contagens em aberto</h2>
+      @if (carregando()) {
+        <div class="text-center py-8 text-slate-400 text-sm">Carregando...</div>
+      } @else if (sessoesAbertas().length === 0) {
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 text-center text-sm text-slate-400">
+          Nenhuma contagem em aberto no momento.
+        </div>
+      } @else {
+        @for (sessao of sessoesAbertas(); track sessao.id) {
+          <a [routerLink]="sessao.status === 'aberta' ? ['/balanco/guiada', sessao.id] : ['/balanco/sessoes']"
+             class="block bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
+            <div class="flex items-center justify-between gap-3">
+              <div class="min-w-0">
+                <div class="text-sm font-bold text-slate-900 dark:text-slate-100">{{ rotuloModo(sessao) }}</div>
+                <div class="text-xs text-slate-500 dark:text-slate-400">
+                  {{ sessao.nomeUsuario || 'Você' }} · {{ sessao.qtdItens }} produto(s) bipado(s) · iniciada em {{ formatarDataHora(sessao.iniciadaEm) }}
+                </div>
+              </div>
+              <span class="material-symbols-outlined text-slate-400">chevron_right</span>
+            </div>
+          </a>
+        }
+      }
+    </div>
+
+  </div>
+</div>

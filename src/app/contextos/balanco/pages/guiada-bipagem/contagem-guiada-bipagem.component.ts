@@ -81,7 +81,7 @@ export class ContagemGuiadaBipagemComponent implements OnInit, OnDestroy, AfterV
         this.carregando.set(false);
         if (!res.dados) {
           this.toast.erro('Sessão de contagem não encontrada.');
-          this.router.navigate(['/estoque/contagem/guiada']);
+          this.router.navigate(['/balanco/guiada']);
           return;
         }
         this.pendentes.set(res.dados.produtos);
@@ -194,7 +194,7 @@ export class ContagemGuiadaBipagemComponent implements OnInit, OnDestroy, AfterV
   }
 
   fechar() {
-    this.router.navigate(['/estoque/contagem/guiada'], { replaceUrl: true });
+    this.router.navigate(['/balanco/guiada'], { replaceUrl: true });
   }
 
   terminar() {
@@ -203,7 +203,7 @@ export class ContagemGuiadaBipagemComponent implements OnInit, OnDestroy, AfterV
       next: () => {
         this.terminando.set(false);
         this.toast.sucesso('Contagem finalizada.', 'Pronta pra revisão e efetivação.');
-        this.router.navigate(['/estoque/contagem/guiada'], { replaceUrl: true });
+        this.router.navigate(['/balanco/guiada'], { replaceUrl: true });
       },
       error: err => {
         this.terminando.set(false);

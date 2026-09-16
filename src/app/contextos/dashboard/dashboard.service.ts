@@ -74,6 +74,16 @@ export interface ContagemEstoqueResumo {
   contadosHoje: number;
   metaDiaria: number;
   percentualAtingido: number;
+  contadosSemana: number;
+  metaSemanal: number;
+  contadosMes: number;
+  metaMensal: number;
+}
+
+export interface MelhorDiaSemana {
+  nomeDia: string;
+  valorTotal: number;
+  qtdPedidos: number;
 }
 
 export interface DashboardResumo {
@@ -93,6 +103,7 @@ export interface DashboardResumo {
   contasAPagar: ContasAPagarResumo;
   vendasPorCategoria: CategoriaVenda[];
   contagemEstoque: ContagemEstoqueResumo;
+  melhoresDiasSemana: MelhorDiaSemana[];
 }
 
 @Injectable({ providedIn: 'root' })

@@ -3,13 +3,12 @@
 
     <app-breadcrumb [itens]="[{label:'Início',rota:'/dashboard'},{label:'Estoque'}]"></app-breadcrumb>
 
-    <div class="flex items-center justify-between gap-4 flex-wrap">
-      <app-page-header titulo="Saúde de Estoque" subtitulo="Produtos sem giro, candidatos a inativação e itens críticos que não podem faltar."></app-page-header>
-      <a routerLink="/estoque/contagem"
+    <app-page-header titulo="Saúde de Estoque" subtitulo="Produtos sem giro, candidatos a inativação e itens críticos que não podem faltar.">
+      <a acoes routerLink="/balanco"
          class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-xs hover:bg-primary/90 transition-all whitespace-nowrap">
-        Contagem de estoque
+        Ver Balanço
       </a>
-    </div>
+    </app-page-header>
 
     @if (carregando()) {
       <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-6">

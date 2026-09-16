@@ -211,7 +211,7 @@ export class ContagemEstoqueComponent implements OnInit {
         next: res => {
           this.importando.set(false);
           this.contagemService.previewPendente = res.dados ?? null;
-          this.router.navigate(['/estoque/contagem/revisao']);
+          this.router.navigate(['/balanco/planilha/revisao']);
         },
         error: err => {
           this.importando.set(false);

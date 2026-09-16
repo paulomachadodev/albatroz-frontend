@@ -6,8 +6,8 @@ export interface GrupoCategoriaSelect {
 }
 
 export const PT_SELECT_CATEGORIA = {
-  root: 'relative w-full',
-  label: 'w-full px-3 py-3 min-[480px]:py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm cursor-pointer overflow-hidden text-ellipsis whitespace-nowrap',
+  root: 'relative block w-full',
+  label: 'block w-full px-3 py-3 min-[480px]:py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm cursor-pointer overflow-hidden text-ellipsis whitespace-nowrap',
   dropdown: 'absolute right-3 top-1/2 -translate-y-1/2 text-slate-400',
   overlay: 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg mt-1 z-50 overflow-hidden',
   header: 'p-2 border-b border-slate-100 dark:border-slate-700',

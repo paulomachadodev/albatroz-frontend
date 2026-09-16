@@ -11,7 +11,8 @@ export interface BreadcrumbItem {
   selector: 'app-breadcrumb',
   standalone: true,
   imports: [RouterLink],
-  templateUrl: './breadcrumb.component.html'
+  templateUrl: './breadcrumb.component.html',
+  host: { class: 'contents' }
 })
 export class BreadcrumbComponent {
   private location = inject(Location);

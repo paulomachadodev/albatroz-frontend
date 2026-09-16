@@ -42,6 +42,11 @@ export class BuscaPrecoComponent implements OnInit {
     this.leitorAberto.set(false);
   }
 
+  fecharMensagemErro() {
+    clearTimeout(this.timeoutNaoEncontrado);
+    this.ultimoCodigoNaoEncontrado.set(null);
+  }
+
   aoLerCodigo(codigo: string) {
     if (this.buscando()) return;
     this.buscando.set(true);

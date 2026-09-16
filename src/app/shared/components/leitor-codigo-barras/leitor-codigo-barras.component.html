@@ -50,8 +50,11 @@
         </div>
       }
       @if (mensagemErroBusca(); as msgErro) {
-        <div class="absolute top-4 inset-x-4 bg-rose-600 rounded-xl px-4 py-3 text-center text-white text-sm font-bold">
-          {{ msgErro }}
+        <div class="absolute top-4 inset-x-4 bg-rose-600 rounded-xl px-4 py-3 flex items-center gap-3 text-white text-sm font-bold">
+          <span class="flex-1 text-center">{{ msgErro }}</span>
+          <button type="button" (click)="fecharMensagemErro.emit()" class="shrink-0 flex items-center justify-center size-6 rounded-full hover:bg-white/20">
+            <span class="material-symbols-outlined text-lg">close</span>
+          </button>
         </div>
       }
       @if (erro()) {

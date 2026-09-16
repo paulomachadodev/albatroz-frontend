@@ -21,6 +21,8 @@ const MENSAGENS_VITORIA = [
   host: { class: 'block' }
 })
 export class ContagemGuiadaBipagemComponent implements OnInit, OnDestroy, AfterViewInit {
+  private static readonly DURACAO_MENSAGEM_ERRO_MS = 15000;
+
   idSessao!: number;
 
   carregando = signal(true);
@@ -41,6 +43,7 @@ export class ContagemGuiadaBipagemComponent implements OnInit, OnDestroy, AfterV
   @ViewChild('inputQuantidade') inputQuantidadeRef?: ElementRef<HTMLInputElement>;
 
   private audioContext?: AudioContext;
+  private timeoutMensagemErro?: ReturnType<typeof setTimeout>;
 
   constructor(
     private route: ActivatedRoute,
@@ -64,6 +67,7 @@ export class ContagemGuiadaBipagemComponent implements OnInit, OnDestroy, AfterV
   ngOnDestroy() {
     this.scrollLock.destravar();
     this.audioContext?.close();
+    clearTimeout(this.timeoutMensagemErro);
   }
 
   get alvoAtual(): ProdutoPendenteSessao | null {
@@ -94,7 +98,7 @@ export class ContagemGuiadaBipagemComponent implements OnInit, OnDestroy, AfterV
   aoLerCodigo(codigo: string) {
     const alvo = this.alvoAtual;
     if (!alvo) {
-      this.mensagemErro.set('Nenhum produto pendente pra contar.');
+      this.definirMensagemErro('Nenhum produto pendente pra contar.');
       return;
     }
 
@@ -103,14 +107,25 @@ export class ContagemGuiadaBipagemComponent implements OnInit, OnDestroy, AfterV
     const bateComGtin = !!alvo.gtin && alvo.gtin.trim().toLowerCase() === codigoNormalizado;
 
     if (!bateComCodigo && !bateComGtin) {
-      this.mensagemErro.set(`Esse não é o produto esperado. Procure: ${alvo.codigo} — ${alvo.nome}`);
+      this.definirMensagemErro(`Esse não é o produto esperado. Procure: ${alvo.codigo} — ${alvo.nome}`);
       return;
     }
 
-    this.mensagemErro.set(null);
+    this.fecharMensagemErro();
     this.quantidadeInput = '';
     this.passo.set('quantidade');
     setTimeout(() => this.inputQuantidadeRef?.nativeElement.focus());
+  }
+
+  private definirMensagemErro(mensagem: string): void {
+    this.mensagemErro.set(mensagem);
+    clearTimeout(this.timeoutMensagemErro);
+    this.timeoutMensagemErro = setTimeout(() => this.mensagemErro.set(null), ContagemGuiadaBipagemComponent.DURACAO_MENSAGEM_ERRO_MS);
+  }
+
+  fecharMensagemErro(): void {
+    this.mensagemErro.set(null);
+    clearTimeout(this.timeoutMensagemErro);
   }
 
   pular() {

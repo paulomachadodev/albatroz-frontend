@@ -27,7 +27,7 @@ export class ToastService {
   mensagemServidor(err: unknown, fallback = 'Ocorreu um erro inesperado.'): string {
     if (err instanceof HttpErrorResponse) {
       const corpo = err.error;
-      return corpo?.detail ?? corpo?.mensagem ?? corpo?.title ?? err.message ?? fallback;
+      return corpo?.erro?.mensagem ?? corpo?.detail ?? corpo?.mensagem ?? corpo?.title ?? err.message ?? fallback;
     }
     return fallback;
   }

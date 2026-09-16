@@ -88,7 +88,7 @@
 
     @if (leitorAberto()) {
       <app-leitor-codigo-barras [buscandoProduto]="buscando()" [mensagemErroBusca]="ultimoCodigoNaoEncontrado() ? 'Código &quot;' + ultimoCodigoNaoEncontrado() + '&quot; não encontrado' : null"
-                                 (codigoLido)="aoLerCodigo($event)" (fechar)="fecharLeitor()"></app-leitor-codigo-barras>
+                                 (codigoLido)="aoLerCodigo($event)" (fechar)="fecharLeitor()" (fecharMensagemErro)="fecharMensagemErro()"></app-leitor-codigo-barras>
     }
 
   </div>

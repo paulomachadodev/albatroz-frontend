@@ -17,6 +17,7 @@ export class LeitorCodigoBarrasComponent implements AfterViewInit, OnDestroy {
 
   codigoLido = output<string>();
   fechar = output<void>();
+  fecharMensagemErro = output<void>();
 
   buscandoProduto = input<boolean>(false);
   mensagemErroBusca = input<string | null>(null);
@@ -302,8 +303,14 @@ export class LeitorCodigoBarrasComponent implements AfterViewInit, OnDestroy {
   };
 
   aoTocarNaTela(): void {
-    this.controlesVisiveis.set(true);
     clearTimeout(this.timeoutOcultarControles);
+
+    if (this.controlesVisiveis()) {
+      this.controlesVisiveis.set(false);
+      return;
+    }
+
+    this.controlesVisiveis.set(true);
     this.timeoutOcultarControles = setTimeout(() => this.controlesVisiveis.set(false), LeitorCodigoBarrasComponent.OCULTAR_CONTROLES_APOS_MS);
   }
 

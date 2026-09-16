@@ -4,6 +4,7 @@ import { ApiService } from '../../../core/http/api.service';
 import { Resultado } from '../../../core/models';
 import { Paginacao, ParametrosPaginacao } from '../../../core/models/paginacao.model';
 import {
+  CategoriaArvoreNo,
   FiltroPrioridadeContagem,
   ItemConfirmarContagem,
   ItemImportacaoContagem,
@@ -31,6 +32,10 @@ export class ContagemEstoqueService {
       filtros['direcao'] = ordenacao.direcao;
     }
     return this.api.getPaginado<ProdutoPrioridadeContagem>(`${this.endpoint}/prioritarios`, paginacao, filtros);
+  }
+
+  listarCategorias(): Observable<Resultado<CategoriaArvoreNo[]>> {
+    return this.api.get<CategoriaArvoreNo[]>(`${this.endpoint}/categorias`);
   }
 
   importarPreview(itens: ItemImportacaoContagem[]): Observable<Resultado<PreviewContagem>> {

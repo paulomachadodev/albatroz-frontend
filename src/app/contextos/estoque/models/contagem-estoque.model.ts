@@ -13,8 +13,17 @@ export interface ProdutoPrioridadeContagem {
 
 export interface FiltroPrioridadeContagem {
   idMarca?: number;
+  categoriaRaiz?: string;
+  situacao?: string;
   comEstoque?: boolean;
   curvaAbc?: string;
+}
+
+export interface CategoriaArvoreNo {
+  nome: string;
+  idCategoria: number | null;
+  categoriaRaiz: string;
+  filhos: CategoriaArvoreNo[];
 }
 
 export interface OrdenacaoPrioridadeContagem {

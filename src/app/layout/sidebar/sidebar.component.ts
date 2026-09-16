@@ -66,8 +66,13 @@ export class SidebarComponent {
       icone: 'bolt',
       itens: [
         { label: 'Orçamentos', rota: '/cotacoes/listas-escolares', icone: 'request_quote' },
-        { label: 'Estoque',    rota: '/estoque',   icone: 'package_2', permissao: 'estoque:ler' },
-        { label: 'Balanço',    rota: '/balanco',   icone: 'qr_code_scanner', permissao: 'estoque:ler' },
+        {
+          label: 'Estoque', icone: 'package_2',
+          subItens: [
+            { label: 'Dashboard', rota: '/estoque', icone: 'query_stats', permissao: 'estoque:ler' },
+            { label: 'Balanço', rota: '/balanco', icone: 'qr_code_scanner', permissao: 'estoque:ler' }
+          ]
+        },
         {
           label: 'Compras', icone: 'shopping_cart',
           subItens: [

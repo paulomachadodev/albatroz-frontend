@@ -34,6 +34,16 @@ Tela administrativa (listagem, filtro) pode usar `text-xs`/`text-sm` à vontade 
 
 Tela operacional não é vitrine — se mostrar imagem do produto (opcional, não obrigatório), é sempre thumbnail pequeno (ex: `size-16`/`size-24`), nunca ocupando a largura da tela. O espaço vertical em mobile é escasso e a prioridade visual é o dado textual (código/quantidade), não a foto.
 
+## Nunca rolagem horizontal — nem em tela nenhuma, mobile ou web
+
+Nenhuma tela do sistema tem rolagem horizontal, em nenhum breakpoint. Causa mais comum: `<table>` HTML solta sem `overflow-x-auto` em container estreito, ou texto sem `truncate`/`min-w-0` dentro de um flex item. Em tela alcançável por mobile, nunca usar `<table>` puro — listar como linhas empilhadas (`div` com `flex`/`space-y`), igual ao padrão `linhaMobile` já usado em `app-listagem-paginada`. `<table>` só é aceitável em tela 100% desktop (`hidden md:block`, nunca alcançada por rota mobile).
+
+Achado real (2026-09-16): `contagem-sessoes-lista` (alcançável via Balanço a Efetivar no mobile) tinha uma `<table>` de 3 colunas pro detalhe de itens — trocada por linhas `flex` empilhadas.
+
+## Rolagem vertical só quando a tela realmente lista algo de tamanho variável
+
+Tela de escolha/menu (poucos botões, cards fixos) deve caber na viewport sem rolagem vertical sempre que der — não adicionar padding/espaçamento generoso a ponto de estourar a tela em aparelhos menores. Tela que lista resultado de busca/paginação (tamanho variável, não dá pra prever) pode rolar verticalmente normalmente — isso não é bug, é esperado.
+
 ## Exemplo de referência
 
-`contagem-guiada-bipagem` (`contextos/estoque/pages/contagem-guiada-bipagem/`) é a implementação de referência desse padrão: card-alvo com fonte grande, barra de progresso, overlay de quantidade travando scroll, sem imagem hero.
+`guiada-bipagem` (`contextos/balanco/pages/guiada-bipagem/`) é a implementação de referência desse padrão: card-alvo com fonte grande, barra de progresso, overlay de quantidade travando scroll, sem imagem hero.

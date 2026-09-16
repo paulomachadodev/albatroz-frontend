@@ -58,31 +58,5 @@
       </a>
     </div>
 
-    <div class="space-y-3">
-      <h2 class="text-base font-bold text-slate-900 dark:text-slate-100">Contagens em aberto</h2>
-      @if (carregando()) {
-        <div class="text-center py-8 text-slate-400 text-sm">Carregando...</div>
-      } @else if (sessoesAbertas().length === 0) {
-        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 text-center text-sm text-slate-400">
-          Nenhuma contagem em aberto no momento.
-        </div>
-      } @else {
-        @for (sessao of sessoesAbertas(); track sessao.id) {
-          <a [routerLink]="sessao.status === 'aberta' ? ['/balanco/guiada', sessao.id] : ['/balanco/sessoes']"
-             class="block bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
-            <div class="flex items-center justify-between gap-3">
-              <div class="min-w-0">
-                <div class="text-sm font-bold text-slate-900 dark:text-slate-100">{{ rotuloModo(sessao) }}</div>
-                <div class="text-xs text-slate-500 dark:text-slate-400">
-                  {{ sessao.nomeUsuario || 'Você' }} · {{ sessao.qtdItens }} produto(s) bipado(s) · iniciada em {{ formatarDataHora(sessao.iniciadaEm) }}
-                </div>
-              </div>
-              <span class="material-symbols-outlined text-slate-400">chevron_right</span>
-            </div>
-          </a>
-        }
-      }
-    </div>
-
   </div>
 </div>

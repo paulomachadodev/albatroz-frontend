@@ -5,10 +5,11 @@
 
     <app-page-header titulo="Contagem de estoque" subtitulo="Lista priorizada pra contar todo dia — curva A pesa junto com item parado com saldo baixo (suspeita de erro de contagem).">
       <div acoes class="flex gap-2">
-        <button type="button" (click)="exportarPlanilhaDoDia()"
-                class="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
+        <button type="button" (click)="exportarSelecionados()" [disabled]="qtdSelecionados() === 0"
+                [title]="qtdSelecionados() === 0 ? 'Selecione os produtos na grade pra exportar' : ''"
+                class="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50 transition-all">
           <span class="material-symbols-outlined text-base">download</span>
-          Exportar planilha do dia
+          Exportar selecionados
         </button>
         <label class="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all cursor-pointer">
           <span class="material-symbols-outlined text-base">upload_file</span>
@@ -31,6 +32,7 @@
       [paginaAtual]="paginaAtual()"
       [totalPaginas]="totalPaginas()"
       [tamanhoPagina]="tamanhoPagina()"
+      [opcoesTamanhoPagina]="[10, 20, 50, 100]"
       tituloVazio="Nenhum produto encontrado pra esse filtro."
       (paginaMudou)="aoMudarPagina($event)"
       (tamanhoPaginaMudou)="aoMudarTamanhoPagina($event)">

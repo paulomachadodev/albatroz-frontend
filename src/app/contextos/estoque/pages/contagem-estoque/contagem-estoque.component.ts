@@ -168,9 +168,12 @@ export class ContagemEstoqueComponent implements OnInit {
     this.qtdSelecionados.set(this.selecionados.size);
   }
 
-  exportarPlanilhaDoDia() {
-    const base = this.selecionados.size > 0 ? Array.from(this.selecionados.values()) : this.itens();
-    if (base.length === 0) return;
+  exportarSelecionados() {
+    if (this.selecionados.size === 0) {
+      this.toast.erro('Selecione ao menos um produto pra exportar.');
+      return;
+    }
+    const base = Array.from(this.selecionados.values());
 
     const linhas: LinhaPlanilhaContagem[] = base.map(item => ({
       Codigo: item.codigo,

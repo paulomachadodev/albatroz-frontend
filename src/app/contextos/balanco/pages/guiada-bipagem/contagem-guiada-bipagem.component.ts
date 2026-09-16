@@ -28,6 +28,7 @@ export class ContagemGuiadaBipagemComponent implements OnInit, OnDestroy, AfterV
   carregando = signal(true);
   passo = signal<'scaneando' | 'quantidade'>('scaneando');
   pendentes = signal<ProdutoPendenteSessao[]>([]);
+  totalPendentes = signal(0);
   metaDiaAlvo = signal(0);
   contadosHoje = signal(0);
 
@@ -85,6 +86,7 @@ export class ContagemGuiadaBipagemComponent implements OnInit, OnDestroy, AfterV
           return;
         }
         this.pendentes.set(res.dados.produtos);
+        this.totalPendentes.set(res.dados.totalPendentes);
         this.metaDiaAlvo.set(res.dados.metaDiaAlvo);
         this.contadosHoje.set(res.dados.contadosHoje);
       },
@@ -154,9 +156,8 @@ export class ContagemGuiadaBipagemComponent implements OnInit, OnDestroy, AfterV
     this.contagemSessaoService.bipar(this.idSessao, { idProduto: alvo.idProduto, codigo: alvo.codigo, quantidadeContada: valor }).subscribe({
       next: () => {
         this.bipando.set(false);
-        this.pendentes.set(this.pendentes().filter(p => p.idProduto !== alvo.idProduto));
         this.passo.set('scaneando');
-        this.atualizarProgresso();
+        this.recarregarAposBipe();
       },
       error: err => {
         this.bipando.set(false);
@@ -165,11 +166,14 @@ export class ContagemGuiadaBipagemComponent implements OnInit, OnDestroy, AfterV
     });
   }
 
-  private atualizarProgresso() {
+  private recarregarAposBipe() {
     this.contagemSessaoService.listarPendentes(this.idSessao).subscribe({
       next: res => {
         if (!res.dados) return;
         const contadosAntes = this.contadosHoje();
+
+        this.pendentes.set(res.dados.produtos);
+        this.totalPendentes.set(res.dados.totalPendentes);
         this.contadosHoje.set(res.dados.contadosHoje);
         this.metaDiaAlvo.set(res.dados.metaDiaAlvo);
 

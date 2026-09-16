@@ -1,6 +1,6 @@
 <div class="fixed inset-0 z-[60] bg-black flex flex-col">
   <div class="flex items-center justify-between gap-2 px-4 shrink-0" style="padding-top: max(0.75rem, env(safe-area-inset-top, 0px)); padding-bottom: 0.75rem">
-    <span class="text-white font-bold text-sm shrink-0">Bipar código de barras</span>
+    <span class="text-white font-bold text-sm shrink-0">{{ titulo() }}</span>
     <div class="flex-1 flex items-center justify-end gap-2">
       <ng-content select="[extraHeader]"></ng-content>
       <button type="button" (click)="fecharLeitor()"
@@ -87,7 +87,7 @@
   </div>
 
   @if (!modoManual() && !erro()) {
-    <div class="shrink-0 px-4 pb-4 pt-3">
+    <div class="shrink-0 px-4 pb-2 pt-3">
       <button type="button" (click)="usarModoManual()"
               class="w-full px-4 py-3 rounded-lg bg-white/10 text-white font-bold text-sm flex items-center justify-center gap-2">
         <span class="material-symbols-outlined text-lg">keyboard</span>
@@ -95,4 +95,8 @@
       </button>
     </div>
   }
+
+  <div class="shrink-0 px-4 pb-4" style="padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px))">
+    <ng-content select="[rodape]"></ng-content>
+  </div>
 </div>

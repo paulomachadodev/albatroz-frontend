@@ -2,26 +2,22 @@
   <div class="fixed inset-0 z-[60] bg-black flex items-center justify-center text-white text-base">Carregando...</div>
 } @else if (passo() === 'scaneando' && alvoAtual) {
   <app-leitor-codigo-barras (codigoLido)="aoLerCodigo($event)" (fechar)="fechar()" (fecharMensagemErro)="fecharMensagemErro()"
-                             [mensagemErroBusca]="mensagemErro()">
-    <button extraHeader type="button" (click)="terminar()" [disabled]="terminando()"
-            class="text-white/90 text-sm font-bold bg-white/10 rounded-full px-3 py-1.5 disabled:opacity-50">
-      {{ terminando() ? 'Salvando...' : 'Terminar contagem' }}
-    </button>
-
+                             [mensagemErroBusca]="mensagemErro()" [titulo]="'Escaneie o código de barras do produto'">
     <div cardSuperior class="shrink-0 px-4 pb-3 space-y-2">
       <div class="bg-white/10 rounded-xl p-3">
-        <div class="text-white/60 text-sm">Procure e bipe:</div>
         <div class="text-white text-lg font-bold line-clamp-2">{{ alvoAtual.nome }}</div>
-        <div class="text-white/60 text-sm mt-1">Código: {{ alvoAtual.codigo }}</div>
-        @if (alvoAtual.gtin) {
-          <div class="text-white/60 text-sm">Cód. barras: {{ alvoAtual.gtin }}</div>
-        }
+        <div class="flex items-center justify-between gap-3 text-white/60 text-sm mt-1">
+          <span>Código: {{ alvoAtual.codigo }}</span>
+          @if (alvoAtual.gtin) {
+            <span>Barras: {{ alvoAtual.gtin }}</span>
+          }
+        </div>
         <div class="flex items-center justify-between mt-2">
+          <span class="text-white/60 text-sm">{{ totalPendentes() }} restante(s)</span>
           <button type="button" (click)="pular()" [disabled]="pendentes().length <= 1"
-                  class="text-white/80 text-sm font-bold underline disabled:opacity-40 disabled:no-underline">
-            Pular pra próximo
+                  class="px-3 py-1.5 rounded-full bg-primary text-white text-xs font-bold disabled:opacity-40">
+            Pular produto
           </button>
-          <span class="text-white/60 text-sm">{{ pendentes().length }} restante(s)</span>
         </div>
       </div>
 
@@ -35,6 +31,11 @@
         </div>
       </div>
     </div>
+
+    <button rodape type="button" (click)="terminar()" [disabled]="terminando()"
+            class="w-full px-4 py-3 rounded-lg bg-primary text-white font-bold text-sm disabled:opacity-50">
+      {{ terminando() ? 'Salvando...' : 'Terminar contagem' }}
+    </button>
   </app-leitor-codigo-barras>
 } @else if (passo() === 'scaneando' && !alvoAtual) {
   <div class="fixed inset-0 z-[60] bg-black flex flex-col items-center justify-center gap-5 px-6 text-center">

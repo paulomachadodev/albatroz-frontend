@@ -118,6 +118,7 @@ export interface ProdutoPendenteSessao {
 export interface PendentesSessao {
   metaDiaAlvo: number;
   contadosHoje: number;
+  totalPendentes: number;
   produtos: ProdutoPendenteSessao[];
 }
 

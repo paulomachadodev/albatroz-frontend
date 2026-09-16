@@ -16,6 +16,8 @@
     </div>
   </div>
 
+  <ng-content select="[cardSuperior]"></ng-content>
+
   <div class="flex-1 relative flex items-center justify-center overflow-hidden">
     @if (!modoManual()) {
       <video #video class="w-full h-full object-cover" muted playsinline (click)="focarNoToque($event)"></video>

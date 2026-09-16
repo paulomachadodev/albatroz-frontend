@@ -51,5 +51,20 @@ export const ESTOQUE_ROUTES: Routes = [
     path: 'contagem/revisao',
     loadComponent: () =>
       import('./pages/contagem-revisao/contagem-revisao.component').then(m => m.ContagemRevisaoComponent)
+  },
+  {
+    path: 'contagem/guiada',
+    loadComponent: () =>
+      import('./pages/contagem-guiada-inicio/contagem-guiada-inicio.component').then(m => m.ContagemGuiadaInicioComponent)
+  },
+  {
+    path: 'contagem/guiada/:idSessao',
+    loadComponent: () =>
+      import('./pages/contagem-guiada-bipagem/contagem-guiada-bipagem.component').then(m => m.ContagemGuiadaBipagemComponent)
+  },
+  {
+    path: 'contagem/sessoes',
+    loadComponent: () =>
+      import('./pages/contagem-sessoes-lista/contagem-sessoes-lista.component').then(m => m.ContagemSessoesListaComponent)
   }
 ];

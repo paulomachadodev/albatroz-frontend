@@ -1,8 +1,9 @@
-import { AfterViewInit, Component, ElementRef, OnDestroy, input, output, signal, viewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnDestroy, inject, input, output, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BrowserMultiFormatReader } from '@zxing/browser';
 import type { IScannerControls } from '@zxing/browser';
 import { BarcodeFormat, DecodeHintType } from '@zxing/library';
+import { ScrollLockService } from '../../services/scroll-lock.service';
 
 @Component({
   selector: 'app-leitor-codigo-barras',
@@ -52,6 +53,11 @@ export class LeitorCodigoBarrasComponent implements AfterViewInit, OnDestroy {
   private indiceLenteAtual = 0;
   private destruido = false;
   private ultimoErroNome?: string;
+  private scrollLock = inject(ScrollLockService);
+
+  constructor() {
+    this.scrollLock.travar();
+  }
 
   async ngAfterViewInit() {
     this.audioContext = new AudioContext();
@@ -207,6 +213,7 @@ export class LeitorCodigoBarrasComponent implements AfterViewInit, OnDestroy {
     clearInterval(this.intervalSweepFoco);
     this.controls?.stop();
     this.audioContext?.close();
+    this.scrollLock.destravar();
   }
 
   private configurarFallbacksDeFoco(): void {

@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild, output, signal } from '@angular/core';
+import { Component, ElementRef, OnDestroy, ViewChild, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ProdutosService } from '../../../produtos/services/produtos.service';
@@ -6,6 +6,7 @@ import { ContagemEstoqueService } from '../../services/contagem-estoque.service'
 import { ToastService } from '../../../../core/feedback/toast.service';
 import { ConfirmService } from '../../../../core/feedback/confirm.service';
 import { LeitorCodigoBarrasComponent } from '../../../../shared/components/leitor-codigo-barras/leitor-codigo-barras.component';
+import { ScrollLockService } from '../../../../shared/services/scroll-lock.service';
 
 interface ItemBipado {
   codigo: string;
@@ -22,7 +23,7 @@ const LIMITE_ITENS_SESSAO = 50;
   templateUrl: './contagem-bipagem.component.html',
   host: { class: 'block' }
 })
-export class ContagemBipagemComponent {
+export class ContagemBipagemComponent implements OnDestroy {
   fechar = output<void>();
 
   readonly limite = LIMITE_ITENS_SESSAO;
@@ -43,8 +44,15 @@ export class ContagemBipagemComponent {
     private contagemService: ContagemEstoqueService,
     private confirm: ConfirmService,
     private toast: ToastService,
-    private router: Router
-  ) {}
+    private router: Router,
+    private scrollLock: ScrollLockService
+  ) {
+    this.scrollLock.travar();
+  }
+
+  ngOnDestroy() {
+    this.scrollLock.destravar();
+  }
 
   aoLerCodigo(codigo: string) {
     if (this.buscando()) return;

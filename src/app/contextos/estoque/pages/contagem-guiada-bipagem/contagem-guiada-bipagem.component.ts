@@ -1,0 +1,219 @@
+import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
+import { LeitorCodigoBarrasComponent } from '../../../../shared/components/leitor-codigo-barras/leitor-codigo-barras.component';
+import { ScrollLockService } from '../../../../shared/services/scroll-lock.service';
+import { ContagemSessaoService } from '../../services/contagem-sessao.service';
+import { ProdutoPendenteSessao } from '../../models/contagem-estoque.model';
+import { ToastService } from '../../../../core/feedback/toast.service';
+
+const MENSAGENS_VITORIA = [
+  'Você atingiu a meta de hoje, parabéns! Mas continue — pode ser que amanhã não sobre tempo, e a meta do mês agradece.',
+  'Meta batida! Cada produto a mais hoje é um a menos pra correr atrás depois. Bora continuar?',
+  'Parabéns, meta de hoje concluída! Se der, siga contando — isso garante a meta do mês sem aperto no fim.'
+];
+
+@Component({
+  selector: 'app-contagem-guiada-bipagem',
+  standalone: true,
+  imports: [FormsModule, LeitorCodigoBarrasComponent],
+  templateUrl: './contagem-guiada-bipagem.component.html',
+  host: { class: 'block' }
+})
+export class ContagemGuiadaBipagemComponent implements OnInit, OnDestroy, AfterViewInit {
+  idSessao!: number;
+
+  carregando = signal(true);
+  passo = signal<'scaneando' | 'quantidade'>('scaneando');
+  pendentes = signal<ProdutoPendenteSessao[]>([]);
+  metaDiaAlvo = signal(0);
+  contadosHoje = signal(0);
+
+  quantidadeInput = '';
+  bipando = signal(false);
+  terminando = signal(false);
+  mensagemErro = signal<string | null>(null);
+
+  vitoriaAberta = signal(false);
+  mensagemVitoria = signal('');
+  private vitoriaJaExibida = false;
+
+  @ViewChild('inputQuantidade') inputQuantidadeRef?: ElementRef<HTMLInputElement>;
+
+  private audioContext?: AudioContext;
+
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private contagemSessaoService: ContagemSessaoService,
+    private toast: ToastService,
+    private scrollLock: ScrollLockService
+  ) {
+    this.scrollLock.travar();
+  }
+
+  ngOnInit() {
+    this.idSessao = Number(this.route.snapshot.paramMap.get('idSessao'));
+    this.carregarPendentes();
+  }
+
+  ngAfterViewInit() {
+    this.audioContext = new AudioContext();
+  }
+
+  ngOnDestroy() {
+    this.scrollLock.destravar();
+    this.audioContext?.close();
+  }
+
+  get alvoAtual(): ProdutoPendenteSessao | null {
+    return this.pendentes()[0] ?? null;
+  }
+
+  private carregarPendentes() {
+    this.carregando.set(true);
+    this.contagemSessaoService.listarPendentes(this.idSessao).subscribe({
+      next: res => {
+        this.carregando.set(false);
+        if (!res.dados) {
+          this.toast.erro('Sessão de contagem não encontrada.');
+          this.router.navigate(['/estoque/contagem/guiada']);
+          return;
+        }
+        this.pendentes.set(res.dados.produtos);
+        this.metaDiaAlvo.set(res.dados.metaDiaAlvo);
+        this.contadosHoje.set(res.dados.contadosHoje);
+      },
+      error: err => {
+        this.carregando.set(false);
+        this.toast.erroServidor(err, 'Não foi possível carregar a lista de produtos.');
+      }
+    });
+  }
+
+  aoLerCodigo(codigo: string) {
+    const alvo = this.alvoAtual;
+    if (!alvo) {
+      this.mensagemErro.set('Nenhum produto pendente pra contar.');
+      return;
+    }
+
+    const codigoNormalizado = codigo.trim().toLowerCase();
+    const bateComCodigo = alvo.codigo.trim().toLowerCase() === codigoNormalizado;
+    const bateComGtin = !!alvo.gtin && alvo.gtin.trim().toLowerCase() === codigoNormalizado;
+
+    if (!bateComCodigo && !bateComGtin) {
+      this.mensagemErro.set(`Esse não é o produto esperado. Procure: ${alvo.codigo} — ${alvo.nome}`);
+      return;
+    }
+
+    this.mensagemErro.set(null);
+    this.quantidadeInput = '';
+    this.passo.set('quantidade');
+    setTimeout(() => this.inputQuantidadeRef?.nativeElement.focus());
+  }
+
+  pular() {
+    const fila = this.pendentes();
+    if (fila.length <= 1) return;
+    this.pendentes.set([...fila.slice(1), fila[0]]);
+    this.mensagemErro.set(null);
+  }
+
+  cancelarQuantidade() {
+    this.passo.set('scaneando');
+    this.quantidadeInput = '';
+  }
+
+  confirmarQuantidade() {
+    const alvo = this.alvoAtual;
+    if (!alvo) return;
+
+    const valor = Number(this.quantidadeInput.replace(',', '.'));
+    if (this.quantidadeInput.trim() === '' || Number.isNaN(valor) || valor < 0) {
+      this.toast.erro('Digite uma quantidade válida.');
+      return;
+    }
+
+    this.bipando.set(true);
+    this.contagemSessaoService.bipar(this.idSessao, { idProduto: alvo.idProduto, codigo: alvo.codigo, quantidadeContada: valor }).subscribe({
+      next: () => {
+        this.bipando.set(false);
+        this.pendentes.set(this.pendentes().filter(p => p.idProduto !== alvo.idProduto));
+        this.passo.set('scaneando');
+        this.atualizarProgresso();
+      },
+      error: err => {
+        this.bipando.set(false);
+        this.toast.erroServidor(err, 'Não foi possível registrar essa contagem.');
+      }
+    });
+  }
+
+  private atualizarProgresso() {
+    this.contagemSessaoService.listarPendentes(this.idSessao).subscribe({
+      next: res => {
+        if (!res.dados) return;
+        const contadosAntes = this.contadosHoje();
+        this.contadosHoje.set(res.dados.contadosHoje);
+        this.metaDiaAlvo.set(res.dados.metaDiaAlvo);
+
+        const meta = res.dados.metaDiaAlvo;
+        if (!this.vitoriaJaExibida && meta > 0 && contadosAntes < meta && res.dados.contadosHoje >= meta) {
+          this.vitoriaJaExibida = true;
+          this.mensagemVitoria.set(MENSAGENS_VITORIA[Math.floor(Math.random() * MENSAGENS_VITORIA.length)]);
+          this.vitoriaAberta.set(true);
+          this.tocarJingleVitoria();
+        }
+      }
+    });
+  }
+
+  fecharVitoria() {
+    this.vitoriaAberta.set(false);
+  }
+
+  progressoPercentual(): number {
+    if (this.metaDiaAlvo() <= 0) return 0;
+    return Math.min(100, Math.round((this.contadosHoje() / this.metaDiaAlvo()) * 100));
+  }
+
+  fechar() {
+    this.router.navigate(['/estoque/contagem/guiada']);
+  }
+
+  terminar() {
+    this.terminando.set(true);
+    this.contagemSessaoService.finalizar(this.idSessao).subscribe({
+      next: () => {
+        this.terminando.set(false);
+        this.toast.sucesso('Contagem finalizada.', 'Pronta pra revisão e efetivação.');
+        this.router.navigate(['/estoque/contagem/guiada']);
+      },
+      error: err => {
+        this.terminando.set(false);
+        this.toast.erroServidor(err, 'Não foi possível finalizar a contagem.');
+      }
+    });
+  }
+
+  private tocarJingleVitoria(): void {
+    if (!this.audioContext) return;
+    if (this.audioContext.state === 'suspended') this.audioContext.resume();
+
+    const notas = [523.25, 659.25, 783.99];
+    notas.forEach((frequencia, indice) => {
+      const inicio = this.audioContext!.currentTime + indice * 0.14;
+      const oscilador = this.audioContext!.createOscillator();
+      const ganho = this.audioContext!.createGain();
+      oscilador.type = 'sine';
+      oscilador.frequency.value = frequencia;
+      ganho.gain.setValueAtTime(0.4, inicio);
+      ganho.gain.exponentialRampToValueAtTime(0.001, inicio + 0.35);
+      oscilador.connect(ganho);
+      ganho.connect(this.audioContext!.destination);
+      oscilador.start(inicio);
+      oscilador.stop(inicio + 0.35);
+    });
+  }
+}

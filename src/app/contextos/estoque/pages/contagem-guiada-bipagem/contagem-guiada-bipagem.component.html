@@ -1,0 +1,84 @@
+@if (carregando()) {
+  <div class="fixed inset-0 z-[60] bg-black flex items-center justify-center text-white text-base">Carregando...</div>
+} @else if (passo() === 'scaneando' && alvoAtual) {
+  <app-leitor-codigo-barras (codigoLido)="aoLerCodigo($event)" (fechar)="fechar()"
+                             [mensagemErroBusca]="mensagemErro()">
+    <button extraHeader type="button" (click)="terminar()" [disabled]="terminando()"
+            class="text-white/90 text-sm font-bold bg-white/10 rounded-full px-3 py-1.5 disabled:opacity-50">
+      {{ terminando() ? 'Salvando...' : 'Terminar contagem' }}
+    </button>
+
+    <div cardSuperior class="shrink-0 px-4 pb-3 space-y-2">
+      <div class="bg-white/10 rounded-xl p-3">
+        <div class="text-white/60 text-sm">Procure e bipe:</div>
+        <div class="text-white text-lg font-bold truncate">{{ alvoAtual.codigo }} — {{ alvoAtual.nome }}</div>
+        @if (alvoAtual.gtin) {
+          <div class="text-white/60 text-sm">Cód. barras: {{ alvoAtual.gtin }}</div>
+        }
+        <div class="flex items-center justify-between mt-2">
+          <button type="button" (click)="pular()" [disabled]="pendentes().length <= 1"
+                  class="text-white/80 text-sm font-bold underline disabled:opacity-40 disabled:no-underline">
+            Pular pra próximo
+          </button>
+          <span class="text-white/60 text-sm">{{ pendentes().length }} restante(s)</span>
+        </div>
+      </div>
+
+      <div class="bg-white/10 rounded-xl p-3">
+        <div class="flex items-center justify-between text-sm mb-1">
+          <span class="text-white/80 font-semibold">Meta de hoje</span>
+          <span class="text-white font-bold">{{ contadosHoje() }} / {{ metaDiaAlvo() }}</span>
+        </div>
+        <div class="h-2 rounded-full bg-white/20 overflow-hidden">
+          <div class="h-full bg-primary transition-all" [style.width.%]="progressoPercentual()"></div>
+        </div>
+      </div>
+    </div>
+  </app-leitor-codigo-barras>
+} @else if (passo() === 'scaneando' && !alvoAtual) {
+  <div class="fixed inset-0 z-[60] bg-black flex flex-col items-center justify-center gap-5 px-6 text-center">
+    <span class="material-symbols-outlined text-white text-5xl">task_alt</span>
+    <p class="text-white text-lg font-bold">Tudo contado por aqui!</p>
+    <p class="text-white/70 text-base">Todos os produtos dessa contagem já foram bipados.</p>
+    <button type="button" (click)="terminar()" [disabled]="terminando()"
+            class="w-full max-w-xs px-4 py-3 rounded-lg bg-primary text-white font-bold text-base disabled:opacity-50">
+      {{ terminando() ? 'Salvando...' : 'Terminar contagem' }}
+    </button>
+    <button type="button" (click)="fechar()" class="text-white/70 text-base underline">Sair sem terminar</button>
+  </div>
+}
+
+@if (passo() === 'quantidade' && alvoAtual) {
+  <div class="fixed inset-0 z-[70] bg-black/90 flex flex-col items-center justify-center px-6 gap-5">
+    <div class="text-center max-w-xs w-full">
+      <div class="text-white text-lg font-bold truncate">{{ alvoAtual.codigo }} — {{ alvoAtual.nome }}</div>
+      <div class="text-white/60 text-sm mt-1">Estoque no sistema: {{ alvoAtual.estoqueAtual }}</div>
+    </div>
+    <input #inputQuantidade type="text" inputmode="numeric" [(ngModel)]="quantidadeInput" (keyup.enter)="confirmarQuantidade()"
+           placeholder="Quantidade"
+           class="w-full max-w-xs text-center text-3xl font-bold px-4 py-4 rounded-xl bg-white text-slate-900 placeholder:text-slate-300 placeholder:font-normal placeholder:text-lg outline-none"/>
+    <div class="w-full max-w-xs flex gap-2">
+      <button type="button" (click)="cancelarQuantidade()" [disabled]="bipando()"
+              class="flex-1 px-4 py-3 rounded-lg bg-white/10 text-white font-bold text-base disabled:opacity-50">
+        Cancelar
+      </button>
+      <button type="button" (click)="confirmarQuantidade()" [disabled]="bipando()"
+              class="flex-[2] px-4 py-3 rounded-lg bg-primary text-white font-bold text-base disabled:opacity-50">
+        {{ bipando() ? 'Salvando...' : 'Confirmar' }}
+      </button>
+    </div>
+  </div>
+}
+
+@if (vitoriaAberta()) {
+  <div class="fixed inset-0 z-[80] bg-black/80 flex items-center justify-center px-6">
+    <div class="bg-white dark:bg-slate-900 rounded-2xl p-6 max-w-sm w-full text-center space-y-4">
+      <span class="material-symbols-outlined text-5xl text-amber-400">emoji_events</span>
+      <p class="text-slate-900 dark:text-slate-100 text-lg font-bold">{{ mensagemVitoria() }}</p>
+      <button type="button" (click)="fecharVitoria()"
+              class="w-full px-4 py-3 rounded-lg bg-primary text-white font-bold text-base">
+        Continuar contando
+      </button>
+    </div>
+  </div>
+}

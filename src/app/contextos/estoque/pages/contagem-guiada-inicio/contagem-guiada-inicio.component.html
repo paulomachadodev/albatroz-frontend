@@ -1,0 +1,105 @@
+<div class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark px-4 sm:px-6 lg:px-8 xl:px-10 py-6 lg:py-8">
+  <div class="w-full space-y-8">
+
+    <app-breadcrumb [itens]="[{label:'Início',rota:'/dashboard'},{label:'Estoque',rota:'/estoque'},{label:'Contagem guiada'}]"></app-breadcrumb>
+
+    <app-page-header titulo="Contagem guiada" subtitulo="Sistema mostra o próximo produto pra contar, você bipa e confirma a quantidade."></app-page-header>
+
+    @if (carregando()) {
+      <div class="text-center py-12 text-slate-400 text-base">Carregando...</div>
+    } @else {
+
+      @if (sessoesAbertas().length > 0) {
+        <div class="space-y-3">
+          <h2 class="text-base font-bold text-slate-900 dark:text-slate-100">Suas contagens em aberto</h2>
+          @for (sessao of sessoesAbertas(); track sessao.id) {
+            <button type="button" (click)="continuar(sessao)"
+                    class="w-full text-left bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 flex items-center justify-between gap-3 hover:border-primary/40 transition-colors">
+              <div class="min-w-0">
+                <div class="text-base font-bold text-slate-900 dark:text-slate-100">
+                  {{ rotuloModo(sessao.modo) }}
+                  @if (sessao.categoriaRaiz) { <span class="text-slate-400 font-normal">— {{ sessao.categoriaRaiz }}</span> }
+                  @if (sessao.marcaNome) { <span class="text-slate-400 font-normal">— {{ sessao.marcaNome }}</span> }
+                </div>
+                <div class="text-sm text-slate-500 dark:text-slate-400">
+                  {{ sessao.qtdItens }} produto(s) bipado(s) · {{ rotuloStatus(sessao.status) }} · iniciada em {{ formatarDataHora(sessao.iniciadaEm) }}
+                </div>
+              </div>
+              <span class="material-symbols-outlined text-primary text-2xl shrink-0">play_circle</span>
+            </button>
+          }
+        </div>
+      }
+
+      @if (!modoEscolhido()) {
+        <div class="space-y-3">
+          <h2 class="text-base font-bold text-slate-900 dark:text-slate-100">Nova contagem</h2>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <button type="button" (click)="escolherModo('prioridade')"
+                    class="flex flex-col items-center gap-2 p-6 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-primary/40 transition-colors">
+              <span class="material-symbols-outlined text-3xl text-primary">priority_high</span>
+              <span class="text-base font-bold text-slate-900 dark:text-slate-100">Por prioridade</span>
+              <span class="text-sm text-slate-500 text-center">Do mais crítico pro menos crítico</span>
+            </button>
+            <button type="button" (click)="escolherModo('categoria')"
+                    class="flex flex-col items-center gap-2 p-6 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-primary/40 transition-colors">
+              <span class="material-symbols-outlined text-3xl text-primary">category</span>
+              <span class="text-base font-bold text-slate-900 dark:text-slate-100">Por categoria</span>
+              <span class="text-sm text-slate-500 text-center">Escolha a categoria pra contar</span>
+            </button>
+            <button type="button" (click)="escolherModo('marca')"
+                    class="flex flex-col items-center gap-2 p-6 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-primary/40 transition-colors">
+              <span class="material-symbols-outlined text-3xl text-primary">sell</span>
+              <span class="text-base font-bold text-slate-900 dark:text-slate-100">Por marca</span>
+              <span class="text-sm text-slate-500 text-center">Escolha a marca pra contar</span>
+            </button>
+          </div>
+        </div>
+      }
+
+      @if (modoEscolhido() === 'categoria') {
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 space-y-4">
+          <label class="text-base font-semibold text-slate-700 dark:text-slate-300">Categoria</label>
+          <p-select [ngModel]="categoriaEscolhida()" (ngModelChange)="categoriaEscolhida.set($event)"
+            [options]="gruposCategoriaSelect()" optionLabel="rotulo" optionValue="valor"
+            optionGroupLabel="label" optionGroupChildren="items" [group]="true"
+            [filter]="true" filterBy="rotulo" placeholder="Buscar categoria..." [showClear]="true"
+            scrollHeight="16rem" appendTo="body" styleClass="w-full" [unstyled]="true" [pt]="ptSelectCategoria"></p-select>
+          <div class="flex gap-2">
+            <button type="button" (click)="cancelarEscolha()"
+                    class="flex-1 px-4 py-3 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-base">
+              Cancelar
+            </button>
+            <button type="button" (click)="iniciar()" [disabled]="!podeIniciar() || iniciando()"
+                    class="flex-[2] px-4 py-3 rounded-lg bg-primary text-white font-bold text-base disabled:opacity-50">
+              {{ iniciando() ? 'Iniciando...' : 'Começar contagem' }}
+            </button>
+          </div>
+        </div>
+      }
+
+      @if (modoEscolhido() === 'marca') {
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 space-y-4">
+          <label class="text-base font-semibold text-slate-700 dark:text-slate-300">Marca</label>
+          <app-select-busca
+            [valorSelecionado]="marcaEscolhida()"
+            placeholder="Buscar marca..."
+            [buscar]="buscarMarcas"
+            (selecionado)="marcaEscolhida.set($event)"></app-select-busca>
+          <div class="flex gap-2">
+            <button type="button" (click)="cancelarEscolha()"
+                    class="flex-1 px-4 py-3 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-base">
+              Cancelar
+            </button>
+            <button type="button" (click)="iniciar()" [disabled]="!podeIniciar() || iniciando()"
+                    class="flex-[2] px-4 py-3 rounded-lg bg-primary text-white font-bold text-base disabled:opacity-50">
+              {{ iniciando() ? 'Iniciando...' : 'Começar contagem' }}
+            </button>
+          </div>
+        </div>
+      }
+
+    }
+
+  </div>
+</div>

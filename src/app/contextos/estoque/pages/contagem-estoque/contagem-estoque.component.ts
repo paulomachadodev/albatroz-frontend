@@ -1,11 +1,13 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { formatDate } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
+import { SelectModule } from 'primeng/select';
 import * as XLSX from 'xlsx';
 import { ContagemEstoqueService } from '../../services/contagem-estoque.service';
-import { CategoriaArvoreNo, FiltroPrioridadeContagem, OrdenacaoPrioridadeContagem, ProdutoPrioridadeContagem } from '../../models/contagem-estoque.model';
+import { FiltroPrioridadeContagem, OrdenacaoPrioridadeContagem, ProdutoPrioridadeContagem } from '../../models/contagem-estoque.model';
+import { montarGruposCategoriaSelect, PT_SELECT_CATEGORIA } from '../../utils/categoria-select.util';
 import { ToastService } from '../../../../core/feedback/toast.service';
 import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 import { BreadcrumbComponent } from '../../../../shared/components/breadcrumb/breadcrumb.component';
@@ -25,11 +27,6 @@ const PT_TOGGLE_SELECIONAR_TODOS = {
     'absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ' + (instance.checked() ? 'translate-x-4' : '')
 };
 
-interface GrupoCategoriaFiltro {
-  raiz: string;
-  opcoes: { valor: string; rotulo: string }[];
-}
-
 interface LinhaPlanilhaContagem {
   Codigo: string;
   CodigoBarras: string;
@@ -48,7 +45,7 @@ interface LinhaImportada {
 @Component({
   selector: 'app-contagem-estoque',
   standalone: true,
-  imports: [FormsModule, ToggleSwitchModule, PageHeaderComponent, BreadcrumbComponent, ListagemPaginadaComponent, ThOrdenavelComponent, SelectBuscaComponent, ContagemBipagemComponent],
+  imports: [FormsModule, RouterLink, ToggleSwitchModule, SelectModule, PageHeaderComponent, BreadcrumbComponent, ListagemPaginadaComponent, ThOrdenavelComponent, SelectBuscaComponent, ContagemBipagemComponent],
   templateUrl: './contagem-estoque.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
@@ -65,7 +62,8 @@ export class ContagemEstoqueComponent implements OnInit {
   marcaFiltro = signal<OpcaoSelectBusca | null>(null);
   buscarMarcas = (termo: string) => this.marcasService.buscar(termo);
 
-  gruposCategoria = signal<GrupoCategoriaFiltro[]>([]);
+  gruposCategoriaSelect = signal<ReturnType<typeof montarGruposCategoriaSelect>>([]);
+  readonly ptSelectCategoria = PT_SELECT_CATEGORIA;
 
   selecionados = new Map<number, ProdutoPrioridadeContagem>();
   qtdSelecionados = signal(0);
@@ -88,19 +86,9 @@ export class ContagemEstoqueComponent implements OnInit {
 
   private carregarCategorias() {
     this.contagemService.listarCategorias().subscribe({
-      next: res => this.gruposCategoria.set((res.dados ?? []).map(raiz => this.montarGrupoCategoria(raiz))),
-      error: () => this.gruposCategoria.set([])
+      next: res => this.gruposCategoriaSelect.set(montarGruposCategoriaSelect(res.dados ?? [])),
+      error: () => this.gruposCategoriaSelect.set([])
     });
-  }
-
-  private montarGrupoCategoria(raiz: CategoriaArvoreNo): GrupoCategoriaFiltro {
-    const opcoes: { valor: string; rotulo: string }[] = [];
-    const achatar = (no: CategoriaArvoreNo) => {
-      opcoes.push({ valor: no.categoriaRaiz, rotulo: no.categoriaRaiz.split(' -> ').join(' > ') });
-      no.filhos.forEach(achatar);
-    };
-    achatar(raiz);
-    return { raiz: raiz.nome, opcoes };
   }
 
   carregar(pagina: number) {

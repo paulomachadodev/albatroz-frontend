@@ -5,6 +5,16 @@
 
     <app-page-header titulo="Contagem de estoque" subtitulo="Lista priorizada pra contar todo dia — curva A pesa junto com item parado com saldo baixo (suspeita de erro de contagem).">
       <div acoes class="flex gap-2">
+        <a routerLink="/estoque/contagem/sessoes"
+           class="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
+          <span class="material-symbols-outlined text-base">fact_check</span>
+          Contagens pra efetivar
+        </a>
+        <a routerLink="/estoque/contagem/guiada"
+           class="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all">
+          <span class="material-symbols-outlined text-base">qr_code_scanner</span>
+          Contagem guiada
+        </a>
         <button type="button" (click)="exportarSelecionados()" [disabled]="qtdSelecionados() === 0"
                 [title]="qtdSelecionados() === 0 ? 'Selecione os produtos na grade pra exportar' : ''"
                 class="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50 transition-all">
@@ -71,17 +81,10 @@
           </div>
           <div>
             <label class="text-sm min-[480px]:text-xs font-semibold text-slate-500">Categoria</label>
-            <select [(ngModel)]="filtro.categoriaRaiz"
-                    class="mt-1 w-full px-3 py-3 min-[480px]:py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none">
-              <option [ngValue]="undefined">Todas</option>
-              @for (grupo of gruposCategoria(); track grupo.raiz) {
-                <optgroup [label]="grupo.raiz">
-                  @for (opcao of grupo.opcoes; track opcao.valor) {
-                    <option [value]="opcao.valor">{{ opcao.rotulo }}</option>
-                  }
-                </optgroup>
-              }
-            </select>
+            <p-select [(ngModel)]="filtro.categoriaRaiz" [options]="gruposCategoriaSelect()"
+              optionLabel="rotulo" optionValue="valor" optionGroupLabel="label" optionGroupChildren="items" [group]="true"
+              [filter]="true" filterBy="rotulo" placeholder="Todas" [showClear]="true"
+              scrollHeight="16rem" appendTo="body" styleClass="mt-1 w-full" [unstyled]="true" [pt]="ptSelectCategoria"></p-select>
           </div>
           <div>
             <label class="text-sm min-[480px]:text-xs font-semibold text-slate-500">Curva</label>

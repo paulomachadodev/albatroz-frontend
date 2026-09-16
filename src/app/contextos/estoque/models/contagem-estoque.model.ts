@@ -63,3 +63,68 @@ export interface ItemConfirmarContagem {
   quantidadeContada: number;
   quantidadeSistemaExportacao: number | null;
 }
+
+export type ModoContagemSessao = 'prioridade' | 'categoria' | 'marca';
+export type StatusContagemSessao = 'aberta' | 'emRevisao' | 'efetivada' | 'desfeita';
+
+export interface IniciarContagemSessaoRequisicao {
+  modo: ModoContagemSessao;
+  categoriaRaiz?: string | null;
+  idMarca?: number | null;
+}
+
+export interface BiparItemContagemSessaoRequisicao {
+  idProduto: number;
+  codigo: string;
+  quantidadeContada: number;
+}
+
+export interface ContagemSessaoResumo {
+  id: number;
+  modo: ModoContagemSessao;
+  categoriaRaiz: string | null;
+  marcaNome: string | null;
+  status: StatusContagemSessao;
+  qtdItens: number;
+  metaDiaAlvo: number;
+  iniciadaEm: string;
+  finalizadaEm: string | null;
+  efetivadaEm: string | null;
+  nomeUsuario: string | null;
+}
+
+export interface ContagemSessaoItem {
+  idProduto: number;
+  codigo: string;
+  nome: string;
+  quantidadeContada: number;
+  quantidadeSistemaMomento: number | null;
+}
+
+export interface ContagemSessaoDetalhe {
+  sessao: ContagemSessaoResumo;
+  itens: ContagemSessaoItem[];
+}
+
+export interface ProdutoPendenteSessao {
+  idProduto: number;
+  codigo: string;
+  gtin: string | null;
+  nome: string;
+  estoqueAtual: number;
+}
+
+export interface PendentesSessao {
+  metaDiaAlvo: number;
+  contadosHoje: number;
+  produtos: ProdutoPendenteSessao[];
+}
+
+export interface EfetivarContagemSessaoResposta {
+  produtosAplicados: number;
+}
+
+export interface DesfazerContagemSessaoResposta {
+  estornados: number;
+  bloqueadosPorDivergencia: number;
+}

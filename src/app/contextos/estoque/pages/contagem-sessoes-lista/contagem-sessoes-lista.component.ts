@@ -129,6 +129,28 @@ export class ContagemSessoesListaComponent implements OnInit {
     });
   }
 
+  async cancelar(sessao: ContagemSessaoResumo) {
+    const confirmou = await this.confirm.confirmar(
+      'Cancelar contagem',
+      'Isso encerra essa contagem sem aplicar nada no estoque. Os itens já bipados ficam registrados como histórico, mas não contam mais pra nada. Confirma?',
+      { textoConfirmar: 'Cancelar contagem', textoCancelar: 'Voltar' }
+    );
+    if (!confirmou) return;
+
+    this.processando.set(true);
+    this.contagemSessaoService.cancelar(sessao.id).subscribe({
+      next: () => {
+        this.processando.set(false);
+        this.toast.sucesso('Contagem cancelada.');
+        this.carregar();
+      },
+      error: err => {
+        this.processando.set(false);
+        this.toast.erroServidor(err, 'Não foi possível cancelar essa contagem.');
+      }
+    });
+  }
+
   formatarDataHora = formatarDataHora;
 
   rotuloModo(sessao: ContagemSessaoResumo): string {

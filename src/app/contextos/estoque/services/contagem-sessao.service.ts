@@ -51,4 +51,8 @@ export class ContagemSessaoService {
   desfazer(idSessao: number): Observable<Resultado<DesfazerContagemSessaoResposta>> {
     return this.api.post<DesfazerContagemSessaoResposta>(`${this.endpoint}/${idSessao}/desfazer`, {});
   }
+
+  cancelar(idSessao: number): Observable<Resultado<void>> {
+    return this.api.post<void>(`${this.endpoint}/${idSessao}/cancelar`, {});
+  }
 }

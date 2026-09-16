@@ -194,7 +194,7 @@ export class ContagemGuiadaBipagemComponent implements OnInit, OnDestroy, AfterV
   }
 
   fechar() {
-    this.router.navigate(['/estoque/contagem/guiada']);
+    this.router.navigate(['/estoque/contagem/guiada'], { replaceUrl: true });
   }
 
   terminar() {
@@ -203,7 +203,7 @@ export class ContagemGuiadaBipagemComponent implements OnInit, OnDestroy, AfterV
       next: () => {
         this.terminando.set(false);
         this.toast.sucesso('Contagem finalizada.', 'Pronta pra revisão e efetivação.');
-        this.router.navigate(['/estoque/contagem/guiada']);
+        this.router.navigate(['/estoque/contagem/guiada'], { replaceUrl: true });
       },
       error: err => {
         this.terminando.set(false);

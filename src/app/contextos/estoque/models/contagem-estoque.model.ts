@@ -65,7 +65,7 @@ export interface ItemConfirmarContagem {
 }
 
 export type ModoContagemSessao = 'prioridade' | 'categoria' | 'marca' | 'selecao';
-export type StatusContagemSessao = 'aberta' | 'emRevisao' | 'efetivada' | 'desfeita';
+export type StatusContagemSessao = 'aberta' | 'emRevisao' | 'efetivada' | 'desfeita' | 'cancelada';
 
 export interface IniciarContagemSessaoRequisicao {
   modo: ModoContagemSessao;

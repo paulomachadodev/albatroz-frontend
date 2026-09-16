@@ -138,7 +138,6 @@
           <th class="px-4 py-4 text-right"><app-th-ordenavel campo="estoqueAtual" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Estoque atual</app-th-ordenavel></th>
           <th class="px-4 py-4 text-center"><app-th-ordenavel campo="classeAbc" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Curva</app-th-ordenavel></th>
           <th class="px-4 py-4 text-right"><app-th-ordenavel campo="diasSemVenda" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Dias sem venda</app-th-ordenavel></th>
-          <th class="px-4 py-4 text-right"><app-th-ordenavel campo="score" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Score</app-th-ordenavel></th>
           <th class="px-4 py-4"><app-th-ordenavel campo="ultimaContagemEm" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Última contagem</app-th-ordenavel></th>
         </tr>
       </ng-template>
@@ -161,7 +160,6 @@
             </span>
           </td>
           <td class="px-4 py-4 text-sm text-slate-600 dark:text-slate-400 text-right">{{ item.diasSemVenda ?? '-' }}</td>
-          <td class="px-4 py-4 text-sm font-bold text-primary text-right">{{ item.score }}</td>
           <td class="px-4 py-4 text-xs text-slate-400">{{ formatarDataHora(item.ultimaContagemEm) }}</td>
         </tr>
       </ng-template>
@@ -185,7 +183,6 @@
                   {{ item.classeAbc || '-' }}
                 </span>
               </span>
-              <span>Score: <strong class="text-primary">{{ item.score }}</strong></span>
               @if (item.diasSemVenda != null) {
                 <span>{{ item.diasSemVenda }} dias sem venda</span>
               }

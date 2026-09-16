@@ -1,6 +1,10 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { DashboardService, ContagemEstoqueResumo } from '../../../dashboard/dashboard.service';
+import { ContagemEstoqueService } from '../../services/contagem-estoque.service';
+import { FocoParadosStatus } from '../../models/contagem-estoque.model';
+import { AuthService } from '../../../../core/auth/auth.service';
+import { ToastService } from '../../../../core/feedback/toast.service';
 import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 import { BreadcrumbComponent } from '../../../../shared/components/breadcrumb/breadcrumb.component';
 
@@ -13,13 +17,64 @@ import { BreadcrumbComponent } from '../../../../shared/components/breadcrumb/br
 })
 export class BalancoDashboardComponent implements OnInit {
   meta = signal<ContagemEstoqueResumo | null>(null);
+  focoParados = signal<FocoParadosStatus | null>(null);
+  processandoFoco = signal(false);
 
-  constructor(private dashboardService: DashboardService) {}
+  private auth = inject(AuthService);
+
+  podeGerenciarFoco(): boolean {
+    return this.auth.temPermissao('estoque:aprovar');
+  }
+
+  constructor(
+    private dashboardService: DashboardService,
+    private contagemEstoqueService: ContagemEstoqueService,
+    private toast: ToastService
+  ) {}
 
   ngOnInit() {
     this.dashboardService.obter('mes').subscribe({
       next: res => this.meta.set(res.dados?.contagemEstoque ?? null),
       error: () => this.meta.set(null)
+    });
+
+    this.carregarFocoParados();
+  }
+
+  private carregarFocoParados() {
+    this.contagemEstoqueService.obterFocoParadosStatus().subscribe({
+      next: res => this.focoParados.set(res.dados ?? null),
+      error: () => this.focoParados.set(null)
+    });
+  }
+
+  ativarFocoParados() {
+    this.processandoFoco.set(true);
+    this.contagemEstoqueService.ativarFocoParados().subscribe({
+      next: () => {
+        this.processandoFoco.set(false);
+        this.toast.sucesso('Foco em parados ativado.', 'A prioridade de contagem agora aponta pra produtos com estoque positivo sem giro.');
+        this.carregarFocoParados();
+      },
+      error: err => {
+        this.processandoFoco.set(false);
+        this.toast.erroServidor(err, 'Não foi possível ativar o foco.');
+      }
+    });
+  }
+
+  desativarFocoParados() {
+    this.processandoFoco.set(true);
+    this.contagemEstoqueService.desativarFocoParados().subscribe({
+      next: () => {
+        this.processandoFoco.set(false);
+        this.toast.sucesso('Foco em parados desativado.', 'Prioridade volta ao padrão.');
+        this.carregarFocoParados();
+      },
+      error: err => {
+        this.processandoFoco.set(false);
+        this.toast.erroServidor(err, 'Não foi possível desativar o foco.');
+      }
     });
   }
 

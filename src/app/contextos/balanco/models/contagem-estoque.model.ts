@@ -7,8 +7,12 @@ export interface ProdutoPrioridadeContagem {
   estoqueAtual: number;
   classeAbc: string | null;
   diasSemVenda: number | null;
-  score: number;
   ultimaContagemEm: string | null;
+}
+
+export interface FocoParadosStatus {
+  ativo: boolean;
+  totalRestante: number;
 }
 
 export interface FiltroPrioridadeContagem {

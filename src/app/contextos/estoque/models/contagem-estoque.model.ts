@@ -64,13 +64,14 @@ export interface ItemConfirmarContagem {
   quantidadeSistemaExportacao: number | null;
 }
 
-export type ModoContagemSessao = 'prioridade' | 'categoria' | 'marca';
+export type ModoContagemSessao = 'prioridade' | 'categoria' | 'marca' | 'selecao';
 export type StatusContagemSessao = 'aberta' | 'emRevisao' | 'efetivada' | 'desfeita';
 
 export interface IniciarContagemSessaoRequisicao {
   modo: ModoContagemSessao;
   categoriaRaiz?: string | null;
   idMarca?: number | null;
+  idsProduto?: number[];
 }
 
 export interface BiparItemContagemSessaoRequisicao {

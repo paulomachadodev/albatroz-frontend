@@ -1,5 +1,16 @@
 <section class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-  <ng-content select="[filtros]"></ng-content>
+  <div class="flex justify-end mb-2">
+    <button type="button" (click)="alternarFiltros()"
+            class="flex items-center gap-1 text-sm font-bold text-primary">
+      {{ filtrosExpandidos() ? 'Recolher filtros' : 'Filtros' }}
+      <span class="material-symbols-outlined text-lg">{{ filtrosExpandidos() ? 'expand_less' : 'expand_more' }}</span>
+    </button>
+  </div>
+  <div [class]="filtrosExpandidos()
+    ? 'overflow-visible max-h-none opacity-100 transition-all duration-200'
+    : 'overflow-hidden max-h-0 opacity-0 md:max-h-[84px] md:opacity-100 transition-all duration-200'">
+    <ng-content select="[filtros]"></ng-content>
+  </div>
 </section>
 
 <ng-content select="[entreFiltrosEGrid]"></ng-content>

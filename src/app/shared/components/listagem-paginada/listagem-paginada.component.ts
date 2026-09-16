@@ -1,4 +1,4 @@
-import { Component, ContentChild, TemplateRef, input, output } from '@angular/core';
+import { Component, ContentChild, TemplateRef, input, output, signal } from '@angular/core';
 import { CommonModule, NgTemplateOutlet } from '@angular/common';
 
 @Component({
@@ -24,6 +24,12 @@ export class ListagemPaginadaComponent<T> {
   @ContentChild('cabecalho', { read: TemplateRef }) cabecalhoTpl?: TemplateRef<unknown>;
   @ContentChild('linha', { read: TemplateRef }) linhaTpl!: TemplateRef<unknown>;
   @ContentChild('linhaMobile', { read: TemplateRef }) linhaMobileTpl?: TemplateRef<unknown>;
+
+  filtrosExpandidos = signal(false);
+
+  alternarFiltros() {
+    this.filtrosExpandidos.update(v => !v);
+  }
 
   paginaAnterior() {
     if (this.paginaAtual() > 1) this.paginaMudou.emit(this.paginaAtual() - 1);

@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ContagemSessaoService } from '../../services/contagem-sessao.service';
 import { ContagemSessaoDetalhe, ContagemSessaoResumo, StatusContagemSessao } from '../../models/contagem-estoque.model';
@@ -7,6 +7,7 @@ import { ConfirmService } from '../../../../core/feedback/confirm.service';
 import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 import { BreadcrumbComponent } from '../../../../shared/components/breadcrumb/breadcrumb.component';
 import { formatarDataHora } from '../../../../shared/utils/formatar-data-hora.util';
+import { AuthService } from '../../../../core/auth/auth.service';
 
 @Component({
   selector: 'app-contagem-sessoes-lista',
@@ -26,6 +27,12 @@ export class ContagemSessoesListaComponent implements OnInit {
   carregandoDetalhe = signal(false);
 
   processando = signal(false);
+
+  private auth = inject(AuthService);
+
+  podeEfetivar(): boolean {
+    return this.auth.temPermissao('estoque:aprovar');
+  }
 
   constructor(
     private contagemSessaoService: ContagemSessaoService,
@@ -125,7 +132,10 @@ export class ContagemSessoesListaComponent implements OnInit {
   formatarDataHora = formatarDataHora;
 
   rotuloModo(sessao: ContagemSessaoResumo): string {
-    const base = sessao.modo === 'prioridade' ? 'Prioridade' : sessao.modo === 'categoria' ? 'Categoria' : 'Marca';
+    const base = sessao.modo === 'prioridade' ? 'Prioridade'
+      : sessao.modo === 'categoria' ? 'Categoria'
+      : sessao.modo === 'marca' ? 'Marca'
+      : 'Filtrada';
     return sessao.categoriaRaiz ? `${base} — ${sessao.categoriaRaiz}` : sessao.marcaNome ? `${base} — ${sessao.marcaNome}` : base;
   }
 }

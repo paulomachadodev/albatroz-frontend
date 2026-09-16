@@ -8,6 +8,7 @@ import * as XLSX from 'xlsx';
 import { ContagemEstoqueService } from '../../services/contagem-estoque.service';
 import { FiltroPrioridadeContagem, OrdenacaoPrioridadeContagem, ProdutoPrioridadeContagem } from '../../models/contagem-estoque.model';
 import { montarGruposCategoriaSelect, PT_SELECT_CATEGORIA } from '../../utils/categoria-select.util';
+import { PT_TOGGLE_SELECIONAR } from '../../utils/pt-toggle-selecionar.util';
 import { ToastService } from '../../../../core/feedback/toast.service';
 import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 import { BreadcrumbComponent } from '../../../../shared/components/breadcrumb/breadcrumb.component';
@@ -16,16 +17,6 @@ import { ThOrdenavelComponent } from '../../../../shared/components/th-ordenavel
 import { SelectBuscaComponent, OpcaoSelectBusca } from '../../../../shared/components/select-busca/select-busca.component';
 import { MarcasService } from '../../../produtos/services/marcas.service';
 import { exportarPlanilha } from '../../../../shared/utils/exportar-planilha';
-import { ContagemBipagemComponent } from '../contagem-bipagem/contagem-bipagem.component';
-
-const PT_TOGGLE_SELECIONAR_TODOS = {
-  root: 'inline-flex items-center cursor-pointer align-middle',
-  input: 'absolute opacity-0 w-0 h-0',
-  slider: ({ instance }: { instance: { checked(): boolean } }) =>
-    'relative inline-block w-9 h-5 rounded-full transition-colors ' + (instance.checked() ? 'bg-primary' : 'bg-slate-300 dark:bg-slate-600'),
-  handle: ({ instance }: { instance: { checked(): boolean } }) =>
-    'absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ' + (instance.checked() ? 'translate-x-4' : '')
-};
 
 interface LinhaPlanilhaContagem {
   Codigo: string;
@@ -45,7 +36,7 @@ interface LinhaImportada {
 @Component({
   selector: 'app-contagem-estoque',
   standalone: true,
-  imports: [FormsModule, RouterLink, ToggleSwitchModule, SelectModule, PageHeaderComponent, BreadcrumbComponent, ListagemPaginadaComponent, ThOrdenavelComponent, SelectBuscaComponent, ContagemBipagemComponent],
+  imports: [FormsModule, RouterLink, ToggleSwitchModule, SelectModule, PageHeaderComponent, BreadcrumbComponent, ListagemPaginadaComponent, ThOrdenavelComponent, SelectBuscaComponent],
   templateUrl: './contagem-estoque.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
@@ -67,10 +58,9 @@ export class ContagemEstoqueComponent implements OnInit {
 
   selecionados = new Map<number, ProdutoPrioridadeContagem>();
   qtdSelecionados = signal(0);
-  readonly ptToggleTodos = PT_TOGGLE_SELECIONAR_TODOS;
+  readonly ptToggleTodos = PT_TOGGLE_SELECIONAR;
 
   importando = signal(false);
-  bipagemAberta = signal(false);
 
   constructor(
     private contagemService: ContagemEstoqueService,
@@ -229,14 +219,6 @@ export class ContagemEstoqueComponent implements OnInit {
         }
       });
     });
-  }
-
-  abrirBipagem() {
-    this.bipagemAberta.set(true);
-  }
-
-  fecharBipagem() {
-    this.bipagemAberta.set(false);
   }
 
   limparSelecao() {

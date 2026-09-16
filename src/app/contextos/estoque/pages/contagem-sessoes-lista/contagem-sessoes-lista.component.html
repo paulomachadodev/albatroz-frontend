@@ -75,13 +75,13 @@
                   }
 
                   <div class="flex gap-2">
-                    @if (sessao.status === 'emRevisao') {
+                    @if (sessao.status === 'emRevisao' && podeEfetivar()) {
                       <button type="button" (click)="efetivar(sessao)" [disabled]="processando()"
                               class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-xs disabled:opacity-50">
                         Efetivar no estoque
                       </button>
                     }
-                    @if (sessao.status === 'efetivada') {
+                    @if (sessao.status === 'efetivada' && podeEfetivar()) {
                       <button type="button" (click)="desfazer(sessao)" [disabled]="processando()"
                               class="px-4 py-2 rounded-lg bg-white dark:bg-slate-800 border border-rose-200 dark:border-rose-900 text-rose-600 font-bold text-xs disabled:opacity-50">
                         Desfazer efetivação

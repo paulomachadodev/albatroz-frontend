@@ -3,18 +3,31 @@
 
     <app-breadcrumb [itens]="[{label:'Início',rota:'/dashboard'},{label:'Estoque',rota:'/estoque'},{label:'Contagem de estoque'}]"></app-breadcrumb>
 
-    <app-page-header titulo="Contagem de estoque" subtitulo="Lista priorizada pra contar todo dia — curva A pesa junto com item parado com saldo baixo (suspeita de erro de contagem).">
-      <div acoes class="flex gap-2">
+    <div class="md:hidden space-y-4">
+      <h1 class="text-xl font-bold text-slate-900 dark:text-slate-100">Contagem de estoque</h1>
+      <div class="grid grid-cols-1 gap-3">
         <a routerLink="/estoque/contagem/sessoes"
-           class="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
-          <span class="material-symbols-outlined text-base">fact_check</span>
-          Contagens pra efetivar
+           class="flex items-center gap-3 p-5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+          <span class="material-symbols-outlined text-3xl text-primary">fact_check</span>
+          <div>
+            <div class="text-base font-bold text-slate-900 dark:text-slate-100">Balanço a Efetivar</div>
+            <div class="text-sm text-slate-500 dark:text-slate-400">Revisar e efetivar contagens já feitas</div>
+          </div>
         </a>
         <a routerLink="/estoque/contagem/guiada"
-           class="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all">
-          <span class="material-symbols-outlined text-base">qr_code_scanner</span>
-          Contagem guiada
+           class="flex items-center gap-3 p-5 rounded-xl bg-primary text-white">
+          <span class="material-symbols-outlined text-3xl">qr_code_scanner</span>
+          <div>
+            <div class="text-base font-bold">Balanço Guiado</div>
+            <div class="text-sm text-white/80">Bipar produtos com o celular</div>
+          </div>
         </a>
+      </div>
+    </div>
+
+    <div class="hidden md:block space-y-8">
+    <app-page-header titulo="Contagem de estoque" subtitulo="Lista priorizada pra contar todo dia — curva A pesa junto com item parado com saldo baixo (suspeita de erro de contagem).">
+      <div acoes class="flex gap-2">
         <button type="button" (click)="exportarSelecionados()" [disabled]="qtdSelecionados() === 0"
                 [title]="qtdSelecionados() === 0 ? 'Selecione os produtos na grade pra exportar' : ''"
                 class="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50 transition-all">
@@ -28,12 +41,6 @@
         </label>
       </div>
     </app-page-header>
-
-    <button type="button" (click)="abrirBipagem()"
-            class="md:hidden w-full px-4 py-3 rounded-lg bg-primary text-white font-bold text-sm flex items-center justify-center gap-2">
-      <span class="material-symbols-outlined text-lg">qr_code_scanner</span>
-      Bipar contagem
-    </button>
 
     <app-listagem-paginada
       [itens]="itens()"
@@ -81,10 +88,10 @@
           </div>
           <div>
             <label class="text-sm min-[480px]:text-xs font-semibold text-slate-500">Categoria</label>
-            <p-select [(ngModel)]="filtro.categoriaRaiz" [options]="gruposCategoriaSelect()"
+            <p-select class="block mt-1" [(ngModel)]="filtro.categoriaRaiz" [options]="gruposCategoriaSelect()"
               optionLabel="rotulo" optionValue="valor" optionGroupLabel="label" optionGroupChildren="items" [group]="true"
               [filter]="true" filterBy="rotulo" placeholder="Todas" [showClear]="true"
-              scrollHeight="16rem" appendTo="body" styleClass="mt-1 w-full" [unstyled]="true" [pt]="ptSelectCategoria"></p-select>
+              appendTo="body" styleClass="w-full" [unstyled]="true" [pt]="ptSelectCategoria"></p-select>
           </div>
           <div>
             <label class="text-sm min-[480px]:text-xs font-semibold text-slate-500">Curva</label>
@@ -189,10 +196,7 @@
       </ng-template>
 
     </app-listagem-paginada>
+    </div>
 
   </div>
 </div>
-
-@if (bipagemAberta()) {
-  <app-contagem-bipagem (fechar)="fecharBipagem()"></app-contagem-bipagem>
-}

@@ -1,102 +1,173 @@
 <div class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark px-4 sm:px-6 lg:px-8 xl:px-10 py-6 lg:py-8">
-  <div class="w-full space-y-8">
+  <div class="w-full space-y-6">
 
-    <app-breadcrumb [itens]="[{label:'Início',rota:'/dashboard'},{label:'Estoque',rota:'/estoque'},{label:'Contagem guiada'}]"></app-breadcrumb>
+    <app-breadcrumb [itens]="[{label:'Início',rota:'/dashboard'},{label:'Estoque',rota:'/estoque'},{label:'Balanço guiado'}]"></app-breadcrumb>
 
-    <app-page-header titulo="Contagem guiada" subtitulo="Sistema mostra o próximo produto pra contar, você bipa e confirma a quantidade."></app-page-header>
+    <app-page-header titulo="Balanço guiado" subtitulo="Sistema mostra o próximo produto pra contar, você bipa e confirma a quantidade."></app-page-header>
 
     @if (carregando()) {
       <div class="text-center py-12 text-slate-400 text-base">Carregando...</div>
     } @else {
 
-      @if (sessoesAbertas().length > 0) {
+      @if (fase() === 'menu') {
         <div class="space-y-3">
-          <h2 class="text-base font-bold text-slate-900 dark:text-slate-100">Suas contagens em aberto</h2>
-          @for (sessao of sessoesAbertas(); track sessao.id) {
-            <button type="button" (click)="continuar(sessao)"
-                    class="w-full text-left bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 flex items-center justify-between gap-3 hover:border-primary/40 transition-colors">
-              <div class="min-w-0">
-                <div class="text-base font-bold text-slate-900 dark:text-slate-100">
-                  {{ rotuloModo(sessao.modo) }}
-                  @if (sessao.categoriaRaiz) { <span class="text-slate-400 font-normal">— {{ sessao.categoriaRaiz }}</span> }
-                  @if (sessao.marcaNome) { <span class="text-slate-400 font-normal">— {{ sessao.marcaNome }}</span> }
-                </div>
-                <div class="text-sm text-slate-500 dark:text-slate-400">
-                  {{ sessao.qtdItens }} produto(s) bipado(s) · {{ rotuloStatus(sessao.status) }} · iniciada em {{ formatarDataHora(sessao.iniciadaEm) }}
-                </div>
-              </div>
-              <span class="material-symbols-outlined text-primary text-2xl shrink-0">play_circle</span>
-            </button>
+          <div class="w-full flex items-center gap-3 p-5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800"
+               [class.opacity-50]="sessoesAbertas().length === 0">
+            <span class="material-symbols-outlined text-3xl text-primary">play_circle</span>
+            <div>
+              <div class="text-base font-bold text-slate-900 dark:text-slate-100">Continuar contagens em aberto</div>
+              <div class="text-sm text-slate-500">{{ sessoesAbertas().length }} contagem(ns) aguardando você</div>
+            </div>
+          </div>
+
+          @if (sessoesAbertas().length > 0) {
+            <div class="space-y-2 pl-2">
+              @for (sessao of sessoesAbertas(); track sessao.id) {
+                <button type="button" (click)="continuar(sessao)"
+                        class="w-full text-left bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 flex items-center justify-between gap-3">
+                  <div class="min-w-0">
+                    <div class="text-base font-bold text-slate-900 dark:text-slate-100">
+                      {{ rotuloModo(sessao.modo) }}
+                      @if (sessao.categoriaRaiz) { <span class="text-slate-400 font-normal">— {{ sessao.categoriaRaiz }}</span> }
+                      @if (sessao.marcaNome) { <span class="text-slate-400 font-normal">— {{ sessao.marcaNome }}</span> }
+                    </div>
+                    <div class="text-sm text-slate-500 dark:text-slate-400">
+                      {{ sessao.qtdItens }} produto(s) bipado(s) · {{ rotuloStatus(sessao.status) }} · {{ formatarDataHora(sessao.iniciadaEm) }}
+                    </div>
+                  </div>
+                  <span class="material-symbols-outlined text-primary text-2xl shrink-0">chevron_right</span>
+                </button>
+              }
+            </div>
           }
+
+          <button type="button" (click)="irParaNovaContagem()"
+                  class="w-full flex items-center gap-3 p-5 rounded-xl bg-primary text-white">
+            <span class="material-symbols-outlined text-3xl">add_circle</span>
+            <div class="text-left">
+              <div class="text-base font-bold">Nova contagem</div>
+              <div class="text-sm text-white/80">Escolher o que contar agora</div>
+            </div>
+          </button>
         </div>
       }
 
-      @if (!modoEscolhido()) {
+      @if (fase() === 'novaContagem') {
         <div class="space-y-3">
-          <h2 class="text-base font-bold text-slate-900 dark:text-slate-100">Nova contagem</h2>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <button type="button" (click)="escolherModo('prioridade')"
-                    class="flex flex-col items-center gap-2 p-6 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-primary/40 transition-colors">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <button type="button" (click)="iniciarPorPrioridade()" [disabled]="iniciando()"
+                    class="flex flex-col items-center gap-2 p-6 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 disabled:opacity-50">
               <span class="material-symbols-outlined text-3xl text-primary">priority_high</span>
               <span class="text-base font-bold text-slate-900 dark:text-slate-100">Por prioridade</span>
               <span class="text-sm text-slate-500 text-center">Do mais crítico pro menos crítico</span>
             </button>
-            <button type="button" (click)="escolherModo('categoria')"
-                    class="flex flex-col items-center gap-2 p-6 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-primary/40 transition-colors">
-              <span class="material-symbols-outlined text-3xl text-primary">category</span>
-              <span class="text-base font-bold text-slate-900 dark:text-slate-100">Por categoria</span>
-              <span class="text-sm text-slate-500 text-center">Escolha a categoria pra contar</span>
-            </button>
-            <button type="button" (click)="escolherModo('marca')"
-                    class="flex flex-col items-center gap-2 p-6 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-primary/40 transition-colors">
-              <span class="material-symbols-outlined text-3xl text-primary">sell</span>
-              <span class="text-base font-bold text-slate-900 dark:text-slate-100">Por marca</span>
-              <span class="text-sm text-slate-500 text-center">Escolha a marca pra contar</span>
+            <button type="button" (click)="irParaFiltrada()"
+                    class="flex flex-col items-center gap-2 p-6 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+              <span class="material-symbols-outlined text-3xl text-primary">filter_alt</span>
+              <span class="text-base font-bold text-slate-900 dark:text-slate-100">Filtrada</span>
+              <span class="text-sm text-slate-500 text-center">Escolher os produtos numa lista filtrada</span>
             </button>
           </div>
+          <button type="button" (click)="voltarParaMenu()" class="text-base text-slate-500 underline">Voltar</button>
         </div>
       }
 
-      @if (modoEscolhido() === 'categoria') {
-        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 space-y-4">
-          <label class="text-base font-semibold text-slate-700 dark:text-slate-300">Categoria</label>
-          <p-select [ngModel]="categoriaEscolhida()" (ngModelChange)="categoriaEscolhida.set($event)"
-            [options]="gruposCategoriaSelect()" optionLabel="rotulo" optionValue="valor"
-            optionGroupLabel="label" optionGroupChildren="items" [group]="true"
-            [filter]="true" filterBy="rotulo" placeholder="Buscar categoria..." [showClear]="true"
-            scrollHeight="16rem" appendTo="body" styleClass="w-full" [unstyled]="true" [pt]="ptSelectCategoria"></p-select>
-          <div class="flex gap-2">
-            <button type="button" (click)="cancelarEscolha()"
-                    class="flex-1 px-4 py-3 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-base">
-              Cancelar
-            </button>
-            <button type="button" (click)="iniciar()" [disabled]="!podeIniciar() || iniciando()"
-                    class="flex-[2] px-4 py-3 rounded-lg bg-primary text-white font-bold text-base disabled:opacity-50">
-              {{ iniciando() ? 'Iniciando...' : 'Começar contagem' }}
-            </button>
+      @if (fase() === 'filtrada') {
+        <div class="space-y-4">
+          <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
+            <div class="flex justify-end mb-2">
+              <button type="button" (click)="alternarFiltros()" class="flex items-center gap-1 text-base font-bold text-primary">
+                {{ filtrosExpandidos() ? 'Recolher filtros' : 'Filtros' }}
+                <span class="material-symbols-outlined text-lg">{{ filtrosExpandidos() ? 'expand_less' : 'expand_more' }}</span>
+              </button>
+            </div>
+            <div [class]="filtrosExpandidos() ? 'overflow-visible max-h-none opacity-100' : 'overflow-hidden max-h-0 opacity-0'" style="transition: all 200ms">
+              <div class="grid grid-cols-1 min-[480px]:grid-cols-2 gap-4">
+                <div>
+                  <label class="text-sm font-semibold text-slate-500">Situação</label>
+                  <select [(ngModel)]="filtro.situacao" class="mt-1 w-full px-3 py-3 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-base outline-none">
+                    <option [ngValue]="undefined">Todas</option>
+                    <option value="A">Ativo</option>
+                    <option value="I">Inativo</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="text-sm font-semibold text-slate-500">Estoque</label>
+                  <select [(ngModel)]="filtro.comEstoque" class="mt-1 w-full px-3 py-3 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-base outline-none">
+                    <option [ngValue]="undefined">Todos</option>
+                    <option [ngValue]="true">Com estoque</option>
+                    <option [ngValue]="false">Sem estoque</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="text-sm font-semibold text-slate-500">Categoria</label>
+                  <p-select class="block mt-1" [(ngModel)]="filtro.categoriaRaiz" [options]="gruposCategoriaSelect()"
+                    optionLabel="rotulo" optionValue="valor" optionGroupLabel="label" optionGroupChildren="items" [group]="true"
+                    [filter]="true" filterBy="rotulo" placeholder="Todas" [showClear]="true"
+                    appendTo="body" styleClass="w-full" [unstyled]="true" [pt]="ptSelectCategoria"></p-select>
+                </div>
+                <div>
+                  <label class="text-sm font-semibold text-slate-500">Marca</label>
+                  <app-select-busca [valorSelecionado]="marcaFiltro()" placeholder="Buscar marca..." [buscar]="buscarMarcas"
+                    (selecionado)="marcaFiltro.set($event)"></app-select-busca>
+                </div>
+              </div>
+              <div class="flex justify-end gap-2 mt-4">
+                <button type="button" (click)="buscarFiltrada(1)" [disabled]="buscando()"
+                        class="px-4 py-3 rounded-lg bg-primary text-white font-bold text-base disabled:opacity-50">
+                  {{ buscando() ? 'Buscando...' : 'Buscar' }}
+                </button>
+              </div>
+            </div>
           </div>
-        </div>
-      }
 
-      @if (modoEscolhido() === 'marca') {
-        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 space-y-4">
-          <label class="text-base font-semibold text-slate-700 dark:text-slate-300">Marca</label>
-          <app-select-busca
-            [valorSelecionado]="marcaEscolhida()"
-            placeholder="Buscar marca..."
-            [buscar]="buscarMarcas"
-            (selecionado)="marcaEscolhida.set($event)"></app-select-busca>
-          <div class="flex gap-2">
-            <button type="button" (click)="cancelarEscolha()"
-                    class="flex-1 px-4 py-3 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-base">
-              Cancelar
-            </button>
-            <button type="button" (click)="iniciar()" [disabled]="!podeIniciar() || iniciando()"
-                    class="flex-[2] px-4 py-3 rounded-lg bg-primary text-white font-bold text-base disabled:opacity-50">
-              {{ iniciando() ? 'Iniciando...' : 'Começar contagem' }}
+          @if (buscou()) {
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
+              @if (buscando()) {
+                <div class="px-6 py-8 text-center text-slate-400 text-base">Carregando...</div>
+              } @else if (resultados().length === 0) {
+                <div class="px-6 py-8 text-center text-slate-400 text-base">Nenhum produto encontrado pra esse filtro.</div>
+              } @else {
+                <div class="divide-y divide-slate-100 dark:divide-slate-800">
+                  @for (item of resultados(); track item.idProduto) {
+                    <div class="p-4 flex items-center gap-3">
+                      <p-toggleSwitch [ngModel]="estaSelecionado(item)" (onChange)="aoAlternarSelecao(item, $event.checked)"
+                        [ariaLabel]="'Selecionar ' + item.nome" [unstyled]="true" [pt]="ptToggleSelecionar"></p-toggleSwitch>
+                      <div class="min-w-0">
+                        <div class="text-base font-bold text-slate-900 dark:text-slate-100 truncate">{{ item.codigo }} — {{ item.nome }}</div>
+                        <div class="text-sm text-slate-500">{{ item.marca || 'Sem marca' }} · Estoque: {{ item.estoqueAtual }}</div>
+                      </div>
+                    </div>
+                  }
+                </div>
+                <div class="p-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-sm text-slate-500">
+                  <span>Página {{ paginaAtual() }} de {{ totalPaginas() }} · {{ totalRegistros() }} produtos</span>
+                  <div class="flex gap-2">
+                    <button type="button" (click)="buscarFiltrada(paginaAtual() - 1)" [disabled]="paginaAtual() <= 1"
+                            class="size-9 flex items-center justify-center rounded bg-slate-100 dark:bg-slate-800 disabled:opacity-40">
+                      <span class="material-symbols-outlined text-base">chevron_left</span>
+                    </button>
+                    <button type="button" (click)="buscarFiltrada(paginaAtual() + 1)" [disabled]="paginaAtual() >= totalPaginas()"
+                            class="size-9 flex items-center justify-center rounded bg-slate-100 dark:bg-slate-800 disabled:opacity-40">
+                      <span class="material-symbols-outlined text-base">chevron_right</span>
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+
+          <button type="button" (click)="voltarParaNovaContagem()" class="text-base text-slate-500 underline">Voltar</button>
+        </div>
+
+        @if (qtdSelecionados() > 0) {
+          <div class="fixed left-0 right-0 z-40 px-4" style="bottom: max(1rem, env(safe-area-inset-bottom, 0px))">
+            <button type="button" (click)="iniciarComSelecao()" [disabled]="iniciando()"
+                    class="w-full px-4 py-4 rounded-xl bg-primary text-white font-bold text-base shadow-lg disabled:opacity-50">
+              {{ iniciando() ? 'Iniciando...' : 'Bipar contagem (' + qtdSelecionados() + ' selecionado(s))' }}
             </button>
           </div>
-        </div>
+        }
       }
 
     }

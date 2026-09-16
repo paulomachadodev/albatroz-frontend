@@ -32,6 +32,8 @@ export class LeitorCodigoBarrasComponent implements AfterViewInit, OnDestroy {
   zoomPasso = signal(0.5);
   temMultiplasLentes = signal(false);
   trocandoLente = signal(false);
+  controlesVisiveis = signal(false);
+  laserTopPercent = signal(8);
 
   private static readonly JANELA_DEBOUNCE_MS = 2500;
   private static readonly INTERVALO_RETRIGGER_FOCO_MS = 1500;
@@ -54,12 +56,20 @@ export class LeitorCodigoBarrasComponent implements AfterViewInit, OnDestroy {
   private destruido = false;
   private ultimoErroNome?: string;
   private scrollLock = inject(ScrollLockService);
+  private laserAnimId?: number;
+  private timeoutOcultarControles?: ReturnType<typeof setTimeout>;
+
+  private static readonly PERIODO_LASER_MS = 1800;
+  private static readonly LASER_TOPO_MIN = 8;
+  private static readonly LASER_TOPO_MAX = 88;
+  private static readonly OCULTAR_CONTROLES_APOS_MS = 3000;
 
   constructor() {
     this.scrollLock.travar();
   }
 
   async ngAfterViewInit() {
+    this.animarLaser(performance.now());
     this.audioContext = new AudioContext();
     this.audioContext.resume();
     const lentePreferida = this.lerLentePreferida();
@@ -211,6 +221,8 @@ export class LeitorCodigoBarrasComponent implements AfterViewInit, OnDestroy {
     this.destruido = true;
     clearInterval(this.intervalRetriggerFoco);
     clearInterval(this.intervalSweepFoco);
+    clearTimeout(this.timeoutOcultarControles);
+    if (this.laserAnimId) cancelAnimationFrame(this.laserAnimId);
     this.controls?.stop();
     this.audioContext?.close();
     this.scrollLock.destravar();
@@ -275,6 +287,24 @@ export class LeitorCodigoBarrasComponent implements AfterViewInit, OnDestroy {
       this.indiceSweepFoco++;
       this.track.applyConstraints({ advanced: [{ focusDistance: distancia } as MediaTrackConstraintSet] }).catch(() => {});
     }, LeitorCodigoBarrasComponent.INTERVALO_SWEEP_FOCO_MS);
+  }
+
+  private animarLaser = (agora: number): void => {
+    const inicio = agora;
+    const passo = (tempoAtual: number) => {
+      if (this.destruido) return;
+      const t = ((tempoAtual - inicio) % LeitorCodigoBarrasComponent.PERIODO_LASER_MS) / LeitorCodigoBarrasComponent.PERIODO_LASER_MS;
+      const onda = (Math.sin(t * Math.PI * 2 - Math.PI / 2) + 1) / 2;
+      this.laserTopPercent.set(LeitorCodigoBarrasComponent.LASER_TOPO_MIN + onda * (LeitorCodigoBarrasComponent.LASER_TOPO_MAX - LeitorCodigoBarrasComponent.LASER_TOPO_MIN));
+      this.laserAnimId = requestAnimationFrame(passo);
+    };
+    this.laserAnimId = requestAnimationFrame(passo);
+  };
+
+  aoTocarNaTela(): void {
+    this.controlesVisiveis.set(true);
+    clearTimeout(this.timeoutOcultarControles);
+    this.timeoutOcultarControles = setTimeout(() => this.controlesVisiveis.set(false), LeitorCodigoBarrasComponent.OCULTAR_CONTROLES_APOS_MS);
   }
 
   focarNoToque(evento: MouseEvent): void {

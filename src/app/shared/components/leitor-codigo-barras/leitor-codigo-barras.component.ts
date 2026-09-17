@@ -36,8 +36,10 @@ export class LeitorCodigoBarrasComponent implements AfterViewInit, OnDestroy {
   trocandoLente = signal(false);
   controlesVisiveis = signal(false);
   laserTopPercent = signal(8);
+  confirmandoLeitura = signal(false);
 
   private static readonly JANELA_DEBOUNCE_MS = 2500;
+  private static readonly JANELA_CONFIRMACAO_MS = 450;
   private static readonly INTERVALO_RETRIGGER_FOCO_MS = 1500;
   private static readonly INTERVALO_SWEEP_FOCO_MS = 800;
   private static readonly ZOOM_INICIAL_IDEAL = 2;
@@ -47,6 +49,9 @@ export class LeitorCodigoBarrasComponent implements AfterViewInit, OnDestroy {
   private controls?: IScannerControls;
   private ultimoCodigoLido: string | null = null;
   private ultimoLidoEm = 0;
+  private codigoPendenteConfirmacao: string | null = null;
+  private momentoPendente = 0;
+  private timeoutConfirmacao?: ReturnType<typeof setTimeout>;
   private track?: MediaStreamTrack;
   private intervalRetriggerFoco?: ReturnType<typeof setInterval>;
   private intervalSweepFoco?: ReturnType<typeof setInterval>;
@@ -139,8 +144,8 @@ export class LeitorCodigoBarrasComponent implements AfterViewInit, OnDestroy {
     try {
       const constraints: MediaStreamConstraints = {
         video: {
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
           advanced: [{ focusMode: 'continuous' } as MediaTrackConstraintSet],
           ...videoConstraints
         }
@@ -152,10 +157,26 @@ export class LeitorCodigoBarrasComponent implements AfterViewInit, OnDestroy {
         if (codigo === this.ultimoCodigoLido && agora - this.ultimoLidoEm < LeitorCodigoBarrasComponent.JANELA_DEBOUNCE_MS) {
           return;
         }
-        this.ultimoCodigoLido = codigo;
-        this.ultimoLidoEm = agora;
-        this.tocarBipe();
-        this.codigoLido.emit(codigo);
+
+        if (this.codigoPendenteConfirmacao === codigo && agora - this.momentoPendente <= LeitorCodigoBarrasComponent.JANELA_CONFIRMACAO_MS) {
+          clearTimeout(this.timeoutConfirmacao);
+          this.codigoPendenteConfirmacao = null;
+          this.confirmandoLeitura.set(false);
+          this.ultimoCodigoLido = codigo;
+          this.ultimoLidoEm = agora;
+          this.tocarBipe();
+          this.codigoLido.emit(codigo);
+          return;
+        }
+
+        this.codigoPendenteConfirmacao = codigo;
+        this.momentoPendente = agora;
+        this.confirmandoLeitura.set(true);
+        clearTimeout(this.timeoutConfirmacao);
+        this.timeoutConfirmacao = setTimeout(() => {
+          this.codigoPendenteConfirmacao = null;
+          this.confirmandoLeitura.set(false);
+        }, LeitorCodigoBarrasComponent.JANELA_CONFIRMACAO_MS);
       });
       this.carregando.set(false);
       this.erro.set(null);
@@ -224,6 +245,7 @@ export class LeitorCodigoBarrasComponent implements AfterViewInit, OnDestroy {
     clearInterval(this.intervalRetriggerFoco);
     clearInterval(this.intervalSweepFoco);
     clearTimeout(this.timeoutOcultarControles);
+    clearTimeout(this.timeoutConfirmacao);
     if (this.laserAnimId) cancelAnimationFrame(this.laserAnimId);
     this.controls?.stop();
     this.audioContext?.close();

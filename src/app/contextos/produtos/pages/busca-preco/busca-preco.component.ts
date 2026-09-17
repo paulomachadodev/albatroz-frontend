@@ -17,12 +17,9 @@ export class BuscaPrecoComponent implements OnInit {
   leitorAberto = signal(false);
   buscando = signal(false);
   ultimoProduto = signal<ProdutoResumo | null>(null);
-  ultimoCodigoNaoEncontrado = signal<string | null>(null);
   imagensProduto = signal<ProdutoImagem[]>([]);
   indiceImagemAtual = signal(0);
   slugProduto = signal<string | null>(null);
-
-  private timeoutNaoEncontrado?: ReturnType<typeof setTimeout>;
 
   constructor(private produtosService: ProdutosService, private toast: ToastService) {}
 
@@ -33,8 +30,6 @@ export class BuscaPrecoComponent implements OnInit {
   }
 
   abrirLeitor() {
-    clearTimeout(this.timeoutNaoEncontrado);
-    this.ultimoCodigoNaoEncontrado.set(null);
     this.leitorAberto.set(true);
   }
 
@@ -42,16 +37,9 @@ export class BuscaPrecoComponent implements OnInit {
     this.leitorAberto.set(false);
   }
 
-  fecharMensagemErro() {
-    clearTimeout(this.timeoutNaoEncontrado);
-    this.ultimoCodigoNaoEncontrado.set(null);
-  }
-
   aoLerCodigo(codigo: string) {
     if (this.buscando()) return;
     this.buscando.set(true);
-    clearTimeout(this.timeoutNaoEncontrado);
-    this.ultimoCodigoNaoEncontrado.set(null);
 
     this.produtosService.listar({ pagina: 1, tamanho: 1 }, { texto: codigo, situacao: 'A' }).subscribe({
       next: res => {
@@ -68,9 +56,7 @@ export class BuscaPrecoComponent implements OnInit {
         } else {
           this.ultimoProduto.set(null);
           this.imagensProduto.set([]);
-          this.ultimoCodigoNaoEncontrado.set(codigo);
-          clearTimeout(this.timeoutNaoEncontrado);
-          this.timeoutNaoEncontrado = setTimeout(() => this.ultimoCodigoNaoEncontrado.set(null), 5000);
+          this.toast.erro(`Código "${codigo}" não encontrado (ou produto inativo/kit/variação).`);
         }
       },
       error: err => {

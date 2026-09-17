@@ -49,3 +49,11 @@ async excluir(item: Item) {
 ## Por que não `window.confirm`/`alert`
 
 Popup nativo do navegador quebra o layout (sem dark mode, sem estilo do app, trava a thread até o usuário responder) e não é reaproveitável. `ConfirmService`/`ToastService` resolvem isso e já estão plugados no shell — usar sempre eles.
+
+## Nunca criar banner/caixa de mensagem própria dentro de um componente
+
+A regra "nenhum `alert()`/`window.confirm()`" vale igual pra qualquer `<div>` hand-rolled que um componente monta pra avisar algo — banner de erro fixo dentro de uma área de conteúdo, caixa "código não encontrado", aviso "buscando..." com botão de fechar próprio, etc. Mesmo sem usar API nativa do navegador, isso já é a mesma coisa que a regra proíbe: estilo duplicado, sem dark mode consistente garantido, sem posicionamento padrão, e o componente ganha estado (`mensagemErro`, `timeoutMensagemErro`, output `fecharMensagemErro`) só pra reinventar o que o `ToastService` já faz.
+
+**Achado real (2026-09-18):** `app-leitor-codigo-barras` (leitor de código de barras, usado no Balanço Guiado e na Busca Preço) tinha um banner vermelho fixo *dentro* da área de scan (`mensagemErroBusca` input + `fecharMensagemErro` output) pra mostrar "produto não encontrado"/"código errado" — cobria a câmera, cada tela consumidora duplicava lógica de timeout pra sumir a mensagem sozinha. Removido: input/output saíram do componente, cada consumidor (`contagem-guiada-bipagem`, `busca-preco`) passou a chamar `this.toast.erro(...)` direto.
+
+**Regra:** toda mensagem de sucesso/erro/aviso/info — mesmo curta, mesmo dentro de um componente com UI própria tipo overlay de câmera, modal ou drawer — usa `ToastService`. Só fica fora do toast o que é *estado de carregamento inline* sem conteúdo de mensagem (ex: texto "Buscando..." abaixo de um campo de busca, label de botão trocando pra "Salvando...") — isso não é uma notificação, é feedback de progresso de uma ação que o próprio elemento já mostra visualmente.

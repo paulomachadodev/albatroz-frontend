@@ -52,19 +52,6 @@
           </button>
         </div>
       }
-      @if (buscandoProduto()) {
-        <div class="absolute top-4 inset-x-4 bg-black/80 rounded-xl px-4 py-3 text-center text-white text-sm">
-          Buscando produto...
-        </div>
-      }
-      @if (mensagemErroBusca(); as msgErro) {
-        <div class="absolute top-4 inset-x-4 bg-rose-600 rounded-xl px-4 py-3 flex items-center gap-3 text-white text-sm font-bold">
-          <span class="flex-1 text-center">{{ msgErro }}</span>
-          <button type="button" (click)="fecharMensagemErro.emit()" class="shrink-0 flex items-center justify-center size-6 rounded-full hover:bg-white/20">
-            <span class="material-symbols-outlined text-lg">close</span>
-          </button>
-        </div>
-      }
       @if (erro()) {
         <div class="absolute inset-0 bg-black/80 flex flex-col items-center justify-center gap-4 px-8 text-center">
           <span class="material-symbols-outlined text-white text-4xl">videocam_off</span>
@@ -85,11 +72,6 @@
                 class="w-full px-4 py-3 rounded-lg bg-primary text-white font-bold text-sm disabled:opacity-50">
           {{ buscandoProduto() ? 'Buscando...' : 'Buscar produto' }}
         </button>
-        @if (mensagemErroBusca(); as msgErro) {
-          <div class="w-full bg-rose-600 rounded-xl px-4 py-3 text-center text-white text-sm font-bold">
-            {{ msgErro }}
-          </div>
-        }
       </div>
     }
   </div>

@@ -17,10 +17,8 @@ export class LeitorCodigoBarrasComponent implements AfterViewInit, OnDestroy {
 
   codigoLido = output<string>();
   fechar = output<void>();
-  fecharMensagemErro = output<void>();
 
   buscandoProduto = input<boolean>(false);
-  mensagemErroBusca = input<string | null>(null);
   titulo = input<string>('Bipar código de barras');
 
   carregando = signal(true);

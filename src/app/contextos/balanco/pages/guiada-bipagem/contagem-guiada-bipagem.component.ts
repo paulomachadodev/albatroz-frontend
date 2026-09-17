@@ -23,8 +23,6 @@ const MENSAGENS_VITORIA = [
   host: { class: 'block' }
 })
 export class ContagemGuiadaBipagemComponent implements OnInit, OnDestroy, AfterViewInit {
-  private static readonly DURACAO_MENSAGEM_ERRO_MS = 15000;
-
   idSessao!: number;
 
   carregando = signal(true);
@@ -40,7 +38,6 @@ export class ContagemGuiadaBipagemComponent implements OnInit, OnDestroy, AfterV
   quantidadeInput = '';
   bipando = signal(false);
   terminando = signal(false);
-  mensagemErro = signal<string | null>(null);
 
   vitoriaAberta = signal(false);
   mensagemVitoria = signal('');
@@ -49,7 +46,6 @@ export class ContagemGuiadaBipagemComponent implements OnInit, OnDestroy, AfterV
   @ViewChild('inputQuantidade') inputQuantidadeRef?: ElementRef<HTMLInputElement>;
 
   private audioContext?: AudioContext;
-  private timeoutMensagemErro?: ReturnType<typeof setTimeout>;
 
   constructor(
     private route: ActivatedRoute,
@@ -85,7 +81,6 @@ export class ContagemGuiadaBipagemComponent implements OnInit, OnDestroy, AfterV
   ngOnDestroy() {
     this.scrollLock.destravar();
     this.audioContext?.close();
-    clearTimeout(this.timeoutMensagemErro);
   }
 
   get alvoAtual(): ProdutoPendenteSessao | null {
@@ -122,7 +117,7 @@ export class ContagemGuiadaBipagemComponent implements OnInit, OnDestroy, AfterV
 
     const alvo = this.alvoAtual;
     if (!alvo) {
-      this.definirMensagemErro('Nenhum produto pendente pra contar.');
+      this.toast.erro('Nenhum produto pendente pra contar.');
       return;
     }
 
@@ -131,11 +126,10 @@ export class ContagemGuiadaBipagemComponent implements OnInit, OnDestroy, AfterV
     const bateComGtin = !!alvo.gtin && alvo.gtin.trim().toLowerCase() === codigoNormalizado;
 
     if (!bateComCodigo && !bateComGtin) {
-      this.definirMensagemErro(`Esse não é o produto esperado. Procure: ${alvo.codigo} — ${alvo.nome}`);
+      this.toast.erro(`Esse não é o produto esperado. Procure: ${alvo.codigo} — ${alvo.nome}`);
       return;
     }
 
-    this.fecharMensagemErro();
     this.quantidadeInput = '';
     this.passo.set('quantidade');
     setTimeout(() => this.inputQuantidadeRef?.nativeElement.focus());
@@ -148,38 +142,25 @@ export class ContagemGuiadaBipagemComponent implements OnInit, OnDestroy, AfterV
       next: res => {
         this.buscandoLivre.set(false);
         if (!res.dados) {
-          this.definirMensagemErro('Produto não encontrado pra esse código.');
+          this.toast.erro('Produto não encontrado pra esse código.');
           return;
         }
         this.alvoLivre.set(res.dados);
-        this.fecharMensagemErro();
         this.quantidadeInput = '';
         this.passo.set('quantidade');
         setTimeout(() => this.inputQuantidadeRef?.nativeElement.focus());
       },
       error: () => {
         this.buscandoLivre.set(false);
-        this.definirMensagemErro('Produto não encontrado pra esse código.');
+        this.toast.erro('Produto não encontrado pra esse código.');
       }
     });
-  }
-
-  private definirMensagemErro(mensagem: string): void {
-    this.mensagemErro.set(mensagem);
-    clearTimeout(this.timeoutMensagemErro);
-    this.timeoutMensagemErro = setTimeout(() => this.mensagemErro.set(null), ContagemGuiadaBipagemComponent.DURACAO_MENSAGEM_ERRO_MS);
-  }
-
-  fecharMensagemErro(): void {
-    this.mensagemErro.set(null);
-    clearTimeout(this.timeoutMensagemErro);
   }
 
   pular() {
     const fila = this.pendentes();
     if (fila.length <= 1) return;
     this.pendentes.set([...fila.slice(1), fila[0]]);
-    this.mensagemErro.set(null);
   }
 
   cancelarQuantidade() {

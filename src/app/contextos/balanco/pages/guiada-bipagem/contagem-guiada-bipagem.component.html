@@ -1,8 +1,8 @@
 @if (carregando()) {
   <div class="fixed inset-0 z-[60] bg-black flex items-center justify-center text-white text-base">Carregando...</div>
 } @else if (passo() === 'scaneando' && modoLivre()) {
-  <app-leitor-codigo-barras (codigoLido)="aoLerCodigo($event)" (fechar)="fechar()" (fecharMensagemErro)="fecharMensagemErro()"
-                             [mensagemErroBusca]="mensagemErro()" [titulo]="'Escaneie o código de barras do produto'">
+  <app-leitor-codigo-barras (codigoLido)="aoLerCodigo($event)" (fechar)="fechar()"
+                             [titulo]="'Escaneie o código de barras do produto'">
     <div cardSuperior class="shrink-0 px-4 pb-3 space-y-2">
       <div class="bg-white/10 rounded-xl p-3">
         <div class="text-white text-lg font-bold">Contagem livre</div>
@@ -26,8 +26,8 @@
     </button>
   </app-leitor-codigo-barras>
 } @else if (passo() === 'scaneando' && alvoAtual) {
-  <app-leitor-codigo-barras (codigoLido)="aoLerCodigo($event)" (fechar)="fechar()" (fecharMensagemErro)="fecharMensagemErro()"
-                             [mensagemErroBusca]="mensagemErro()" [titulo]="'Escaneie o código de barras do produto'">
+  <app-leitor-codigo-barras (codigoLido)="aoLerCodigo($event)" (fechar)="fechar()"
+                             [titulo]="'Escaneie o código de barras do produto'">
     <div cardSuperior class="shrink-0 px-4 pb-3 space-y-2">
       <div class="bg-white/10 rounded-xl p-3">
         <div class="text-white text-lg font-bold line-clamp-2">{{ alvoAtual.nome }}</div>

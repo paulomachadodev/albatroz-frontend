@@ -6,7 +6,6 @@ import { Paginacao, ParametrosPaginacao } from '../../../core/models/paginacao.m
 import {
   CategoriaArvoreNo,
   FiltroPrioridadeContagem,
-  FocoParadosStatus,
   ItemConfirmarContagem,
   ItemImportacaoContagem,
   OrdenacaoPrioridadeContagem,
@@ -46,18 +45,6 @@ export class ContagemEstoqueService {
 
   confirmar(itens: ItemConfirmarContagem[]): Observable<Resultado<{ produtosAtualizados: number }>> {
     return this.api.post<{ produtosAtualizados: number }>(`${this.endpoint}/confirmar`, { itens });
-  }
-
-  obterFocoParadosStatus(): Observable<Resultado<FocoParadosStatus>> {
-    return this.api.get<FocoParadosStatus>(`${this.endpoint}/foco-parados`);
-  }
-
-  ativarFocoParados(): Observable<Resultado<void>> {
-    return this.api.post<void>(`${this.endpoint}/foco-parados/ativar`, {});
-  }
-
-  desativarFocoParados(): Observable<Resultado<void>> {
-    return this.api.post<void>(`${this.endpoint}/foco-parados/desativar`, {});
   }
 
   buscarProdutoPorCodigo(codigo: string): Observable<Resultado<ProdutoPendenteSessao>> {

@@ -10,11 +10,6 @@ export interface ProdutoPrioridadeContagem {
   ultimaContagemEm: string | null;
 }
 
-export interface FocoParadosStatus {
-  ativo: boolean;
-  totalRestante: number;
-}
-
 export interface FiltroPrioridadeContagem {
   idMarca?: number;
   categoriaRaiz?: string;

@@ -46,32 +46,6 @@
       </div>
     }
 
-    @if (podeGerenciarFoco() && focoParados(); as f) {
-      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 flex items-center justify-between gap-3 flex-wrap">
-        <div>
-          <h2 class="text-base font-bold text-slate-900 dark:text-slate-100">Foco em produtos parados</h2>
-          <p class="text-sm text-slate-500">
-            @if (f.ativo) {
-              Ativo — {{ f.totalRestante }} produto(s) com estoque positivo e sem giro ainda pra contar. Desliga sozinho quando acabar.
-            } @else {
-              {{ f.totalRestante }} produto(s) com estoque positivo e sem giro (curva não classificada) — suspeita de erro de saldo.
-            }
-          </p>
-        </div>
-        @if (f.ativo) {
-          <button type="button" (click)="desativarFocoParados()" [disabled]="processandoFoco()"
-                  class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm disabled:opacity-50 whitespace-nowrap">
-            Desativar foco
-          </button>
-        } @else {
-          <button type="button" (click)="ativarFocoParados()" [disabled]="processandoFoco() || f.totalRestante === 0"
-                  class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm disabled:opacity-50 whitespace-nowrap">
-            Focar produtos parados
-          </button>
-        }
-      </div>
-    }
-
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
       <a routerLink="/balanco/guiada"
          class="flex flex-col items-center gap-2 p-6 rounded-xl bg-primary text-white">

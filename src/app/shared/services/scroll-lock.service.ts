@@ -6,11 +6,17 @@ export class ScrollLockService {
 
   travar() {
     this.contador++;
-    if (this.contador === 1) document.body.style.overflow = 'hidden';
+    if (this.contador === 1) {
+      document.body.style.overflow = 'hidden';
+      document.body.classList.add('scroll-bloqueado');
+    }
   }
 
   destravar() {
     this.contador = Math.max(0, this.contador - 1);
-    if (this.contador === 0) document.body.style.overflow = '';
+    if (this.contador === 0) {
+      document.body.style.overflow = '';
+      document.body.classList.remove('scroll-bloqueado');
+    }
   }
 }

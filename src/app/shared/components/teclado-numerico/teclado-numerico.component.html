@@ -1,0 +1,27 @@
+<div class="w-full max-w-xs grid grid-cols-3 gap-2 select-none">
+  @for (tecla of teclas; track tecla) {
+    <button type="button" (click)="aoTocarTecla(tecla)" [disabled]="desabilitado()"
+            class="h-14 rounded-xl bg-white/10 text-white text-2xl font-bold disabled:opacity-40 active:bg-white/20">
+      {{ tecla }}
+    </button>
+  }
+
+  @if (permiteDecimal()) {
+    <button type="button" (click)="aoTocarDecimal()" [disabled]="desabilitado()"
+            class="h-14 rounded-xl bg-white/10 text-white text-2xl font-bold disabled:opacity-40 active:bg-white/20">
+      ,
+    </button>
+  } @else {
+    <div></div>
+  }
+
+  <button type="button" (click)="aoTocarTecla('0')" [disabled]="desabilitado()"
+          class="h-14 rounded-xl bg-white/10 text-white text-2xl font-bold disabled:opacity-40 active:bg-white/20">
+    0
+  </button>
+
+  <button type="button" (click)="apagar()" [disabled]="desabilitado()"
+          class="h-14 rounded-xl bg-white/10 text-white flex items-center justify-center disabled:opacity-40 active:bg-white/20">
+    <span class="material-symbols-outlined text-2xl">backspace</span>
+  </button>
+</div>

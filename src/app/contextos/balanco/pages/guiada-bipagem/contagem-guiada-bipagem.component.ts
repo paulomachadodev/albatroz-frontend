@@ -1,7 +1,7 @@
-import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild, signal } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { AfterViewInit, Component, OnDestroy, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { LeitorCodigoBarrasComponent } from '../../../../shared/components/leitor-codigo-barras/leitor-codigo-barras.component';
+import { TecladoNumericoComponent } from '../../../../shared/components/teclado-numerico/teclado-numerico.component';
 import { ScrollLockService } from '../../../../shared/services/scroll-lock.service';
 import { ContagemSessaoService } from '../../services/contagem-sessao.service';
 import { ContagemEstoqueService } from '../../services/contagem-estoque.service';
@@ -18,7 +18,7 @@ const MENSAGENS_VITORIA = [
 @Component({
   selector: 'app-contagem-guiada-bipagem',
   standalone: true,
-  imports: [FormsModule, LeitorCodigoBarrasComponent],
+  imports: [LeitorCodigoBarrasComponent, TecladoNumericoComponent],
   templateUrl: './contagem-guiada-bipagem.component.html',
   host: { class: 'block' }
 })
@@ -42,8 +42,6 @@ export class ContagemGuiadaBipagemComponent implements OnInit, OnDestroy, AfterV
   vitoriaAberta = signal(false);
   mensagemVitoria = signal('');
   private vitoriaJaExibida = false;
-
-  @ViewChild('inputQuantidade') inputQuantidadeRef?: ElementRef<HTMLInputElement>;
 
   private audioContext?: AudioContext;
 
@@ -132,7 +130,6 @@ export class ContagemGuiadaBipagemComponent implements OnInit, OnDestroy, AfterV
 
     this.quantidadeInput = '';
     this.passo.set('quantidade');
-    setTimeout(() => this.inputQuantidadeRef?.nativeElement.focus());
   }
 
   private buscarProdutoLivre(codigo: string) {
@@ -148,7 +145,6 @@ export class ContagemGuiadaBipagemComponent implements OnInit, OnDestroy, AfterV
         this.alvoLivre.set(res.dados);
         this.quantidadeInput = '';
         this.passo.set('quantidade');
-        setTimeout(() => this.inputQuantidadeRef?.nativeElement.focus());
       },
       error: () => {
         this.buscandoLivre.set(false);
@@ -161,6 +157,10 @@ export class ContagemGuiadaBipagemComponent implements OnInit, OnDestroy, AfterV
     const fila = this.pendentes();
     if (fila.length <= 1) return;
     this.pendentes.set([...fila.slice(1), fila[0]]);
+  }
+
+  aoAlterarQuantidade(valor: string) {
+    this.quantidadeInput = valor;
   }
 
   cancelarQuantidade() {

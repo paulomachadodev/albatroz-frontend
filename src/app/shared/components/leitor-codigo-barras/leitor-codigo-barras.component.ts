@@ -1,14 +1,14 @@
 import { AfterViewInit, Component, ElementRef, OnDestroy, inject, input, output, signal, viewChild } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { BrowserMultiFormatReader } from '@zxing/browser';
 import type { IScannerControls } from '@zxing/browser';
 import { BarcodeFormat, DecodeHintType } from '@zxing/library';
 import { ScrollLockService } from '../../services/scroll-lock.service';
+import { TecladoNumericoComponent } from '../teclado-numerico/teclado-numerico.component';
 
 @Component({
   selector: 'app-leitor-codigo-barras',
   standalone: true,
-  imports: [FormsModule],
+  imports: [TecladoNumericoComponent],
   templateUrl: './leitor-codigo-barras.component.html',
   host: { class: 'block' }
 })
@@ -349,6 +349,10 @@ export class LeitorCodigoBarrasComponent implements AfterViewInit, OnDestroy {
   usarModoManual() {
     this.controls?.stop();
     this.modoManual.set(true);
+  }
+
+  aoAlterarCodigoManual(valor: string) {
+    this.codigoManual = valor;
   }
 
   confirmarCodigoManual() {

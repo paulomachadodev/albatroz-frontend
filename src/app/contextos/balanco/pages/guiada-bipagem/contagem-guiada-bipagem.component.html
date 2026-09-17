@@ -76,14 +76,21 @@
 }
 
 @if (passo() === 'quantidade' && alvoAtual) {
-  <div class="fixed inset-0 z-[70] bg-black/90 flex flex-col items-center justify-center px-6 gap-5">
+  <div class="fixed inset-0 z-[70] bg-black/90 flex flex-col items-center justify-center px-6 gap-4">
     <div class="text-center max-w-xs w-full">
-      <div class="text-white text-lg font-bold truncate">{{ alvoAtual.codigo }} — {{ alvoAtual.nome }}</div>
-      <div class="text-white/60 text-sm mt-1">Estoque no sistema: {{ alvoAtual.estoqueAtual }}</div>
+      <div class="text-white text-lg font-bold line-clamp-2">{{ alvoAtual.nome }}</div>
+      <div class="flex items-center justify-between mt-1">
+        <span class="text-white/60 text-sm">{{ alvoAtual.codigo }}</span>
+        <span class="text-amber-400 text-xl font-bold">Estoque: {{ alvoAtual.estoqueAtual }}</span>
+      </div>
     </div>
-    <input #inputQuantidade type="text" inputmode="numeric" [(ngModel)]="quantidadeInput" (keyup.enter)="confirmarQuantidade()"
-           placeholder="Quantidade"
-           class="w-full max-w-xs text-center text-3xl font-bold px-4 py-4 rounded-xl bg-white text-slate-900 placeholder:text-slate-300 placeholder:font-normal placeholder:text-lg outline-none"/>
+
+    <div class="w-full max-w-xs text-center text-4xl font-bold px-4 py-3 rounded-xl bg-white text-slate-900 min-h-[4rem] flex items-center justify-center">
+      {{ quantidadeInput || '0' }}
+    </div>
+
+    <app-teclado-numerico [valor]="quantidadeInput" [desabilitado]="bipando()" (valorChange)="aoAlterarQuantidade($event)" />
+
     <div class="w-full max-w-xs flex gap-2">
       <button type="button" (click)="cancelarQuantidade()" [disabled]="bipando()"
               class="flex-1 px-4 py-3 rounded-lg bg-white/10 text-white font-bold text-base disabled:opacity-50">

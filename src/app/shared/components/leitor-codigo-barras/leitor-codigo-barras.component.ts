@@ -37,7 +37,7 @@ export class LeitorCodigoBarrasComponent implements AfterViewInit, OnDestroy {
   confirmandoLeitura = signal(false);
 
   private static readonly JANELA_DEBOUNCE_MS = 2500;
-  private static readonly JANELA_CONFIRMACAO_MS = 1500;
+  private static readonly JANELA_CONFIRMACAO_MS = 1000;
   private static readonly INTERVALO_RETRIGGER_FOCO_MS = 1500;
   private static readonly INTERVALO_SWEEP_FOCO_MS = 800;
   private static readonly ZOOM_INICIAL_IDEAL = 2;
@@ -142,8 +142,8 @@ export class LeitorCodigoBarrasComponent implements AfterViewInit, OnDestroy {
     try {
       const constraints: MediaStreamConstraints = {
         video: {
-          width: { ideal: 1920 },
-          height: { ideal: 1080 },
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
           advanced: [{ focusMode: 'continuous' } as MediaTrackConstraintSet],
           ...videoConstraints
         }

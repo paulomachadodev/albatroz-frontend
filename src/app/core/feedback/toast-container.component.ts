@@ -7,7 +7,8 @@ import { ToastService, TipoToast } from './toast.service';
   standalone: true,
   imports: [],
   template: `
-    <div class="fixed right-4 z-[100] flex flex-col gap-3 w-full max-w-sm pointer-events-none"
+    <div class="fixed left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:right-4
+                z-[100] flex flex-col gap-3 w-[calc(100vw-2rem)] max-w-xs sm:w-full sm:max-w-sm pointer-events-none"
          style="top: max(1rem, env(safe-area-inset-top, 0px))">
       @for (t of toast.toasts(); track t.id) {
         <div class="pointer-events-auto flex items-start gap-3 p-4 rounded-xl border shadow-lg

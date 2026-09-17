@@ -7,6 +7,7 @@ import { ContagemSessaoService } from '../../services/contagem-sessao.service';
 import { ContagemEstoqueService } from '../../services/contagem-estoque.service';
 import { ProdutoPendenteSessao } from '../../models/contagem-estoque.model';
 import { ToastService } from '../../../../core/feedback/toast.service';
+import { ConfirmService } from '../../../../core/feedback/confirm.service';
 
 const MENSAGENS_VITORIA = [
   'Você atingiu a meta de hoje, parabéns! Mas continue — pode ser que amanhã não sobre tempo, e a meta do mês agradece.',
@@ -56,6 +57,7 @@ export class ContagemGuiadaBipagemComponent implements OnInit, OnDestroy, AfterV
     private contagemSessaoService: ContagemSessaoService,
     private contagemEstoqueService: ContagemEstoqueService,
     private toast: ToastService,
+    private confirm: ConfirmService,
     private scrollLock: ScrollLockService
   ) {
     this.scrollLock.travar();
@@ -245,7 +247,14 @@ export class ContagemGuiadaBipagemComponent implements OnInit, OnDestroy, AfterV
     this.router.navigate(['/balanco/guiada'], { replaceUrl: true });
   }
 
-  terminar() {
+  async terminar() {
+    const confirmou = await this.confirm.confirmar(
+      'Terminar contagem',
+      'Tem certeza que quer terminar essa contagem? Se não houver divergência, o estoque é atualizado na hora.',
+      { textoConfirmar: 'Sim, terminar', textoCancelar: 'Continuar' }
+    );
+    if (!confirmou) return;
+
     this.terminando.set(true);
     this.contagemSessaoService.finalizar(this.idSessao).subscribe({
       next: res => {

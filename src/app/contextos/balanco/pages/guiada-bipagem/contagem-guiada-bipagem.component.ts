@@ -126,7 +126,7 @@ export class ContagemGuiadaBipagemComponent implements OnInit, OnDestroy, AfterV
     const bateComGtin = !!alvo.gtin && alvo.gtin.trim().toLowerCase() === codigoNormalizado;
 
     if (!bateComCodigo && !bateComGtin) {
-      this.toast.erro(`Esse não é o produto esperado. Procure: ${alvo.codigo} — ${alvo.nome}`);
+      this.toast.erro(`Código lido: "${codigo.trim()}". Esse não é o produto esperado — procure: ${alvo.codigo} — ${alvo.nome}`);
       return;
     }
 
@@ -142,7 +142,7 @@ export class ContagemGuiadaBipagemComponent implements OnInit, OnDestroy, AfterV
       next: res => {
         this.buscandoLivre.set(false);
         if (!res.dados) {
-          this.toast.erro('Produto não encontrado pra esse código.');
+          this.toast.erro(`Código lido: "${codigo}". Produto não encontrado pra esse código.`);
           return;
         }
         this.alvoLivre.set(res.dados);
@@ -152,7 +152,7 @@ export class ContagemGuiadaBipagemComponent implements OnInit, OnDestroy, AfterV
       },
       error: () => {
         this.buscandoLivre.set(false);
-        this.toast.erro('Produto não encontrado pra esse código.');
+        this.toast.erro(`Código lido: "${codigo}". Produto não encontrado pra esse código.`);
       }
     });
   }

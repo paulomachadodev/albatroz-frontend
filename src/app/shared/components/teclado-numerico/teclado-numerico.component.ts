@@ -10,6 +10,7 @@ export class TecladoNumericoComponent {
   valor = input.required<string>();
   permiteDecimal = input(false);
   desabilitado = input(false);
+  variante = input<'compacto' | 'preencher'>('compacto');
 
   valorChange = output<string>();
 

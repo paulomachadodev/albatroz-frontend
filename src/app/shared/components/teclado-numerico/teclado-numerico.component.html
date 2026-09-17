@@ -1,14 +1,17 @@
-<div class="w-full grid grid-cols-3 gap-3 select-none">
+<div class="w-full h-full grid grid-cols-3 gap-3 select-none"
+     [class]="variante() === 'preencher' ? 'grid-rows-4' : ''">
   @for (tecla of teclas; track tecla) {
     <button type="button" (click)="aoTocarTecla(tecla)" [disabled]="desabilitado()"
-            class="w-full aspect-square rounded-2xl bg-white/10 text-white text-3xl font-bold disabled:opacity-40 active:bg-white/20">
+            class="w-full rounded-2xl bg-white/10 text-white text-3xl font-bold disabled:opacity-40 active:bg-white/20"
+            [class]="variante() === 'preencher' ? 'h-full' : 'aspect-square'">
       {{ tecla }}
     </button>
   }
 
   @if (permiteDecimal()) {
     <button type="button" (click)="aoTocarDecimal()" [disabled]="desabilitado()"
-            class="w-full aspect-square rounded-2xl bg-white/10 text-white text-3xl font-bold disabled:opacity-40 active:bg-white/20">
+            class="w-full rounded-2xl bg-white/10 text-white text-3xl font-bold disabled:opacity-40 active:bg-white/20"
+            [class]="variante() === 'preencher' ? 'h-full' : 'aspect-square'">
       ,
     </button>
   } @else {
@@ -16,12 +19,14 @@
   }
 
   <button type="button" (click)="aoTocarTecla('0')" [disabled]="desabilitado()"
-          class="w-full aspect-square rounded-2xl bg-white/10 text-white text-3xl font-bold disabled:opacity-40 active:bg-white/20">
+          class="w-full rounded-2xl bg-white/10 text-white text-3xl font-bold disabled:opacity-40 active:bg-white/20"
+          [class]="variante() === 'preencher' ? 'h-full' : 'aspect-square'">
     0
   </button>
 
   <button type="button" (click)="apagar()" [disabled]="desabilitado()"
-          class="w-full aspect-square rounded-2xl bg-white/10 text-white flex items-center justify-center disabled:opacity-40 active:bg-white/20">
+          class="w-full rounded-2xl bg-white/10 text-white flex items-center justify-center disabled:opacity-40 active:bg-white/20"
+          [class]="variante() === 'preencher' ? 'h-full' : 'aspect-square'">
     <span class="material-symbols-outlined text-3xl">backspace</span>
   </button>
 </div>

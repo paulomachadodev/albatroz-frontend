@@ -11,6 +11,7 @@ import {
   ItemImportacaoContagem,
   OrdenacaoPrioridadeContagem,
   PreviewContagem,
+  ProdutoPendenteSessao,
   ProdutoPrioridadeContagem
 } from '../models/contagem-estoque.model';
 
@@ -57,5 +58,9 @@ export class ContagemEstoqueService {
 
   desativarFocoParados(): Observable<Resultado<void>> {
     return this.api.post<void>(`${this.endpoint}/foco-parados/desativar`, {});
+  }
+
+  buscarProdutoPorCodigo(codigo: string): Observable<Resultado<ProdutoPendenteSessao>> {
+    return this.api.get<ProdutoPendenteSessao>(`${this.endpoint}/buscar-produto`, { codigo });
   }
 }

@@ -68,7 +68,7 @@ export interface ItemConfirmarContagem {
   quantidadeSistemaExportacao: number | null;
 }
 
-export type ModoContagemSessao = 'prioridade' | 'categoria' | 'marca' | 'selecao';
+export type ModoContagemSessao = 'prioridade' | 'categoria' | 'marca' | 'selecao' | 'livre';
 export type StatusContagemSessao = 'aberta' | 'emRevisao' | 'efetivada' | 'desfeita' | 'cancelada';
 
 export interface IniciarContagemSessaoRequisicao {

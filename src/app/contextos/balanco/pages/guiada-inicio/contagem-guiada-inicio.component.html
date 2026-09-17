@@ -54,7 +54,7 @@
 
       @if (fase() === 'novaContagem') {
         <div class="space-y-3">
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <button type="button" (click)="iniciarPorPrioridade()" [disabled]="iniciando()"
                     class="flex flex-col items-center gap-2 p-6 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 disabled:opacity-50">
               <span class="material-symbols-outlined text-3xl text-primary">priority_high</span>
@@ -66,6 +66,12 @@
               <span class="material-symbols-outlined text-3xl text-primary">filter_alt</span>
               <span class="text-base font-bold text-slate-900 dark:text-slate-100">Filtrada</span>
               <span class="text-sm text-slate-500 text-center">Escolher os produtos numa lista filtrada</span>
+            </button>
+            <button type="button" (click)="iniciarLivre()" [disabled]="iniciando()"
+                    class="flex flex-col items-center gap-2 p-6 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 disabled:opacity-50">
+              <span class="material-symbols-outlined text-3xl text-primary">qr_code_scanner</span>
+              <span class="text-base font-bold text-slate-900 dark:text-slate-100">Livre</span>
+              <span class="text-sm text-slate-500 text-center">Bipa o que aparecer, sem lista nem filtro</span>
             </button>
           </div>
           <button type="button" (click)="voltarParaMenu()" class="text-base text-slate-500 underline">Voltar</button>

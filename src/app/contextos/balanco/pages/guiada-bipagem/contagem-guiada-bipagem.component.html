@@ -1,5 +1,30 @@
 @if (carregando()) {
   <div class="fixed inset-0 z-[60] bg-black flex items-center justify-center text-white text-base">Carregando...</div>
+} @else if (passo() === 'scaneando' && modoLivre()) {
+  <app-leitor-codigo-barras (codigoLido)="aoLerCodigo($event)" (fechar)="fechar()" (fecharMensagemErro)="fecharMensagemErro()"
+                             [mensagemErroBusca]="mensagemErro()" [titulo]="'Escaneie o código de barras do produto'">
+    <div cardSuperior class="shrink-0 px-4 pb-3 space-y-2">
+      <div class="bg-white/10 rounded-xl p-3">
+        <div class="text-white text-lg font-bold">Contagem livre</div>
+        <div class="text-white/60 text-sm mt-1">Bipe qualquer produto, na ordem que estiver na mão.</div>
+      </div>
+
+      <div class="bg-white/10 rounded-xl p-3">
+        <div class="flex items-center justify-between text-sm mb-1">
+          <span class="text-white/80 font-semibold">Meta de hoje</span>
+          <span class="text-white font-bold">{{ contadosHoje() }} / {{ metaDiaAlvo() }}</span>
+        </div>
+        <div class="h-2 rounded-full bg-white/20 overflow-hidden">
+          <div class="h-full bg-primary transition-all" [style.width.%]="progressoPercentual()"></div>
+        </div>
+      </div>
+    </div>
+
+    <button rodape type="button" (click)="terminar()" [disabled]="terminando()"
+            class="w-full px-4 py-3 rounded-lg bg-primary text-white font-bold text-sm disabled:opacity-50">
+      {{ terminando() ? 'Salvando...' : 'Terminar contagem' }}
+    </button>
+  </app-leitor-codigo-barras>
 } @else if (passo() === 'scaneando' && alvoAtual) {
   <app-leitor-codigo-barras (codigoLido)="aoLerCodigo($event)" (fechar)="fechar()" (fecharMensagemErro)="fecharMensagemErro()"
                              [mensagemErroBusca]="mensagemErro()" [titulo]="'Escaneie o código de barras do produto'">

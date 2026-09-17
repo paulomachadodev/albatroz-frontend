@@ -106,6 +106,20 @@ export class ContagemGuiadaInicioComponent implements OnInit {
     });
   }
 
+  iniciarLivre() {
+    this.iniciando.set(true);
+    this.contagemSessaoService.iniciar({ modo: 'livre' }).subscribe({
+      next: res => {
+        this.iniciando.set(false);
+        if (res.dados) this.router.navigate(['/balanco/guiada', res.dados.id]);
+      },
+      error: err => {
+        this.iniciando.set(false);
+        this.toast.erroServidor(err, 'Não foi possível iniciar a contagem.');
+      }
+    });
+  }
+
   irParaFiltrada() {
     this.fase.set('filtrada');
     this.buscou.set(false);
@@ -170,7 +184,11 @@ export class ContagemGuiadaInicioComponent implements OnInit {
   formatarDataHora = formatarDataHora;
 
   rotuloModo(modo: string): string {
-    return modo === 'prioridade' ? 'Prioridade' : modo === 'categoria' ? 'Categoria' : modo === 'marca' ? 'Marca' : 'Filtrada';
+    return modo === 'prioridade' ? 'Prioridade'
+      : modo === 'categoria' ? 'Categoria'
+      : modo === 'marca' ? 'Marca'
+      : modo === 'livre' ? 'Livre'
+      : 'Filtrada';
   }
 
   rotuloStatus(status: string): string {

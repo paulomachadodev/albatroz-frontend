@@ -151,12 +151,35 @@ export class ContagemSessoesListaComponent implements OnInit {
     });
   }
 
+  async excluir(sessao: ContagemSessaoResumo) {
+    const confirmou = await this.confirm.confirmar(
+      'Excluir contagem',
+      'Isso apaga essa contagem de vez, sem deixar histórico — os itens já bipados somem junto. Use só pra sessão de teste/engano. Confirma?',
+      { textoConfirmar: 'Excluir de vez', textoCancelar: 'Voltar' }
+    );
+    if (!confirmou) return;
+
+    this.processando.set(true);
+    this.contagemSessaoService.excluir(sessao.id).subscribe({
+      next: () => {
+        this.processando.set(false);
+        this.toast.sucesso('Contagem excluída.');
+        this.carregar();
+      },
+      error: err => {
+        this.processando.set(false);
+        this.toast.erroServidor(err, 'Não foi possível excluir essa contagem.');
+      }
+    });
+  }
+
   formatarDataHora = formatarDataHora;
 
   rotuloModo(sessao: ContagemSessaoResumo): string {
     const base = sessao.modo === 'prioridade' ? 'Prioridade'
       : sessao.modo === 'categoria' ? 'Categoria'
       : sessao.modo === 'marca' ? 'Marca'
+      : sessao.modo === 'livre' ? 'Livre'
       : 'Filtrada';
     return sessao.categoriaRaiz ? `${base} — ${sessao.categoriaRaiz}` : sessao.marcaNome ? `${base} — ${sessao.marcaNome}` : base;
   }

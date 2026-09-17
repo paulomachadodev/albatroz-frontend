@@ -55,4 +55,8 @@ export class ContagemSessaoService {
   cancelar(idSessao: number): Observable<Resultado<void>> {
     return this.api.post<void>(`${this.endpoint}/${idSessao}/cancelar`, {});
   }
+
+  excluir(idSessao: number): Observable<Resultado<void>> {
+    return this.api.delete<void>(`${this.endpoint}/${idSessao}`);
+  }
 }

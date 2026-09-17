@@ -85,6 +85,12 @@
                         Cancelar contagem
                       </button>
                     }
+                    @if (sessao.status !== 'efetivada' && sessao.status !== 'desfeita' && podeEfetivar()) {
+                      <button type="button" (click)="excluir(sessao)" [disabled]="processando()"
+                              class="px-4 py-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-500 font-bold text-xs disabled:opacity-50">
+                        Excluir
+                      </button>
+                    }
                   </div>
                 </div>
               }

@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { LeitorCodigoBarrasComponent } from '../../../../shared/components/leitor-codigo-barras/leitor-codigo-barras.component';
 import { ScrollLockService } from '../../../../shared/services/scroll-lock.service';
 import { ContagemSessaoService } from '../../services/contagem-sessao.service';
+import { ContagemEstoqueService } from '../../services/contagem-estoque.service';
 import { ProdutoPendenteSessao } from '../../models/contagem-estoque.model';
 import { ToastService } from '../../../../core/feedback/toast.service';
 
@@ -31,6 +32,9 @@ export class ContagemGuiadaBipagemComponent implements OnInit, OnDestroy, AfterV
   totalPendentes = signal(0);
   metaDiaAlvo = signal(0);
   contadosHoje = signal(0);
+  modoLivre = signal(false);
+  alvoLivre = signal<ProdutoPendenteSessao | null>(null);
+  buscandoLivre = signal(false);
 
   quantidadeInput = '';
   bipando = signal(false);
@@ -50,6 +54,7 @@ export class ContagemGuiadaBipagemComponent implements OnInit, OnDestroy, AfterV
     private route: ActivatedRoute,
     private router: Router,
     private contagemSessaoService: ContagemSessaoService,
+    private contagemEstoqueService: ContagemEstoqueService,
     private toast: ToastService,
     private scrollLock: ScrollLockService
   ) {
@@ -58,7 +63,17 @@ export class ContagemGuiadaBipagemComponent implements OnInit, OnDestroy, AfterV
 
   ngOnInit() {
     this.idSessao = Number(this.route.snapshot.paramMap.get('idSessao'));
-    this.carregarPendentes();
+    this.carregando.set(true);
+    this.contagemSessaoService.obterDetalhe(this.idSessao).subscribe({
+      next: res => {
+        this.modoLivre.set(res.dados?.sessao.modo === 'livre');
+        this.carregarPendentes();
+      },
+      error: err => {
+        this.carregando.set(false);
+        this.toast.erroServidor(err, 'Não foi possível carregar a sessão de contagem.');
+      }
+    });
   }
 
   ngAfterViewInit() {
@@ -72,7 +87,7 @@ export class ContagemGuiadaBipagemComponent implements OnInit, OnDestroy, AfterV
   }
 
   get alvoAtual(): ProdutoPendenteSessao | null {
-    return this.pendentes()[0] ?? null;
+    return this.modoLivre() ? this.alvoLivre() : (this.pendentes()[0] ?? null);
   }
 
   private carregarPendentes() {
@@ -98,6 +113,11 @@ export class ContagemGuiadaBipagemComponent implements OnInit, OnDestroy, AfterV
   }
 
   aoLerCodigo(codigo: string) {
+    if (this.modoLivre()) {
+      this.buscarProdutoLivre(codigo.trim());
+      return;
+    }
+
     const alvo = this.alvoAtual;
     if (!alvo) {
       this.definirMensagemErro('Nenhum produto pendente pra contar.');
@@ -117,6 +137,29 @@ export class ContagemGuiadaBipagemComponent implements OnInit, OnDestroy, AfterV
     this.quantidadeInput = '';
     this.passo.set('quantidade');
     setTimeout(() => this.inputQuantidadeRef?.nativeElement.focus());
+  }
+
+  private buscarProdutoLivre(codigo: string) {
+    if (this.buscandoLivre()) return;
+    this.buscandoLivre.set(true);
+    this.contagemEstoqueService.buscarProdutoPorCodigo(codigo).subscribe({
+      next: res => {
+        this.buscandoLivre.set(false);
+        if (!res.dados) {
+          this.definirMensagemErro('Produto não encontrado pra esse código.');
+          return;
+        }
+        this.alvoLivre.set(res.dados);
+        this.fecharMensagemErro();
+        this.quantidadeInput = '';
+        this.passo.set('quantidade');
+        setTimeout(() => this.inputQuantidadeRef?.nativeElement.focus());
+      },
+      error: () => {
+        this.buscandoLivre.set(false);
+        this.definirMensagemErro('Produto não encontrado pra esse código.');
+      }
+    });
   }
 
   private definirMensagemErro(mensagem: string): void {
@@ -157,6 +200,7 @@ export class ContagemGuiadaBipagemComponent implements OnInit, OnDestroy, AfterV
       next: () => {
         this.bipando.set(false);
         this.passo.set('scaneando');
+        this.alvoLivre.set(null);
         this.recarregarAposBipe();
       },
       error: err => {

@@ -23,7 +23,8 @@ const PT_SELECT_CATEGORIA_MULTI = {
   pcFilter: { root: 'w-full px-3 py-2 bg-slate-100 dark:bg-slate-900 border-none rounded-lg text-sm outline-none' },
   list: 'py-1 max-h-64 overflow-y-auto',
   optionGroup: 'px-3 py-1.5 text-xs font-bold uppercase text-slate-400',
-  option: 'px-3 py-2 text-sm cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700',
+  option: 'px-3 py-1.5 text-sm cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 data-[p-highlight=true]:bg-primary/10 data-[p-highlight=true]:text-primary dark:data-[p-highlight=true]:bg-primary/20 dark:data-[p-highlight=true]:text-white data-[p-highlight=true]:font-semibold',
+  pcOptionCheckbox: { root: 'hidden' },
   emptyMessage: 'px-3 py-2 text-sm text-slate-400'
 };
 

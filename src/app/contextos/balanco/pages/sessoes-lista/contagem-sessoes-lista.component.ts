@@ -6,19 +6,25 @@ import { ToastService } from '../../../../core/feedback/toast.service';
 import { ConfirmService } from '../../../../core/feedback/confirm.service';
 import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 import { BreadcrumbComponent } from '../../../../shared/components/breadcrumb/breadcrumb.component';
+import { ListagemPaginadaComponent } from '../../../../shared/components/listagem-paginada/listagem-paginada.component';
 import { formatarDataHora } from '../../../../shared/utils/formatar-data-hora.util';
 import { AuthService } from '../../../../core/auth/auth.service';
 
 @Component({
   selector: 'app-contagem-sessoes-lista',
   standalone: true,
-  imports: [FormsModule, PageHeaderComponent, BreadcrumbComponent],
+  imports: [FormsModule, PageHeaderComponent, BreadcrumbComponent, ListagemPaginadaComponent],
   templateUrl: './contagem-sessoes-lista.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
 export class ContagemSessoesListaComponent implements OnInit {
   carregando = signal(true);
   sessoes = signal<ContagemSessaoResumo[]>([]);
+  paginaAtual = signal(1);
+  totalPaginas = signal(1);
+  totalRegistros = signal(0);
+  tamanhoPagina = signal(10);
+
   filtroStatus: StatusContagemSessao = 'emRevisao';
   verTodas = false;
 
@@ -44,12 +50,15 @@ export class ContagemSessoesListaComponent implements OnInit {
     this.carregar();
   }
 
-  carregar() {
+  carregar(pagina = 1) {
     this.carregando.set(true);
     this.sessaoExpandidaId.set(null);
-    this.contagemSessaoService.listar([this.filtroStatus], this.verTodas).subscribe({
+    this.contagemSessaoService.listar({ pagina, tamanho: this.tamanhoPagina() }, [this.filtroStatus], this.verTodas).subscribe({
       next: res => {
-        this.sessoes.set(res.dados ?? []);
+        this.sessoes.set(res.dados?.dados ?? []);
+        this.paginaAtual.set(res.dados?.paginaAtual ?? 1);
+        this.totalPaginas.set(res.dados?.totalPaginas ?? 1);
+        this.totalRegistros.set(res.dados?.totalRegistros ?? 0);
         this.carregando.set(false);
       },
       error: err => {
@@ -57,6 +66,15 @@ export class ContagemSessoesListaComponent implements OnInit {
         this.carregando.set(false);
       }
     });
+  }
+
+  aoMudarTamanhoPagina(tamanho: number) {
+    this.tamanhoPagina.set(tamanho);
+    this.carregar(1);
+  }
+
+  aplicarFiltros() {
+    this.carregar(1);
   }
 
   alternarExpandir(sessao: ContagemSessaoResumo) {
@@ -93,7 +111,7 @@ export class ContagemSessoesListaComponent implements OnInit {
       next: res => {
         this.processando.set(false);
         this.toast.sucesso('Contagem efetivada.', `${res.dados?.produtosAplicados ?? 0} produto(s) atualizado(s) no estoque.`);
-        this.carregar();
+        this.carregar(1);
       },
       error: err => {
         this.processando.set(false);
@@ -120,7 +138,7 @@ export class ContagemSessoesListaComponent implements OnInit {
         } else {
           this.toast.sucesso('Contagem desfeita.', `${dados?.estornados ?? 0} produto(s) revertido(s) no estoque.`);
         }
-        this.carregar();
+        this.carregar(1);
       },
       error: err => {
         this.processando.set(false);
@@ -142,7 +160,7 @@ export class ContagemSessoesListaComponent implements OnInit {
       next: () => {
         this.processando.set(false);
         this.toast.sucesso('Contagem cancelada.');
-        this.carregar();
+        this.carregar(1);
       },
       error: err => {
         this.processando.set(false);
@@ -164,7 +182,7 @@ export class ContagemSessoesListaComponent implements OnInit {
       next: () => {
         this.processando.set(false);
         this.toast.sucesso('Contagem excluída.');
-        this.carregar();
+        this.carregar(1);
       },
       error: err => {
         this.processando.set(false);
@@ -174,6 +192,14 @@ export class ContagemSessoesListaComponent implements OnInit {
   }
 
   formatarDataHora = formatarDataHora;
+
+  rotuloStatus(status: StatusContagemSessao): string {
+    return status === 'aberta' ? 'Em andamento'
+      : status === 'emRevisao' ? 'Aguardando efetivação'
+      : status === 'efetivada' ? 'Efetivada'
+      : status === 'desfeita' ? 'Desfeita'
+      : 'Cancelada';
+  }
 
   rotuloModo(sessao: ContagemSessaoResumo): string {
     const base = sessao.modo === 'prioridade' ? 'Prioridade'

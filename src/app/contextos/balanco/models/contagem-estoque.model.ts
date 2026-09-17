@@ -130,6 +130,11 @@ export interface EfetivarContagemSessaoResposta {
   produtosAplicados: number;
 }
 
+export interface FinalizarContagemSessaoResposta {
+  efetivadaAutomaticamente: boolean;
+  produtosAplicados: number;
+}
+
 export interface DesfazerContagemSessaoResposta {
   estornados: number;
   bloqueadosPorDivergencia: number;

@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from '../../../core/http/api.service';
 import { Resultado } from '../../../core/models';
+import { Paginacao, ParametrosPaginacao } from '../../../core/models/paginacao.model';
 import {
   BiparItemContagemSessaoRequisicao,
   ContagemSessaoDetalhe,
@@ -9,6 +10,7 @@ import {
   ContagemSessaoResumo,
   DesfazerContagemSessaoResposta,
   EfetivarContagemSessaoResposta,
+  FinalizarContagemSessaoResposta,
   IniciarContagemSessaoRequisicao,
   PendentesSessao,
   StatusContagemSessao
@@ -24,8 +26,12 @@ export class ContagemSessaoService {
     return this.api.post<ContagemSessaoResumo>(this.endpoint, requisicao);
   }
 
-  listar(status?: StatusContagemSessao[], todas = false): Observable<Resultado<ContagemSessaoResumo[]>> {
-    return this.api.get<ContagemSessaoResumo[]>(this.endpoint, { status, todas });
+  listar(
+    paginacao: ParametrosPaginacao,
+    status?: StatusContagemSessao[],
+    todas = false
+  ): Observable<Resultado<Paginacao<ContagemSessaoResumo>>> {
+    return this.api.getPaginado<ContagemSessaoResumo>(this.endpoint, paginacao, { status, todas });
   }
 
   obterDetalhe(idSessao: number): Observable<Resultado<ContagemSessaoDetalhe>> {
@@ -40,8 +46,8 @@ export class ContagemSessaoService {
     return this.api.post<ContagemSessaoItem>(`${this.endpoint}/${idSessao}/itens`, requisicao);
   }
 
-  finalizar(idSessao: number): Observable<Resultado<void>> {
-    return this.api.post<void>(`${this.endpoint}/${idSessao}/finalizar`, {});
+  finalizar(idSessao: number): Observable<Resultado<FinalizarContagemSessaoResposta>> {
+    return this.api.post<FinalizarContagemSessaoResposta>(`${this.endpoint}/${idSessao}/finalizar`, {});
   }
 
   efetivar(idSessao: number): Observable<Resultado<EfetivarContagemSessaoResposta>> {

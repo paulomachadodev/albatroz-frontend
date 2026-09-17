@@ -248,9 +248,13 @@ export class ContagemGuiadaBipagemComponent implements OnInit, OnDestroy, AfterV
   terminar() {
     this.terminando.set(true);
     this.contagemSessaoService.finalizar(this.idSessao).subscribe({
-      next: () => {
+      next: res => {
         this.terminando.set(false);
-        this.toast.sucesso('Contagem finalizada.', 'Pronta pra revisão e efetivação.');
+        if (res.dados?.efetivadaAutomaticamente) {
+          this.toast.sucesso('Contagem efetivada!', `${res.dados.produtosAplicados} produto(s) atualizado(s) no estoque, sem divergência.`);
+        } else {
+          this.toast.sucesso('Contagem finalizada.', 'Divergência encontrada — aguardando efetivação de um gerente/admin.');
+        }
         this.router.navigate(['/balanco/guiada'], { replaceUrl: true });
       },
       error: err => {

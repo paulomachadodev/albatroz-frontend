@@ -68,9 +68,9 @@ export class ContagemGuiadaInicioComponent implements OnInit {
 
   carregarSessoesAbertas() {
     this.carregando.set(true);
-    this.contagemSessaoService.listar().subscribe({
+    this.contagemSessaoService.listar({ pagina: 1, tamanho: 20 }).subscribe({
       next: res => {
-        this.sessoesAbertas.set(res.dados ?? []);
+        this.sessoesAbertas.set(res.dados?.dados ?? []);
         this.carregando.set(false);
       },
       error: err => {

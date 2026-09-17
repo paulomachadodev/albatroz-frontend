@@ -1,5 +1,5 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { DashboardService, ContagemEstoqueResumo } from '../../../dashboard/dashboard.service';
@@ -32,10 +32,16 @@ export class BalancoDashboardComponent implements OnInit {
   constructor(
     private dashboardService: DashboardService,
     private contagemEstoqueService: ContagemEstoqueService,
-    private toast: ToastService
+    private toast: ToastService,
+    private router: Router
   ) {}
 
   ngOnInit() {
+    if (!window.matchMedia('(max-width: 767px)').matches) {
+      this.router.navigate(['/balanco/planilha'], { replaceUrl: true });
+      return;
+    }
+
     this.carregando.set(true);
     forkJoin({
       meta: this.dashboardService.obter('mes').pipe(catchError(() => of(null))),

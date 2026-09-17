@@ -147,16 +147,17 @@
               (selecionado)="fornecedorFiltro.set($event)"></app-select-busca>
           </div>
         </div>
-        <div class="flex justify-end gap-2">
-          <button (click)="aplicarFiltros()"
-                  class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all">
-            Filtrar
-          </button>
-          <button (click)="limparFiltros()"
-                  class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
-            Limpar
-          </button>
-        </div>
+      </div>
+
+      <div filtrosBotoes class="flex justify-end gap-2 mt-4">
+        <button (click)="aplicarFiltros()"
+                class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all">
+          Filtrar
+        </button>
+        <button (click)="limparFiltros()"
+                class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
+          Limpar
+        </button>
       </div>
 
       <ng-template #cabecalho>

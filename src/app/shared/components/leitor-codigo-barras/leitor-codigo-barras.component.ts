@@ -39,7 +39,7 @@ export class LeitorCodigoBarrasComponent implements AfterViewInit, OnDestroy {
   confirmandoLeitura = signal(false);
 
   private static readonly JANELA_DEBOUNCE_MS = 2500;
-  private static readonly JANELA_CONFIRMACAO_MS = 450;
+  private static readonly JANELA_CONFIRMACAO_MS = 1500;
   private static readonly INTERVALO_RETRIGGER_FOCO_MS = 1500;
   private static readonly INTERVALO_SWEEP_FOCO_MS = 800;
   private static readonly ZOOM_INICIAL_IDEAL = 2;

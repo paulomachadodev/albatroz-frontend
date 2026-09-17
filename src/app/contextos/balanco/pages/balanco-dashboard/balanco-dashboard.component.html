@@ -5,6 +5,15 @@
 
     <app-page-header titulo="Balanço" subtitulo="Contagem de estoque guiada e revisão pra efetivação."></app-page-header>
 
+    @if (carregando()) {
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 h-32 animate-pulse"></div>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        @for (i of [0,1,2]; track i) {
+          <div class="p-6 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 h-32 animate-pulse"></div>
+        }
+      </div>
+    } @else {
+
     @if (meta(); as m) {
       <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 space-y-4">
         <h2 class="text-base font-bold text-slate-900 dark:text-slate-100">Meta de contagem</h2>
@@ -83,6 +92,8 @@
         <span class="text-sm text-slate-500 text-center">Exportar/importar contagem via Excel</span>
       </a>
     </div>
+
+    }
 
   </div>
 </div>

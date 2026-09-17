@@ -1,5 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { DashboardService, ContagemEstoqueResumo } from '../../../dashboard/dashboard.service';
 import { ContagemEstoqueService } from '../../services/contagem-estoque.service';
 import { FocoParadosStatus } from '../../models/contagem-estoque.model';
@@ -16,6 +18,7 @@ import { BreadcrumbComponent } from '../../../../shared/components/breadcrumb/br
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
 export class BalancoDashboardComponent implements OnInit {
+  carregando = signal(true);
   meta = signal<ContagemEstoqueResumo | null>(null);
   focoParados = signal<FocoParadosStatus | null>(null);
   processandoFoco = signal(false);
@@ -33,12 +36,15 @@ export class BalancoDashboardComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.dashboardService.obter('mes').subscribe({
-      next: res => this.meta.set(res.dados?.contagemEstoque ?? null),
-      error: () => this.meta.set(null)
+    this.carregando.set(true);
+    forkJoin({
+      meta: this.dashboardService.obter('mes').pipe(catchError(() => of(null))),
+      foco: this.contagemEstoqueService.obterFocoParadosStatus().pipe(catchError(() => of(null)))
+    }).subscribe(({ meta, foco }) => {
+      this.meta.set(meta?.dados?.contagemEstoque ?? null);
+      this.focoParados.set(foco?.dados ?? null);
+      this.carregando.set(false);
     });
-
-    this.carregarFocoParados();
   }
 
   private carregarFocoParados() {

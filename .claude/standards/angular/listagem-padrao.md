@@ -372,6 +372,51 @@ Campo condicional (ex: um filtro de período que só aparece quando outro select
 
 Toda tela nova usa esse slot desde o início. Telas antigas que ainda têm os botões dentro de `[filtros]` (a maioria, migração não feita em massa) continuam funcionando como estão — migrar só quando a tela for tocada por outro motivo ou se o corte for reportado.
 
+## Toda página com fetch no `ngOnInit` nasce com `carregando = signal(true)` (regra 2026-09-17)
+
+Qualquer componente de página roteada que busca dado assíncrono no `ngOnInit()` — dashboard com cards, tela de detalhe, qualquer tela que não seja só formulário estático — precisa gatear o conteúdo principal atrás de `carregando()`, mesmo fora do padrão `app-listagem-paginada` (que já resolve isso sozinho via seu próprio input `[carregando]`).
+
+**Bug real que motivou a regra (2026-09-17, `BalancoDashboardComponent`):** a tela tinha 2 requests independentes (`meta`, `focoParados`) sem nenhum `carregando`. Os cards de atalho (estáticos, sem dado) renderizavam na hora; o card "Meta de contagem" (que vem *antes* deles no HTML) só aparecia quando a API respondia — empurrando os botões pra baixo depois que a tela já parecia carregada. Usuário clicava onde o botão estava e errava, porque o layout mudou embaixo do dedo.
+
+**Padrão:**
+
+```typescript
+carregando = signal(true);
+
+ngOnInit() {
+  this.carregando.set(true);
+  forkJoin({
+    a: this.serviceA.obter().pipe(catchError(() => of(null))),
+    b: this.serviceB.obter().pipe(catchError(() => of(null)))
+  }).subscribe(({ a, b }) => {
+    this.dadosA.set(a?.dados ?? null);
+    this.dadosB.set(b?.dados ?? null);
+    this.carregando.set(false);
+  });
+}
+```
+
+Se a tela faz 2+ requests independentes que alimentam conteúdo acima da dobra/acima de algo clicável, usa `forkJoin` (com `catchError` em cada um pra não abortar tudo se 1 falhar) — nunca deixa cada `.subscribe()` solto controlando pedaços diferentes da tela, isso é exatamente o que causa o layout shift.
+
+**Template — skeleton, não texto solto:** enquanto `carregando()`, mostra placeholder do mesmo tamanho/posição do conteúdo final (`animate-pulse`, já usado em `estoque-dashboard`), nunca só texto "Carregando..." (não ocupa o espaço real, o shift acontece igual quando o conteúdo de verdade chega). Padrão:
+
+```html
+@if (carregando()) {
+  <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 h-32 animate-pulse"></div>
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+    @for (i of [0,1,2]; track i) {
+      <div class="p-6 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 h-32 animate-pulse"></div>
+    }
+  </div>
+} @else {
+  <!-- conteúdo real, mesma estrutura/alturas aproximadas do skeleton acima -->
+}
+```
+
+**Não confundir com `app-spinner`** (inline, ação pontual tipo botão salvando) nem `app-overlay-progresso` (bloqueia a tela inteira numa operação em andamento, ex. upload em lote) — este padrão aqui é especificamente pra "tela ainda não tem dado suficiente pra desenhar o layout final", resolvido com skeleton do tamanho certo, não com um spinner genérico no meio da tela (que não reserva o espaço do conteúdo final e ainda causa shift quando o conteúdo chega).
+
+Rollout: aplicado em `balanco-dashboard` (2026-09-17). Resto do sistema (~33 componentes de página) ainda não auditado por completo — aplicar toda vez que uma tela existente for tocada por outro motivo, ou se o usuário reportar o mesmo sintoma (clique errando porque o layout mudou).
+
 ## Densidade de filtros — nunca campo isolado ocupando linha própria (regra 2026-09-04)
 
 Toda grid de filtro dimensiona `grid-cols-N` pelo **número real de campos**, não por um valor fixo copiado de outra tela. Um select booleano/status (`Sim/Não/Todos`, 1 palavra) cabe em 1 coluna estreita; texto livre (`Buscar...`) precisa de 2; nenhum campo deve ficar sozinho numa linha que sobra vazia ao lado — isso é sintoma de `grid-cols` baixo demais pro tanto de filtro que a tela tem.

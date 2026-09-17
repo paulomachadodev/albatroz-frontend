@@ -76,28 +76,30 @@
 }
 
 @if (passo() === 'quantidade' && alvoAtual) {
-  <div class="fixed inset-0 z-[70] bg-black/90 flex flex-col items-center justify-center px-6 gap-4">
-    <div class="text-center max-w-xs w-full">
-      <div class="text-white text-lg font-bold line-clamp-2">{{ alvoAtual.nome }}</div>
-      <div class="flex items-center justify-between mt-1">
-        <span class="text-white/60 text-sm">{{ alvoAtual.codigo }}</span>
-        <span class="text-amber-400 text-xl font-bold">Estoque: {{ alvoAtual.estoqueAtual }}</span>
+  <div class="fixed inset-0 z-[70] bg-black/95 flex flex-col items-center justify-center px-6 py-4 gap-4 overflow-hidden">
+    <div class="w-full max-w-xs sm:max-w-sm shrink-0">
+      <div class="text-white text-xl sm:text-2xl font-bold line-clamp-2">{{ alvoAtual.nome }}</div>
+      <div class="flex items-end justify-between gap-3 mt-1.5">
+        <span class="text-white/60 text-sm sm:text-base">{{ alvoAtual.codigo }}</span>
+        <span class="text-amber-400 text-2xl sm:text-3xl font-extrabold leading-none">Estoque: {{ alvoAtual.estoqueAtual }}</span>
       </div>
     </div>
 
-    <div class="w-full max-w-xs text-center text-4xl font-bold px-4 py-3 rounded-xl bg-white text-slate-900 min-h-[4rem] flex items-center justify-center">
+    <div class="w-full max-w-xs sm:max-w-sm shrink-0 text-center text-4xl sm:text-5xl font-bold px-4 py-3 rounded-2xl bg-white text-slate-900 min-h-[4.5rem] flex items-center justify-center">
       {{ quantidadeInput || '0' }}
     </div>
 
-    <app-teclado-numerico [valor]="quantidadeInput" [desabilitado]="bipando()" (valorChange)="aoAlterarQuantidade($event)" />
+    <div class="w-full max-w-xs sm:max-w-sm shrink min-h-0">
+      <app-teclado-numerico class="w-full" [valor]="quantidadeInput" [desabilitado]="bipando()" (valorChange)="aoAlterarQuantidade($event)" />
+    </div>
 
-    <div class="w-full max-w-xs flex gap-2">
+    <div class="w-full max-w-xs sm:max-w-sm shrink-0 flex gap-3">
       <button type="button" (click)="cancelarQuantidade()" [disabled]="bipando()"
-              class="flex-1 px-4 py-3 rounded-lg bg-white/10 text-white font-bold text-base disabled:opacity-50">
+              class="flex-1 px-4 py-4 rounded-2xl bg-white/10 text-white font-bold text-base disabled:opacity-50">
         Cancelar
       </button>
       <button type="button" (click)="confirmarQuantidade()" [disabled]="bipando()"
-              class="flex-[2] px-4 py-3 rounded-lg bg-primary text-white font-bold text-base disabled:opacity-50">
+              class="flex-[2] px-4 py-4 rounded-2xl bg-primary text-white font-bold text-base disabled:opacity-50">
         {{ bipando() ? 'Salvando...' : 'Confirmar' }}
       </button>
     </div>

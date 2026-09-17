@@ -4,7 +4,7 @@ import { Component, input, output } from '@angular/core';
   selector: 'app-teclado-numerico',
   standalone: true,
   templateUrl: './teclado-numerico.component.html',
-  host: { class: 'block' }
+  host: { class: 'block w-full' }
 })
 export class TecladoNumericoComponent {
   valor = input.required<string>();

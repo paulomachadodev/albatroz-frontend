@@ -63,16 +63,18 @@
         </div>
       }
     } @else {
-      <div class="w-full px-6 flex flex-col items-center gap-4">
-        <div class="w-full max-w-xs text-center text-2xl font-bold px-4 py-3 rounded-lg bg-white min-h-[3.25rem] flex items-center justify-center"
+      <div class="w-full h-full px-6 py-4 flex flex-col items-center justify-center gap-4 overflow-hidden">
+        <div class="w-full max-w-xs sm:max-w-sm shrink-0 text-center text-2xl sm:text-3xl font-bold px-4 py-3 rounded-2xl bg-white min-h-[3.5rem] flex items-center justify-center"
              [class]="codigoManual ? 'text-slate-900' : 'text-slate-300 font-normal text-base'">
           {{ codigoManual || 'Digite o código' }}
         </div>
 
-        <app-teclado-numerico [valor]="codigoManual" [desabilitado]="buscandoProduto()" (valorChange)="aoAlterarCodigoManual($event)" />
+        <div class="w-full max-w-xs sm:max-w-sm shrink min-h-0">
+          <app-teclado-numerico class="w-full" [valor]="codigoManual" [desabilitado]="buscandoProduto()" (valorChange)="aoAlterarCodigoManual($event)" />
+        </div>
 
         <button type="button" (click)="confirmarCodigoManual()" [disabled]="buscandoProduto()"
-                class="w-full max-w-xs px-4 py-3 rounded-lg bg-primary text-white font-bold text-sm disabled:opacity-50">
+                class="w-full max-w-xs sm:max-w-sm shrink-0 px-4 py-4 rounded-2xl bg-primary text-white font-bold text-base disabled:opacity-50">
           {{ buscandoProduto() ? 'Buscando...' : 'Buscar produto' }}
         </button>
       </div>

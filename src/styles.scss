@@ -27,6 +27,7 @@ body {
     font-size: 16px !important;
   }
 
+  html.scroll-bloqueado,
   body.scroll-bloqueado {
     overscroll-behavior: none;
     touch-action: none;

@@ -13,6 +13,7 @@ import { PageHeaderComponent } from '../../../../shared/components/page-header/p
 import { Ordenacao, ThOrdenavelComponent } from '../../../../shared/components/th-ordenavel/th-ordenavel.component';
 import { SelectBuscaComponent, OpcaoSelectBusca } from '../../../../shared/components/select-busca/select-busca.component';
 import { SelectBuscaMultiComponent } from '../../../../shared/components/select-busca-multi/select-busca-multi.component';
+import { SelectCategoriaMultiComponent } from '../../../../shared/components/select-categoria-multi/select-categoria-multi.component';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 import { ColunasConfiguraveisComponent, ColunaConfiguravel } from '../../../../shared/components/colunas-configuraveis/colunas-configuraveis.component';
 import { BreadcrumbComponent } from '../../../../shared/components/breadcrumb/breadcrumb.component';
@@ -35,7 +36,7 @@ const COLUNAS_VISIVEIS_PADRAO = ['cobertura', 'ultimaCompra', 'ultimaVenda'];
 @Component({
   selector: 'app-compras-lista',
   standalone: true,
-  imports: [FormsModule, ToggleSwitchModule, ListagemPaginadaComponent, PageHeaderComponent, ThOrdenavelComponent, SelectBuscaComponent, SelectBuscaMultiComponent, ModalComponent, ColunasConfiguraveisComponent, BreadcrumbComponent],
+  imports: [FormsModule, ToggleSwitchModule, ListagemPaginadaComponent, PageHeaderComponent, ThOrdenavelComponent, SelectBuscaComponent, SelectBuscaMultiComponent, SelectCategoriaMultiComponent, ModalComponent, ColunasConfiguraveisComponent, BreadcrumbComponent],
   templateUrl: './compras-lista.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
@@ -51,6 +52,7 @@ export class ComprasListaComponent implements OnInit {
 
   filtro: SugestaoCompraFiltro = {};
   marcasSelecionadas: OpcaoSelectBusca[] = [];
+  categoriasSelecionadas: string[] = [];
   fornecedorSelecionado: OpcaoSelectBusca | null = null;
   periodoPreset: '' | 'dez_mar' | 'personalizado' = '';
 
@@ -160,6 +162,7 @@ export class ComprasListaComponent implements OnInit {
   aplicarFiltros() {
     this.limparSelecao();
     this.filtro.idsMarca = this.marcasSelecionadas.length > 0 ? this.marcasSelecionadas.map(m => m.id) : undefined;
+    this.filtro.categoriasRaiz = this.categoriasSelecionadas.length > 0 ? this.categoriasSelecionadas : undefined;
     this.filtro.idFornecedor = this.fornecedorSelecionado?.id;
     this.carregar(1);
   }
@@ -168,6 +171,7 @@ export class ComprasListaComponent implements OnInit {
     this.limparSelecao();
     this.filtro = {};
     this.marcasSelecionadas = [];
+    this.categoriasSelecionadas = [];
     this.fornecedorSelecionado = null;
     this.periodoPreset = '';
     this.ordenacaoAtual.set(null);

@@ -17,6 +17,7 @@ export interface PainelFornecedorFiltro {
 export interface SugestaoCompraFiltro {
   texto?: string;
   idsMarca?: number[];
+  categoriasRaiz?: string[];
   idFornecedor?: number;
   curvaAbc?: string;
   comSugestao?: ComSugestaoFiltro;

@@ -353,6 +353,25 @@ Nunca colocar o botão "Filtrar"/"Limpar" como célula dentro da grid de campos 
 
 Campo condicional (ex: um filtro de período que só aparece quando outro select está num valor específico) entra **dentro da mesma grid** de campos via `@if`, nunca como uma segunda `<div class="grid ...">` empilhada abaixo — isso insere uma linha inteira nova e empurra tudo que vem depois. Deixar a grid ter colunas suficientes (ex: `lg:grid-cols-6`) pra o campo condicional caber na mesma ou próxima linha sem estourar o número de linhas.
 
+**Slot `filtrosBotoes` — botões nunca entram no bloco colapsável (achado 2026-09-17).** `app-listagem-paginada` recolhe o card de filtros no desktop quando o conteúdo não cabe numa linha (`ALTURA_MAX_UMA_LINHA_PX = 100`, ver `listagem-paginada.component.ts`), clampando pra `md:max-h-[84px]`. Se o botão Filtrar/Limpar estiver dentro do mesmo `<div filtros>` que a grid de campos (padrão antigo), ele é cortado junto sempre que o total (grid + botões) passar de 100px — exatamente o que aconteceu em `contatos-lista` (2 campos + botões passou de 100px). `produtos-lista` não sofria isso só porque a grid de 8 colunas cabe tudo numa linha só, por sorte de layout, não por causa de fix específico. Padrão correto: o slot `[filtrosBotoes]` (irmão de `[filtros]`, direto dentro de `<app-listagem-paginada>`) renderiza **fora** do wrapper clampado, sempre visível:
+
+```html
+<app-listagem-paginada ...>
+  <div filtros>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
+      <!-- só campos aqui -->
+    </div>
+  </div>
+  <div filtrosBotoes class="flex justify-end gap-2 mt-4">
+    <button (click)="aplicarFiltros()" class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all">Filtrar</button>
+    <button (click)="limparFiltros()" class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">Limpar</button>
+  </div>
+  ...
+</app-listagem-paginada>
+```
+
+Toda tela nova usa esse slot desde o início. Telas antigas que ainda têm os botões dentro de `[filtros]` (a maioria, migração não feita em massa) continuam funcionando como estão — migrar só quando a tela for tocada por outro motivo ou se o corte for reportado.
+
 ## Densidade de filtros — nunca campo isolado ocupando linha própria (regra 2026-09-04)
 
 Toda grid de filtro dimensiona `grid-cols-N` pelo **número real de campos**, não por um valor fixo copiado de outra tela. Um select booleano/status (`Sim/Não/Todos`, 1 palavra) cabe em 1 coluna estreita; texto livre (`Buscar...`) precisa de 2; nenhum campo deve ficar sozinho numa linha que sobra vazia ao lado — isso é sintoma de `grid-cols` baixo demais pro tanto de filtro que a tela tem.

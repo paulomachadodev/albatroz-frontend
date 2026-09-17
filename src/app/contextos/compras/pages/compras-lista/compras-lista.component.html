@@ -104,6 +104,14 @@
           </div>
 
           <div>
+            <label class="text-xs font-semibold text-slate-500">Categoria</label>
+            <app-select-categoria-multi
+              [valoresSelecionados]="categoriasSelecionadas"
+              placeholder="Todas"
+              (selecionadosChange)="categoriasSelecionadas = $event"></app-select-categoria-multi>
+          </div>
+
+          <div>
             <label class="text-xs font-semibold text-slate-500">Fornecedor</label>
             <app-select-busca
               [valorSelecionado]="fornecedorSelecionado"

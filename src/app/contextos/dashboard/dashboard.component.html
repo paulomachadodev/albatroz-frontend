@@ -203,6 +203,42 @@
 
         <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
           <div class="flex items-center justify-between mb-4">
+            <h3 class="font-bold text-slate-900 dark:text-slate-100">Balanço — meta</h3>
+            <a routerLink="/balanco" class="text-xs font-medium text-primary hover:underline">ver balanço</a>
+          </div>
+          <div class="space-y-4">
+            <div>
+              <div class="flex justify-between text-[11px] text-slate-400 mb-1">
+                <span>Hoje</span><span>{{ resumo()!.contagemEstoque.contadosHoje }}/{{ resumo()!.contagemEstoque.metaDiaria }}</span>
+              </div>
+              <div class="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                <div class="h-full bg-sky-500 rounded-full transition-all duration-700"
+                     [style.width.%]="percentualBarra(resumo()!.contagemEstoque.contadosHoje, resumo()!.contagemEstoque.metaDiaria)"></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between text-[11px] text-slate-400 mb-1">
+                <span>Essa semana</span><span>{{ resumo()!.contagemEstoque.contadosSemana }}/{{ resumo()!.contagemEstoque.metaSemanal }}</span>
+              </div>
+              <div class="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                <div class="h-full bg-sky-500 rounded-full transition-all duration-700"
+                     [style.width.%]="percentualBarra(resumo()!.contagemEstoque.contadosSemana, resumo()!.contagemEstoque.metaSemanal)"></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between text-[11px] text-slate-400 mb-1">
+                <span>Esse mês</span><span>{{ resumo()!.contagemEstoque.contadosMes }}/{{ resumo()!.contagemEstoque.metaMensal }}</span>
+              </div>
+              <div class="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                <div class="h-full bg-sky-500 rounded-full transition-all duration-700"
+                     [style.width.%]="percentualBarra(resumo()!.contagemEstoque.contadosMes, resumo()!.contagemEstoque.metaMensal)"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <div class="flex items-center justify-between mb-4">
             <h3 class="font-bold text-slate-900 dark:text-slate-100">Meta por vendedor</h3>
             @if (resumo()!.metaPorVendedor.length > 0) {
               <button type="button" class="text-xs font-medium text-primary hover:underline" (click)="abrirModalVendedores()">

@@ -22,6 +22,7 @@ export class GraficoBarrasComponent {
   datasets = input<DatasetGraficoBarras[]>([]);
   stacked = input<boolean>(false);
   horizontal = input<boolean>(false);
+  esconderLabelsEixo = input<boolean>(false);
   formatoValor = input<'numero' | 'reais'>('numero');
   altura = input<string>('192px');
 
@@ -65,7 +66,7 @@ export class GraficoBarrasComponent {
     const corGrade = escuro ? '#334155' : '#e2e8f0';
     const mostrarLegenda = this.datasets().length > 1;
 
-    const eixoCategoria = { stacked: this.stacked(), ticks: { color: corTexto, font: { size: 10 } }, grid: { display: false } };
+    const eixoCategoria = { stacked: this.stacked(), ticks: { color: corTexto, font: { size: 10 }, display: !this.esconderLabelsEixo() }, grid: { display: false } };
     const eixoValor = {
       stacked: this.stacked(),
       ticks: { color: corTexto, font: { size: 10 }, callback: (valor: number) => this.formatar(valor) },

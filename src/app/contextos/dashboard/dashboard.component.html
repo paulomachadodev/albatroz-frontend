@@ -259,46 +259,6 @@
           }
         </div>
 
-        <app-modal [aberto]="modalVendedoresAberto()" titulo="Meta por vendedor" tamanho="lg" (fechar)="fecharModalVendedores()">
-          <div class="p-6 pt-0 overflow-y-auto">
-            <ul class="space-y-4">
-              @for (v of resumo()!.metaPorVendedor; track v.idVendedor ?? v.nome) {
-                <li [class]="v.semVendedor ? 'p-2 -mx-2 rounded-xl bg-slate-50 dark:bg-slate-800/40' : 'p-2 -mx-2 rounded-xl'">
-                  <div class="flex items-center justify-between gap-3">
-                    <div class="min-w-0 flex-1">
-                      <p class="text-sm font-semibold truncate"
-                         [class.text-slate-400]="v.semVendedor"
-                         [class.italic]="v.semVendedor"
-                         [class.text-slate-900]="!v.semVendedor"
-                         [class.dark:text-slate-100]="!v.semVendedor">
-                        {{ v.nome }}
-                      </p>
-                      <p class="text-[11px] text-slate-400">{{ v.pedidos }} pedido(s) · ticket {{ formatarReais(v.ticketMedio) }}</p>
-                    </div>
-                    <div class="text-right shrink-0">
-                      <span class="text-sm font-bold text-slate-900 dark:text-slate-100">{{ formatarReais(v.valor) }}</span>
-                      @if (v.percentualVsMesAnterior !== null) {
-                        <p class="text-[11px] font-medium"
-                           [class.text-emerald-600]="v.percentualVsMesAnterior >= 0"
-                           [class.text-rose-600]="v.percentualVsMesAnterior < 0">
-                          {{ v.percentualVsMesAnterior >= 0 ? '↑' : '↓' }} {{ formatarPercentual(v.percentualVsMesAnterior) }} vs mês anterior
-                        </p>
-                      }
-                    </div>
-                  </div>
-                  @if (v.valorMeta !== null) {
-                    <div class="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden mt-2">
-                      <div class="h-full rounded-full transition-all duration-700"
-                           [class]="corBarraMeta(v.percentualAtingido ?? 0)"
-                           [style.width.%]="(v.percentualAtingido ?? 0) > 100 ? 100 : (v.percentualAtingido ?? 0)"></div>
-                    </div>
-                  }
-                </li>
-              }
-            </ul>
-          </div>
-        </app-modal>
-
         <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
           <div class="flex items-center justify-between mb-1">
             <h3 class="font-bold text-slate-900 dark:text-slate-100">Vendas por categoria</h3>
@@ -397,6 +357,46 @@
         </div>
 
       </div>
+
+      <app-modal [aberto]="modalVendedoresAberto()" titulo="Meta por vendedor" tamanho="lg" (fechar)="fecharModalVendedores()">
+        <div class="p-6 pt-0 overflow-y-auto">
+          <ul class="space-y-4">
+            @for (v of resumo()!.metaPorVendedor; track v.idVendedor ?? v.nome) {
+              <li [class]="v.semVendedor ? 'p-2 -mx-2 rounded-xl bg-slate-50 dark:bg-slate-800/40' : 'p-2 -mx-2 rounded-xl'">
+                <div class="flex items-center justify-between gap-3">
+                  <div class="min-w-0 flex-1">
+                    <p class="text-sm font-semibold truncate"
+                       [class.text-slate-400]="v.semVendedor"
+                       [class.italic]="v.semVendedor"
+                       [class.text-slate-900]="!v.semVendedor"
+                       [class.dark:text-slate-100]="!v.semVendedor">
+                      {{ v.nome }}
+                    </p>
+                    <p class="text-[11px] text-slate-400">{{ v.pedidos }} pedido(s) · ticket {{ formatarReais(v.ticketMedio) }}</p>
+                  </div>
+                  <div class="text-right shrink-0">
+                    <span class="text-sm font-bold text-slate-900 dark:text-slate-100">{{ formatarReais(v.valor) }}</span>
+                    @if (v.percentualVsMesAnterior !== null) {
+                      <p class="text-[11px] font-medium"
+                         [class.text-emerald-600]="v.percentualVsMesAnterior >= 0"
+                         [class.text-rose-600]="v.percentualVsMesAnterior < 0">
+                        {{ v.percentualVsMesAnterior >= 0 ? '↑' : '↓' }} {{ formatarPercentual(v.percentualVsMesAnterior) }} vs mês anterior
+                      </p>
+                    }
+                  </div>
+                </div>
+                @if (v.valorMeta !== null) {
+                  <div class="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden mt-2">
+                    <div class="h-full rounded-full transition-all duration-700"
+                         [class]="corBarraMeta(v.percentualAtingido ?? 0)"
+                         [style.width.%]="(v.percentualAtingido ?? 0) > 100 ? 100 : (v.percentualAtingido ?? 0)"></div>
+                  </div>
+                }
+              </li>
+            }
+          </ul>
+        </div>
+      </app-modal>
     }
 
   </div>

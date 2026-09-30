@@ -1,5 +1,5 @@
 <div class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark px-4 sm:px-6 lg:px-8 xl:px-10 py-6 lg:py-8">
-  <div class="w-full max-w-5xl mx-auto space-y-6">
+  <div class="w-full space-y-8">
 
     <app-breadcrumb [itens]="[
       {label:'Início',rota:'/dashboard'},
@@ -51,66 +51,79 @@
         </div>
       }
 
-      <div class="rounded-2xl bg-white dark:bg-slate-900 shadow-sm overflow-hidden">
-        <table class="w-full text-left">
-          <thead class="bg-slate-50 dark:bg-slate-800/50 text-xs font-bold text-slate-500 uppercase">
-            <tr>
-              <th class="px-6 py-3">Código</th>
-              <th class="px-6 py-3">Produto</th>
-              <th class="px-6 py-3 text-center w-32">Quantidade</th>
-              <th class="px-6 py-3 text-right">Preço Custo Unit.</th>
-              <th class="px-6 py-3 text-right">Total</th>
-              @if (editavel()) { <th class="px-6 py-3 w-10"></th> }
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-            @for (item of itensEdicao(); track item.idProduto) {
-              <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
-                <td class="px-6 py-3 text-sm text-slate-500">{{ item.codigo }}</td>
-                <td class="px-6 py-3 text-sm text-slate-900 dark:text-slate-100">{{ item.nome }}</td>
-                <td class="px-6 py-3 text-center">
-                  @if (editavel()) {
-                    <input type="number" min="0.001" step="1" [ngModel]="item.quantidade" (ngModelChange)="alterarQuantidade(item, $event)"
-                           class="w-20 px-2 py-1 text-center bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20" />
-                  } @else {
-                    <span class="text-sm">{{ item.quantidade }}</span>
-                  }
-                </td>
-                <td class="px-6 py-3 text-right text-sm">{{ formatarReais(item.precoCustoUnitario) }}</td>
-                <td class="px-6 py-3 text-right text-sm font-bold">{{ formatarReais(item.valorTotal ?? item.quantidade * (item.precoCustoUnitario ?? 0)) }}</td>
-                @if (editavel()) {
-                  <td class="px-6 py-3 text-right">
-                    <button (click)="removerItem(item)" class="text-red-500 hover:text-red-700">
-                      <span class="material-symbols-outlined text-base">close</span>
-                    </button>
-                  </td>
-                }
-              </tr>
-            } @empty {
-              <tr><td colspan="6" class="px-6 py-6 text-center text-sm text-slate-500">Nenhum item no pedido.</td></tr>
-            }
-          </tbody>
-          <tfoot>
-            <tr class="border-t border-slate-200 dark:border-slate-800">
-              <td colspan="4" class="px-6 py-3 text-right text-sm font-bold text-slate-500">Total do pedido</td>
-              <td class="px-6 py-3 text-right text-sm font-bold" [colSpan]="editavel() ? 2 : 1">{{ formatarReais(valorTotalEdicao()) }}</td>
-            </tr>
-          </tfoot>
-        </table>
+      <app-listagem-paginada
+        [itens]="itensPaginados()"
+        [carregando]="false"
+        [totalRegistros]="totalRegistrosItens()"
+        [paginaAtual]="paginaAtualItens()"
+        [totalPaginas]="totalPaginasItens()"
+        [tamanhoPagina]="tamanhoPaginaItens()"
+        tituloVazio="Nenhum item no pedido"
+        (paginaMudou)="aoMudarPaginaItens($event)"
+        (tamanhoPaginaMudou)="aoMudarTamanhoPaginaItens($event)">
 
-        @if (editavel()) {
-          <div class="px-6 py-4 border-t border-slate-200 dark:border-slate-800">
-            <label class="text-xs font-semibold text-slate-500">Adicionar produto</label>
-            <app-select-busca [valorSelecionado]="null" placeholder="Buscar produto por código ou nome..."
-                               [buscar]="buscarProdutoParaAdicionar" (selecionado)="aoSelecionarProdutoNovo($event)"></app-select-busca>
+        <div filtros class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="sm:col-span-2">
+            <label class="text-xs font-semibold text-slate-500">Buscar item</label>
+            <input type="text" [ngModel]="filtroItens()" (ngModelChange)="aoFiltrarItens($event)"
+                   placeholder="Filtrar por código ou nome do produto..."
+                   class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none" />
+          </div>
+        </div>
+
+        <ng-template #cabecalho>
+          <tr>
+            <th class="px-6 py-3">Código</th>
+            <th class="px-6 py-3">Produto</th>
+            <th class="px-6 py-3 text-center w-32">Quantidade</th>
+            <th class="px-6 py-3 text-right">Preço Custo Unit.</th>
+            <th class="px-6 py-3 text-right">Total</th>
+            @if (editavel()) { <th class="px-6 py-3 w-24"></th> }
+          </tr>
+        </ng-template>
+
+        <ng-template #linha let-item>
+          <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+            <td class="px-6 py-3 text-sm text-slate-500">{{ item.codigo }}</td>
+            <td class="px-6 py-3 text-sm text-slate-900 dark:text-slate-100">{{ item.nome }}</td>
+            <td class="px-6 py-3 text-center">
+              @if (editavel()) {
+                <input type="number" min="0.001" step="1" [ngModel]="item.quantidade" (ngModelChange)="alterarQuantidade(item, $event)"
+                       class="w-20 px-2 py-1 text-center bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20" />
+              } @else {
+                <span class="text-sm">{{ item.quantidade }}</span>
+              }
+            </td>
+            <td class="px-6 py-3 text-right text-sm">{{ formatarReais(item.precoCustoUnitario) }}</td>
+            <td class="px-6 py-3 text-right text-sm font-bold">{{ formatarReais(item.valorTotal ?? item.quantidade * (item.precoCustoUnitario ?? 0)) }}</td>
+            @if (editavel()) {
+              <td class="px-6 py-3 text-right">
+                <button (click)="removerItem(item)" class="text-xs font-bold text-red-600 hover:underline">Remover</button>
+              </td>
+            }
+          </tr>
+        </ng-template>
+
+      </app-listagem-paginada>
+
+      <div class="flex flex-wrap items-start justify-between gap-4">
+        <div class="rounded-2xl bg-white dark:bg-slate-900 shadow-sm px-6 py-4 flex-1 min-w-64">
+          <p class="text-xs font-semibold text-slate-500 mb-1">Total do pedido</p>
+          <p class="text-xl font-bold text-slate-900 dark:text-slate-100">{{ formatarReais(valorTotalEdicao()) }}</p>
+        </div>
+        @if (pedido()!.observacoes) {
+          <div class="rounded-2xl bg-white dark:bg-slate-900 shadow-sm px-6 py-4 flex-[2] min-w-64">
+            <p class="text-xs font-semibold text-slate-500 mb-1">Observações</p>
+            <p class="text-sm text-slate-700 dark:text-slate-300">{{ pedido()!.observacoes }}</p>
           </div>
         }
       </div>
 
-      @if (pedido()!.observacoes) {
+      @if (editavel()) {
         <div class="rounded-2xl bg-white dark:bg-slate-900 shadow-sm px-6 py-4">
-          <p class="text-xs font-semibold text-slate-500 mb-1">Observações</p>
-          <p class="text-sm text-slate-700 dark:text-slate-300">{{ pedido()!.observacoes }}</p>
+          <label class="text-xs font-semibold text-slate-500">Adicionar produto</label>
+          <app-select-busca [valorSelecionado]="null" placeholder="Buscar produto por código ou nome..."
+                             [buscar]="buscarProdutoParaAdicionar" (selecionado)="aoSelecionarProdutoNovo($event)"></app-select-busca>
         </div>
       }
 

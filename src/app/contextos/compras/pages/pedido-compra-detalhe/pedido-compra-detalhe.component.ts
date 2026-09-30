@@ -16,6 +16,7 @@ import { ToastService } from '../../../../core/feedback/toast.service';
 import { ConfirmService } from '../../../../core/feedback/confirm.service';
 import { SelectBuscaComponent, OpcaoSelectBusca } from '../../../../shared/components/select-busca/select-busca.component';
 import { BreadcrumbComponent } from '../../../../shared/components/breadcrumb/breadcrumb.component';
+import { ListagemPaginadaComponent } from '../../../../shared/components/listagem-paginada/listagem-paginada.component';
 import { exportarPlanilha } from '../../../../shared/utils/exportar-planilha';
 
 interface ItemPedidoEdicao {
@@ -30,7 +31,7 @@ interface ItemPedidoEdicao {
 @Component({
   selector: 'app-pedido-compra-detalhe',
   standalone: true,
-  imports: [FormsModule, SelectBuscaComponent, BreadcrumbComponent],
+  imports: [FormsModule, SelectBuscaComponent, BreadcrumbComponent, ListagemPaginadaComponent],
   templateUrl: './pedido-compra-detalhe.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
@@ -45,6 +46,10 @@ export class PedidoCompraDetalheComponent implements OnInit {
   salvando = signal(false);
   exportando = signal(false);
 
+  filtroItens = signal('');
+  paginaAtualItens = signal(1);
+  tamanhoPaginaItens = signal(10);
+
   private produtosEncontrados = new Map<number, { id: number; codigo: string; nome: string }>();
 
   editavel = computed(() => {
@@ -55,6 +60,20 @@ export class PedidoCompraDetalheComponent implements OnInit {
   valorTotalEdicao = computed(() =>
     this.itensEdicao().reduce((soma, item) => soma + (item.valorTotal ?? item.quantidade * (item.precoCustoUnitario ?? 0)), 0)
   );
+
+  itensFiltrados = computed(() => {
+    const termo = this.filtroItens().trim().toLowerCase();
+    if (!termo) return this.itensEdicao();
+    return this.itensEdicao().filter(i => i.nome.toLowerCase().includes(termo) || i.codigo.toLowerCase().includes(termo));
+  });
+
+  totalRegistrosItens = computed(() => this.itensFiltrados().length);
+  totalPaginasItens = computed(() => Math.max(1, Math.ceil(this.totalRegistrosItens() / this.tamanhoPaginaItens())));
+
+  itensPaginados = computed(() => {
+    const inicio = (this.paginaAtualItens() - 1) * this.tamanhoPaginaItens();
+    return this.itensFiltrados().slice(inicio, inicio + this.tamanhoPaginaItens());
+  });
 
   buscarProdutoParaAdicionar = (termo: string): Observable<OpcaoSelectBusca[]> =>
     this.produtosService.listar({ pagina: 1, tamanho: 10 }, { texto: termo, situacao: 'A' }).pipe(
@@ -87,6 +106,8 @@ export class PedidoCompraDetalheComponent implements OnInit {
         this.pedido.set(detalhe);
         this.itensEdicao.set((detalhe?.itens ?? []).map(item => ({ ...item })));
         this.alterado.set(false);
+        this.filtroItens.set('');
+        this.paginaAtualItens.set(1);
         this.carregando.set(false);
       },
       error: err => {
@@ -117,6 +138,21 @@ export class PedidoCompraDetalheComponent implements OnInit {
   removerItem(item: ItemPedidoEdicao) {
     this.itensEdicao.update(itens => itens.filter(i => i.idProduto !== item.idProduto));
     this.alterado.set(true);
+    if (this.paginaAtualItens() > this.totalPaginasItens()) this.paginaAtualItens.set(this.totalPaginasItens());
+  }
+
+  aoFiltrarItens(texto: string) {
+    this.filtroItens.set(texto);
+    this.paginaAtualItens.set(1);
+  }
+
+  aoMudarPaginaItens(pagina: number) {
+    this.paginaAtualItens.set(pagina);
+  }
+
+  aoMudarTamanhoPaginaItens(tamanho: number) {
+    this.tamanhoPaginaItens.set(tamanho);
+    this.paginaAtualItens.set(1);
   }
 
   aoSelecionarProdutoNovo(opcao: OpcaoSelectBusca | null) {

@@ -183,6 +183,17 @@
       </div>
     } @else if (abaAtiva() === 'integracoes') {
       <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-8">
+        <a routerLink="/configuracoes/integracoes"
+           class="flex items-center justify-between gap-3 p-4 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 hover:border-primary transition-colors">
+          <span class="flex items-center gap-3">
+            <span class="material-symbols-outlined text-primary">sync_alt</span>
+            <span>
+              <span class="block text-sm font-bold text-slate-900 dark:text-slate-100">Tiny ERP</span>
+              <span class="block text-xs text-slate-500">Credenciais e conexão da sua empresa com o Tiny.</span>
+            </span>
+          </span>
+          <span class="material-symbols-outlined text-slate-400">chevron_right</span>
+        </a>
         <div class="space-y-4">
           <p class="text-sm font-bold text-slate-900 dark:text-slate-100">Google Merchant Center</p>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">

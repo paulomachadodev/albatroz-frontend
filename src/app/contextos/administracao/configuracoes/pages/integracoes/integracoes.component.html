@@ -1,0 +1,125 @@
+<div class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark px-4 sm:px-6 lg:px-8 xl:px-10 py-6 lg:py-8">
+  <div class="w-full space-y-8">
+
+    <app-breadcrumb [itens]="[{label:'Início',rota:'/dashboard'},{label:'Administração'},{label:'Configurações',rota:'/configuracoes'},{label:'Integrações'}]"></app-breadcrumb>
+
+    <app-page-header titulo="Integrações" subtitulo="Conecte a sua empresa a serviços externos.">
+      <a acoes routerLink="/configuracoes"
+         class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
+        Voltar às configurações
+      </a>
+    </app-page-header>
+
+    @if (carregando()) {
+      <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-4">
+        <div class="h-6 w-48 rounded bg-slate-100 dark:bg-slate-800 animate-pulse"></div>
+        <div class="h-4 w-full rounded bg-slate-100 dark:bg-slate-800 animate-pulse"></div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          @for (i of [0,1,2]; track i) {
+            <div class="h-16 rounded-lg bg-slate-100 dark:bg-slate-800 animate-pulse"></div>
+          }
+        </div>
+        <div class="h-10 w-56 rounded-lg bg-slate-100 dark:bg-slate-800 animate-pulse ml-auto"></div>
+      </div>
+    } @else {
+      <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-4 sm:p-6 space-y-6">
+
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <span class="material-symbols-outlined text-primary">sync_alt</span>
+            <p class="text-base font-bold text-slate-900 dark:text-slate-100">Tiny ERP</p>
+          </div>
+          @if (configurada()) {
+            <span class="px-3 py-1 rounded-full text-xs font-bold" [class]="classeStatus(integracao()!.statusConexao)">
+              {{ rotuloStatus(integracao()!.statusConexao) }}
+            </span>
+          } @else {
+            <span class="px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+              Não configurada
+            </span>
+          }
+        </div>
+
+        <p class="text-sm text-slate-500 dark:text-slate-400">
+          Informe as credenciais do aplicativo OAuth da sua conta Tiny. Você encontra o Client ID e o Client Secret no Tiny em
+          Integrações &gt; API V3 (aplicativo OAuth). O Refresh Token é gerado na autorização desse aplicativo.
+        </p>
+
+        @if (configurada()) {
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+            <div>
+              <p class="text-xs font-semibold text-slate-500">Última validação</p>
+              <p class="mt-1 text-slate-900 dark:text-slate-100">
+                @if (integracao()!.validadaEm) {
+                  {{ integracao()!.validadaEm | date:'dd/MM/yyyy HH:mm':'America/Sao_Paulo' }}
+                } @else {
+                  Ainda não validada
+                }
+              </p>
+            </div>
+            @if (integracao()!.statusConexao === 'erro' && integracao()!.mensagemErro) {
+              <div>
+                <p class="text-xs font-semibold text-slate-500">Mensagem de erro</p>
+                <p class="mt-1 text-red-600 dark:text-red-400 break-words">{{ integracao()!.mensagemErro }}</p>
+              </div>
+            }
+          </div>
+        }
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label class="text-xs font-semibold text-slate-500">Client ID</label>
+            <input type="text" [(ngModel)]="clientId" [disabled]="!podeEditar() || salvando()" autocomplete="off"
+                   class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none disabled:opacity-60"/>
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-slate-500 inline-flex items-center gap-1">
+              Client Secret
+              @if (configurada()) {
+                <app-campo-hint texto="Deixe em branco para manter o valor já salvo."></app-campo-hint>
+              }
+            </label>
+            <input type="password" [(ngModel)]="clientSecret" [disabled]="!podeEditar() || salvando()" autocomplete="new-password"
+                   [placeholder]="integracao()?.clientSecretMascarado ?? ''"
+                   class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none disabled:opacity-60"/>
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-slate-500 inline-flex items-center gap-1">
+              Refresh Token
+              @if (configurada()) {
+                <app-campo-hint texto="Deixe em branco para manter o valor já salvo."></app-campo-hint>
+              }
+            </label>
+            <input type="password" [(ngModel)]="refreshToken" [disabled]="!podeEditar() || salvando()" autocomplete="new-password"
+                   [placeholder]="configurada() ? '••••••••' : ''"
+                   class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none disabled:opacity-60"/>
+          </div>
+        </div>
+
+        @if (erroFormulario()) {
+          <p class="text-sm text-red-600 dark:text-red-400" role="alert">{{ erroFormulario() }}</p>
+        }
+
+        @if (podeEditar()) {
+          <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
+            @if (configurada()) {
+              <button type="button" (click)="remover()" [disabled]="removendo() || salvando()"
+                      class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-red-600 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all disabled:opacity-50">
+                Remover integração
+              </button>
+            }
+            <button type="button" (click)="salvar()" [disabled]="!formularioValido() || salvando() || removendo()"
+                    class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all disabled:opacity-50 inline-flex items-center justify-center gap-2">
+              @if (salvando()) {
+                <app-spinner tamanho="sm" [claro]="true"></app-spinner>
+                Testando conexão...
+              } @else {
+                Salvar e testar conexão
+              }
+            </button>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

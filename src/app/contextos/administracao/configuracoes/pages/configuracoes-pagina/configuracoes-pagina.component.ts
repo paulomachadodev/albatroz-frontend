@@ -1,6 +1,7 @@
 import { Component, OnInit, signal } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { ConfiguracoesService } from '../../services/configuracoes.service';
 import { VendedoresService } from '../../services/vendedores.service';
@@ -41,7 +42,7 @@ interface VendedorMeta {
 @Component({
   selector: 'app-configuracoes-pagina',
   standalone: true,
-  imports: [FormsModule, PageHeaderComponent, ModalComponent, CampoHintComponent, BreadcrumbComponent],
+  imports: [FormsModule, RouterLink, PageHeaderComponent, ModalComponent, CampoHintComponent, BreadcrumbComponent],
   templateUrl: './configuracoes-pagina.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })

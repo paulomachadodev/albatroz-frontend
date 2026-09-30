@@ -8,5 +8,12 @@ export const CONFIGURACOES_ROUTES: Routes = [
     data: { permissao: 'configuracoes:ler' },
     loadComponent: () =>
       import('./pages/configuracoes-pagina/configuracoes-pagina.component').then(m => m.ConfiguracoesPaginaComponent)
+  },
+  {
+    path: 'integracoes',
+    canActivate: [permissaoGuard],
+    data: { permissao: 'configuracoes:ler' },
+    loadComponent: () =>
+      import('./pages/integracoes/integracoes.component').then(m => m.IntegracoesComponent)
   }
 ];

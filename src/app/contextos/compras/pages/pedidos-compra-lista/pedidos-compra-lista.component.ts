@@ -3,21 +3,14 @@ import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { PedidosCompraService, PedidoCompraFiltro } from '../../services/pedidos-compra.service';
-import { PedidoCompraResumo, SITUACAO_PEDIDO_COMPRA } from '../../models/pedido-compra.model';
+import { PedidoCompraResumo, SITUACAO_PEDIDO_COMPRA, ROTULOS_SITUACAO_PEDIDO_COMPRA, CLASSES_SITUACAO_PEDIDO_COMPRA } from '../../models/pedido-compra.model';
 import { ToastService } from '../../../../core/feedback/toast.service';
 import { ConfirmService } from '../../../../core/feedback/confirm.service';
 import { ListagemPaginadaComponent } from '../../../../shared/components/listagem-paginada/listagem-paginada.component';
 import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 import { Ordenacao, ThOrdenavelComponent } from '../../../../shared/components/th-ordenavel/th-ordenavel.component';
 import { BreadcrumbComponent } from '../../../../shared/components/breadcrumb/breadcrumb.component';
-
-const ROTULOS_SITUACAO: Record<number, string> = { 1: 'Rascunho', 2: 'Pronto', 3: 'Enviado', 4: 'Cancelado' };
-const CLASSES_SITUACAO: Record<number, string> = {
-  1: 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300',
-  2: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400',
-  3: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400',
-  4: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400'
-};
+import { exportarPlanilha } from '../../../../shared/utils/exportar-planilha';
 
 @Component({
   selector: 'app-pedidos-compra-lista',
@@ -36,6 +29,7 @@ export class PedidosCompraListaComponent implements OnInit {
   totalPaginas = signal(1);
   tamanhoPagina = signal(10);
   ordenacaoAtual = signal<Ordenacao | null>(null);
+  exportandoId = signal<number | null>(null);
 
   filtro: PedidoCompraFiltro = {};
 
@@ -78,8 +72,8 @@ export class PedidosCompraListaComponent implements OnInit {
     this.carregar(1);
   }
 
-  rotuloSituacao(situacao: number): string { return ROTULOS_SITUACAO[situacao] ?? '-'; }
-  classeSituacao(situacao: number): string { return CLASSES_SITUACAO[situacao] ?? CLASSES_SITUACAO[1]; }
+  rotuloSituacao(situacao: number): string { return ROTULOS_SITUACAO_PEDIDO_COMPRA[situacao] ?? '-'; }
+  classeSituacao(situacao: number): string { return CLASSES_SITUACAO_PEDIDO_COMPRA[situacao] ?? CLASSES_SITUACAO_PEDIDO_COMPRA[1]; }
 
   mudarSituacao(item: PedidoCompraResumo, situacao: number) {
     this.pedidosService.atualizarStatus(item.id, situacao).subscribe({
@@ -103,5 +97,32 @@ export class PedidosCompraListaComponent implements OnInit {
   formatarReais(valor?: number): string {
     if (valor == null) return '-';
     return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  }
+
+  exportarItem(item: PedidoCompraResumo, formato: 'xlsx' | 'csv') {
+    this.exportandoId.set(item.id);
+    this.pedidosService.obter(item.id).subscribe({
+      next: res => {
+        this.exportandoId.set(null);
+        const detalhe = res.dados;
+        if (!detalhe || detalhe.itens.length === 0) {
+          this.toast.erro('Pedido sem itens para exportar.');
+          return;
+        }
+        const linhas = detalhe.itens.map(linha => ({
+          'Fornecedor': detalhe.fornecedor,
+          'Código': linha.codigo,
+          'Produto': linha.nome,
+          'Quantidade': linha.quantidade,
+          'Preço Custo Unit.': linha.precoCustoUnitario,
+          'Valor Total': linha.valorTotal
+        }));
+        exportarPlanilha(linhas, `pedido-compra-${detalhe.id}`, 'Itens', formato);
+      },
+      error: err => {
+        this.exportandoId.set(null);
+        this.toast.erroServidor(err, 'Não foi possível exportar o pedido.');
+      }
+    });
   }
 }

@@ -12,6 +12,11 @@ export const COMPRAS_ROUTES: Routes = [
       import('./pages/pedidos-compra-lista/pedidos-compra-lista.component').then(m => m.PedidosCompraListaComponent)
   },
   {
+    path: 'pedidos/:id',
+    loadComponent: () =>
+      import('./pages/pedido-compra-detalhe/pedido-compra-detalhe.component').then(m => m.PedidoCompraDetalheComponent)
+  },
+  {
     path: 'fornecedores',
     loadComponent: () =>
       import('./pages/fornecedores-painel/fornecedores-painel.component').then(m => m.FornecedoresPainelComponent)

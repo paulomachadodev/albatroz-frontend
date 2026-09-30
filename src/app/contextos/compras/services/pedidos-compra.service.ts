@@ -3,7 +3,7 @@ import { Observable } from 'rxjs';
 import { ApiService } from '../../../core/http/api.service';
 import { Resultado, Paginacao } from '../../../core/models';
 import { ParametrosPaginacao } from '../../../core/models/paginacao.model';
-import { PedidoCompraResumo, PedidoCompraDetalhe, CriarPedidoCompraRequisicao } from '../models/pedido-compra.model';
+import { PedidoCompraResumo, PedidoCompraDetalhe, CriarPedidoCompraRequisicao, CriarPedidoCompraItem } from '../models/pedido-compra.model';
 
 export interface PedidoCompraFiltro {
   situacao?: number;
@@ -32,6 +32,10 @@ export class PedidosCompraService {
 
   atualizarStatus(id: number, situacao: number): Observable<Resultado<void>> {
     return this.api.put<void>(`${this.endpoint}/${id}/status`, { situacao });
+  }
+
+  atualizarItens(id: number, itens: CriarPedidoCompraItem[]): Observable<Resultado<void>> {
+    return this.api.put<void>(`${this.endpoint}/${id}/itens`, { itens });
   }
 
   excluir(id: number): Observable<Resultado<void>> {

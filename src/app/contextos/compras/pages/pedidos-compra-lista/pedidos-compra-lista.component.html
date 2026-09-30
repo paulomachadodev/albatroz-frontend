@@ -73,7 +73,9 @@
 
       <ng-template #linha let-item>
         <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
-          <td class="px-6 py-4 text-sm font-bold text-slate-900 dark:text-slate-100">#{{ item.id }}</td>
+          <td class="px-6 py-4 text-sm font-bold">
+            <a [routerLink]="['/compras/pedidos', item.id]" class="text-primary hover:underline">#{{ item.id }}</a>
+          </td>
           <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{{ item.fornecedor }}</td>
           <td class="px-6 py-4 text-center text-sm">{{ item.quantidadeItens }}</td>
           <td class="px-6 py-4 text-right text-sm font-bold">{{ formatarReais(item.valorTotal) }}</td>
@@ -88,9 +90,18 @@
           </td>
           <td class="px-6 py-4 text-sm text-slate-500">{{ item.criadoEm | date: 'dd/MM/yy HH:mm' }}</td>
           <td class="px-6 py-4 text-right">
-            <button (click)="excluir(item)" class="text-red-500 hover:text-red-700">
-              <span class="material-symbols-outlined text-base">delete</span>
-            </button>
+            <div class="flex items-center justify-end gap-1">
+              <a [routerLink]="['/compras/pedidos', item.id]" class="text-slate-400 hover:text-primary" title="Abrir pedido">
+                <span class="material-symbols-outlined text-base">visibility</span>
+              </a>
+              <button (click)="exportarItem(item, 'xlsx')" [disabled]="exportandoId() === item.id"
+                      class="text-slate-400 hover:text-primary disabled:opacity-50" title="Exportar Excel">
+                <span class="material-symbols-outlined text-base">download</span>
+              </button>
+              <button (click)="excluir(item)" class="text-red-500 hover:text-red-700" title="Excluir">
+                <span class="material-symbols-outlined text-base">delete</span>
+              </button>
+            </div>
           </td>
         </tr>
       </ng-template>

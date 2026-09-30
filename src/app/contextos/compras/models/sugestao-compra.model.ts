@@ -36,4 +36,7 @@ export interface SugestaoCompra {
   precoUltimaCompra?: number;
 
   valorTotalAjustadoGeral: number;
+
+  semelhantesQtd?: number;
+  semelhantesEstoque?: number;
 }

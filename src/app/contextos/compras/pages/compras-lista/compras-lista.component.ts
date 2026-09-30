@@ -7,6 +7,7 @@ import { exportarPlanilha } from '../../../../shared/utils/exportar-planilha';
 import { ComprasService, SugestaoCompraFiltro, ComSugestaoFiltro } from '../../services/compras.service';
 import { PedidosCompraService } from '../../services/pedidos-compra.service';
 import { SugestaoCompra } from '../../models/sugestao-compra.model';
+import { SemelhanteProduto } from '../../models/semelhante-produto.model';
 import { ToastService } from '../../../../core/feedback/toast.service';
 import { ListagemPaginadaComponent } from '../../../../shared/components/listagem-paginada/listagem-paginada.component';
 import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
@@ -15,6 +16,7 @@ import { SelectBuscaComponent, OpcaoSelectBusca } from '../../../../shared/compo
 import { SelectBuscaMultiComponent } from '../../../../shared/components/select-busca-multi/select-busca-multi.component';
 import { SelectCategoriaMultiComponent } from '../../../../shared/components/select-categoria-multi/select-categoria-multi.component';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
+import { BtnIconeComponent } from '../../../../shared/components/btn-icone/btn-icone.component';
 import { ColunasConfiguraveisComponent, ColunaConfiguravel } from '../../../../shared/components/colunas-configuraveis/colunas-configuraveis.component';
 import { BreadcrumbComponent } from '../../../../shared/components/breadcrumb/breadcrumb.component';
 import { MarcasService } from '../../../produtos/services/marcas.service';
@@ -30,13 +32,13 @@ const PT_TOGGLE_SELECIONAR_TODOS = {
 };
 
 const CHAVE_LOCALSTORAGE = 'compras-sugestoes-ajustadas-v1';
-const CHAVE_LOCALSTORAGE_COLUNAS = 'compras-colunas-visiveis-v3';
-const COLUNAS_VISIVEIS_PADRAO = ['cobertura', 'ultimaCompra', 'ultimaVenda'];
+const CHAVE_LOCALSTORAGE_COLUNAS = 'compras-colunas-visiveis-v4';
+const COLUNAS_VISIVEIS_PADRAO = ['cobertura', 'semelhantes', 'ultimaCompra', 'ultimaVenda'];
 
 @Component({
   selector: 'app-compras-lista',
   standalone: true,
-  imports: [FormsModule, ToggleSwitchModule, ListagemPaginadaComponent, PageHeaderComponent, ThOrdenavelComponent, SelectBuscaComponent, SelectBuscaMultiComponent, SelectCategoriaMultiComponent, ModalComponent, ColunasConfiguraveisComponent, BreadcrumbComponent],
+  imports: [FormsModule, ToggleSwitchModule, ListagemPaginadaComponent, PageHeaderComponent, ThOrdenavelComponent, SelectBuscaComponent, SelectBuscaMultiComponent, SelectCategoriaMultiComponent, ModalComponent, BtnIconeComponent, ColunasConfiguraveisComponent, BreadcrumbComponent],
   templateUrl: './compras-lista.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
@@ -65,6 +67,7 @@ export class ComprasListaComponent implements OnInit {
 
   colunasConfiguraveis: ColunaConfiguravel[] = [
     { chave: 'cobertura', rotulo: 'Cobertura' },
+    { chave: 'semelhantes', rotulo: 'Semelhantes' },
     { chave: 'marca', rotulo: 'Marca' },
     { chave: 'fornecedor', rotulo: 'Fornecedor' },
     { chave: 'ultimaCompra', rotulo: 'Última Compra' },
@@ -95,6 +98,11 @@ export class ComprasListaComponent implements OnInit {
   buscarFornecedoresPedido = (termo: string) => this.contatosService.buscar(termo, 'Fornecedor');
 
   exportando = signal(false);
+
+  produtoSemelhantes = signal<SugestaoCompra | null>(null);
+  semelhantes = signal<SemelhanteProduto[]>([]);
+  carregandoSemelhantes = signal(false);
+  erroSemelhantes = signal(false);
 
   constructor(
     private comprasService: ComprasService,
@@ -220,6 +228,71 @@ export class ComprasListaComponent implements OnInit {
 
   abrirProduto(item: SugestaoCompra) {
     this.router.navigate(['/produtos', item.idProduto], { queryParams: { origem: 'compras' } });
+  }
+
+  semelhantesQtd(item: SugestaoCompra): number {
+    return item.semelhantesQtd ?? 0;
+  }
+
+  rotuloSemelhantes(item: SugestaoCompra): string {
+    return `${this.semelhantesQtd(item)} com estoque · ${this.formatarNumero(item.semelhantesEstoque ?? 0)} un`;
+  }
+
+  abrirSemelhantes(item: SugestaoCompra) {
+    this.produtoSemelhantes.set(item);
+    this.carregarSemelhantes();
+  }
+
+  carregarSemelhantes() {
+    const produto = this.produtoSemelhantes();
+    if (!produto) return;
+    this.carregandoSemelhantes.set(true);
+    this.erroSemelhantes.set(false);
+    this.semelhantes.set([]);
+    this.comprasService.listarSemelhantes(produto.idProduto).subscribe({
+      next: res => {
+        if (this.produtoSemelhantes()?.idProduto !== produto.idProduto) return;
+        this.semelhantes.set(res.dados ?? []);
+        this.carregandoSemelhantes.set(false);
+      },
+      error: () => {
+        if (this.produtoSemelhantes()?.idProduto !== produto.idProduto) return;
+        this.erroSemelhantes.set(true);
+        this.carregandoSemelhantes.set(false);
+      }
+    });
+  }
+
+  fecharSemelhantes() {
+    this.produtoSemelhantes.set(null);
+    this.semelhantes.set([]);
+    this.erroSemelhantes.set(false);
+  }
+
+  abrirSemelhante(semelhante: SemelhanteProduto) {
+    this.router.navigate(['/produtos', semelhante.idProduto], { queryParams: { origem: 'compras' } });
+  }
+
+  percentualNota(semelhante: SemelhanteProduto): number {
+    return Math.round(Math.min(1, Math.max(0, semelhante.nota)) * 100);
+  }
+
+  rotuloDiferencaPreco(semelhante: SemelhanteProduto): string {
+    const pct = semelhante.diferencaPrecoPct;
+    if (pct === 0) return 'mesmo preço';
+    const formatado = Math.abs(pct).toLocaleString('pt-BR', { maximumFractionDigits: 1 });
+    return pct < 0 ? `${formatado}% mais barato` : `${formatado}% mais caro`;
+  }
+
+  classeDiferencaPreco(semelhante: SemelhanteProduto): string {
+    if (semelhante.diferencaPrecoPct < 0) return 'text-emerald-600 dark:text-emerald-400';
+    if (semelhante.diferencaPrecoPct > 0) return 'text-red-600 dark:text-red-400';
+    return 'text-slate-500';
+  }
+
+  rotuloCoberturaSemelhante(semelhante: SemelhanteProduto): string {
+    if (semelhante.diasCobertura == null) return 'sem giro de venda';
+    return `cobre ${this.formatarNumero(Math.round(semelhante.diasCobertura))} dias de venda`;
   }
 
   private carregarAjustesLocais(): Record<number, number> {

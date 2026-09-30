@@ -4,6 +4,7 @@ import { ApiService } from '../../../core/http/api.service';
 import { Resultado, Paginacao } from '../../../core/models';
 import { ParametrosPaginacao } from '../../../core/models/paginacao.model';
 import { SugestaoCompra } from '../models/sugestao-compra.model';
+import { SemelhanteProduto } from '../models/semelhante-produto.model';
 import { PainelFornecedor } from '../models/painel-fornecedor.model';
 
 export type ComSugestaoFiltro = 'com_sugestao' | 'sem_sugestao';
@@ -49,6 +50,10 @@ export class ComprasService {
 
   exportarSugestoes(filtros?: SugestaoCompraFiltro): Observable<Resultado<SugestaoCompra[]>> {
     return this.api.get<SugestaoCompra[]>(`${this.endpoint}/sugestoes/exportar`, filtros);
+  }
+
+  listarSemelhantes(idProduto: number): Observable<Resultado<SemelhanteProduto[]>> {
+    return this.api.get<SemelhanteProduto[]>(`${this.endpoint}/sugestoes/${idProduto}/semelhantes`);
   }
 
   listarPainelFornecedores(paginacao: ParametrosPaginacao, filtros?: PainelFornecedorFiltro): Observable<Resultado<Paginacao<PainelFornecedor>>> {

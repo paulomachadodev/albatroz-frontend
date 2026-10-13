@@ -32,14 +32,14 @@ export class SaudeEstoqueService {
       ordenacao?: OrdenacaoSaudeEstoque | null;
     }
   ): Observable<Resultado<Paginacao<ProdutoSaudeEstoque>>> {
-    const filtros: Record<string, unknown> = {};
+    const filtros: Record<string, unknown> = { tipo: categoria };
     if (categoria === 'criticos') filtros['corteGiroCritico'] = opcoes?.corteGiroCritico;
     if (categoria === 'em-ruptura') filtros['janelaDias'] = opcoes?.janelaDias;
+    if (categoria === 'aging') filtros['faixa'] = opcoes?.faixaAging;
     if (opcoes?.ordenacao) {
       filtros['ordenarPor'] = opcoes.ordenacao.campo;
       filtros['direcao'] = opcoes.ordenacao.direcao;
     }
-    const segmento = categoria === 'aging' ? `aging/${encodeURIComponent(opcoes?.faixaAging ?? '')}` : categoria;
-    return this.api.getPaginado<ProdutoSaudeEstoque>(`${this.endpoint}/saude-estoque/${segmento}`, paginacao, filtros);
+    return this.api.getPaginado<ProdutoSaudeEstoque>(`${this.endpoint}/saude-estoque/produtos`, paginacao, filtros);
   }
 }

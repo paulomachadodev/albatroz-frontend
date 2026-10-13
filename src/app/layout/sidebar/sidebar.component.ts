@@ -81,6 +81,12 @@ export class SidebarComponent {
             { label: 'Pedidos', rota: '/compras/pedidos', icone: 'receipt_long', permissao: 'produtos:ler' }
           ]
         },
+        {
+          label: 'Vendas', icone: 'point_of_sale',
+          subItens: [
+            { label: 'Relatório', rota: '/vendas/relatorio-produtos', icone: 'trending_up' }
+          ]
+        },
         { label: 'Albia IA',   rota: '/albia',     icone: 'auto_awesome', badge: 'NOVO' }
       ]
     },

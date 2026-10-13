@@ -25,7 +25,7 @@ export class ListasListaComponent implements OnInit {
   totalRegistros = signal(0);
   paginaAtual = signal(1);
   totalPaginas = signal(1);
-  tamanhoPagina = signal(20);
+  tamanhoPagina = signal(10);
   ordenacaoAtual = signal<Ordenacao | null>(null);
 
   filtro: ListaEscolarFiltro = {};

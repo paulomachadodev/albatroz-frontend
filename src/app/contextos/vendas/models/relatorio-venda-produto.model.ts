@@ -7,6 +7,8 @@ export interface RelatorioVendaProduto {
   quantidadeVendida: number;
   valorMedioVenda: number;
   valorTotalVenda: number;
+  urlFoto?: string;
+  estoqueAtual: number;
   totalGeral: number;
   totalQuantidadeGeral: number;
   totalValorGeral: number;

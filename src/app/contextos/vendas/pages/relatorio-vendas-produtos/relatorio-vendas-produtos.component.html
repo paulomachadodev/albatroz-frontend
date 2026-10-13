@@ -115,6 +115,7 @@
           </th>
           <th class="px-6 py-4">Marca</th>
           <th class="px-6 py-4">Fornecedor</th>
+          <th class="px-6 py-4 text-right">Em Estoque</th>
           <th class="px-6 py-4 text-right">
             <app-th-ordenavel campo="quantidadeVendida" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Qtd Vendida</app-th-ordenavel>
           </th>
@@ -130,11 +131,24 @@
       <ng-template #linha let-item>
         <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
           <td class="px-6 py-4">
-            <p class="text-sm font-bold text-slate-900 dark:text-slate-100">{{ item.descricao }}</p>
-            <p class="text-xs text-slate-400">{{ item.sku }}</p>
+            <div class="flex items-center gap-3">
+              @if (item.urlFoto) {
+                <img [src]="item.urlFoto" [alt]="item.descricao"
+                     class="w-10 h-10 object-contain rounded-md bg-slate-50 dark:bg-slate-800 flex-shrink-0"/>
+              } @else {
+                <div class="w-10 h-10 rounded-md bg-slate-100 dark:bg-slate-800 flex-shrink-0 flex items-center justify-center">
+                  <span class="material-symbols-outlined text-slate-300 text-base">image_not_supported</span>
+                </div>
+              }
+              <div>
+                <p class="text-sm font-bold text-slate-900 dark:text-slate-100">{{ item.descricao }}</p>
+                <p class="text-xs text-slate-400">{{ item.sku }}</p>
+              </div>
+            </div>
           </td>
           <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">{{ item.marca ?? '-' }}</td>
           <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">{{ item.fornecedor ?? '-' }}</td>
+          <td class="px-6 py-4 text-right text-sm text-slate-600 dark:text-slate-300">{{ formatarNumero(item.estoqueAtual) }}</td>
           <td class="px-6 py-4 text-right text-sm font-semibold text-slate-900 dark:text-slate-100">{{ formatarNumero(item.quantidadeVendida) }}</td>
           <td class="px-6 py-4 text-right text-sm text-slate-600 dark:text-slate-300">{{ formatarReais(item.valorMedioVenda) }}</td>
           <td class="px-6 py-4 text-right text-sm font-semibold text-slate-900 dark:text-slate-100">{{ formatarReais(item.valorTotalVenda) }}</td>

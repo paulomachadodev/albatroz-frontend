@@ -62,7 +62,7 @@ export class RelatorioVendasProdutosComponent implements OnInit {
       this.filtro.dataInicio = this.formatarDataIso(inicio);
       this.filtro.dataFim = this.formatarDataIso(hoje);
     } else if (preset === 'jan_mar') {
-      const ano = hoje.getMonth() >= 3 ? hoje.getFullYear() : hoje.getFullYear() - 1;
+      const ano = hoje.getFullYear();
       this.filtro.dataInicio = `${ano}-01-01`;
       this.filtro.dataFim = `${ano}-03-31`;
     } else if (preset === 'mes_atual') {

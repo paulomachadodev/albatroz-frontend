@@ -70,20 +70,18 @@ jobs:
 
       - name: Deploy container
         run: |
-          flock -x -w 300 /tmp/albatroz-deploy.lock bash -c '
-            for i in 1 2 3; do
-              docker pull ghcr.io/${{ env.IMAGE_NAME }}:latest && break
-              echo "Pull attempt $i failed, retrying in 15s..."
-              [ $i -lt 3 ] && sleep 15
-            done
-            docker stop albatroz-frontend || true
-            docker rm albatroz-frontend || true
-            docker run -d \
-              --name albatroz-frontend \
-              --restart unless-stopped \
-              -p 8080:80 \
-              ghcr.io/${{ env.IMAGE_NAME }}:latest
-          '
+          for i in 1 2 3; do
+            docker pull ghcr.io/${{ env.IMAGE_NAME }}:latest && break
+            echo "Pull attempt $i failed, retrying in 15s..."
+            [ $i -lt 3 ] && sleep 15
+          done
+          docker stop albatroz-frontend || true
+          docker rm albatroz-frontend || true
+          docker run -d \
+            --name albatroz-frontend \
+            --restart unless-stopped \
+            -p 8080:80 \
+            ghcr.io/${{ env.IMAGE_NAME }}:latest
 
       - name: Verify
         run: docker ps --filter name=albatroz-frontend --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"

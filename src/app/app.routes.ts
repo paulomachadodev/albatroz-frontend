@@ -100,6 +100,11 @@ export const routes: Routes = [
           import('./contextos/vendas/vendas.routes').then(m => m.VENDAS_ROUTES)
       },
       {
+        path: 'fiscal/naturezas-operacao',
+        loadChildren: () =>
+          import('./contextos/fiscal/naturezas-operacao/naturezas-operacao.routes').then(m => m.NATUREZAS_OPERACAO_ROUTES)
+      },
+      {
         path: 'integracoes',
         loadChildren: () =>
           import('./contextos/etl/etl.routes').then(m => m.ETL_ROUTES)

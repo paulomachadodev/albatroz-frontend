@@ -105,6 +105,13 @@ export class SidebarComponent {
       ]
     },
     {
+      titulo: 'Fiscal',
+      icone: 'receipt_long',
+      itens: [
+        { label: 'Naturezas de operação', rota: '/fiscal/naturezas-operacao', icone: 'gavel', permissao: 'configuracoes:ler' }
+      ]
+    },
+    {
       titulo: 'Administração',
       icone: 'admin_panel_settings',
       itens: [

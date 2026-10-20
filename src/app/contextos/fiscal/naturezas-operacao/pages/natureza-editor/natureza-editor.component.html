@@ -1,0 +1,454 @@
+<div class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark px-4 sm:px-6 lg:px-8 xl:px-10 py-6 lg:py-8">
+  <div class="w-full max-w-5xl space-y-6">
+
+    <app-breadcrumb [itens]="[{label:'Início',rota:'/dashboard'},{label:'Fiscal'},{label:'Naturezas de operação',rota:'/fiscal/naturezas-operacao'},{label: id === null ? 'Nova' : 'Editar'}]"></app-breadcrumb>
+
+    <app-page-header [titulo]="id === null ? 'Nova natureza de operação' : (n.descricao || 'Natureza de operação')"
+                     subtitulo="Regras de tributação aplicadas às notas desta operação.">
+      <div acoes class="flex gap-2">
+        @if (id !== null) {
+          <button type="button" (click)="excluir()"
+                  class="px-4 py-2.5 rounded-lg bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 font-bold text-sm hover:bg-red-100 transition-all">
+            Excluir
+          </button>
+        }
+        <button type="button" (click)="voltar()"
+                class="px-4 py-2.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
+          Voltar
+        </button>
+        <button type="button" (click)="salvar()" [disabled]="salvando() || carregando()"
+                class="px-5 py-2.5 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 shadow-lg shadow-primary/20 transition-all">
+          {{ salvando() ? 'Salvando...' : 'Salvar' }}
+        </button>
+      </div>
+    </app-page-header>
+
+    <div class="flex gap-1 overflow-x-auto border-b border-slate-200 dark:border-slate-800">
+      @for (item of abas; track item.id) {
+        <button type="button" (click)="aba.set(item.id)"
+                [disabled]="item.id === 'simulador' && id === null"
+                class="px-4 py-2.5 text-sm font-semibold whitespace-nowrap border-b-2 -mb-px transition-colors disabled:opacity-40"
+                [class.border-primary]="aba() === item.id" [class.text-primary]="aba() === item.id"
+                [class.border-transparent]="aba() !== item.id" [class.text-slate-500]="aba() !== item.id">
+          {{ item.rotulo }}
+        </button>
+      }
+    </div>
+
+    @if (carregando()) {
+      <p class="text-sm text-slate-500">Carregando...</p>
+    } @else {
+
+      @if (aba() === 'geral') {
+        <div class="card p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div class="md:col-span-2">
+            <label class="text-xs font-semibold text-slate-500">Descrição</label>
+            <input type="text" class="input-modern mt-1" [(ngModel)]="n.descricao" maxlength="100" placeholder="Ex.: Venda de mercadorias"/>
+          </div>
+
+          <div>
+            <label class="text-xs font-semibold text-slate-500">Tipo</label>
+            <select class="input-modern mt-1" [(ngModel)]="n.tipo">
+              <option [ngValue]="1">Saída</option>
+              <option [ngValue]="2">Entrada</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="text-xs font-semibold text-slate-500">Finalidade</label>
+            <select class="input-modern mt-1" [(ngModel)]="n.finalidade">
+              <option [ngValue]="1">Normal</option>
+              <option [ngValue]="2">Devolução</option>
+              <option [ngValue]="3">Bonificação</option>
+              <option [ngValue]="4">Remessa</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="text-xs font-semibold text-slate-500">Regime tributário</label>
+            <select class="input-modern mt-1" [(ngModel)]="n.regimeTributario">
+              <option value="mei">MEI</option>
+              <option value="sn">Simples Nacional</option>
+              <option value="sn_excesso">Simples Nacional com excesso de sublimite</option>
+              <option value="lucro_presumido">Lucro Presumido</option>
+              <option value="lucro_real">Lucro Real</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="text-xs font-semibold text-slate-500">Série da nota</label>
+            <input type="text" class="input-modern mt-1" [(ngModel)]="n.serie" maxlength="3"/>
+          </div>
+
+          <div class="md:col-span-2 flex flex-wrap gap-6">
+            <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+              <input type="checkbox" [checked]="marcado('consumidorFinal')" (change)="alternar('consumidorFinal')" class="rounded border-slate-300 text-primary"/>
+              Operação para consumidor final
+            </label>
+            <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+              <input type="checkbox" [checked]="marcado('ativo')" (change)="alternar('ativo')" class="rounded border-slate-300 text-primary"/>
+              Natureza ativa
+            </label>
+          </div>
+
+          <div class="md:col-span-2">
+            <label class="text-xs font-semibold text-slate-500">Usar como padrão para</label>
+            <div class="mt-2 flex flex-wrap gap-6">
+              <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+                <input type="checkbox" [checked]="n.padraoPara === 'venda'" (change)="alternarPadrao('venda')" class="rounded border-slate-300 text-primary"/>
+                Venda com NF-e
+              </label>
+              <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+                <input type="checkbox" [checked]="n.padraoPara === 'nfce'" (change)="alternarPadrao('nfce')" class="rounded border-slate-300 text-primary"/>
+                Venda com NFC-e
+              </label>
+              <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+                <input type="checkbox" [checked]="n.padraoPara === 'compra'" (change)="alternarPadrao('compra')" class="rounded border-slate-300 text-primary"/>
+                Entrada de compra
+              </label>
+            </div>
+            <p class="text-xs text-slate-400 mt-1">Só uma natureza por empresa pode ser a padrão de cada fluxo.</p>
+          </div>
+        </div>
+      }
+
+      @if (aba() === 'icms') {
+        <div class="card p-6 grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div>
+            <label class="text-xs font-semibold text-slate-500">CSOSN (Simples / MEI)</label>
+            <input type="text" class="input-modern mt-1" [(ngModel)]="n.csosn" maxlength="3" placeholder="102"/>
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-slate-500">CST ICMS (regime normal)</label>
+            <input type="text" class="input-modern mt-1" [(ngModel)]="n.cstIcms" maxlength="2" placeholder="00"/>
+          </div>
+          <div class="flex items-end">
+            <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 pb-2">
+              <input type="checkbox" [checked]="marcado('difalNaoContribuinte')" (change)="alternar('difalNaoContribuinte')" class="rounded border-slate-300 text-primary"/>
+              DIFAL para não contribuinte
+            </label>
+          </div>
+
+          <div>
+            <label class="text-xs font-semibold text-slate-500">CFOP dentro do estado</label>
+            <input type="text" class="input-modern mt-1" [(ngModel)]="n.cfopDentroUf" maxlength="4" placeholder="5102"/>
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-slate-500">CFOP para outros estados</label>
+            <input type="text" class="input-modern mt-1" [(ngModel)]="n.cfopForaUf" maxlength="4" placeholder="6102"/>
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-slate-500">CFOP para o exterior</label>
+            <input type="text" class="input-modern mt-1" [(ngModel)]="n.cfopExterior" maxlength="4" placeholder="7102"/>
+          </div>
+        </div>
+      }
+
+      @if (aba() === 'impostos') {
+        <div class="space-y-6">
+          <div class="card p-6 grid grid-cols-1 md:grid-cols-3 gap-5">
+            <h3 class="md:col-span-3 font-semibold">IPI</h3>
+            <div>
+              <label class="text-xs font-semibold text-slate-500">CST</label>
+              <input type="text" class="input-modern mt-1" [(ngModel)]="n.ipiCst" placeholder="ZZ = não destacar"/>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-slate-500">Alíquota (%)</label>
+              <input type="number" class="input-modern mt-1" [(ngModel)]="n.ipiAliquota" min="0" max="100" step="0.01"/>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-slate-500">Código de enquadramento</label>
+              <input type="text" class="input-modern mt-1" [(ngModel)]="n.ipiCodigoEnquadramento"/>
+            </div>
+            <div class="md:col-span-3">
+              <label class="text-xs font-semibold text-slate-500">Observação padrão</label>
+              <textarea rows="2" class="input-modern mt-1" [(ngModel)]="n.ipiObservacao"></textarea>
+            </div>
+          </div>
+
+          <div class="card p-6 grid grid-cols-1 md:grid-cols-3 gap-5">
+            <h3 class="md:col-span-3 font-semibold">PIS</h3>
+            <div>
+              <label class="text-xs font-semibold text-slate-500">CST</label>
+              <input type="text" class="input-modern mt-1" [(ngModel)]="n.pisCst" maxlength="2" placeholder="07"/>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-slate-500">Alíquota (%)</label>
+              <input type="number" class="input-modern mt-1" [(ngModel)]="n.pisAliquota" min="0" max="100" step="0.01"/>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-slate-500">Base de cálculo (%)</label>
+              <input type="number" class="input-modern mt-1" [(ngModel)]="n.pisBaseReducao" min="0" max="100" step="0.01"/>
+            </div>
+            <div class="md:col-span-3">
+              <label class="text-xs font-semibold text-slate-500">Informações ao fisco</label>
+              <textarea rows="2" class="input-modern mt-1" [(ngModel)]="n.pisInformacaoFisco"></textarea>
+            </div>
+          </div>
+
+          <div class="card p-6 grid grid-cols-1 md:grid-cols-3 gap-5">
+            <h3 class="md:col-span-3 font-semibold">COFINS</h3>
+            <div>
+              <label class="text-xs font-semibold text-slate-500">CST</label>
+              <input type="text" class="input-modern mt-1" [(ngModel)]="n.cofinsCst" maxlength="2" placeholder="07"/>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-slate-500">Alíquota (%)</label>
+              <input type="number" class="input-modern mt-1" [(ngModel)]="n.cofinsAliquota" min="0" max="100" step="0.01"/>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-slate-500">Base de cálculo (%)</label>
+              <input type="number" class="input-modern mt-1" [(ngModel)]="n.cofinsBaseReducao" min="0" max="100" step="0.01"/>
+            </div>
+            <div class="md:col-span-3">
+              <label class="text-xs font-semibold text-slate-500">Informações ao fisco</label>
+              <textarea rows="2" class="input-modern mt-1" [(ngModel)]="n.cofinsInformacaoFisco"></textarea>
+            </div>
+          </div>
+
+          <div class="card p-6 grid grid-cols-1 md:grid-cols-3 gap-5">
+            <h3 class="md:col-span-3 font-semibold">ISSQN (serviços)</h3>
+            <div>
+              <label class="text-xs font-semibold text-slate-500">Situação tributária</label>
+              <input type="text" class="input-modern mt-1" [(ngModel)]="n.issqnCst"/>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-slate-500">Alíquota (%)</label>
+              <input type="number" class="input-modern mt-1" [(ngModel)]="n.issqnAliquota" min="0" max="100" step="0.01"/>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-slate-500">Código de enquadramento</label>
+              <input type="text" class="input-modern mt-1" [(ngModel)]="n.issqnCodigoEnquadramento"/>
+            </div>
+          </div>
+
+          <div class="card p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
+            <h3 class="md:col-span-2 font-semibold">IBS / CBS (reforma tributária)</h3>
+            <div>
+              <label class="text-xs font-semibold text-slate-500">CST IBS/CBS</label>
+              <input type="text" class="input-modern mt-1" [(ngModel)]="n.ibsCbsCst" maxlength="3"/>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-slate-500">Classificação tributária (cClassTrib)</label>
+              <input type="text" class="input-modern mt-1" [(ngModel)]="n.ibsCbsClassificacao" maxlength="6"/>
+            </div>
+          </div>
+        </div>
+      }
+
+      @if (aba() === 'excecoes') {
+        <div class="space-y-4">
+          <p class="text-sm text-slate-500">
+            Quando o estado de destino e o NCM do produto combinam com uma exceção, ela substitui a regra geral daquele tributo.
+            Com mais de uma exceção valendo, vence a de maior prioridade e, em empate, a de NCM mais específico.
+          </p>
+
+          @for (excecao of excecoes; track $index) {
+            <div class="card p-5 grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div>
+                <label class="text-xs font-semibold text-slate-500">Tributo</label>
+                <select class="input-modern mt-1" [(ngModel)]="excecao.tributo">
+                  @for (t of tributos; track t.id) {
+                    <option [value]="t.id">{{ t.rotulo }}</option>
+                  }
+                </select>
+              </div>
+              <div>
+                <label class="text-xs font-semibold text-slate-500">Estados de destino</label>
+                <input type="text" class="input-modern mt-1" [(ngModel)]="excecao.ufsTexto" placeholder="SP, MG (vazio = todos)"/>
+              </div>
+              <div class="md:col-span-2">
+                <label class="text-xs font-semibold text-slate-500">NCMs ou prefixos</label>
+                <input type="text" class="input-modern mt-1" [(ngModel)]="excecao.ncmsTexto" placeholder="3926, 48201000 (vazio = todos)"/>
+              </div>
+              <div>
+                <label class="text-xs font-semibold text-slate-500">CFOP</label>
+                <input type="text" class="input-modern mt-1" [(ngModel)]="excecao.cfop" maxlength="4" placeholder="5405"/>
+              </div>
+              <div>
+                <label class="text-xs font-semibold text-slate-500">CSOSN / CST</label>
+                <input type="text" class="input-modern mt-1" [(ngModel)]="excecao.situacaoTributaria" maxlength="3" placeholder="500"/>
+              </div>
+              <div>
+                <label class="text-xs font-semibold text-slate-500">Alíquota (%)</label>
+                <input type="number" class="input-modern mt-1" [(ngModel)]="excecao.aliquota" min="0" max="100" step="0.01"/>
+              </div>
+              <div>
+                <label class="text-xs font-semibold text-slate-500">Redução de base (%)</label>
+                <input type="number" class="input-modern mt-1" [(ngModel)]="excecao.baseReducao" min="0" max="100" step="0.01"/>
+              </div>
+              <div>
+                <label class="text-xs font-semibold text-slate-500">Prioridade</label>
+                <input type="number" class="input-modern mt-1" [(ngModel)]="excecao.prioridade" step="1"/>
+              </div>
+              <div class="md:col-span-3 flex items-end">
+                <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 pb-2">
+                  <input type="checkbox" [checked]="excecao.ativo === 1" (change)="alternarExcecaoAtiva(excecao)" class="rounded border-slate-300 text-primary"/>
+                  Exceção ativa
+                </label>
+              </div>
+              <div class="flex items-end justify-end">
+                <button type="button" (click)="removerExcecao($index)"
+                        class="px-3 py-2 rounded-lg bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 font-bold text-xs hover:bg-red-100 transition-all">
+                  Remover
+                </button>
+              </div>
+            </div>
+          }
+
+          <button type="button" (click)="adicionarExcecao()"
+                  class="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
+            <span class="material-symbols-outlined text-sm">add</span>
+            Adicionar exceção
+          </button>
+        </div>
+      }
+
+      @if (aba() === 'operacional') {
+        <div class="card p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div>
+            <label class="text-xs font-semibold text-slate-500">Preço considerado na nota</label>
+            <select class="input-modern mt-1" [(ngModel)]="n.precoConsiderado">
+              <option [ngValue]="1">Preço de custo</option>
+              <option [ngValue]="2">Preço de venda ou promocional</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-slate-500">Itens compõem o total da nota</label>
+            <select class="input-modern mt-1" [(ngModel)]="n.itensCompoemTotal">
+              <option [ngValue]="1">Compõem o total</option>
+              <option [ngValue]="2">Compõem o total sem gerar faturas no XML</option>
+              <option [ngValue]="3">Não compõem (totais zerados)</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-slate-500">Redução da base do ICMS-ST</label>
+            <select class="input-modern mt-1" [(ngModel)]="n.reducaoBaseIcmsSt">
+              <option [ngValue]="1">Padrão</option>
+              <option [ngValue]="2">Antes de somar o IPI</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-slate-500">Zona Franca de Manaus</label>
+            <select class="input-modern mt-1" [(ngModel)]="n.zonaFrancaManaus">
+              <option [ngValue]="0">Não</option>
+              <option [ngValue]="1">Sim, desoneração em todos os produtos</option>
+              <option [ngValue]="2">Sim, só produtos de origem nacional</option>
+            </select>
+          </div>
+
+          <div class="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+              <input type="checkbox" [checked]="marcado('enviarExpedicao')" (change)="alternar('enviarExpedicao')" class="rounded border-slate-300 text-primary"/>
+              Enviar para expedição
+            </label>
+            <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+              <input type="checkbox" [checked]="marcado('permiteMovimentarEstoque')" (change)="alternar('permiteMovimentarEstoque')" class="rounded border-slate-300 text-primary"/>
+              Permite movimentar e reservar estoque
+            </label>
+            <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+              <input type="checkbox" [checked]="marcado('considerarReceitaDre')" (change)="alternar('considerarReceitaDre')" class="rounded border-slate-300 text-primary"/>
+              Considerar como receita no DRE
+            </label>
+            <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+              <input type="checkbox" [checked]="marcado('considerarCmvDre')" (change)="alternar('considerarCmvDre')" class="rounded border-slate-300 text-primary"/>
+              Considerar no CMV do DRE
+            </label>
+            <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+              <input type="checkbox" [checked]="marcado('descontarDesoneracao')" (change)="alternar('descontarDesoneracao')" class="rounded border-slate-300 text-primary"/>
+              Descontar a desoneração do total
+            </label>
+            <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+              <input type="checkbox" [checked]="marcado('compraProdutorRural')" (change)="alternar('compraProdutorRural')" class="rounded border-slate-300 text-primary"/>
+              Compra de produtor rural
+            </label>
+          </div>
+
+          @if (marcado('compraProdutorRural')) {
+            <div>
+              <label class="text-xs font-semibold text-slate-500">Alíquota do Funrural (%)</label>
+              <input type="number" class="input-modern mt-1" [(ngModel)]="n.aliquotaFunrural" min="0" max="100" step="0.01"/>
+            </div>
+            <div class="flex items-end">
+              <label class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 pb-2">
+                <input type="checkbox" [checked]="marcado('descontarFunrural')" (change)="alternar('descontarFunrural')" class="rounded border-slate-300 text-primary"/>
+                Descontar o Funrural do total faturado
+              </label>
+            </div>
+          }
+
+          <div class="md:col-span-2">
+            <label class="text-xs font-semibold text-slate-500">Observações padrão da nota</label>
+            <textarea rows="3" class="input-modern mt-1" [(ngModel)]="n.observacaoPadrao"></textarea>
+          </div>
+          <div class="md:col-span-2">
+            <label class="text-xs font-semibold text-slate-500">Informações ao fisco</label>
+            <textarea rows="3" class="input-modern mt-1" [(ngModel)]="n.informacaoFisco"></textarea>
+          </div>
+        </div>
+      }
+
+      @if (aba() === 'simulador' && id !== null) {
+        <div class="card p-6 space-y-5">
+          <p class="text-sm text-slate-500">
+            Veja o que esta natureza aplicaria a uma venda para um estado e um NCM. Salve antes para simular com as alterações.
+          </p>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label class="text-xs font-semibold text-slate-500">Estado de destino</label>
+              <select class="input-modern mt-1" [(ngModel)]="ufSimulacao">
+                @for (uf of ufs; track uf) {
+                  <option [value]="uf">{{ uf === 'EX' ? 'Exterior' : uf }}</option>
+                }
+              </select>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-slate-500">NCM do produto</label>
+              <input type="text" class="input-modern mt-1" [(ngModel)]="ncmSimulacao" maxlength="10" placeholder="48201000"/>
+            </div>
+            <div class="flex items-end">
+              <button type="button" (click)="simular()" [disabled]="simulando()"
+                      class="w-full px-4 py-2.5 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all">
+                {{ simulando() ? 'Simulando...' : 'Simular' }}
+              </button>
+            </div>
+          </div>
+
+          @if (resultado(); as r) {
+            <div class="rounded-xl border border-slate-200 dark:border-slate-800 divide-y divide-slate-100 dark:divide-slate-800">
+              <div class="px-4 py-3 flex justify-between text-sm">
+                <span class="text-slate-500">Origem → destino</span>
+                <span class="font-semibold">{{ r.ufOrigem }} → {{ r.ufDestino }}</span>
+              </div>
+              <div class="px-4 py-3 flex justify-between text-sm">
+                <span class="text-slate-500">CFOP</span>
+                <span class="font-semibold">{{ r.cfop ?? '-' }}</span>
+              </div>
+              <div class="px-4 py-3 flex justify-between text-sm">
+                <span class="text-slate-500">ICMS / Simples</span>
+                <span class="font-semibold">{{ formatarTributo(r.icms) }}</span>
+              </div>
+              <div class="px-4 py-3 flex justify-between text-sm">
+                <span class="text-slate-500">IPI</span>
+                <span class="font-semibold">{{ formatarTributo(r.ipi) }}</span>
+              </div>
+              <div class="px-4 py-3 flex justify-between text-sm">
+                <span class="text-slate-500">PIS</span>
+                <span class="font-semibold">{{ formatarTributo(r.pis) }}</span>
+              </div>
+              <div class="px-4 py-3 flex justify-between text-sm">
+                <span class="text-slate-500">COFINS</span>
+                <span class="font-semibold">{{ formatarTributo(r.cofins) }}</span>
+              </div>
+              <div class="px-4 py-3 flex justify-between text-sm">
+                <span class="text-slate-500">ISSQN</span>
+                <span class="font-semibold">{{ formatarTributo(r.issqn) }}</span>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    }
+  </div>
+</div>

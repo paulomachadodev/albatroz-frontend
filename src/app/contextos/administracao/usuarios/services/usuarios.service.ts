@@ -27,6 +27,10 @@ export class UsuariosService {
     return this.api.put<void>(`${this.endpoint}/${id}/perfis`, requisicao);
   }
 
+  reenviarConvite(id: number): Observable<Resultado<void>> {
+    return this.api.post<void>(`${this.endpoint}/${id}/reenviar-convite`, {});
+  }
+
   bloquear(id: number): Observable<Resultado<void>> {
     return this.api.post<void>(`${this.endpoint}/${id}/bloquear`, {});
   }

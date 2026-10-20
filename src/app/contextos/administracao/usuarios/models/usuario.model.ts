@@ -5,6 +5,7 @@ export interface Usuario {
   nomeUsuario?: string;
   situacao: string;
   deveAlterarSenha: boolean;
+  conviteEnviado?: boolean;
   ultimoAcesso?: string;
   perfis: string[];
   criadoEm: string;

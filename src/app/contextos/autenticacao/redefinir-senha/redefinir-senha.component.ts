@@ -26,6 +26,8 @@ export class RedefinirSenhaComponent {
 
   private token = this.route.snapshot.queryParamMap.get('token') ?? '';
 
+  readonly ativacao = this.route.snapshot.data['modo'] === 'ativar';
+
   carregando = signal(false);
   concluido  = signal(false);
   erro       = signal<string | null>(null);
@@ -39,7 +41,7 @@ export class RedefinirSenhaComponent {
     this.erro.set(null);
 
     if (!this.token) {
-      this.erro.set('Link inválido. Solicite uma nova recuperação de senha.');
+      this.erro.set(this.ativacao ? 'Link inválido. Peça um novo convite ao administrador.' : 'Link inválido. Solicite uma nova recuperação de senha.');
       return;
     }
 

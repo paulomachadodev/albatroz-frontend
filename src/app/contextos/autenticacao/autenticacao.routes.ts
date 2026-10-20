@@ -19,5 +19,12 @@ export const AUTENTICACAO_ROUTES: Routes = [
     canActivate: [publicoGuard],
     loadComponent: () =>
       import('./redefinir-senha/redefinir-senha.component').then(m => m.RedefinirSenhaComponent)
+  },
+  {
+    path: 'ativar-conta',
+    canActivate: [publicoGuard],
+    data: { modo: 'ativar' },
+    loadComponent: () =>
+      import('./redefinir-senha/redefinir-senha.component').then(m => m.RedefinirSenhaComponent)
   }
 ];

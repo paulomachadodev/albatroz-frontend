@@ -46,8 +46,6 @@ export class UsuariosListaComponent implements OnInit {
 
   nome = '';
   email = '';
-  nomeUsuario = '';
-  senha = '';
   perfilIdsSelecionados = new Set<number>();
 
   constructor(
@@ -86,8 +84,6 @@ export class UsuariosListaComponent implements OnInit {
     this.usuarioEmEdicao.set(null);
     this.nome = '';
     this.email = '';
-    this.nomeUsuario = '';
-    this.senha = '';
     this.perfilIdsSelecionados = new Set();
     this.drawerAberto.set(true);
   }
@@ -97,8 +93,6 @@ export class UsuariosListaComponent implements OnInit {
     this.usuarioEmEdicao.set(usuario);
     this.nome = usuario.nome;
     this.email = usuario.email;
-    this.nomeUsuario = usuario.nomeUsuario ?? '';
-    this.senha = '';
     this.perfilIdsSelecionados = new Set(
       this.perfisDisponiveis().filter(p => usuario.perfis.includes(p.nome)).map(p => p.id)
     );
@@ -120,21 +114,25 @@ export class UsuariosListaComponent implements OnInit {
   salvar() {
     const nome = this.nome.trim();
     const email = this.email.trim();
-    const nomeUsuario = this.nomeUsuario.trim() || undefined;
     if (!nome || !email) {
       this.toast.erro('Nome e e-mail são obrigatórios.');
       return;
     }
 
     if (this.modoDrawer() === 'criar') {
-      if (!this.senha || this.senha.length < 8) {
-        this.toast.erro('Senha deve ter no mínimo 8 caracteres, com maiúscula, minúscula, número e símbolo.');
+      if (!this.emailValido(email)) {
+        this.toast.erro('Informe um e-mail válido.');
         return;
       }
 
       this.salvando.set(true);
-      this.usuariosService.criar({ nome, email, senha: this.senha, nomeUsuario }).subscribe({
-        next: usuarioCriado => this.aplicarPerfisEFinalizar(usuarioCriado.dados!.id, 'Usuário criado.'),
+      this.usuariosService.criar({ nome, email }).subscribe({
+        next: usuarioCriado => this.aplicarPerfisEFinalizar(
+          usuarioCriado.dados!.id,
+          usuarioCriado.dados!.conviteEnviado === false
+            ? 'Usuário criado, mas o e-mail de ativação não foi enviado. Use Reenviar convite.'
+            : 'Usuário criado. Enviamos um e-mail para ele ativar a conta.'
+        ),
         error: err => {
           this.salvando.set(false);
           this.toast.erroServidor(err, 'Não foi possível criar o usuário.');
@@ -143,8 +141,14 @@ export class UsuariosListaComponent implements OnInit {
       return;
     }
 
+    if (!this.emailValido(email)) {
+      this.toast.erro('Informe um e-mail válido.');
+      return;
+    }
+
     this.salvando.set(true);
     const id = this.usuarioEmEdicao()!.id;
+    const nomeUsuario = this.usuarioEmEdicao()!.nomeUsuario;
     this.usuariosService.atualizar(id, { nome, email, nomeUsuario }).subscribe({
       next: () => this.aplicarPerfisEFinalizar(id, 'Usuário atualizado.'),
       error: err => {
@@ -168,6 +172,17 @@ export class UsuariosListaComponent implements OnInit {
         this.fecharDrawer();
         this.carregar();
       }
+    });
+  }
+
+  emailValido(email: string): boolean {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  }
+
+  reenviarConvite(usuario: Usuario) {
+    this.usuariosService.reenviarConvite(usuario.id).subscribe({
+      next: () => this.toast.sucesso('Convite reenviado para ' + usuario.email + '.'),
+      error: err => this.toast.erroServidor(err, 'Não foi possível reenviar o convite.')
     });
   }
 

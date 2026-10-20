@@ -13,9 +13,9 @@
     </div>
 
     @if (!concluido()) {
-      <h1 class="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">Nova senha</h1>
+      <h1 class="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">{{ ativacao ? 'Ativar conta' : 'Nova senha' }}</h1>
       <p class="text-slate-500 dark:text-slate-400 text-sm mb-6">
-        Escolha uma nova senha para sua conta. Mínimo 8 caracteres, com maiúscula, minúscula, número e símbolo.
+        {{ ativacao ? 'Escolha a senha de acesso da sua conta.' : 'Escolha uma nova senha para sua conta.' }} Mínimo 8 caracteres, com maiúscula, minúscula, número e símbolo.
       </p>
 
       @if (erro()) {
@@ -51,7 +51,7 @@
             <span class="material-symbols-outlined animate-spin">progress_activity</span>
             Salvando...
           } @else {
-            Redefinir senha
+            {{ ativacao ? 'Ativar conta' : 'Redefinir senha' }}
           }
         </button>
 
@@ -66,9 +66,9 @@
                     flex items-center justify-center mb-4">
           <span class="material-symbols-outlined text-3xl">check</span>
         </div>
-        <h1 class="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">Senha redefinida</h1>
+        <h1 class="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">{{ ativacao ? 'Conta ativada' : 'Senha redefinida' }}</h1>
         <p class="text-slate-500 dark:text-slate-400 text-sm mb-6">
-          Sua senha foi alterada. Redirecionando para o login...
+          {{ ativacao ? 'Sua conta está ativa.' : 'Sua senha foi alterada.' }} Redirecionando para o login...
         </p>
       </div>
     }

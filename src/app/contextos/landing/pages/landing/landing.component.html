@@ -1,0 +1,176 @@
+<div class="min-h-screen w-full bg-slate-50 dark:bg-background-dark text-slate-800 dark:text-slate-100">
+
+  <header class="sticky top-0 z-30 backdrop-blur bg-white/80 dark:bg-background-dark/80 border-b border-slate-200 dark:border-slate-800">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      <a routerLink="/" class="flex items-center gap-2">
+        <app-logo-badge />
+        <span class="font-semibold">Albatroz</span>
+      </a>
+
+      <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600 dark:text-slate-300">
+        <button type="button" (click)="rolarPara('recursos')" class="hover:text-primary transition-colors">Recursos</button>
+        <button type="button" (click)="rolarPara('planos')" class="hover:text-primary transition-colors">Planos</button>
+        <button type="button" (click)="rolarPara('perguntas')" class="hover:text-primary transition-colors">Perguntas</button>
+      </nav>
+
+      <a routerLink="/login"
+         class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition-colors">
+        <span class="material-symbols-outlined text-lg">login</span>
+        Entrar
+      </a>
+    </div>
+  </header>
+
+  <section class="relative overflow-hidden">
+    <div class="blob bg-blue-300/40 w-[420px] h-[420px] -top-24 -left-24"></div>
+    <div class="blob bg-indigo-300/40 w-[380px] h-[380px] top-20 right-0" style="animation-delay: -6s;"></div>
+
+    <div class="relative max-w-4xl mx-auto px-4 sm:px-6 py-20 sm:py-28 text-center">
+      <h1 class="text-4xl sm:text-5xl font-bold tracking-tight leading-tight">
+        Gestão completa para lojas<br class="hidden sm:block"/> que querem crescer com controle
+      </h1>
+      <p class="mt-6 text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
+        Compras, estoque, produtos, listas escolares e atendimento em uma única plataforma,
+        integrada ao Tiny e pronta para escalar com o seu negócio.
+      </p>
+      <div class="mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
+        <button type="button" (click)="rolarPara('planos')"
+                class="w-full sm:w-auto px-6 py-3 rounded-xl bg-primary text-white font-semibold hover:bg-primary/90 transition-colors">
+          Ver planos
+        </button>
+        <a routerLink="/login"
+           class="w-full sm:w-auto px-6 py-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+          Já sou cliente
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section id="recursos" class="max-w-6xl mx-auto px-4 sm:px-6 py-16">
+    <div class="text-center mb-12">
+      <h2 class="text-3xl font-bold tracking-tight">Tudo o que a sua loja precisa</h2>
+      <p class="mt-3 text-slate-600 dark:text-slate-400">Ferramentas que conversam entre si, sem planilhas paralelas.</p>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      @for (recurso of recursos; track recurso.titulo) {
+        <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
+          <div class="size-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-4">
+            <span class="material-symbols-outlined">{{ recurso.icone }}</span>
+          </div>
+          <h3 class="font-semibold text-lg">{{ recurso.titulo }}</h3>
+          <p class="mt-2 text-sm text-slate-600 dark:text-slate-400 leading-relaxed">{{ recurso.descricao }}</p>
+        </div>
+      }
+    </div>
+  </section>
+
+  <section id="planos" class="bg-white dark:bg-slate-900/40 border-y border-slate-200 dark:border-slate-800">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-16">
+      <div class="text-center mb-10">
+        <h2 class="text-3xl font-bold tracking-tight">Planos para cada fase da sua loja</h2>
+        <p class="mt-3 text-slate-600 dark:text-slate-400">Valores ilustrativos. A contratação online ainda não está disponível.</p>
+
+        <div class="mt-8 inline-flex p-1 rounded-xl bg-slate-100 dark:bg-slate-800" role="group" aria-label="Período de cobrança">
+          <button type="button" (click)="definirPeriodo('mensal')"
+                  class="px-5 py-2 rounded-lg text-sm font-semibold transition-colors"
+                  [class.bg-white]="periodo() === 'mensal'"
+                  [class.dark:bg-slate-900]="periodo() === 'mensal'"
+                  [class.shadow-sm]="periodo() === 'mensal'"
+                  [class.text-slate-500]="periodo() !== 'mensal'">
+            Mensal
+          </button>
+          <button type="button" (click)="definirPeriodo('anual')"
+                  class="px-5 py-2 rounded-lg text-sm font-semibold transition-colors"
+                  [class.bg-white]="periodo() === 'anual'"
+                  [class.dark:bg-slate-900]="periodo() === 'anual'"
+                  [class.shadow-sm]="periodo() === 'anual'"
+                  [class.text-slate-500]="periodo() !== 'anual'">
+            Anual
+            <span class="ml-1 text-xs font-bold text-emerald-600">-20%</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
+        @for (plano of planosComPreco(); track plano.id) {
+          <div class="relative flex flex-col rounded-2xl p-7 border bg-slate-50 dark:bg-slate-900"
+               [class.border-primary]="plano.destaque"
+               [class.border-2]="plano.destaque"
+               [class.border-slate-200]="!plano.destaque"
+               [class.dark:border-slate-800]="!plano.destaque">
+            @if (plano.destaque) {
+              <span class="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-primary text-white text-xs font-bold">
+                Mais popular
+              </span>
+            }
+
+            <h3 class="text-xl font-bold">{{ plano.nome }}</h3>
+            <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">{{ plano.descricao }}</p>
+
+            <div class="mt-6 flex items-end gap-1">
+              <span class="text-sm font-semibold text-slate-500">R$</span>
+              <span class="text-5xl font-bold tracking-tight">{{ plano.preco }}</span>
+              <span class="text-sm text-slate-500 mb-1">/mês</span>
+            </div>
+            @if (periodo() === 'anual') {
+              <p class="mt-1 text-xs text-slate-500">Cobrança anual com 20% de desconto.</p>
+            }
+
+            <ul class="mt-6 space-y-3 text-sm flex-1">
+              @for (recurso of plano.recursos; track recurso) {
+                <li class="flex items-start gap-2">
+                  <span class="material-symbols-outlined text-emerald-600 text-lg">check_circle</span>
+                  <span>{{ recurso }}</span>
+                </li>
+              }
+            </ul>
+
+            <button type="button" disabled aria-disabled="true"
+                    title="Contratação online em breve"
+                    class="mt-8 w-full py-3 rounded-xl font-semibold bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 cursor-not-allowed">
+              Contratar em breve
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+
+  <section id="perguntas" class="max-w-3xl mx-auto px-4 sm:px-6 py-16">
+    <h2 class="text-3xl font-bold tracking-tight text-center mb-8">Perguntas frequentes</h2>
+    <div class="space-y-3">
+      @for (item of perguntas; track item.pergunta) {
+        <details class="group bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-5">
+          <summary class="cursor-pointer font-semibold list-none flex items-center justify-between">
+            {{ item.pergunta }}
+            <span class="material-symbols-outlined text-slate-400 group-open:rotate-180 transition-transform">expand_more</span>
+          </summary>
+          <p class="mt-3 text-sm text-slate-600 dark:text-slate-400 leading-relaxed">{{ item.resposta }}</p>
+        </details>
+      }
+    </div>
+  </section>
+
+  <section class="bg-gradient-to-br from-primary via-blue-700 to-indigo-900 text-white">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 py-14 text-center">
+      <h2 class="text-3xl font-bold tracking-tight">Já usa o Albatroz?</h2>
+      <p class="mt-3 text-blue-100/90">Acesse o sistema com o código da sua empresa.</p>
+      <a routerLink="/login"
+         class="mt-8 inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white text-primary font-semibold hover:bg-blue-50 transition-colors">
+        <span class="material-symbols-outlined">login</span>
+        Entrar no sistema
+      </a>
+    </div>
+  </section>
+
+  <footer class="border-t border-slate-200 dark:border-slate-800">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-slate-500">
+      <div class="flex items-center gap-2">
+        <app-logo-badge />
+        <span>Albatroz</span>
+      </div>
+      <p>Valores e planos ilustrativos, sujeitos a alteração.</p>
+    </div>
+  </footer>
+</div>

@@ -1,9 +1,15 @@
 import { Routes } from '@angular/router';
-import { authGuard, dashboardAccessGuard } from './core/auth/auth.guard';
+import { authGuard, dashboardAccessGuard, publicoGuard } from './core/auth/auth.guard';
 import { AUTENTICACAO_ROUTES } from './contextos/autenticacao/autenticacao.routes';
 
 export const routes: Routes = [
-  { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
+  {
+    path: '',
+    pathMatch: 'full',
+    canActivate: [publicoGuard],
+    loadComponent: () =>
+      import('./contextos/landing/pages/landing/landing.component').then(m => m.LandingComponent)
+  },
 
   ...AUTENTICACAO_ROUTES,
 

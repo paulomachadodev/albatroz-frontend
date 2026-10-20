@@ -17,7 +17,7 @@ import { ModalComponent } from '../../../../../shared/components/modal/modal.com
 import { CampoHintComponent } from '../../../../../shared/components/campo-hint/campo-hint.component';
 import { BreadcrumbComponent } from '../../../../../shared/components/breadcrumb/breadcrumb.component';
 
-type Aba = 'email' | 'venda' | 'integracoes' | 'busca-imagens' | 'metas' | 'condicoes-comerciais' | 'estoque';
+type Aba = 'email' | 'venda' | 'integracoes' | 'busca-imagens' | 'metas' | 'condicoes-comerciais' | 'estoque' | 'tiny-etl';
 type ModoMeta = 'valor' | 'percentual';
 
 interface RegraMeta {
@@ -113,6 +113,9 @@ export class ConfiguracoesPaginaComponent implements OnInit {
   metaContagemDiaria = 15;
   salvandoMetaContagem = signal(false);
 
+  alertaEmailDestino = '';
+  salvandoAlertaEmail = signal(false);
+
   carregandoCondicoesComerciais = signal(true);
   salvandoCondicoesComerciais = signal(false);
   condicoesComerciaisCadastradas = signal(false);
@@ -191,6 +194,7 @@ export class ConfiguracoesPaginaComponent implements OnInit {
 
         this.processarMetas(configs);
         this.metaContagemDiaria = Number(mapa.get('estoque.meta_contagem_diaria') ?? '15') || 15;
+        this.alertaEmailDestino = mapa.get('alerta_email_destino') ?? '';
 
         this.carregando.set(false);
       },
@@ -384,6 +388,32 @@ export class ConfiguracoesPaginaComponent implements OnInit {
       error: err => {
         this.salvandoMetaContagem.set(false);
         this.toast.erroServidor(err, 'Não foi possível salvar a meta de contagem.');
+      }
+    });
+  }
+
+  emailAlertaValido(): boolean {
+    const email = this.alertaEmailDestino.trim();
+    return email === '' || /^[^s@]+@[^s@]+.[^s@]+$/.test(email);
+  }
+
+  salvarAlertaEmail() {
+    if (!this.emailAlertaValido()) {
+      this.toast.erro('Informe um e-mail válido.');
+      return;
+    }
+
+    this.salvandoAlertaEmail.set(true);
+    const email = this.alertaEmailDestino.trim();
+    this.configuracoesService.atualizar('alerta_email_destino', email === '' ? null : email).subscribe({
+      next: () => {
+        this.salvandoAlertaEmail.set(false);
+        this.toast.sucesso(email === '' ? 'Alertas desativados.' : 'E-mail dos alertas salvo.');
+        this.carregar();
+      },
+      error: err => {
+        this.salvandoAlertaEmail.set(false);
+        this.toast.erroServidor(err, 'Não foi possível salvar o e-mail dos alertas.');
       }
     });
   }

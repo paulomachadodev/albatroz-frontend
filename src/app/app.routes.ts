@@ -76,8 +76,12 @@ export const routes: Routes = [
       },
       {
         path: 'cadastros/empresas',
+        redirectTo: 'configuracoes/dados-empresa'
+      },
+      {
+        path: 'configuracoes/dados-empresa',
         loadChildren: () =>
-          import('./contextos/cadastros/empresas/empresas.routes').then(m => m.EMPRESAS_ROUTES)
+          import('./contextos/administracao/dados-empresa/dados-empresa.routes').then(m => m.DADOS_EMPRESA_ROUTES)
       },
       {
         path: 'whatsapp/atendimentos',

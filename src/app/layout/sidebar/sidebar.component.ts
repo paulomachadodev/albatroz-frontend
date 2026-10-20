@@ -57,8 +57,7 @@ export class SidebarComponent {
         { label: 'Busca preço',  rota: '/produtos/busca-preco', icone: 'qr_code_scanner', permissao: 'produtos:ler' },
         { label: 'Contatos',     rota: '/cadastros/contatos',  icone: 'contacts' },
         { label: 'Escolas',      rota: '/cadastros/escolas',   icone: 'apartment' },
-        { label: 'Séries',       rota: '/cadastros/series',    icone: 'auto_stories' },
-        { label: 'Empresas',     rota: '/cadastros/empresas',  icone: 'business' }
+        { label: 'Séries',       rota: '/cadastros/series',    icone: 'auto_stories' }
       ]
     },
     {
@@ -118,6 +117,7 @@ export class SidebarComponent {
         { label: 'Usuários',     rota: '/usuarios',     icone: 'group', permissao: 'usuarios:ler' },
         { label: 'Perfis',       rota: '/perfis',       icone: 'shield', permissao: 'perfis:ler' },
         { label: 'Relatórios',   rota: '/relatorios',   icone: 'bar_chart', permissao: 'relatorios:ler' },
+        { label: 'Dados da empresa', rota: '/configuracoes/dados-empresa', icone: 'business', permissao: 'configuracoes:ler' },
         { label: 'Configurações',rota: '/configuracoes',icone: 'settings', permissao: 'configuracoes:ler' }
       ]
     },

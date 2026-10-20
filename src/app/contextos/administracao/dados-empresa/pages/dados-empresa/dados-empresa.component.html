@@ -1,0 +1,257 @@
+<div class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark px-4 sm:px-6 lg:px-8 xl:px-10 py-6 lg:py-8">
+  <div class="w-full max-w-5xl space-y-6">
+
+    <app-breadcrumb [itens]="[{label:'Início',rota:'/dashboard'},{label:'Administração'},{label:'Dados da empresa'}]"></app-breadcrumb>
+
+    <app-page-header titulo="Dados da empresa" subtitulo="Informações cadastrais usadas nas notas fiscais, pedidos e propostas.">
+      <button acoes type="button" (click)="salvar()" [disabled]="salvando() || carregando()"
+              class="px-5 py-2.5 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 shadow-lg shadow-primary/20 transition-all">
+        {{ salvando() ? 'Salvando...' : 'Salvar' }}
+      </button>
+    </app-page-header>
+
+    @if (carregando() || !empresa) {
+      <p class="text-sm text-slate-500">Carregando...</p>
+    } @else {
+
+      <div class="card p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
+        <h3 class="md:col-span-2 font-semibold">Identificação</h3>
+
+        <div>
+          <label class="text-xs font-semibold text-slate-500">Razão social</label>
+          <input type="text" class="input-modern mt-1" [(ngModel)]="empresa.razaoSocial" maxlength="200"/>
+        </div>
+        <div>
+          <label class="text-xs font-semibold text-slate-500">Fantasia</label>
+          <input type="text" class="input-modern mt-1" [(ngModel)]="empresa.nome" maxlength="200"/>
+          <p class="text-xs text-slate-400 mt-1">Exibido no topo das telas do sistema.</p>
+        </div>
+
+        <div>
+          <label class="text-xs font-semibold text-slate-500">Segmento de atuação</label>
+          <input type="text" class="input-modern mt-1" [(ngModel)]="empresa.segmento" maxlength="60" placeholder="Ex.: Papelaria"/>
+        </div>
+        <div>
+          <label class="text-xs font-semibold text-slate-500">Tipo da pessoa</label>
+          <select class="input-modern mt-1" [(ngModel)]="empresa.tipoPessoa">
+            <option value="PJ">Pessoa Jurídica</option>
+            <option value="PF">Pessoa Física</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="text-xs font-semibold text-slate-500">CNPJ</label>
+          @if (empresa.cnpj) {
+            <input type="text" class="input-modern mt-1 opacity-70" [value]="cnpjFormatado()" disabled/>
+            <p class="text-xs text-slate-400 mt-1">O CNPJ identifica a empresa no sistema e na integração com o Tiny, por isso não pode ser alterado aqui.</p>
+          } @else {
+            <input type="text" class="input-modern mt-1" [(ngModel)]="empresa.cnpj" maxlength="18" placeholder="00.000.000/0000-00"/>
+          }
+        </div>
+        <div>
+          <label class="text-xs font-semibold text-slate-500">Código de regime tributário</label>
+          <select class="input-modern mt-1" [(ngModel)]="empresa.regimeTributario">
+            @for (regime of regimes; track regime.id) {
+              <option [value]="regime.id">{{ regime.rotulo }}</option>
+            }
+          </select>
+        </div>
+
+        <div>
+          <label class="text-xs font-semibold text-slate-500">Inscrição estadual</label>
+          <input type="text" class="input-modern mt-1" [(ngModel)]="empresa.inscricaoEstadual" maxlength="20"/>
+          <label class="mt-2 flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+            <input type="checkbox" [checked]="marcadoIsento()" (change)="alternarIsento()" class="rounded border-slate-300 text-primary"/>
+            IE isento
+          </label>
+        </div>
+        <div>
+          <label class="text-xs font-semibold text-slate-500">Inscrição municipal</label>
+          <input type="text" class="input-modern mt-1" [(ngModel)]="empresa.inscricaoMunicipal" maxlength="20"/>
+        </div>
+
+        <div>
+          <label class="text-xs font-semibold text-slate-500">Inscrição Suframa</label>
+          <input type="text" class="input-modern mt-1" [(ngModel)]="empresa.inscricaoSuframa" maxlength="15"/>
+        </div>
+        <div>
+          <label class="text-xs font-semibold text-slate-500">CNAE</label>
+          <input type="text" class="input-modern mt-1" [(ngModel)]="empresa.cnae" maxlength="12" placeholder="47.61-0-03"/>
+        </div>
+      </div>
+
+      <div class="card p-6 grid grid-cols-1 md:grid-cols-6 gap-5">
+        <h3 class="md:col-span-6 font-semibold">Endereço</h3>
+
+        <div class="md:col-span-4">
+          <label class="text-xs font-semibold text-slate-500">Endereço</label>
+          <input type="text" class="input-modern mt-1" [(ngModel)]="empresa.logradouro" maxlength="200" placeholder="Ex.: Rua Assis Brasil"/>
+        </div>
+        <div class="md:col-span-2">
+          <label class="text-xs font-semibold text-slate-500">Número</label>
+          <input type="text" class="input-modern mt-1" [(ngModel)]="empresa.numero" maxlength="20"/>
+        </div>
+
+        <div class="md:col-span-3">
+          <label class="text-xs font-semibold text-slate-500">Bairro</label>
+          <input type="text" class="input-modern mt-1" [(ngModel)]="empresa.bairro" maxlength="100"/>
+        </div>
+        <div class="md:col-span-3">
+          <label class="text-xs font-semibold text-slate-500">Complemento</label>
+          <input type="text" class="input-modern mt-1" [(ngModel)]="empresa.complemento" maxlength="100"/>
+        </div>
+
+        <div class="md:col-span-3">
+          <label class="text-xs font-semibold text-slate-500">Cidade</label>
+          <input type="text" class="input-modern mt-1" [(ngModel)]="empresa.cidade" maxlength="100"/>
+        </div>
+        <div class="md:col-span-1">
+          <label class="text-xs font-semibold text-slate-500">UF</label>
+          <select class="input-modern mt-1" [(ngModel)]="empresa.uf">
+            <option [ngValue]="null">-</option>
+            @for (uf of ufs; track uf) {
+              <option [value]="uf">{{ uf }}</option>
+            }
+          </select>
+        </div>
+        <div class="md:col-span-1">
+          <label class="text-xs font-semibold text-slate-500">CEP</label>
+          <input type="text" class="input-modern mt-1" [(ngModel)]="empresa.cep" maxlength="9" placeholder="00000-000"/>
+        </div>
+        <div class="md:col-span-1">
+          <label class="text-xs font-semibold text-slate-500">Cód. IBGE</label>
+          <input type="text" class="input-modern mt-1" [(ngModel)]="empresa.codigoMunicipioIbge" maxlength="7"/>
+        </div>
+      </div>
+
+      <div class="card p-6 grid grid-cols-1 md:grid-cols-3 gap-5">
+        <h3 class="md:col-span-3 font-semibold">Contato da empresa</h3>
+
+        <div>
+          <label class="text-xs font-semibold text-slate-500">Fone</label>
+          <input type="text" class="input-modern mt-1" [(ngModel)]="empresa.telefone" maxlength="20"/>
+        </div>
+        <div>
+          <label class="text-xs font-semibold text-slate-500">Fax</label>
+          <input type="text" class="input-modern mt-1" [(ngModel)]="empresa.fax" maxlength="20"/>
+        </div>
+        <div>
+          <label class="text-xs font-semibold text-slate-500">Celular</label>
+          <input type="text" class="input-modern mt-1" [(ngModel)]="empresa.celular" maxlength="20"/>
+        </div>
+
+        <div class="md:col-span-2">
+          <label class="text-xs font-semibold text-slate-500">E-mail</label>
+          <input type="email" class="input-modern mt-1" [(ngModel)]="empresa.email" maxlength="150"/>
+        </div>
+        <div>
+          <label class="text-xs font-semibold text-slate-500">Website</label>
+          <input type="text" class="input-modern mt-1" [(ngModel)]="empresa.website" maxlength="200" placeholder="www.suaempresa.com.br"/>
+        </div>
+      </div>
+
+      <div class="card p-6 space-y-4">
+        <div class="flex items-center justify-between">
+          <h3 class="font-semibold">Inscrições estaduais dos substitutos tributários</h3>
+          <button type="button" (click)="adicionarSubstituto()"
+                  class="flex items-center gap-1 px-3 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
+            <span class="material-symbols-outlined text-sm">add</span>
+            Adicionar
+          </button>
+        </div>
+
+        @if (substitutos.length === 0) {
+          <p class="text-sm text-slate-500">Nenhuma inscrição cadastrada.</p>
+        }
+
+        @for (substituto of substitutos; track $index) {
+          <div class="grid grid-cols-1 md:grid-cols-6 gap-4 items-end">
+            <div class="md:col-span-1">
+              <label class="text-xs font-semibold text-slate-500">Estado</label>
+              <select class="input-modern mt-1" [(ngModel)]="substituto.uf">
+                <option value="">Selecione</option>
+                @for (uf of ufs; track uf) {
+                  <option [value]="uf">{{ uf }}</option>
+                }
+              </select>
+            </div>
+            <div class="md:col-span-4">
+              <label class="text-xs font-semibold text-slate-500">Inscrição estadual</label>
+              <input type="text" class="input-modern mt-1" [(ngModel)]="substituto.inscricaoEstadual" maxlength="20"/>
+            </div>
+            <div class="md:col-span-1">
+              <button type="button" (click)="removerSubstituto($index)"
+                      class="w-full px-3 py-2.5 rounded-lg bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 font-bold text-xs hover:bg-red-100 transition-all">
+                Remover
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="card p-6 space-y-4">
+        <h3 class="font-semibold">Logo da empresa</h3>
+        <p class="text-sm text-slate-500">O logo é exibido nas notas fiscais, pedidos, propostas e outros documentos. O arquivo não deve ultrapassar 2 MB.</p>
+
+        <div class="flex items-center gap-5">
+          <div class="size-24 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 flex items-center justify-center overflow-hidden">
+            @if (empresa.logoUrl) {
+              <img [src]="empresa.logoUrl" alt="Logo da empresa" class="max-w-full max-h-full object-contain"/>
+            } @else {
+              <span class="material-symbols-outlined text-slate-400 text-3xl">image</span>
+            }
+          </div>
+
+          <label class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all cursor-pointer"
+                 [class.opacity-50]="enviandoLogo()">
+            <span class="material-symbols-outlined text-sm">upload</span>
+            {{ enviandoLogo() ? 'Enviando...' : (empresa.logoUrl ? 'Trocar logo' : 'Enviar logo') }}
+            <input type="file" accept="image/png,image/jpeg,image/webp" class="hidden" [disabled]="enviandoLogo()" (change)="aoEscolherLogo($event)"/>
+          </label>
+        </div>
+      </div>
+
+      <div class="card p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
+        <h3 class="md:col-span-2 font-semibold">Preferências de contato</h3>
+        <p class="md:col-span-2 text-sm text-slate-500 -mt-2">Será a forma de contato preferencial para falarmos com você.</p>
+
+        <div>
+          <label class="text-xs font-semibold text-slate-500">Como deseja ser chamado</label>
+          <input type="text" class="input-modern mt-1" [(ngModel)]="empresa.contatoNomeTratamento" maxlength="100"/>
+        </div>
+        <div>
+          <label class="text-xs font-semibold text-slate-500">Canal de comunicação</label>
+          <select class="input-modern mt-1" [(ngModel)]="empresa.contatoCanal">
+            <option value="email">E-mail</option>
+            <option value="whatsapp">WhatsApp</option>
+            <option value="telefone">Telefone</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="card p-6 grid grid-cols-1 md:grid-cols-3 gap-5">
+        <h3 class="md:col-span-3 font-semibold">Pessoa administradora da empresa</h3>
+
+        <div>
+          <label class="text-xs font-semibold text-slate-500">Nome do sócio administrador</label>
+          <input type="text" class="input-modern mt-1" [(ngModel)]="empresa.adminNome" maxlength="150"/>
+        </div>
+        <div>
+          <label class="text-xs font-semibold text-slate-500">E-mail</label>
+          <input type="email" class="input-modern mt-1" [(ngModel)]="empresa.adminEmail" maxlength="150"/>
+        </div>
+        <div>
+          <label class="text-xs font-semibold text-slate-500">Celular</label>
+          <input type="text" class="input-modern mt-1" [(ngModel)]="empresa.adminCelular" maxlength="20"/>
+        </div>
+      </div>
+
+      <div class="flex justify-end pb-6">
+        <button type="button" (click)="salvar()" [disabled]="salvando()"
+                class="px-6 py-2.5 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 shadow-lg shadow-primary/20 transition-all">
+          {{ salvando() ? 'Salvando...' : 'Salvar' }}
+        </button>
+      </div>
+    }
+  </div>
+</div>

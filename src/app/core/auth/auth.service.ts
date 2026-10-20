@@ -6,7 +6,6 @@ import { environment } from '../../../environments/environment';
 export interface LoginRequisicao {
   identificador: string;
   senha: string;
-  empresaId: number;
 }
 
 export interface UsuarioAutenticado {
@@ -66,14 +65,14 @@ export class AuthService {
   }
 
   login(req: LoginRequisicao): Observable<AutenticacaoResposta> {
-    const body = { identificador: req.identificador, senha: req.senha, empresaId: req.empresaId };
+    const body = { identificador: req.identificador, senha: req.senha };
     return this.http.post<AutenticacaoResposta>(`${this.endpoint}/login`, body).pipe(
       tap(resp => this.persistirSessao(resp))
     );
   }
 
-  esqueciSenha(email: string, empresaId: number): Observable<void> {
-    return this.http.post<void>(`${this.endpoint}/esqueci-senha`, { email, empresaId });
+  esqueciSenha(email: string): Observable<void> {
+    return this.http.post<void>(`${this.endpoint}/esqueci-senha`, { email });
   }
 
   redefinirSenha(token: string, novaSenha: string): Observable<void> {

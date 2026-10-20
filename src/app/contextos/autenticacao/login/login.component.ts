@@ -3,6 +3,7 @@ import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
+import { guardarEmpresaLembrada, lerEmpresaLembrada } from '../../../core/auth/empresa-lembrada';
 import { LogoBadgeComponent } from '../../../shared/components/logo-badge/logo-badge.component';
 
 @Component({
@@ -24,7 +25,7 @@ export class LoginComponent {
   form = this.fb.nonNullable.group({
     email:     ['', [Validators.required]],
     senha:     ['', [Validators.required, Validators.minLength(4)]],
-    empresaId: [1, [Validators.required, Validators.min(1)]],
+    empresaId: this.fb.nonNullable.control<number | null>(lerEmpresaLembrada(), [Validators.required, Validators.min(1)]),
     lembrar:   [true]
   });
 
@@ -42,9 +43,10 @@ export class LoginComponent {
 
     const { email, senha, empresaId } = this.form.getRawValue();
 
-    this.auth.login({ identificador: email, senha, empresaId }).subscribe({
+    this.auth.login({ identificador: email, senha, empresaId: empresaId! }).subscribe({
       next: () => {
         this.carregando.set(false);
+        guardarEmpresaLembrada(empresaId!);
         const ret = new URLSearchParams(window.location.search).get('returnUrl');
         this.router.navigateByUrl(ret ?? '/dashboard');
       },

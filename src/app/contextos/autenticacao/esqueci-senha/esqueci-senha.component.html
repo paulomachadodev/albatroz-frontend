@@ -20,6 +20,18 @@
 
       <form [formGroup]="form" (ngSubmit)="submeter()" class="space-y-5" novalidate>
         <div>
+          <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Código da empresa</label>
+          <div class="input-icon-wrap">
+            <span class="material-symbols-outlined">apartment</span>
+            <input type="number" min="1" class="input-modern" formControlName="empresaId"
+                   placeholder="Ex.: 1" autocomplete="organization" />
+          </div>
+          @if (form.controls.empresaId.touched && form.controls.empresaId.invalid) {
+            <p class="mt-1 text-xs text-rose-600">Informe o código da sua empresa.</p>
+          }
+        </div>
+
+        <div>
           <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">E-mail</label>
           <div class="input-icon-wrap">
             <span class="material-symbols-outlined">mail</span>

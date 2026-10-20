@@ -3,6 +3,7 @@ import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
+import { lerEmpresaLembrada } from '../../../core/auth/empresa-lembrada';
 import { LogoBadgeComponent } from '../../../shared/components/logo-badge/logo-badge.component';
 
 @Component({
@@ -21,7 +22,7 @@ export class EsqueciSenhaComponent {
 
   form = this.fb.nonNullable.group({
     email:     ['', [Validators.required, Validators.email]],
-    empresaId: [1, [Validators.required, Validators.min(1)]]
+    empresaId: this.fb.nonNullable.control<number | null>(lerEmpresaLembrada(), [Validators.required, Validators.min(1)])
   });
 
   submeter(): void {
@@ -33,7 +34,7 @@ export class EsqueciSenhaComponent {
     this.carregando.set(true);
     const { email, empresaId } = this.form.getRawValue();
 
-    this.auth.esqueciSenha(email, empresaId).subscribe({
+    this.auth.esqueciSenha(email, empresaId!).subscribe({
       next: () => {
         this.carregando.set(false);
         this.enviado.set(true);

@@ -7,7 +7,7 @@ import { FormsModule } from '@angular/forms';
 import { ProdutosService } from '../../services/produtos.service';
 import { MarcasService } from '../../services/marcas.service';
 import { ContatosService } from '../../../cadastros/contatos/services/contatos.service';
-import { ProdutoDetalhe, ProdutoFornecedor, ProdutoImagem, ListaPreco, ProdutoEnriquecimento, MarketplaceProduto, ProdutoAnalise } from '../../models/produto.model';
+import { ProdutoDetalhe, ProdutoFornecedor, ProdutoImagem, ListaPreco, ProdutoEnriquecimento, ProdutoTributacao, MarketplaceProduto, ProdutoAnalise } from '../../models/produto.model';
 import { ProdutoEstoqueResposta } from '../../dtos/produto-resposta.dto';
 import { ToastService } from '../../../../core/feedback/toast.service';
 import { ConfirmService } from '../../../../core/feedback/confirm.service';
@@ -22,7 +22,7 @@ import { GraficoBarrasComponent, DatasetGraficoBarras } from '../../../../shared
 import { BreadcrumbComponent } from '../../../../shared/components/breadcrumb/breadcrumb.component';
 import { ThemeService } from '../../../../core/theme/theme.service';
 
-type Aba = 'geral' | 'complementos' | 'web' | 'preco' | 'fornecedores' | 'analise' | 'variacoes' | 'estoque';
+type Aba = 'geral' | 'complementos' | 'web' | 'fiscal' | 'preco' | 'fornecedores' | 'analise' | 'variacoes' | 'estoque';
 type GranularidadeVendas = 'dia' | 'mes' | 'ano';
 type SaidaEscolha = 'cancelar' | 'descartar' | 'salvar';
 
@@ -43,10 +43,6 @@ export class ProdutosDetalheComponent implements OnInit {
   produto = signal<ProdutoDetalhe | null>(null);
   abaAtiva = signal<Aba>('geral');
 
-  // ---- Editar geral: só os campos ERP-owned ficam habilitados; o resto (Tiny) é
-  // sempre somente-leitura. `sujo` cobre os campos de formulário (Complementos +
-  // Web/enriquecimento) — Fornecedores/Preço já salvam de forma imediata por linha,
-  // não entram no dirty-check.
   modoEdicao = signal(false);
   sujo = signal(false);
   modalSairAberto = signal(false);
@@ -68,7 +64,6 @@ export class ProdutosDetalheComponent implements OnInit {
   salvandoOrdem = signal(false);
   slotArrastadoSobre = signal<number | null>(null);
 
-  // ---- Fornecedores (produto_fornecedor_erp) ----
   salvandoFornecedorCodigo = signal<number | null>(null);
   removendoFornecedor = signal<number | null>(null);
   definindoPrincipal = signal<number | null>(null);
@@ -79,11 +74,9 @@ export class ProdutosDetalheComponent implements OnInit {
   adicionandoFornecedor = signal(false);
   buscarFornecedores = (termo: string) => this.contatosService.buscar(termo, 'Fornecedor');
 
-  // ---- Preço (listas — só leitura aqui; gestão fica em Configurações > Venda) ----
   listasPreco = signal<ListaPreco[]>([]);
   carregandoListas = signal(false);
 
-  // ---- Web / enriquecimento ----
   enriquecimento = signal<ProdutoEnriquecimento | null>(null);
   carregandoEnriquecimento = signal(false);
   salvandoEnriquecimento = signal(false);
@@ -95,12 +88,23 @@ export class ProdutosDetalheComponent implements OnInit {
   categoriaGoogleSelecionada = signal<OpcaoSelectBusca | null>(null);
   buscarCategoriasGoogle = (termo: string) => this.produtosService.buscarCategoriasGoogle(termo);
 
-  // ---- Marketplaces (Google/Meta/Site) — ação imediata, não entra no dirty-check ----
   marketplaces = signal<MarketplaceProduto[]>([]);
   carregandoMarketplaces = signal(false);
   alterandoMarketplace = signal<string | null>(null);
 
-  // ---- Análise ----
+  tributacao = signal<ProdutoTributacao | null>(null);
+  carregandoTributacao = signal(false);
+  salvandoTributacao = signal(false);
+  tribCsosn = '';
+  tribCstIcms = '';
+  tribAliquotaIcms: number | null = null;
+  tribCstPis = '';
+  tribAliquotaPis: number | null = null;
+  tribCstCofins = '';
+  tribAliquotaCofins: number | null = null;
+  tribCfop = '';
+  tribCodigoBeneficio = '';
+
   analise = signal<ProdutoAnalise | null>(null);
   carregandoAnalise = signal(false);
   granularidadeVendas = signal<GranularidadeVendas>('mes');
@@ -123,10 +127,6 @@ export class ProdutosDetalheComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    // Rota é a mesma (":id") pra qualquer produto — Angular reaproveita a instância do
-    // componente ao navegar entre eles (ex.: clicar numa variação/componente de kit),
-    // então precisa reagir a paramMap (não só ler snapshot uma vez), senão a tela trava
-    // mostrando os dados do produto anterior mesmo com a URL já trocada.
     this.route.paramMap.subscribe(params => {
       this.idProduto = Number(params.get('id'));
       this.resetarEstadoNavegacao();
@@ -137,9 +137,6 @@ export class ProdutosDetalheComponent implements OnInit {
     });
   }
 
-  // Quando aberto a partir do relatório de Compras, "Voltar" retorna pra lá (o
-  // filtro/página ficam preservados em ComprasService.estadoLista) em vez da
-  // listagem geral de produtos.
   private origemCompras = false;
 
   private resetarEstadoNavegacao() {
@@ -150,6 +147,7 @@ export class ProdutosDetalheComponent implements OnInit {
     this.listasPreco.set([]);
     this.enriquecimento.set(null);
     this.marketplaces.set([]);
+    this.tributacao.set(null);
     this.analise.set(null);
   }
 
@@ -173,6 +171,7 @@ export class ProdutosDetalheComponent implements OnInit {
         if (this.abaAtiva() === 'estoque' && !this.estoque()) this.carregarEstoque();
         if (this.abaAtiva() === 'preco' && this.listasPreco().length === 0) this.carregarListasPreco();
         if (this.abaAtiva() === 'web' && !this.enriquecimento()) { this.carregarEnriquecimento(); this.carregarMarketplaces(); }
+        if (this.abaAtiva() === 'fiscal' && !this.tributacao()) this.carregarTributacao();
 
         this.carregando.set(false);
       },
@@ -193,9 +192,6 @@ export class ProdutosDetalheComponent implements OnInit {
       error: err => this.toast.erroServidor(err, 'Não foi possível atualizar o produto.')
     });
 
-    // Qualquer alteração no produto (preço, GTIN, categoria Google, imagem, situação) pode
-    // mudar a elegibilidade pra marketplace/site — reavalia sempre que a aba já foi aberta
-    // alguma vez nessa sessão (marketplaces() vazio = nunca carregou, nada a refrescar).
     if (this.marketplaces().length > 0) this.carregarMarketplaces();
   }
 
@@ -204,10 +200,9 @@ export class ProdutosDetalheComponent implements OnInit {
     this.router.navigate([], { relativeTo: this.route, queryParams: { aba }, queryParamsHandling: 'merge', replaceUrl: true });
     if (aba === 'preco' && this.listasPreco().length === 0) this.carregarListasPreco();
     if (aba === 'web' && !this.enriquecimento()) { this.carregarEnriquecimento(); this.carregarMarketplaces(); }
+    if (aba === 'fiscal' && !this.tributacao()) this.carregarTributacao();
     if (aba === 'analise' && !this.analise()) this.carregarAnalise();
   }
-
-  // ---- Editar geral + dirty-check de saída ----
 
   ativarEdicao() {
     this.modoEdicao.set(true);
@@ -253,7 +248,8 @@ export class ProdutosDetalheComponent implements OnInit {
     const okDados = await this.salvarDadosErpAsync();
     const okEnriquecimento = await this.salvarEnriquecimentoAsync();
     const okFornecedores = await this.salvarCodigosFornecedorAsync();
-    if (okDados && okEnriquecimento && okFornecedores) {
+    const okTributacao = await this.salvarTributacaoAsync();
+    if (okDados && okEnriquecimento && okFornecedores && okTributacao) {
       this.sujo.set(false);
       this.modoEdicao.set(false);
       this.toast.sucesso('Alterações salvas.');
@@ -273,8 +269,6 @@ export class ProdutosDetalheComponent implements OnInit {
     return mapa[situacao] ?? situacao;
   }
 
-  // ---- Aba Complementos ----
-
   private salvarDadosErpAsync(): Promise<boolean> {
     return new Promise(resolve => {
       this.salvandoDadosErp.set(true);
@@ -289,8 +283,6 @@ export class ProdutosDetalheComponent implements OnInit {
     });
   }
 
-
-  // ---- Aba Web — Imagens ----
 
   imagemNoSlot(slot: number): ProdutoImagem | null {
     return this.produto()?.imagens?.find(i => i.indice === slot + 1) ?? null;
@@ -408,8 +400,6 @@ export class ProdutosDetalheComponent implements OnInit {
     });
   }
 
-  // Sempre vai pro próximo slot livre — sem seletor de posição, mesmo comportamento do
-  // drag-and-drop de arquivo. Backend baixa a URL, converte pra WebP e sobe pro R2.
   enviarPorUrl() {
     const url = this.urlImagem.trim();
     if (!url) return;
@@ -548,8 +538,6 @@ export class ProdutosDetalheComponent implements OnInit {
     });
   }
 
-  // ---- Aba Web — Enriquecimento (SEO/Google/Tags) ----
-
   carregarEnriquecimento() {
     this.carregandoEnriquecimento.set(true);
     this.produtosService.obterEnriquecimento(this.idProduto).subscribe({
@@ -673,7 +661,55 @@ export class ProdutosDetalheComponent implements OnInit {
     });
   }
 
-  // ---- Aba Análise ----
+  carregarTributacao() {
+    this.carregandoTributacao.set(true);
+    this.produtosService.obterTributacao(this.idProduto).subscribe({
+      next: res => {
+        const t = res.dados ?? null;
+        this.tributacao.set(t);
+        this.tribCsosn = t?.tribCsosn ?? '';
+        this.tribCstIcms = t?.tribCstIcms ?? '';
+        this.tribAliquotaIcms = t?.tribAliquotaIcms ?? null;
+        this.tribCstPis = t?.tribCstPis ?? '';
+        this.tribAliquotaPis = t?.tribAliquotaPis ?? null;
+        this.tribCstCofins = t?.tribCstCofins ?? '';
+        this.tribAliquotaCofins = t?.tribAliquotaCofins ?? null;
+        this.tribCfop = t?.tribCfop ?? '';
+        this.tribCodigoBeneficio = t?.tribCodigoBeneficio ?? '';
+        this.carregandoTributacao.set(false);
+      },
+      error: err => {
+        this.carregandoTributacao.set(false);
+        this.toast.erroServidor(err, 'Não foi possível carregar os dados fiscais.');
+      }
+    });
+  }
+
+  private salvarTributacaoAsync(): Promise<boolean> {
+    if (this.abaAtiva() !== 'fiscal' && !this.tributacao()) return Promise.resolve(true);
+
+    return new Promise(resolve => {
+      this.salvandoTributacao.set(true);
+      this.produtosService.atualizarTributacao(this.idProduto, {
+        tribCsosn: this.tribCsosn.trim() || null,
+        tribCstIcms: this.tribCstIcms.trim() || null,
+        tribAliquotaIcms: this.tribAliquotaIcms,
+        tribCstPis: this.tribCstPis.trim() || null,
+        tribAliquotaPis: this.tribAliquotaPis,
+        tribCstCofins: this.tribCstCofins.trim() || null,
+        tribAliquotaCofins: this.tribAliquotaCofins,
+        tribCfop: this.tribCfop.trim() || null,
+        tribCodigoBeneficio: this.tribCodigoBeneficio.trim() || null
+      }).subscribe({
+        next: () => { this.salvandoTributacao.set(false); resolve(true); },
+        error: err => {
+          this.salvandoTributacao.set(false);
+          this.toast.erroServidor(err, 'Não foi possível salvar os dados fiscais.');
+          resolve(false);
+        }
+      });
+    });
+  }
 
   carregarAnalise() {
     this.carregandoAnalise.set(true);
@@ -750,8 +786,6 @@ export class ProdutosDetalheComponent implements OnInit {
     return `R$${Math.round(valor)}`;
   }
 
-  // ---- Aba Preço ----
-
   carregarListasPreco() {
     this.carregandoListas.set(true);
     this.produtosService.listarListasPreco().subscribe({
@@ -763,8 +797,6 @@ export class ProdutosDetalheComponent implements OnInit {
   precoPorLista(idLista: number) {
     return this.produto()?.precos.find(p => p.idLista === idLista) ?? null;
   }
-
-  // ---- Aba Estoque ----
 
   abrirAbaEstoque() {
     this.trocarAba('estoque');
@@ -801,8 +833,6 @@ export class ProdutosDetalheComponent implements OnInit {
     return origem ? (mapa[origem] ?? origem) : '-';
   }
 
-  // ---- Aba Fornecedores (produto_fornecedor_erp) ----
-
   aoSelecionarNovoFornecedor(opcao: OpcaoSelectBusca | null) {
     this.novoFornecedorSelecionado.set(opcao);
   }
@@ -827,8 +857,6 @@ export class ProdutosDetalheComponent implements OnInit {
     });
   }
 
-  // Código no fornecedor é campo de formulário (não ação de lista) — entra no
-  // dirty-check e só grava junto com o resto no "Concluir edição" (salvarTudo).
   private codigosFornecedorPendentes = new Set<number>();
 
   aoMudarCodigoFornecedor(idFornecedorErp: number) {

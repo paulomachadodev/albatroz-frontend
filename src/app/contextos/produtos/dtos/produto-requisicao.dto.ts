@@ -31,6 +31,18 @@ export interface AtualizarListaPrecoRequisicao {
   ativo: boolean;
 }
 
+export interface AtualizarTributacaoProdutoRequisicao {
+  tribCsosn: string | null;
+  tribCstIcms: string | null;
+  tribAliquotaIcms: number | null;
+  tribCstPis: string | null;
+  tribAliquotaPis: number | null;
+  tribCstCofins: string | null;
+  tribAliquotaCofins: number | null;
+  tribCfop: string | null;
+  tribCodigoBeneficio: string | null;
+}
+
 export interface AtualizarEnriquecimentoProdutoRequisicao {
   seoTitle: string | null;
   seoDescription: string | null;

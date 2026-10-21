@@ -168,6 +168,18 @@ export interface ProdutoEnriquecimento {
   enriquecidoEm?: string;
 }
 
+export interface ProdutoTributacao {
+  tribCsosn?: string | null;
+  tribCstIcms?: string | null;
+  tribAliquotaIcms?: number | null;
+  tribCstPis?: string | null;
+  tribAliquotaPis?: number | null;
+  tribCstCofins?: string | null;
+  tribAliquotaCofins?: number | null;
+  tribCfop?: string | null;
+  tribCodigoBeneficio?: string | null;
+}
+
 export interface ProdutoVariacao {
   id: number;
   codigo: string;

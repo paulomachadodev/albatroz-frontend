@@ -5,7 +5,7 @@ import { ApiService } from '../../../core/http/api.service';
 import { OpcaoSelectBusca } from '../../../shared/components/select-busca/select-busca.component';
 import { Resultado, Paginacao } from '../../../core/models';
 import { ParametrosPaginacao } from '../../../core/models/paginacao.model';
-import { ProdutoDetalhe, ProdutoResumo, ProdutoTipo, ListaPreco, ProdutoEnriquecimento, MarketplaceProduto, ProdutoAnalise, ImagemCandidata } from '../models/produto.model';
+import { ProdutoDetalhe, ProdutoResumo, ProdutoTipo, ListaPreco, ProdutoEnriquecimento, ProdutoTributacao, MarketplaceProduto, ProdutoAnalise, ImagemCandidata } from '../models/produto.model';
 import {
   ProdutoDadosErpRequisicao,
   ProdutoImagensReordenarRequisicao,
@@ -13,7 +13,8 @@ import {
   AtualizarFornecedorProdutoRequisicao,
   CriarListaPrecoRequisicao,
   AtualizarListaPrecoRequisicao,
-  AtualizarEnriquecimentoProdutoRequisicao
+  AtualizarEnriquecimentoProdutoRequisicao,
+  AtualizarTributacaoProdutoRequisicao
 } from '../dtos/produto-requisicao.dto';
 import {
   ProdutoImagemUploadResposta, ProdutoImportarImagensResposta, ProdutoEstoqueResposta,
@@ -170,6 +171,14 @@ export class ProdutosService {
 
   reenriquecer(id: number): Observable<Resultado<void>> {
     return this.api.post<void>(`${this.endpoint}/${id}/reenriquecer`, {});
+  }
+
+  obterTributacao(id: number): Observable<Resultado<ProdutoTributacao>> {
+    return this.api.get<ProdutoTributacao>(`${this.endpoint}/${id}/tributacao`);
+  }
+
+  atualizarTributacao(id: number, requisicao: AtualizarTributacaoProdutoRequisicao): Observable<Resultado<void>> {
+    return this.api.put<void>(`${this.endpoint}/${id}/tributacao`, requisicao);
   }
 
   buscarCategoriasGoogle(termo: string): Observable<OpcaoSelectBusca[]> {

@@ -77,7 +77,9 @@ export class SidebarComponent {
           subItens: [
             { label: 'Relatório', rota: '/compras', icone: 'trending_up', permissao: 'produtos:ler' },
             { label: 'Fornecedores', rota: '/compras/fornecedores', icone: 'storefront', permissao: 'produtos:ler' },
-            { label: 'Pedidos', rota: '/compras/pedidos', icone: 'receipt_long', permissao: 'produtos:ler' }
+            { label: 'Pedidos', rota: '/compras/pedidos', icone: 'receipt_long', permissao: 'produtos:ler' },
+            { label: 'Entrada de Notas', rota: '/compras/notas-entrada', icone: 'inventory', permissao: 'produtos:ler' },
+            { label: 'CT-e', rota: '/compras/ctes', icone: 'local_shipping', permissao: 'produtos:ler' }
           ]
         },
         {

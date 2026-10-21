@@ -1,0 +1,151 @@
+<div class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark px-4 sm:px-6 lg:px-8 xl:px-10 py-6 lg:py-8">
+  <div class="w-full space-y-8">
+
+    <app-breadcrumb [itens]="[{label:'Início',rota:'/dashboard'},{label:'Compras'},{label:'CT-e'}]"></app-breadcrumb>
+
+    <app-page-header titulo="CT-e" subtitulo="Conhecimentos de Transporte Eletrônico para rateio de frete nas entradas de nota.">
+      <div acoes class="flex gap-2">
+        <button (click)="abrirModalManual()"
+                class="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
+          <span class="material-symbols-outlined text-base">add</span>
+          Criar Manual
+        </button>
+        <label class="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 cursor-pointer transition-all">
+          <span class="material-symbols-outlined text-base">upload_file</span>
+          @if (importando()) { Importando... } @else { Importar XML }
+          <input type="file" accept=".xml" class="hidden" [disabled]="importando()" (change)="aoSelecionarArquivo($event)"/>
+        </label>
+      </div>
+    </app-page-header>
+
+    <app-listagem-paginada
+      [itens]="itens()"
+      [carregando]="carregando()"
+      [totalRegistros]="totalRegistros()"
+      [paginaAtual]="paginaAtual()"
+      [totalPaginas]="totalPaginas()"
+      [tamanhoPagina]="tamanhoPagina()"
+      tituloVazio="Nenhum CT-e encontrado"
+      (paginaMudou)="aoMudarPagina($event)"
+      (tamanhoPaginaMudou)="aoMudarTamanhoPagina($event)">
+
+      <div filtros class="flex flex-wrap gap-4">
+        <div class="w-48">
+          <label class="text-xs font-semibold text-slate-500">Status</label>
+          <select [(ngModel)]="filtroStatus" (change)="carregar(1)"
+                  class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none">
+            <option [ngValue]="undefined">Todos</option>
+            <option [ngValue]="1">Rascunho</option>
+            <option [ngValue]="2">Vinculado</option>
+            <option [ngValue]="3">Confirmado</option>
+            <option [ngValue]="4">Cancelado</option>
+          </select>
+        </div>
+      </div>
+
+      <table grid class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-slate-200 dark:border-slate-700 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">
+            <th class="py-3 pr-4">Número/Série</th>
+            <th class="py-3 pr-4">Transportadora</th>
+            <th class="py-3 pr-4">Emissão</th>
+            <th class="py-3 pr-4">Modalidade</th>
+            <th class="py-3 pr-4 text-right">Valor Frete</th>
+            <th class="py-3 pr-4 text-center">Notas</th>
+            <th class="py-3 pr-4 text-center">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (cte of itens(); track cte.id) {
+            <tr (click)="abrirCte(cte.id)"
+                class="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer transition-colors">
+              <td class="py-3 pr-4 font-mono text-xs text-slate-600 dark:text-slate-300">
+                {{ cte.numeroCte ?? '—' }}@if (cte.serie) {/{{ cte.serie }}}
+              </td>
+              <td class="py-3 pr-4 font-medium text-slate-800 dark:text-slate-100">
+                {{ cte.nomeTransportadora ?? '—' }}
+              </td>
+              <td class="py-3 pr-4 text-slate-500">{{ formatarData(cte.dataEmissao) }}</td>
+              <td class="py-3 pr-4 text-slate-500 capitalize">{{ cte.tipoFrete }}</td>
+              <td class="py-3 pr-4 text-right font-semibold text-slate-700 dark:text-slate-200">
+                {{ formatarReais(cte.valorTotal) }}
+              </td>
+              <td class="py-3 pr-4 text-center text-slate-500">{{ cte.totalNotasVinculadas }}</td>
+              <td class="py-3 pr-4 text-center">
+                <span class="inline-block px-2 py-0.5 rounded-full text-xs font-semibold {{ classeStatus(cte.status) }}">
+                  {{ rotuloStatus(cte.status) }}
+                </span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+
+    </app-listagem-paginada>
+
+  </div>
+</div>
+
+<app-modal [aberto]="modalManualAberto()" titulo="Criar CT-e Manual" (fechar)="fecharModalManual()">
+  <div class="space-y-4 min-w-80">
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="text-sm font-semibold text-slate-700 dark:text-slate-200">Número CT-e</label>
+        <input type="text" [(ngModel)]="formManual.numeroCte"
+               class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+               placeholder="Opcional"/>
+      </div>
+      <div>
+        <label class="text-sm font-semibold text-slate-700 dark:text-slate-200">Série</label>
+        <input type="text" [(ngModel)]="formManual.serie"
+               class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+               placeholder="Opcional"/>
+      </div>
+    </div>
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="text-sm font-semibold text-slate-700 dark:text-slate-200">Data Emissão</label>
+        <input type="date" [(ngModel)]="formManual.dataEmissao"
+               class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+      </div>
+      <div>
+        <label class="text-sm font-semibold text-slate-700 dark:text-slate-200">Modalidade</label>
+        <select [(ngModel)]="formManual.modalidade"
+                class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none">
+          <option value="rodoviario">Rodoviário</option>
+          <option value="aereo">Aéreo</option>
+          <option value="aquaviario">Aquaviário</option>
+          <option value="ferroviario">Ferroviário</option>
+        </select>
+      </div>
+    </div>
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="text-sm font-semibold text-slate-700 dark:text-slate-200">Valor Frete (R$) *</label>
+        <input type="number" [(ngModel)]="formManual.valorFrete" min="0" step="0.01"
+               class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+               placeholder="0,00"/>
+      </div>
+      <div>
+        <label class="text-sm font-semibold text-slate-700 dark:text-slate-200">Método Rateio</label>
+        <select [(ngModel)]="formManual.metodoRateio"
+                class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none">
+          <option value="valor">Por Valor</option>
+          <option value="peso">Por Peso</option>
+          <option value="quantidade">Por Quantidade</option>
+          <option value="igualitario">Igualitário</option>
+        </select>
+      </div>
+    </div>
+    <div class="flex gap-2 justify-end pt-2">
+      <button (click)="fecharModalManual()"
+              class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
+        Cancelar
+      </button>
+      <button (click)="salvarManual()" [disabled]="salvandoManual()"
+              class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all">
+        {{ salvandoManual() ? 'Criando...' : 'Criar CT-e' }}
+      </button>
+    </div>
+  </div>
+</app-modal>

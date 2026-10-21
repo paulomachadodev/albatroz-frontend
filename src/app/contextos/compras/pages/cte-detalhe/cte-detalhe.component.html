@@ -1,0 +1,192 @@
+<div class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark px-4 sm:px-6 lg:px-8 xl:px-10 py-6 lg:py-8">
+  <div class="w-full space-y-6">
+
+    <app-breadcrumb [itens]="[{label:'Início',rota:'/dashboard'},{label:'Compras'},{label:'CT-e',rota:'/compras/ctes'},{label:'Detalhe'}]"></app-breadcrumb>
+
+    @if (carregando()) {
+      <div class="flex items-center justify-center py-16">
+        <span class="material-symbols-outlined animate-spin text-4xl text-primary">progress_activity</span>
+      </div>
+    }
+
+    @if (!carregando() && cte()) {
+      @let c = cte()!;
+
+      <app-page-header [titulo]="'CT-e ' + (c.numeroCte ?? '—')" [subtitulo]="c.nomeTransportadora ?? 'Transportadora não informada'">
+        <div acoes class="flex gap-2 flex-wrap">
+          @if (c.status !== 3 && c.status !== 4) {
+            <button (click)="abrirModalVincular()"
+                    class="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
+              <span class="material-symbols-outlined text-base">link</span>
+              Vincular Nota
+            </button>
+          }
+          @if (c.notas.length > 0) {
+            <button (click)="abrirPreview()"
+                    class="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
+              <span class="material-symbols-outlined text-base">preview</span>
+              Preview Rateio
+            </button>
+          }
+          @if (podeConfirmar()) {
+            <button (click)="confirmar()" [disabled]="confirmando()"
+                    class="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all">
+              <span class="material-symbols-outlined text-base">check_circle</span>
+              {{ confirmando() ? 'Confirmando...' : 'Confirmar CT-e' }}
+            </button>
+          }
+        </div>
+      </app-page-header>
+
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+        <div class="bg-white dark:bg-slate-900 rounded-xl p-4 border border-slate-200 dark:border-slate-700">
+          <p class="text-xs text-slate-500 mb-1">Status</p>
+          <span class="inline-block px-2 py-0.5 rounded-full text-xs font-semibold {{ classeStatus(c.status) }}">{{ rotuloStatus(c.status) }}</span>
+        </div>
+        <div class="bg-white dark:bg-slate-900 rounded-xl p-4 border border-slate-200 dark:border-slate-700">
+          <p class="text-xs text-slate-500 mb-1">Emissão</p>
+          <p class="font-semibold text-sm text-slate-800 dark:text-slate-100">{{ formatarData(c.dataEmissao) }}</p>
+        </div>
+        <div class="bg-white dark:bg-slate-900 rounded-xl p-4 border border-slate-200 dark:border-slate-700">
+          <p class="text-xs text-slate-500 mb-1">Modalidade</p>
+          <p class="font-semibold text-sm text-slate-800 dark:text-slate-100 capitalize">{{ c.modalidade ?? '-' }}</p>
+        </div>
+        <div class="bg-white dark:bg-slate-900 rounded-xl p-4 border border-slate-200 dark:border-slate-700">
+          <p class="text-xs text-slate-500 mb-1">Valor Frete</p>
+          <p class="font-semibold text-sm text-slate-800 dark:text-slate-100">{{ formatarReais(c.valorFrete) }}</p>
+        </div>
+        <div class="bg-white dark:bg-slate-900 rounded-xl p-4 border border-slate-200 dark:border-slate-700">
+          <p class="text-xs text-slate-500 mb-1">Método Rateio</p>
+          <p class="font-semibold text-sm text-slate-800 dark:text-slate-100 capitalize">{{ c.metodoRateio }}</p>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+          <h2 class="text-sm font-bold text-slate-700 dark:text-slate-200">Notas Vinculadas ({{ c.notas.length }})</h2>
+        </div>
+        @if (c.notas.length === 0) {
+          <div class="py-12 text-center text-slate-400 text-sm">
+            Nenhuma nota vinculada ainda. Use o botão "Vincular Nota" para adicionar.
+          </div>
+        } @else {
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead class="bg-slate-50 dark:bg-slate-800/50">
+                <tr class="border-b border-slate-200 dark:border-slate-700 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                  <th class="px-6 py-3">Número NF-e</th>
+                  <th class="px-6 py-3">Fornecedor</th>
+                  <th class="px-6 py-3 text-right">Valor NF-e</th>
+                  <th class="px-6 py-3 text-center">Status</th>
+                  <th class="px-6 py-3"></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (nota of c.notas; track nota.idNotaEntrada) {
+                  <tr class="border-b border-slate-100 dark:border-slate-800">
+                    <td class="px-6 py-3 font-mono text-xs text-slate-600 dark:text-slate-300">{{ nota.numeroNota ?? '—' }}</td>
+                    <td class="px-6 py-3 text-slate-700 dark:text-slate-200">{{ nota.nomeFornecedor ?? '—' }}</td>
+                    <td class="px-6 py-3 text-right font-semibold text-slate-700 dark:text-slate-200">{{ formatarReais(nota.valorTotal) }}</td>
+                    <td class="px-6 py-3 text-center">
+                      <span class="inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                        {{ rotuloStatusNota(nota.status) }}
+                      </span>
+                    </td>
+                    <td class="px-6 py-3 text-right">
+                      @if (c.status !== 3 && c.status !== 4) {
+                        <button (click)="desvincularNota(nota)" [disabled]="desvinculando() === nota.idNotaEntrada"
+                                class="text-xs text-red-500 hover:text-red-700 font-semibold disabled:opacity-50 transition-colors">
+                          {{ desvinculando() === nota.idNotaEntrada ? 'Removendo...' : 'Desvincular' }}
+                        </button>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+
+      @if (c.chaveAcesso) {
+        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-4">
+          <p class="text-xs font-semibold text-slate-500 mb-1">Chave de Acesso</p>
+          <p class="font-mono text-xs text-slate-500 break-all">{{ c.chaveAcesso }}</p>
+        </div>
+      }
+
+    }
+
+    @if (!carregando() && !cte()) {
+      <div class="text-center py-16 text-slate-500">CT-e não encontrado.</div>
+    }
+
+  </div>
+</div>
+
+<app-modal [aberto]="modalVincularAberto()" titulo="Vincular Nota de Entrada" (fechar)="fecharModalVincular()">
+  <div class="space-y-4 min-w-72">
+    <div>
+      <label class="text-sm font-semibold text-slate-700 dark:text-slate-200">ID da Nota de Entrada</label>
+      <input type="number" [(ngModel)]="notaIdParaVincular" min="1"
+             class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+             placeholder="Ex: 42"/>
+      <p class="mt-1 text-xs text-slate-400">Informe o ID interno da nota de entrada já importada.</p>
+    </div>
+    <div class="flex gap-2 justify-end pt-2">
+      <button (click)="fecharModalVincular()"
+              class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
+        Cancelar
+      </button>
+      <button (click)="vincularNota()" [disabled]="vinculando()"
+              class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all">
+        {{ vinculando() ? 'Vinculando...' : 'Vincular' }}
+      </button>
+    </div>
+  </div>
+</app-modal>
+
+<app-modal [aberto]="modalPreviewAberto()" titulo="Preview do Rateio de Frete" (fechar)="fecharPreview()">
+  @if (carregandoPreview()) {
+    <div class="flex items-center justify-center py-8 min-w-96">
+      <span class="material-symbols-outlined animate-spin text-3xl text-primary">progress_activity</span>
+    </div>
+  }
+  @if (!carregandoPreview() && preview()) {
+    @let p = preview()!;
+    <div class="space-y-4 min-w-[600px]">
+      <div class="flex items-center gap-4 text-sm text-slate-500">
+        <span>Frete total: <strong class="text-slate-700 dark:text-slate-200">{{ formatarReais(p.valorFrete) }}</strong></span>
+        <span>Método: <strong class="text-slate-700 dark:text-slate-200 capitalize">{{ p.metodoRateio }}</strong></span>
+      </div>
+      <div class="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-700">
+        <table class="w-full text-xs">
+          <thead class="bg-slate-50 dark:bg-slate-800/50">
+            <tr class="border-b border-slate-200 dark:border-slate-700 text-left font-semibold text-slate-500 uppercase tracking-wide">
+              <th class="px-4 py-2">#</th>
+              <th class="px-4 py-2">NF-e / Item</th>
+              <th class="px-4 py-2">Produto</th>
+              <th class="px-4 py-2 text-right">Frete Rat.</th>
+              <th class="px-4 py-2 text-right">Custo Atual</th>
+              <th class="px-4 py-2 text-right">Custo c/ Frete</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of p.itens; track item.idItem) {
+              <tr class="border-b border-slate-100 dark:border-slate-800">
+                <td class="px-4 py-2 text-slate-400">{{ item.numeroItem }}</td>
+                <td class="px-4 py-2 font-mono text-slate-500">{{ item.numeroNota ?? '—' }}</td>
+                <td class="px-4 py-2 text-slate-700 dark:text-slate-200 max-w-48 truncate">
+                  @if (item.codigoProduto) { {{ item.codigoProduto }} — } {{ item.descricaoNota ?? '-' }}
+                </td>
+                <td class="px-4 py-2 text-right font-semibold text-amber-600 dark:text-amber-400">{{ formatarReais(item.freteRateado) }}</td>
+                <td class="px-4 py-2 text-right text-slate-500">{{ formatarReais(item.custoAtual) }}</td>
+                <td class="px-4 py-2 text-right font-bold text-emerald-600 dark:text-emerald-400">{{ formatarReais(item.custoComFrete) }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+</app-modal>

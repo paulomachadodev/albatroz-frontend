@@ -671,11 +671,136 @@
           </div>
         </div>
 
+        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-4">
+          <p class="text-sm font-bold text-slate-900 dark:text-slate-100">Regime Tributário</p>
+
+          @if (carregandoIntegracao()) {
+            <div class="text-sm text-slate-500">Carregando...</div>
+          } @else {
+            <div class="grid sm:grid-cols-3 gap-4">
+              <div>
+                <label class="text-xs font-semibold text-slate-500">Regime</label>
+                <select [(ngModel)]="integracaoRegime"
+                        class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none">
+                  <option value="sn">Simples Nacional</option>
+                  <option value="lucro_presumido">Lucro Presumido</option>
+                  <option value="lucro_real">Lucro Real</option>
+                </select>
+              </div>
+              <div class="flex items-center gap-3 pt-5">
+                <input type="checkbox" id="icmsRec" [(ngModel)]="integracaoIcms" class="w-4 h-4 accent-primary"/>
+                <label for="icmsRec" class="text-sm text-slate-700 dark:text-slate-300">ICMS recuperável</label>
+              </div>
+              <div class="flex items-center gap-3 pt-5">
+                <input type="checkbox" id="pisRec" [(ngModel)]="integracaoPisCofins" class="w-4 h-4 accent-primary"/>
+                <label for="pisRec" class="text-sm text-slate-700 dark:text-slate-300">PIS/COFINS recuperável</label>
+              </div>
+            </div>
+            <div class="pt-2">
+              <button type="button" (click)="salvarIntegracaoFiscal()" [disabled]="salvandoIntegracaoFiscal()"
+                      class="px-5 py-2.5 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all">
+                {{ salvandoIntegracaoFiscal() ? 'Salvando...' : 'Salvar regime tributário' }}
+              </button>
+            </div>
+          }
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-4">
+          <div class="flex items-center justify-between">
+            <p class="text-sm font-bold text-slate-900 dark:text-slate-100">Bancos CNAB</p>
+            <button type="button" (click)="abrirNovoCnab()"
+                    class="px-3 py-1.5 rounded-lg bg-primary/10 text-primary font-bold text-xs hover:bg-primary/20 transition-all">
+              + Adicionar banco
+            </button>
+          </div>
+
+          @if (carregandoCnab()) {
+            <div class="text-sm text-slate-500">Carregando...</div>
+          } @else if (listaCnab().length === 0) {
+            <div class="text-sm text-slate-500">Nenhum banco CNAB cadastrado.</div>
+          } @else {
+            <div class="divide-y divide-slate-100 dark:divide-slate-800">
+              @for (item of listaCnab(); track item.id) {
+                <div class="py-3 flex items-center justify-between gap-4">
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                      {{ item.banco }}
+                      @if (!item.ativo) { <span class="ml-2 text-xs text-slate-400">(inativo)</span> }
+                    </p>
+                    <p class="text-xs text-slate-500 mt-0.5">
+                      Ag: {{ item.agencia ?? '—' }} · Conta: {{ item.conta ?? '—' }} · Conv: {{ item.convenio ?? '—' }}
+                      @if (item.descricao) { · {{ item.descricao }} }
+                    </p>
+                  </div>
+                  <div class="flex items-center gap-2 shrink-0">
+                    <button type="button" (click)="abrirEditarCnab(item)"
+                            class="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
+                      Editar
+                    </button>
+                    <button type="button" (click)="removerCnab(item.id)" [disabled]="removendoCnabId === item.id"
+                            class="px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-100 disabled:opacity-50 transition-all">
+                      {{ removendoCnabId === item.id ? '...' : 'Remover' }}
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
       </div>
     }
 
   </div>
 </div>
+
+<app-modal [aberto]="modalCnabAberto()" [titulo]="cnabEditandoId ? 'Editar banco CNAB' : 'Novo banco CNAB'" tamanho="md" (fechar)="fecharModalCnab()">
+  <div class="px-6 pb-6 space-y-4">
+    <div class="grid sm:grid-cols-2 gap-4">
+      <div>
+        <label class="text-xs font-semibold text-slate-500">Banco</label>
+        <input type="text" [(ngModel)]="formCnab.banco" placeholder="Ex: Bradesco, Itaú, Sicredi"
+               class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+      </div>
+      <div>
+        <label class="text-xs font-semibold text-slate-500">Agência</label>
+        <input type="text" [(ngModel)]="formCnab.agencia"
+               class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+      </div>
+      <div>
+        <label class="text-xs font-semibold text-slate-500">Conta</label>
+        <input type="text" [(ngModel)]="formCnab.conta"
+               class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+      </div>
+      <div>
+        <label class="text-xs font-semibold text-slate-500">Convênio</label>
+        <input type="text" [(ngModel)]="formCnab.convenio"
+               class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+      </div>
+      <div class="sm:col-span-2">
+        <label class="text-xs font-semibold text-slate-500">Descrição (opcional)</label>
+        <input type="text" [(ngModel)]="formCnab.descricao"
+               class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+      </div>
+      @if (cnabEditandoId) {
+        <div class="sm:col-span-2 flex items-center gap-3">
+          <input type="checkbox" id="cnabAtivo" [(ngModel)]="formCnab.ativo" class="w-4 h-4 accent-primary"/>
+          <label for="cnabAtivo" class="text-sm text-slate-700 dark:text-slate-300">Ativo</label>
+        </div>
+      }
+    </div>
+    <div class="flex justify-end gap-3 pt-2">
+      <button type="button" (click)="fecharModalCnab()"
+              class="px-4 py-2 rounded-lg text-sm font-bold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
+        Cancelar
+      </button>
+      <button type="button" (click)="salvarCnab()" [disabled]="salvandoCnab()"
+              class="px-5 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all">
+        {{ salvandoCnab() ? 'Salvando...' : 'Salvar' }}
+      </button>
+    </div>
+  </div>
+</app-modal>
 
 <app-modal [aberto]="modalListaAberto()" [titulo]="listaEditandoId ? 'Editar lista de preço' : 'Nova lista de preço'" tamanho="md" (fechar)="fecharModalLista()">
   <div class="px-6 pb-6 space-y-4">

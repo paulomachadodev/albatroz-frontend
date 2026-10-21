@@ -7,7 +7,7 @@ import { VendedoresService } from '../../services/vendedores.service';
 import { CondicoesComerciaisService } from '../../../../cotacao/configuracoes/services/condicoes-comerciais.service';
 import { AuthService } from '../../../../../core/auth/auth.service';
 import { environment } from '../../../../../../environments/environment';
-import { Configuracao, EmpresaCertificado } from '../../models/configuracao.model';
+import { Configuracao, EmpresaCertificado, EmpresaConfigCnab, EmpresaIntegracao } from '../../models/configuracao.model';
 import { ToastService } from '../../../../../core/feedback/toast.service';
 import { PageHeaderComponent } from '../../../../../shared/components/page-header/page-header.component';
 import { ProdutosService } from '../../../../produtos/services/produtos.service';
@@ -59,7 +59,6 @@ export class ConfiguracoesPaginaComponent implements OnInit {
   smtpNomeRemetente = '';
   senhaJaConfigurada = false;
 
-  // ---- Integrações (Google Merchant Center / Meta Catalog) ----
   googleMerchantId = '';
   googleFeedModo: 'url' | 'api' = 'url';
   googleServiceAccountJson = '';
@@ -71,14 +70,12 @@ export class ConfiguracoesPaginaComponent implements OnInit {
   siteBaseUrl = '';
   salvandoIntegracoes = signal(false);
 
-  // ---- Busca de imagens (Google Custom Search) ----
   googleCustomSearchApiKey = '';
   googleCustomSearchChaveConfigurada = false;
   googleCustomSearchEngineId = '';
   googleCustomSearchLimiteDiario = '100';
   salvandoBuscaImagens = signal(false);
 
-  // ---- Venda: listas de preço ----
   listasPreco = signal<ListaPreco[]>([]);
   carregandoListas = signal(false);
   modalListaAberto = signal(false);
@@ -88,7 +85,6 @@ export class ConfiguracoesPaginaComponent implements OnInit {
   };
   salvandoLista = signal(false);
 
-  // ---- Metas ----
   metaRegraModo: ModoMeta = 'valor';
   metaRegraValor = 0;
   metaRegraPercentual = 20;
@@ -124,6 +120,23 @@ export class ConfiguracoesPaginaComponent implements OnInit {
   uploadandoCertificado = signal(false);
   desativandoCertificado = signal(false);
 
+  integracao = signal<EmpresaIntegracao | null>(null);
+  carregandoIntegracao = signal(false);
+  integracaoRegime = 'sn';
+  integracaoIcms = false;
+  integracaoPisCofins = false;
+  salvandoIntegracaoFiscal = signal(false);
+
+  listaCnab = signal<EmpresaConfigCnab[]>([]);
+  carregandoCnab = signal(false);
+  modalCnabAberto = signal(false);
+  cnabEditandoId: number | null = null;
+  formCnab: { banco: string; agencia: string; conta: string; convenio: string; descricao: string; ativo: boolean } = {
+    banco: '', agencia: '', conta: '', convenio: '', descricao: '', ativo: true
+  };
+  salvandoCnab = signal(false);
+  removendoCnabId: number | null = null;
+
   carregandoCondicoesComerciais = signal(true);
   salvandoCondicoesComerciais = signal(false);
   condicoesComerciaisCadastradas = signal(false);
@@ -132,8 +145,6 @@ export class ConfiguracoesPaginaComponent implements OnInit {
   descontoPixDinheiroPercentual = 5;
   descontoEscolaParceiraPercentual = 10;
 
-  // Percentual sempre assinado no backend (+ acréscimo / - desconto) — na UI vira
-  // dropdown Soma/Diminui + número sem sinal, o "%" só aparece na exibição depois de salvo.
   formListaOperacao: 'soma' | 'diminui' = 'soma';
   get formListaPercentualAbsoluto(): number {
     return Math.abs(this.formLista.percentual);
@@ -167,7 +178,11 @@ export class ConfiguracoesPaginaComponent implements OnInit {
     if (aba === 'venda' && this.listasPreco().length === 0) this.carregarListasPreco();
     if (aba === 'metas' && this.vendedoresMetas().length === 0) this.carregarVendedores();
     if (aba === 'condicoes-comerciais') this.carregarCondicoesComerciais();
-    if (aba === 'fiscal') this.carregarCertificado();
+    if (aba === 'fiscal') {
+      this.carregarCertificado();
+      this.carregarIntegracao();
+      this.carregarCnab();
+    }
   }
 
   carregar() {
@@ -531,8 +546,6 @@ export class ConfiguracoesPaginaComponent implements OnInit {
     });
   }
 
-  // ---- Venda: listas de preço ----
-
   carregarListasPreco() {
     this.carregandoListas.set(true);
     this.produtosService.listarListasPreco().subscribe({
@@ -652,6 +665,105 @@ export class ConfiguracoesPaginaComponent implements OnInit {
         this.desativandoCertificado.set(false);
         this.toast.erroServidor(err, 'Não foi possível desativar o certificado.');
       }
+    });
+  }
+
+  carregarIntegracao() {
+    this.carregandoIntegracao.set(true);
+    this.configuracoesService.obterIntegracao().subscribe({
+      next: res => {
+        const d = res.dados;
+        if (d) {
+          this.integracao.set(d);
+          this.integracaoRegime = d.regimeTributario;
+          this.integracaoIcms = d.icmsRecuperavel;
+          this.integracaoPisCofins = d.pisCofinsRecuperavel;
+        }
+        this.carregandoIntegracao.set(false);
+      },
+      error: err => {
+        this.toast.erroServidor(err, 'Não foi possível carregar as configurações fiscais.');
+        this.carregandoIntegracao.set(false);
+      }
+    });
+  }
+
+  salvarIntegracaoFiscal() {
+    this.salvandoIntegracaoFiscal.set(true);
+    this.configuracoesService.atualizarIntegracao({
+      regimeTributario: this.integracaoRegime,
+      icmsRecuperavel: this.integracaoIcms,
+      pisCofinsRecuperavel: this.integracaoPisCofins
+    }).subscribe({
+      next: res => {
+        this.salvandoIntegracaoFiscal.set(false);
+        this.integracao.set(res.dados ?? null);
+        this.toast.sucesso('Regime tributário salvo.');
+      },
+      error: err => {
+        this.salvandoIntegracaoFiscal.set(false);
+        this.toast.erroServidor(err, 'Não foi possível salvar as configurações fiscais.');
+      }
+    });
+  }
+
+  carregarCnab() {
+    this.carregandoCnab.set(true);
+    this.configuracoesService.listarCnab().subscribe({
+      next: res => { this.listaCnab.set(res.dados ?? []); this.carregandoCnab.set(false); },
+      error: err => { this.carregandoCnab.set(false); this.toast.erroServidor(err, 'Não foi possível carregar os bancos CNAB.'); }
+    });
+  }
+
+  abrirNovoCnab() {
+    this.cnabEditandoId = null;
+    this.formCnab = { banco: '', agencia: '', conta: '', convenio: '', descricao: '', ativo: true };
+    this.modalCnabAberto.set(true);
+  }
+
+  abrirEditarCnab(item: EmpresaConfigCnab) {
+    this.cnabEditandoId = item.id;
+    this.formCnab = {
+      banco: item.banco, agencia: item.agencia ?? '', conta: item.conta ?? '',
+      convenio: item.convenio ?? '', descricao: item.descricao ?? '', ativo: item.ativo
+    };
+    this.modalCnabAberto.set(true);
+  }
+
+  fecharModalCnab() {
+    this.modalCnabAberto.set(false);
+  }
+
+  salvarCnab() {
+    if (!this.formCnab.banco.trim()) { this.toast.erro('Informe o banco.'); return; }
+    this.salvandoCnab.set(true);
+
+    const body = {
+      banco: this.formCnab.banco.trim(),
+      agencia: this.formCnab.agencia.trim() || undefined,
+      conta: this.formCnab.conta.trim() || undefined,
+      convenio: this.formCnab.convenio.trim() || undefined,
+      descricao: this.formCnab.descricao.trim() || undefined
+    };
+
+    if (this.cnabEditandoId) {
+      this.configuracoesService.atualizarCnab(this.cnabEditandoId, { ...body, ativo: this.formCnab.ativo }).subscribe({
+        next: () => { this.salvandoCnab.set(false); this.toast.sucesso('Banco CNAB atualizado.'); this.modalCnabAberto.set(false); this.carregarCnab(); },
+        error: err => { this.salvandoCnab.set(false); this.toast.erroServidor(err, 'Não foi possível atualizar o banco CNAB.'); }
+      });
+    } else {
+      this.configuracoesService.criarCnab(body).subscribe({
+        next: () => { this.salvandoCnab.set(false); this.toast.sucesso('Banco CNAB adicionado.'); this.modalCnabAberto.set(false); this.carregarCnab(); },
+        error: err => { this.salvandoCnab.set(false); this.toast.erroServidor(err, 'Não foi possível adicionar o banco CNAB.'); }
+      });
+    }
+  }
+
+  removerCnab(id: number) {
+    this.removendoCnabId = id;
+    this.configuracoesService.removerCnab(id).subscribe({
+      next: () => { this.removendoCnabId = null; this.toast.sucesso('Banco CNAB removido.'); this.carregarCnab(); },
+      error: err => { this.removendoCnabId = null; this.toast.erroServidor(err, 'Não foi possível remover o banco CNAB.'); }
     });
   }
 

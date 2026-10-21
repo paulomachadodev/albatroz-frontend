@@ -7,7 +7,7 @@ import { VendedoresService } from '../../services/vendedores.service';
 import { CondicoesComerciaisService } from '../../../../cotacao/configuracoes/services/condicoes-comerciais.service';
 import { AuthService } from '../../../../../core/auth/auth.service';
 import { environment } from '../../../../../../environments/environment';
-import { Configuracao } from '../../models/configuracao.model';
+import { Configuracao, EmpresaCertificado } from '../../models/configuracao.model';
 import { ToastService } from '../../../../../core/feedback/toast.service';
 import { PageHeaderComponent } from '../../../../../shared/components/page-header/page-header.component';
 import { ProdutosService } from '../../../../produtos/services/produtos.service';
@@ -17,7 +17,7 @@ import { ModalComponent } from '../../../../../shared/components/modal/modal.com
 import { CampoHintComponent } from '../../../../../shared/components/campo-hint/campo-hint.component';
 import { BreadcrumbComponent } from '../../../../../shared/components/breadcrumb/breadcrumb.component';
 
-type Aba = 'email' | 'venda' | 'integracoes' | 'busca-imagens' | 'metas' | 'condicoes-comerciais' | 'estoque' | 'tiny-etl';
+type Aba = 'email' | 'venda' | 'integracoes' | 'busca-imagens' | 'metas' | 'condicoes-comerciais' | 'estoque' | 'tiny-etl' | 'fiscal';
 type ModoMeta = 'valor' | 'percentual';
 
 interface RegraMeta {
@@ -116,6 +116,14 @@ export class ConfiguracoesPaginaComponent implements OnInit {
   alertaEmailDestino = '';
   salvandoAlertaEmail = signal(false);
 
+  certificado = signal<EmpresaCertificado | null>(null);
+  carregandoCertificado = signal(false);
+  arquivoCertificado: File | null = null;
+  senhaCertificado = '';
+  ambienteNfeCertificado: 'prod' | 'homol' = 'prod';
+  uploadandoCertificado = signal(false);
+  desativandoCertificado = signal(false);
+
   carregandoCondicoesComerciais = signal(true);
   salvandoCondicoesComerciais = signal(false);
   condicoesComerciaisCadastradas = signal(false);
@@ -159,6 +167,7 @@ export class ConfiguracoesPaginaComponent implements OnInit {
     if (aba === 'venda' && this.listasPreco().length === 0) this.carregarListasPreco();
     if (aba === 'metas' && this.vendedoresMetas().length === 0) this.carregarVendedores();
     if (aba === 'condicoes-comerciais') this.carregarCondicoesComerciais();
+    if (aba === 'fiscal') this.carregarCertificado();
   }
 
   carregar() {
@@ -582,6 +591,68 @@ export class ConfiguracoesPaginaComponent implements OnInit {
         error: err => { this.salvandoLista.set(false); this.toast.erroServidor(err, 'Não foi possível criar a lista.'); }
       });
     }
+  }
+
+  carregarCertificado() {
+    this.carregandoCertificado.set(true);
+    this.configuracoesService.obterCertificado().subscribe({
+      next: res => {
+        this.certificado.set(res.dados ?? null);
+        this.carregandoCertificado.set(false);
+      },
+      error: err => {
+        this.toast.erroServidor(err, 'Não foi possível carregar o certificado.');
+        this.carregandoCertificado.set(false);
+      }
+    });
+  }
+
+  aoSelecionarArquivoCertificado(event: Event) {
+    const input = event.target as HTMLInputElement;
+    this.arquivoCertificado = input.files?.[0] ?? null;
+  }
+
+  uploadCertificado() {
+    if (!this.arquivoCertificado) {
+      this.toast.erro('Selecione o arquivo .pfx do certificado.');
+      return;
+    }
+    if (!this.senhaCertificado.trim()) {
+      this.toast.erro('Informe a senha do certificado.');
+      return;
+    }
+
+    this.uploadandoCertificado.set(true);
+    this.configuracoesService.uploadCertificado(
+      this.arquivoCertificado, this.senhaCertificado, this.ambienteNfeCertificado
+    ).subscribe({
+      next: res => {
+        this.uploadandoCertificado.set(false);
+        this.certificado.set(res.dados ?? null);
+        this.senhaCertificado = '';
+        this.arquivoCertificado = null;
+        this.toast.sucesso('Certificado A1 salvo com sucesso.');
+      },
+      error: err => {
+        this.uploadandoCertificado.set(false);
+        this.toast.erroServidor(err, 'Não foi possível salvar o certificado.');
+      }
+    });
+  }
+
+  desativarCertificado(id: number) {
+    this.desativandoCertificado.set(true);
+    this.configuracoesService.desativarCertificado(id).subscribe({
+      next: () => {
+        this.desativandoCertificado.set(false);
+        this.certificado.set(null);
+        this.toast.sucesso('Certificado desativado.');
+      },
+      error: err => {
+        this.desativandoCertificado.set(false);
+        this.toast.erroServidor(err, 'Não foi possível desativar o certificado.');
+      }
+    });
   }
 
   salvarEmail() {

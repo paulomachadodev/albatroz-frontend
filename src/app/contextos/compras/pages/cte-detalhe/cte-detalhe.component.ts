@@ -4,10 +4,10 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CtesService } from '../../services/ctes.service';
 import { CteDetalhe, CteNotaVinculada, PreviewRateioCte } from '../../models/cte.model';
-import { ToastService } from '../../../../../core/feedback/toast.service';
-import { PageHeaderComponent } from '../../../../../shared/components/page-header/page-header.component';
-import { BreadcrumbComponent } from '../../../../../shared/components/breadcrumb/breadcrumb.component';
-import { ModalComponent } from '../../../../../shared/components/modal/modal.component';
+import { ToastService } from '../../../../core/feedback/toast.service';
+import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
+import { BreadcrumbComponent } from '../../../../shared/components/breadcrumb/breadcrumb.component';
+import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 
 @Component({
   selector: 'app-cte-detalhe',

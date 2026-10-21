@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ApiService } from '../../../../core/http/api.service';
-import { Resultado } from '../../../../core/models';
-import { environment } from '../../../../../environments/environment';
+import { ApiService } from '../../../core/http/api.service';
+import { Resultado } from '../../../core/models';
+import { environment } from '../../../../environments/environment';
 import { CteResumo, CteDetalhe, PreviewRateioCte } from '../models/cte.model';
 
 @Injectable({ providedIn: 'root' })

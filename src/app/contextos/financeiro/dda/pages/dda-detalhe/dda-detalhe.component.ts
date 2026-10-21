@@ -3,9 +3,9 @@ import { ActivatedRoute } from '@angular/router';
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { DdaService } from '../../services/dda.service';
 import { ImportacaoDda, LancamentoDda } from '../../models/dda.model';
-import { ToastService } from '../../../../../../core/feedback/toast.service';
-import { PageHeaderComponent } from '../../../../../../shared/components/page-header/page-header.component';
-import { BreadcrumbComponent } from '../../../../../../shared/components/breadcrumb/breadcrumb.component';
+import { ToastService } from '../../../../../core/feedback/toast.service';
+import { PageHeaderComponent } from '../../../../../shared/components/page-header/page-header.component';
+import { BreadcrumbComponent } from '../../../../../shared/components/breadcrumb/breadcrumb.component';
 
 const STATUS_LABELS: Record<number, string> = { 1: 'Pendente', 2: 'Conciliado', 3: 'Pago' };
 const STATUS_BADGE: Record<number, string>  = { 1: 'badge-warning', 2: 'badge-info', 3: 'badge-success' };

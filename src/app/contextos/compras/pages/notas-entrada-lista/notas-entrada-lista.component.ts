@@ -4,10 +4,10 @@ import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { NotasEntradaService } from '../../services/notas-entrada.service';
 import { NotaEntradaResumo } from '../../models/nota-entrada.model';
-import { ToastService } from '../../../../../core/feedback/toast.service';
-import { PageHeaderComponent } from '../../../../../shared/components/page-header/page-header.component';
-import { BreadcrumbComponent } from '../../../../../shared/components/breadcrumb/breadcrumb.component';
-import { ListagemPaginadaComponent } from '../../../../../shared/components/listagem-paginada/listagem-paginada.component';
+import { ToastService } from '../../../../core/feedback/toast.service';
+import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
+import { BreadcrumbComponent } from '../../../../shared/components/breadcrumb/breadcrumb.component';
+import { ListagemPaginadaComponent } from '../../../../shared/components/listagem-paginada/listagem-paginada.component';
 
 @Component({
   selector: 'app-notas-entrada-lista',

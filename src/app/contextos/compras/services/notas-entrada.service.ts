@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ApiService } from '../../../../core/http/api.service';
-import { Resultado } from '../../../../core/models';
-import { Paginacao } from '../../../../core/models/paginacao.model';
-import { environment } from '../../../../../environments/environment';
+import { ApiService } from '../../../core/http/api.service';
+import { Resultado } from '../../../core/models';
+import { Paginacao } from '../../../core/models/paginacao.model';
+import { environment } from '../../../../environments/environment';
 import {
   NotaEntradaResumo,
   NotaEntradaDetalhe,

@@ -1,7 +1,8 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 import { ThemeService } from '../../core/theme/theme.service';
+import { EmpresaFlagsService } from '../../core/empresa/empresa-flags.service';
 import { ToggleComponent } from '../../shared/components/toggle/toggle.component';
 import { LogoBadgeComponent } from '../../shared/components/logo-badge/logo-badge.component';
 
@@ -11,6 +12,7 @@ export interface ItemMenu {
   icone: string;
   badge?: string;
   permissao?: string;
+  apenasComTiny?: boolean;
   subItens?: ItemMenu[];
 }
 
@@ -28,9 +30,10 @@ const CHAVE_LOCALSTORAGE_FIXADO = 'menu-fixado';
   imports: [RouterLink, RouterLinkActive, ToggleComponent, LogoBadgeComponent],
   templateUrl: './sidebar.component.html'
 })
-export class SidebarComponent {
-  private auth   = inject(AuthService);
-  private router = inject(Router);
+export class SidebarComponent implements OnInit {
+  private auth         = inject(AuthService);
+  private router       = inject(Router);
+  private empresaFlags = inject(EmpresaFlagsService);
   theme = inject(ThemeService);
 
   fixado = signal(this.carregarFixado());
@@ -40,6 +43,10 @@ export class SidebarComponent {
   colunaAExpandida = computed(() => this.fixado() || this.contextoHover() !== null);
 
   private expandidosPorItem = new Map<string, ReturnType<typeof signal<boolean>>>();
+
+  ngOnInit(): void {
+    this.empresaFlags.carregar();
+  }
 
   grupos: GrupoMenu[] = [
     {
@@ -69,7 +76,7 @@ export class SidebarComponent {
           label: 'Estoque', icone: 'package_2',
           subItens: [
             { label: 'Dashboard', rota: '/estoque', icone: 'query_stats', permissao: 'estoque:ler' },
-            { label: 'Balanço', rota: '/balanco', icone: 'qr_code_scanner', permissao: 'estoque:ler' }
+            { label: 'Balanço', rota: '/balanco', icone: 'qr_code_scanner', permissao: 'estoque:ler', apenasComTiny: true }
           ]
         },
         {
@@ -128,14 +135,20 @@ export class SidebarComponent {
       titulo: 'Integrações',
       icone: 'integration_instructions',
       itens: [
-        { label: 'ERP Tiny', rota: '/integracoes/tiny', icone: 'dashboard' }
+        { label: 'ERP Tiny', rota: '/integracoes/tiny', icone: 'dashboard', apenasComTiny: true }
       ]
     }
   ];
 
   gruposVisiveis = computed<GrupoMenu[]>(() => {
-    const permitido = (item: ItemMenu): boolean =>
-      !item.permissao || this.auth.temPermissao(item.permissao);
+    const tinyAtivo = this.empresaFlags.flags()?.tinyAtivo ?? false;
+
+    const permitido = (item: ItemMenu): boolean => {
+      if (!item.permissao || this.auth.temPermissao(item.permissao)) {
+        return !item.apenasComTiny || tinyAtivo;
+      }
+      return false;
+    };
 
     const filtrarItens = (itens: ItemMenu[]): ItemMenu[] =>
       itens

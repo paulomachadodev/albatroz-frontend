@@ -99,6 +99,11 @@ export const routes: Routes = [
           import('./contextos/financeiro/contas-pagar/contas-pagar.routes').then(m => m.CONTAS_PAGAR_ROUTES)
       },
       {
+        path: 'financeiro/dda',
+        loadChildren: () =>
+          import('./contextos/financeiro/dda/dda.routes').then(m => m.DDA_ROUTES)
+      },
+      {
         path: 'vendas',
         loadChildren: () =>
           import('./contextos/vendas/vendas.routes').then(m => m.VENDAS_ROUTES)

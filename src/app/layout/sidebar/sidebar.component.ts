@@ -102,7 +102,8 @@ export class SidebarComponent {
       titulo: 'Financeiro',
       icone: 'payments',
       itens: [
-        { label: 'Cartões', rota: '/financeiro/cartoes', icone: 'credit_card' }
+        { label: 'Cartões',          rota: '/financeiro/cartoes', icone: 'credit_card' },
+        { label: 'Conciliação DDA',  rota: '/financeiro/dda',     icone: 'account_balance', permissao: 'financeiro:ler' }
       ]
     },
     {

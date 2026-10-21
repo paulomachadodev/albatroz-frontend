@@ -1,0 +1,165 @@
+@let imp = importacao();
+@let lista = lancamentos();
+
+<app-page-header
+  [titulo]="imp?.arquivoNome ?? 'Importação DDA'"
+  [subtitulo]="imp ? 'Banco ' + imp.banco + ' — ' + (imp.totalLancamentos) + ' lançamentos importados' : ''">
+  <div class="flex items-center gap-2">
+    @if ((selecionados().size > 0)) {
+      <button class="btn btn-success btn-sm" [disabled]="processando()" (click)="baixarSelecionados()">
+        @if (processando()) {
+          <span class="loading loading-spinner loading-xs"></span>
+        }
+        Baixar selecionados ({{ selecionados().size }})
+        — {{ totalSelecionado() | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
+      </button>
+    }
+    <button class="btn btn-primary btn-sm" [disabled]="processando()" (click)="autoConciliar()">
+      @if (processando()) {
+        <span class="loading loading-spinner loading-xs"></span>
+      } @else {
+        <span class="material-symbols-outlined text-sm">auto_fix_high</span>
+      }
+      Conciliar automático
+    </button>
+  </div>
+</app-page-header>
+
+<app-breadcrumb [items]="breadcrumbs()" />
+
+@if (imp) {
+  <div class="px-6 pt-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
+    <div class="stat bg-base-200 rounded-xl px-4 py-3">
+      <div class="stat-title text-xs">Total valor</div>
+      <div class="stat-value text-lg">{{ imp.totalValor | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</div>
+    </div>
+    <div class="stat bg-base-200 rounded-xl px-4 py-3">
+      <div class="stat-title text-xs">Lançamentos</div>
+      <div class="stat-value text-lg">{{ imp.totalLancamentos }}</div>
+    </div>
+    <div class="stat bg-success/10 rounded-xl px-4 py-3">
+      <div class="stat-title text-xs">Matchados</div>
+      <div class="stat-value text-lg text-success">{{ imp.totalMatchados }}</div>
+    </div>
+    <div class="stat bg-warning/10 rounded-xl px-4 py-3">
+      <div class="stat-title text-xs">Pendentes</div>
+      <div class="stat-value text-lg text-warning">{{ imp.totalPendentes }}</div>
+    </div>
+  </div>
+}
+
+<div class="flex-1 overflow-auto p-6 pt-4">
+  @if (carregando()) {
+    <div class="flex justify-center py-12">
+      <span class="loading loading-spinner loading-lg text-primary"></span>
+    </div>
+  } @else if (lista.length === 0) {
+    <div class="flex flex-col items-center justify-center py-20 gap-4 text-base-content/50">
+      <span class="material-symbols-outlined text-5xl">receipt_long</span>
+      <p class="text-sm">Nenhum lançamento encontrado.</p>
+    </div>
+  } @else {
+    <div class="overflow-x-auto rounded-xl border border-base-300">
+      <table class="table table-sm w-full">
+        <thead>
+          <tr>
+            <th class="w-10"></th>
+            <th>Emissor</th>
+            <th>CNPJ</th>
+            <th class="text-right">Valor</th>
+            <th>Vencimento</th>
+            <th>Pgto DDA</th>
+            <th class="text-center">Status</th>
+            <th>Conta a pagar</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (l of lista; track l.id) {
+            <tr class="hover" [class.bg-success/5]="l.statusConciliacao === 3">
+              <td>
+                @if (l.statusConciliacao === 2) {
+                  <input type="checkbox" class="checkbox checkbox-sm checkbox-success"
+                    [checked]="selecionados().has(l.id)"
+                    (change)="toggleSelecionado(l.id)">
+                }
+              </td>
+              <td class="max-w-44 truncate text-sm" [title]="l.nomeEmissor ?? ''">{{ l.nomeEmissor || '—' }}</td>
+              <td class="font-mono text-xs">{{ l.cnpjEmissor || '—' }}</td>
+              <td class="text-right font-medium">{{ l.valor | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</td>
+              <td class="text-sm">{{ l.dataVencimento | date:'dd/MM/yyyy' }}</td>
+              <td class="text-sm">{{ l.dataPagamento ? (l.dataPagamento | date:'dd/MM/yyyy') : '—' }}</td>
+              <td class="text-center">
+                <span class="badge badge-sm" [class]="statusBadge(l.statusConciliacao)">{{ statusLabel(l.statusConciliacao) }}</span>
+              </td>
+              <td class="text-sm max-w-44 truncate" [title]="l.nomeFornecedorContaPagar ?? ''">
+                @if (l.idContaPagar) {
+                  <span class="font-medium">{{ l.nomeFornecedorContaPagar || 'Conta #' + l.idContaPagar }}</span>
+                  <br>
+                  <span class="text-xs text-base-content/60">
+                    {{ l.vencimentoContaPagar | date:'dd/MM/yyyy' }}
+                    · {{ l.valorContaPagar | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
+                  </span>
+                } @else {
+                  <span class="text-base-content/40">Não vinculado</span>
+                }
+              </td>
+              <td>
+                <div class="flex gap-1 justify-end">
+                  @if (l.statusConciliacao === 1) {
+                    <button class="btn btn-ghost btn-xs" (click)="abrirModalVincular(l)">
+                      Vincular
+                    </button>
+                  }
+                  @if (l.statusConciliacao === 2) {
+                    <button class="btn btn-ghost btn-xs text-error" (click)="desvincular(l)">
+                      Remover
+                    </button>
+                  }
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
+
+@if (modalVincularAberto()) {
+  <div class="modal modal-open">
+    <div class="modal-box max-w-sm">
+      <h3 class="font-bold text-lg mb-4">Vincular manualmente</h3>
+
+      @let lv = lancamentoParaVincular();
+      @if (lv) {
+        <div class="bg-base-200 rounded-lg p-3 mb-4 text-sm">
+          <div class="font-medium">{{ lv.nomeEmissor || 'Emissor desconhecido' }}</div>
+          <div class="text-base-content/70 mt-1">
+            Vencimento: {{ lv.dataVencimento | date:'dd/MM/yyyy' }}
+            · {{ lv.valor | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}
+          </div>
+        </div>
+      }
+
+      <div class="form-control mb-4">
+        <label class="label"><span class="label-text">ID da conta a pagar</span></label>
+        <input type="number" class="input input-bordered input-sm"
+          placeholder="Ex: 1042"
+          [value]="contaPagarIdVincular() ?? ''"
+          (input)="contaPagarIdVincular.set(+($any($event.target).value) || null)">
+      </div>
+
+      <div class="modal-action">
+        <button class="btn btn-ghost btn-sm" (click)="fecharModalVincular()">Cancelar</button>
+        <button class="btn btn-primary btn-sm" [disabled]="!contaPagarIdVincular() || processando()" (click)="confirmarVincular()">
+          @if (processando()) {
+            <span class="loading loading-spinner loading-xs"></span>
+          }
+          Vincular
+        </button>
+      </div>
+    </div>
+    <div class="modal-backdrop" (click)="fecharModalVincular()"></div>
+  </div>
+}

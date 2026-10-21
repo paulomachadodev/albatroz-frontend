@@ -1,0 +1,76 @@
+<app-page-header titulo="Conciliação DDA" subtitulo="Importe arquivos CNAB 240 do Bradesco e concilie com contas a pagar.">
+  <div class="flex items-center gap-3">
+    <label class="btn btn-primary btn-sm cursor-pointer">
+      @if (importando()) {
+        <span class="loading loading-spinner loading-xs"></span>
+        Importando...
+      } @else {
+        <span class="material-symbols-outlined text-sm">upload_file</span>
+        Importar CNAB 240
+      }
+      <input type="file" accept=".txt,.rem,.ret" class="hidden" (change)="onArquivoSelecionado($event)" [disabled]="importando()">
+    </label>
+  </div>
+</app-page-header>
+
+<app-breadcrumb [items]="breadcrumbs" />
+
+<div class="flex-1 overflow-auto p-6">
+  @if (carregando()) {
+    <div class="flex justify-center py-12">
+      <span class="loading loading-spinner loading-lg text-primary"></span>
+    </div>
+  } @else if (importacoes().length === 0) {
+    <div class="flex flex-col items-center justify-center py-20 gap-4 text-base-content/50">
+      <span class="material-symbols-outlined text-5xl">account_balance</span>
+      <p class="text-sm">Nenhuma importação DDA encontrada. Importe um arquivo CNAB 240.</p>
+    </div>
+  } @else {
+    <div class="overflow-x-auto rounded-xl border border-base-300">
+      <table class="table table-zebra table-sm w-full">
+        <thead>
+          <tr>
+            <th>Arquivo</th>
+            <th>Banco</th>
+            <th>Importado em</th>
+            <th class="text-right">Lançamentos</th>
+            <th class="text-right">Total</th>
+            <th class="text-center">Matchados</th>
+            <th class="text-center">Pendentes</th>
+            <th class="text-center">Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (imp of importacoes(); track imp.id) {
+            <tr class="hover">
+              <td class="font-mono text-xs max-w-48 truncate" [title]="imp.arquivoNome">{{ imp.arquivoNome }}</td>
+              <td class="capitalize">{{ imp.banco }}</td>
+              <td>{{ imp.dataImportacao | date:'dd/MM/yyyy HH:mm' }}</td>
+              <td class="text-right">{{ imp.totalLancamentos }}</td>
+              <td class="text-right">{{ imp.totalValor | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</td>
+              <td class="text-center">
+                <span class="badge badge-success badge-sm">{{ imp.totalMatchados }}</span>
+              </td>
+              <td class="text-center">
+                @if (imp.totalPendentes > 0) {
+                  <span class="badge badge-warning badge-sm">{{ imp.totalPendentes }}</span>
+                } @else {
+                  <span class="badge badge-ghost badge-sm">0</span>
+                }
+              </td>
+              <td class="text-center">
+                <span class="badge badge-sm" [class]="badgeClass(imp.status)">{{ statusLabel(imp.status) }}</span>
+              </td>
+              <td>
+                <a [routerLink]="['/financeiro/dda', imp.id]" class="btn btn-ghost btn-xs">
+                  Abrir
+                </a>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

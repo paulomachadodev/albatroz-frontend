@@ -30,7 +30,7 @@ export interface CteDetalhe {
 }
 
 export interface CteNotaVinculada {
-  idNotaEntrada: number;
+  idNotaFiscal: number;
   numeroNota: string | null;
   nomeFornecedor: string | null;
   valorTotal: number;
@@ -45,7 +45,7 @@ export interface PreviewRateioCte {
 }
 
 export interface PreviewItemRateio {
-  idNotaEntrada: number;
+  idNotaFiscal: number;
   numeroNota: string | null;
   idItem: number;
   numeroItem: number;

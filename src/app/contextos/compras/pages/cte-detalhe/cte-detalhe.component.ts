@@ -116,8 +116,8 @@ export class CteDetalheComponent implements OnInit {
   desvincularNota(nota: CteNotaVinculada) {
     const cte = this.cte();
     if (!cte) return;
-    this.desvinculando.set(nota.idNotaEntrada);
-    this.service.desvincularNota(cte.id, nota.idNotaEntrada).subscribe({
+    this.desvinculando.set(nota.idNotaFiscal);
+    this.service.desvincularNota(cte.id, nota.idNotaFiscal).subscribe({
       next: () => {
         this.desvinculando.set(null);
         this.toast.sucesso('Nota desvinculada.');

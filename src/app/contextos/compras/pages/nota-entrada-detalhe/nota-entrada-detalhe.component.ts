@@ -23,6 +23,7 @@ export class NotaEntradaDetalheComponent implements OnInit {
   processando = signal(false);
   calculando = signal(false);
   confirmando = signal(false);
+  registrandoChegada = signal(false);
 
   modalCriarProdutoAberto = signal(false);
   itemSelecionado = signal<NotaEntradaItem | null>(null);
@@ -221,6 +222,30 @@ export class NotaEntradaDetalheComponent implements OnInit {
   formatarData(valor: string | null): string {
     if (!valor) return '-';
     try { return formatDate(valor, 'dd/MM/yyyy', 'pt-BR'); } catch { return '-'; }
+  }
+
+  registrarChegada() {
+    const nota = this.nota();
+    if (!nota) return;
+    this.registrandoChegada.set(true);
+    this.service.registrarChegada(nota.id).subscribe({
+      next: () => {
+        this.registrandoChegada.set(false);
+        this.toast.sucesso('Mercadoria registrada como chegou.');
+        this.router.navigate(['/compras/notas-entrada', nota.id, 'conferencia']);
+      },
+      error: err => {
+        this.registrandoChegada.set(false);
+        const mensagem = err?.error?.erro ?? 'Não foi possível registrar a chegada.';
+        this.toast.erro(mensagem);
+      }
+    });
+  }
+
+  irParaConferencia() {
+    const nota = this.nota();
+    if (!nota) return;
+    this.router.navigate(['/compras/notas-entrada', nota.id, 'conferencia']);
   }
 
   voltar() {

@@ -65,6 +65,7 @@
             <th class="py-3 pr-4 text-center">Itens</th>
             <th class="py-3 pr-4 text-center">Pendentes</th>
             <th class="py-3 pr-4 text-center">Status</th>
+            <th class="py-3 pr-4"></th>
           </tr>
         </thead>
         <tbody>
@@ -95,6 +96,27 @@
                 <span class="inline-block px-2 py-0.5 rounded-full text-xs font-semibold {{ classeStatus(nota.status) }}">
                   {{ rotuloStatus(nota.status) }}
                 </span>
+              </td>
+              <td class="py-3 pr-2 text-right">
+                <div class="flex items-center justify-end gap-1" (click)="$event.stopPropagation()">
+                  @if (nota.status === 1) {
+                    <button (click)="registrarChegada(nota.id, $event)"
+                            [disabled]="registrandoChegada() === nota.id"
+                            class="px-2 py-1 rounded-lg bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400 font-bold text-xs hover:bg-amber-200 dark:hover:bg-amber-900/60 disabled:opacity-50 transition-all whitespace-nowrap">
+                      @if (registrandoChegada() === nota.id) {
+                        <span class="material-symbols-outlined text-xs animate-spin">progress_activity</span>
+                      } @else {
+                        Chegou
+                      }
+                    </button>
+                  }
+                  @if (nota.status === 1 || nota.status === 2) {
+                    <button (click)="abrirConferencia(nota.id, $event)"
+                            class="px-2 py-1 rounded-lg bg-primary/10 text-primary font-bold text-xs hover:bg-primary/20 transition-all whitespace-nowrap">
+                      Conferir
+                    </button>
+                  }
+                </div>
               </td>
             </tr>
           }

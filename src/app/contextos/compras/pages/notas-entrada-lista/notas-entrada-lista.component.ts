@@ -107,6 +107,30 @@ export class NotasEntradaListaComponent implements OnInit {
     this.router.navigate(['/compras/notas-entrada', id]);
   }
 
+  abrirConferencia(id: number, event: Event) {
+    event.stopPropagation();
+    this.router.navigate(['/compras/notas-entrada', id, 'conferencia']);
+  }
+
+  registrandoChegada = signal<number | null>(null);
+
+  registrarChegada(id: number, event: Event) {
+    event.stopPropagation();
+    this.registrandoChegada.set(id);
+    this.service.registrarChegada(id).subscribe({
+      next: () => {
+        this.registrandoChegada.set(null);
+        this.toast.sucesso('Mercadoria registrada como chegou.');
+        this.router.navigate(['/compras/notas-entrada', id, 'conferencia']);
+      },
+      error: err => {
+        this.registrandoChegada.set(null);
+        const msg = err?.error?.erro ?? 'Não foi possível registrar a chegada.';
+        this.toast.erro(msg);
+      }
+    });
+  }
+
   rotuloStatus(status: number): string {
     const rotulos: Record<number, string> = {
       1: 'Rascunho', 2: 'Conferindo', 3: 'Confirmada', 4: 'Cancelada', 5: 'Manifestada'

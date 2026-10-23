@@ -60,6 +60,40 @@ export interface NotaEntradaItem {
   statusMatch: number;
 }
 
+export interface ConferenciaNotaResposta {
+  id: number;
+  numeroNota: string | null;
+  serie: string | null;
+  nomeFornecedor: string | null;
+  dataEmissao: string | null;
+  status: number;
+  valorTotal: number;
+  valorFrete: number;
+  dataChegada: string | null;
+  itens: ConferenciaItemResposta[];
+}
+
+export interface ConferenciaItemResposta {
+  id: number;
+  numeroItem: number;
+  codigoFornecedor: string | null;
+  descricaoNota: string | null;
+  descricaoConferida: string | null;
+  gtinNaNota: string | null;
+  unidadeNota: string | null;
+  quantidadeNota: number;
+  fatorConversao: number;
+  quantidadeEstoque: number;
+  valorUnitario: number;
+  custoUnitarioCalculado: number | null;
+  statusMatch: number;
+  idProduto: number | null;
+  nomeProduto: string | null;
+  codigoProduto: string | null;
+  gtinProduto: string | null;
+  unidadeProduto: string | null;
+}
+
 export interface SugestaoDescricaoProduto {
   descricaoSugerida: string;
   confianca: number;

@@ -32,6 +32,11 @@ export const COMPRAS_ROUTES: Routes = [
       import('./pages/nota-entrada-detalhe/nota-entrada-detalhe.component').then(m => m.NotaEntradaDetalheComponent)
   },
   {
+    path: 'notas-entrada/:id/conferencia',
+    loadComponent: () =>
+      import('./pages/nota-entrada-conferencia/nota-entrada-conferencia.component').then(m => m.NotaEntradaConferenciaComponent)
+  },
+  {
     path: 'ctes',
     loadComponent: () =>
       import('./pages/ctes-lista/ctes-lista.component').then(m => m.CtesListaComponent)

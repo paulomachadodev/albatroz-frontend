@@ -9,7 +9,8 @@ import {
   NotaEntradaResumo,
   NotaEntradaDetalhe,
   SugestaoDescricaoProduto,
-  ProdutoCriadoViaNfe
+  ProdutoCriadoViaNfe,
+  ConferenciaNotaResposta
 } from '../models/nota-entrada.model';
 
 @Injectable({ providedIn: 'root' })
@@ -52,5 +53,21 @@ export class NotasEntradaService {
 
   criarProduto(notaId: number, itemId: number, descricao: string): Observable<Resultado<ProdutoCriadoViaNfe>> {
     return this.api.post<ProdutoCriadoViaNfe>(`${this.base}/${notaId}/itens/${itemId}/criar-produto`, { descricao });
+  }
+
+  registrarChegada(id: number): Observable<Resultado<void>> {
+    return this.api.post<void>(`${this.base}/${id}/chegada`, {});
+  }
+
+  obterConferencia(id: number): Observable<Resultado<ConferenciaNotaResposta>> {
+    return this.api.get<ConferenciaNotaResposta>(`${this.base}/${id}/conferencia`);
+  }
+
+  atualizarItemConferencia(notaId: number, itemId: number, body: {
+    descricaoConferida?: string | null;
+    fatorConversao?: number | null;
+    quantidadeEstoque?: number | null;
+  }): Observable<Resultado<void>> {
+    return this.api.patch<void>(`${this.base}/${notaId}/itens/${itemId}/conferencia`, body);
   }
 }

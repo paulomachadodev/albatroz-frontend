@@ -109,8 +109,9 @@ export class SidebarComponent implements OnInit {
       titulo: 'Financeiro',
       icone: 'payments',
       itens: [
-        { label: 'Cartões',          rota: '/financeiro/cartoes', icone: 'credit_card' },
-        { label: 'Conciliação DDA',  rota: '/financeiro/dda',     icone: 'account_balance', permissao: 'financeiro:ler' }
+        { label: 'Cartões',          rota: '/financeiro/cartoes',       icone: 'credit_card' },
+        { label: 'Contas a Pagar',   rota: '/financeiro/contas-pagar',  icone: 'payments',         permissao: 'financeiro:ler' },
+        { label: 'Conciliação DDA',  rota: '/financeiro/dda',           icone: 'account_balance',  permissao: 'financeiro:ler' }
       ]
     },
     {

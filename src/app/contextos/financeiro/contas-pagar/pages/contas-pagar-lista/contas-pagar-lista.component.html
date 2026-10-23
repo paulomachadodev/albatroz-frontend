@@ -1,9 +1,17 @@
 <div class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark px-4 sm:px-6 lg:px-8 xl:px-10 py-6 lg:py-8">
   <div class="w-full space-y-8">
 
-    <app-breadcrumb [itens]="[{label:'Início',rota:'/dashboard'},{label:config.titulo}]"></app-breadcrumb>
+    <app-breadcrumb [itens]="[{label:'Início',rota:'/dashboard'},{label:'Financeiro'},{label:'Contas a Pagar'}]"></app-breadcrumb>
 
-    <app-page-header [titulo]="config.titulo" [subtitulo]="config.subtitulo"></app-page-header>
+    <app-page-header titulo="Contas a Pagar" subtitulo="Gerencie títulos a pagar, acompanhe vencimentos e dê baixa nos pagamentos.">
+      <div acoes>
+        <button (click)="abrirModalCriar()"
+                class="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all">
+          <span class="material-symbols-outlined text-base">add</span>
+          Nova conta
+        </button>
+      </div>
+    </app-page-header>
 
     <app-listagem-paginada
       [itens]="itens()"
@@ -16,31 +24,221 @@
       (paginaMudou)="aoMudarPagina($event)"
       (tamanhoPaginaMudou)="aoMudarTamanhoPagina($event)">
 
-      <ng-template #cabecalho>
-        <tr>
-          <th class="px-6 py-4">Fornecedor</th>
-          <th class="px-6 py-4">Documento</th>
-          <th class="px-6 py-4">Vencimento</th>
-          <th class="px-6 py-4 text-right">Valor</th>
-          <th class="px-6 py-4 text-right">Saldo</th>
-          <th class="px-6 py-4 text-right">Dias em atraso</th>
-        </tr>
-      </ng-template>
+      <div filtros class="flex flex-wrap gap-4">
+        <div class="flex-1 min-w-48">
+          <label class="text-xs font-semibold text-slate-500">Buscar</label>
+          <input type="text" [(ngModel)]="filtroBusca" placeholder="Fornecedor, histórico, documento..."
+                 (keyup.enter)="aplicarFiltros()"
+                 class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+        </div>
+        <div class="w-40">
+          <label class="text-xs font-semibold text-slate-500">Vencimento</label>
+          <select [(ngModel)]="filtroVencimento" (change)="aplicarFiltros()"
+                  class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none">
+            <option value="todas">Todos</option>
+            <option value="vencidas">Vencidas</option>
+            <option value="vence-hoje">Vencem hoje</option>
+          </select>
+        </div>
+        <div class="w-40">
+          <label class="text-xs font-semibold text-slate-500">Situação</label>
+          <select [(ngModel)]="filtroSituacao" (change)="aplicarFiltros()"
+                  class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none">
+            <option [ngValue]="undefined">Todas</option>
+            <option [ngValue]="1">Em aberto</option>
+            <option [ngValue]="2">Pagas</option>
+          </select>
+        </div>
+        <div class="flex items-end gap-2">
+          <button (click)="aplicarFiltros()"
+                  class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all">
+            Filtrar
+          </button>
+          <button (click)="limparFiltros()"
+                  class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
+            Limpar
+          </button>
+        </div>
+      </div>
 
-      <ng-template #linha let-item>
-        <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
-          <td class="px-6 py-4 text-sm font-bold text-slate-900 dark:text-slate-100">{{ item.fornecedor || '-' }}</td>
-          <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{{ item.numeroDocumento || item.historico || '-' }}</td>
-          <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{{ formatarData(item.dataVencimento) }}</td>
-          <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 text-right">{{ formatarReais(item.valor) }}</td>
-          <td class="px-6 py-4 text-sm font-semibold text-slate-900 dark:text-slate-100 text-right">{{ formatarReais(item.saldo) }}</td>
-          <td class="px-6 py-4 text-sm text-right" [class.text-rose-600]="item.diasAtraso > 0" [class.text-slate-600]="item.diasAtraso === 0" [class.dark:text-slate-400]="item.diasAtraso === 0">
-            {{ item.diasAtraso > 0 ? (item.diasAtraso + ' dia(s)') : '-' }}
-          </td>
-        </tr>
-      </ng-template>
+      <table grid class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-slate-200 dark:border-slate-700 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">
+            <th class="py-3 pr-4">Fornecedor</th>
+            <th class="py-3 pr-4">Doc / Histórico</th>
+            <th class="py-3 pr-4">Vencimento</th>
+            <th class="py-3 pr-4 text-right">Valor</th>
+            <th class="py-3 pr-4 text-right">Saldo</th>
+            <th class="py-3 pr-4 text-center">Atraso</th>
+            <th class="py-3 pr-4 text-center">Status</th>
+            <th class="py-3 pr-2"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of itens(); track item.id) {
+            <tr class="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+              <td class="py-3 pr-4 font-medium text-slate-800 dark:text-slate-100">
+                {{ item.fornecedor || '—' }}
+              </td>
+              <td class="py-3 pr-4 text-slate-500 text-xs">
+                {{ item.numeroDocumento || item.historico || '—' }}
+                @if (item.parcela && item.numeroParcelas) {
+                  <span class="text-slate-400"> · {{ item.parcela }}/{{ item.numeroParcelas }}</span>
+                }
+              </td>
+              <td class="py-3 pr-4 text-slate-500">{{ formatarData(item.dataVencimento) }}</td>
+              <td class="py-3 pr-4 text-right font-semibold text-slate-700 dark:text-slate-200">
+                {{ formatarReais(item.valor) }}
+              </td>
+              <td class="py-3 pr-4 text-right font-semibold"
+                  [class.text-rose-600]="item.situacao === 1 && item.diasAtraso > 0"
+                  [class.text-slate-700]="item.situacao === 2 || item.diasAtraso === 0"
+                  [class.dark:text-slate-200]="true">
+                {{ formatarReais(item.saldo) }}
+              </td>
+              <td class="py-3 pr-4 text-center text-xs">
+                @if (item.situacao === 1 && item.diasAtraso > 0) {
+                  <span class="text-rose-600 font-semibold">{{ item.diasAtraso }}d</span>
+                } @else {
+                  <span class="text-slate-400">—</span>
+                }
+              </td>
+              <td class="py-3 pr-4 text-center">
+                <span class="inline-block px-2 py-0.5 rounded-full text-xs font-semibold {{ classeSituacao(item.situacao) }}">
+                  {{ rotuloSituacao(item.situacao) }}
+                </span>
+              </td>
+              <td class="py-3 pr-2 text-right">
+                @if (item.situacao === 1) {
+                  <button (click)="abrirModalBaixa(item, $event)"
+                          class="px-2 py-1 rounded-lg bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400 font-bold text-xs hover:bg-emerald-200 dark:hover:bg-emerald-900/60 transition-all whitespace-nowrap">
+                    Dar baixa
+                  </button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
 
     </app-listagem-paginada>
 
   </div>
 </div>
+
+@if (modalBaixaAberta()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" (click)="fecharModalBaixa()">
+    <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md mx-4 p-6 space-y-5" (click)="$event.stopPropagation()">
+      <div class="flex items-center justify-between">
+        <h2 class="text-lg font-bold text-slate-900 dark:text-slate-100">Dar baixa</h2>
+        <button (click)="fecharModalBaixa()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      @if (contaBaixando(); as conta) {
+        <div class="bg-slate-50 dark:bg-slate-800 rounded-xl p-4 text-sm space-y-1">
+          <p class="font-semibold text-slate-800 dark:text-slate-100">{{ conta.fornecedor || 'Sem fornecedor' }}</p>
+          <p class="text-slate-500">{{ conta.numeroDocumento || conta.historico || '—' }}</p>
+          <p class="text-slate-500">Vencimento: {{ formatarData(conta.dataVencimento) }} · Saldo: {{ formatarReais(conta.saldo) }}</p>
+        </div>
+
+        <div class="space-y-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1">Data do pagamento *</label>
+            <input type="date" [(ngModel)]="dataPagamentoBaixa"
+                   class="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1">Valor pago *</label>
+            <input type="number" [(ngModel)]="valorBaixa" step="0.01" min="0.01"
+                   class="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+          </div>
+        </div>
+      }
+
+      <div class="flex gap-3 justify-end pt-2">
+        <button (click)="fecharModalBaixa()"
+                class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
+          Cancelar
+        </button>
+        <button (click)="confirmarBaixa()"
+                [disabled]="salvandoBaixa() || !dataPagamentoBaixa || valorBaixa <= 0"
+                class="flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 text-white font-bold text-sm hover:bg-emerald-700 disabled:opacity-50 transition-all">
+          @if (salvandoBaixa()) {
+            <span class="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+          }
+          Confirmar pagamento
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (modalCriarAberta()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" (click)="fecharModalCriar()">
+    <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-lg mx-4 p-6 space-y-5" (click)="$event.stopPropagation()">
+      <div class="flex items-center justify-between">
+        <h2 class="text-lg font-bold text-slate-900 dark:text-slate-100">Nova conta a pagar</h2>
+        <button (click)="fecharModalCriar()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div class="space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+          <div class="col-span-2">
+            <label class="block text-xs font-semibold text-slate-500 mb-1">Histórico</label>
+            <input type="text" [(ngModel)]="formCriar.historico" placeholder="Descrição da conta"
+                   class="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1">Valor *</label>
+            <input type="number" [(ngModel)]="formCriar.valor" step="0.01" min="0.01" placeholder="0,00"
+                   class="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1">Número do documento</label>
+            <input type="text" [(ngModel)]="formCriar.numeroDocumento" placeholder="NF, boleto..."
+                   class="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1">Vencimento *</label>
+            <input type="date" [(ngModel)]="formCriar.dataVencimento"
+                   class="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1">Competência *</label>
+            <input type="date" [(ngModel)]="formCriar.competencia"
+                   class="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1">Parcela</label>
+            <input type="number" [(ngModel)]="formCriar.parcela" min="1" placeholder="Ex: 1"
+                   class="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1">Total de parcelas</label>
+            <input type="number" [(ngModel)]="formCriar.numeroParcelas" min="1" placeholder="Ex: 3"
+                   class="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex gap-3 justify-end pt-2">
+        <button (click)="fecharModalCriar()"
+                class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
+          Cancelar
+        </button>
+        <button (click)="confirmarCriar()"
+                [disabled]="salvandoCriar() || !formCriar.valor || !formCriar.dataVencimento"
+                class="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all">
+          @if (salvandoCriar()) {
+            <span class="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+          }
+          Criar conta
+        </button>
+      </div>
+    </div>
+  </div>
+}

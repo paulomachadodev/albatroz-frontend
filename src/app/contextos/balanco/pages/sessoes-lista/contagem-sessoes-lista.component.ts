@@ -147,6 +147,32 @@ export class ContagemSessoesListaComponent implements OnInit {
     });
   }
 
+  async forcarFinalizar(sessao: ContagemSessaoResumo) {
+    const confirmou = await this.confirm.confirmar(
+      'Forçar encerramento',
+      `Vai encerrar a contagem de ${sessao.nomeUsuario || 'outro usuário'} como administrador, enviando para revisão. Confirma?`,
+      { textoConfirmar: 'Forçar encerramento' }
+    );
+    if (!confirmou) return;
+
+    this.processando.set(true);
+    this.contagemSessaoService.finalizarAdmin(sessao.id).subscribe({
+      next: res => {
+        this.processando.set(false);
+        if (res.dados?.efetivadaAutomaticamente) {
+          this.toast.sucesso('Contagem encerrada e efetivada.', `${res.dados.produtosAplicados ?? 0} produto(s) atualizado(s) no estoque.`);
+        } else {
+          this.toast.sucesso('Contagem encerrada.', 'Aguardando efetivação pelo administrador.');
+        }
+        this.carregar(1);
+      },
+      error: err => {
+        this.processando.set(false);
+        this.toast.erroServidor(err, 'Não foi possível encerrar essa contagem.');
+      }
+    });
+  }
+
   async cancelar(sessao: ContagemSessaoResumo) {
     const confirmou = await this.confirm.confirmar(
       'Cancelar contagem',

@@ -50,6 +50,10 @@ export class ContagemSessaoService {
     return this.api.post<FinalizarContagemSessaoResposta>(`${this.endpoint}/${idSessao}/finalizar`, {});
   }
 
+  finalizarAdmin(idSessao: number): Observable<Resultado<FinalizarContagemSessaoResposta>> {
+    return this.api.post<FinalizarContagemSessaoResposta>(`${this.endpoint}/${idSessao}/finalizar-admin`, {});
+  }
+
   efetivar(idSessao: number): Observable<Resultado<EfetivarContagemSessaoResposta>> {
     return this.api.post<EfetivarContagemSessaoResposta>(`${this.endpoint}/${idSessao}/efetivar`, {});
   }

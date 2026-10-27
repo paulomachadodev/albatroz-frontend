@@ -55,73 +55,70 @@
         </div>
       </div>
 
-      <table grid class="w-full text-sm">
-        <thead>
-          <tr class="border-b border-slate-200 dark:border-slate-700 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">
-            <th class="py-3 pr-4">Número</th>
-            <th class="py-3 pr-4">Fornecedor</th>
-            <th class="py-3 pr-4">Emissão</th>
-            <th class="py-3 pr-4 text-right">Valor Total</th>
-            <th class="py-3 pr-4 text-center">Itens</th>
-            <th class="py-3 pr-4 text-center">Pendentes</th>
-            <th class="py-3 pr-4 text-center">Status</th>
-            <th class="py-3 pr-4"></th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (nota of itens(); track nota.id) {
-            <tr (click)="abrirNota(nota.id)"
-                class="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer transition-colors">
-              <td class="py-3 pr-4 font-mono text-xs text-slate-600 dark:text-slate-300">
-                {{ nota.numeroNota ?? '-' }}@if (nota.serie) {/{{ nota.serie }}}
-              </td>
-              <td class="py-3 pr-4 font-medium text-slate-800 dark:text-slate-100">
-                {{ nota.nomeFornecedor ?? '—' }}
-              </td>
-              <td class="py-3 pr-4 text-slate-500">{{ formatarData(nota.dataEmissao) }}</td>
-              <td class="py-3 pr-4 text-right font-semibold text-slate-700 dark:text-slate-200">
-                {{ formatarReais(nota.valorTotal) }}
-              </td>
-              <td class="py-3 pr-4 text-center text-slate-500">{{ nota.totalItens }}</td>
-              <td class="py-3 pr-4 text-center">
-                @if (nota.itensPendentes > 0) {
-                  <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400 text-xs font-bold">
-                    {{ nota.itensPendentes }}
-                  </span>
-                } @else {
-                  <span class="text-slate-400">-</span>
-                }
-              </td>
-              <td class="py-3 pr-4 text-center">
-                <span class="inline-block px-2 py-0.5 rounded-full text-xs font-semibold {{ classeStatus(nota.status) }}">
-                  {{ rotuloStatus(nota.status) }}
-                </span>
-              </td>
-              <td class="py-3 pr-2 text-right">
-                <div class="flex items-center justify-end gap-1" (click)="$event.stopPropagation()">
-                  @if (nota.status === 1) {
-                    <button (click)="registrarChegada(nota.id, $event)"
-                            [disabled]="registrandoChegada() === nota.id"
-                            class="px-2 py-1 rounded-lg bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400 font-bold text-xs hover:bg-amber-200 dark:hover:bg-amber-900/60 disabled:opacity-50 transition-all whitespace-nowrap">
-                      @if (registrandoChegada() === nota.id) {
-                        <span class="material-symbols-outlined text-xs animate-spin">progress_activity</span>
-                      } @else {
-                        Chegou
-                      }
-                    </button>
+      <ng-template #cabecalho>
+        <tr>
+          <th class="px-6 py-4">Número</th>
+          <th class="px-6 py-4">Fornecedor</th>
+          <th class="px-6 py-4">Emissão</th>
+          <th class="px-6 py-4 text-right">Valor Total</th>
+          <th class="px-3 py-4 text-center">Itens</th>
+          <th class="px-3 py-4 text-center">Pendentes</th>
+          <th class="px-6 py-4 text-center">Status</th>
+          <th class="px-6 py-4"></th>
+        </tr>
+      </ng-template>
+
+      <ng-template #linha let-nota>
+        <tr (click)="abrirNota(nota.id)"
+            class="hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer transition-colors">
+          <td class="px-6 py-4 font-mono text-xs text-slate-600 dark:text-slate-300">
+            {{ nota.numeroNota ?? '-' }}@if (nota.serie) {/{{ nota.serie }}}
+          </td>
+          <td class="px-6 py-4 font-medium text-slate-800 dark:text-slate-100">
+            {{ nota.nomeFornecedor ?? '—' }}
+          </td>
+          <td class="px-6 py-4 text-sm text-slate-500">{{ formatarData(nota.dataEmissao) }}</td>
+          <td class="px-6 py-4 text-right font-semibold text-slate-700 dark:text-slate-200">
+            {{ formatarReais(nota.valorTotal) }}
+          </td>
+          <td class="px-3 py-4 text-center text-sm text-slate-500">{{ nota.totalItens }}</td>
+          <td class="px-3 py-4 text-center">
+            @if (nota.itensPendentes > 0) {
+              <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400 text-xs font-bold">
+                {{ nota.itensPendentes }}
+              </span>
+            } @else {
+              <span class="text-slate-400">-</span>
+            }
+          </td>
+          <td class="px-6 py-4 text-center">
+            <span class="inline-block px-2 py-0.5 rounded-full text-xs font-semibold {{ classeStatus(nota.status) }}">
+              {{ rotuloStatus(nota.status) }}
+            </span>
+          </td>
+          <td class="px-6 py-4 text-right">
+            <div class="flex items-center justify-end gap-1" (click)="$event.stopPropagation()">
+              @if (nota.status === 1) {
+                <button (click)="registrarChegada(nota.id, $event)"
+                        [disabled]="registrandoChegada() === nota.id"
+                        class="px-2 py-1 rounded-lg bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400 font-bold text-xs hover:bg-amber-200 dark:hover:bg-amber-900/60 disabled:opacity-50 transition-all whitespace-nowrap">
+                  @if (registrandoChegada() === nota.id) {
+                    <span class="material-symbols-outlined text-xs animate-spin">progress_activity</span>
+                  } @else {
+                    Chegou
                   }
-                  @if (nota.status === 1 || nota.status === 2) {
-                    <button (click)="abrirConferencia(nota.id, $event)"
-                            class="px-2 py-1 rounded-lg bg-primary/10 text-primary font-bold text-xs hover:bg-primary/20 transition-all whitespace-nowrap">
-                      Conferir
-                    </button>
-                  }
-                </div>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
+                </button>
+              }
+              @if (nota.status === 1 || nota.status === 2) {
+                <button (click)="abrirConferencia(nota.id, $event)"
+                        class="px-2 py-1 rounded-lg bg-primary/10 text-primary font-bold text-xs hover:bg-primary/20 transition-all whitespace-nowrap">
+                  Conferir
+                </button>
+              }
+            </div>
+          </td>
+        </tr>
+      </ng-template>
 
     </app-listagem-paginada>
 

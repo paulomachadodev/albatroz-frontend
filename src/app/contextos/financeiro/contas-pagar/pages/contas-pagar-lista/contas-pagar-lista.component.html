@@ -61,65 +61,62 @@
         </div>
       </div>
 
-      <table grid class="w-full text-sm">
-        <thead>
-          <tr class="border-b border-slate-200 dark:border-slate-700 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">
-            <th class="py-3 pr-4">Fornecedor</th>
-            <th class="py-3 pr-4">Doc / Histórico</th>
-            <th class="py-3 pr-4">Vencimento</th>
-            <th class="py-3 pr-4 text-right">Valor</th>
-            <th class="py-3 pr-4 text-right">Saldo</th>
-            <th class="py-3 pr-4 text-center">Atraso</th>
-            <th class="py-3 pr-4 text-center">Status</th>
-            <th class="py-3 pr-2"></th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (item of itens(); track item.id) {
-            <tr class="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-              <td class="py-3 pr-4 font-medium text-slate-800 dark:text-slate-100">
-                {{ item.fornecedor || '—' }}
-              </td>
-              <td class="py-3 pr-4 text-slate-500 text-xs">
-                {{ item.numeroDocumento || item.historico || '—' }}
-                @if (item.parcela && item.numeroParcelas) {
-                  <span class="text-slate-400"> · {{ item.parcela }}/{{ item.numeroParcelas }}</span>
-                }
-              </td>
-              <td class="py-3 pr-4 text-slate-500">{{ formatarData(item.dataVencimento) }}</td>
-              <td class="py-3 pr-4 text-right font-semibold text-slate-700 dark:text-slate-200">
-                {{ formatarReais(item.valor) }}
-              </td>
-              <td class="py-3 pr-4 text-right font-semibold"
-                  [class.text-rose-600]="item.situacao === 1 && item.diasAtraso > 0"
-                  [class.text-slate-700]="item.situacao === 2 || item.diasAtraso === 0"
-                  [class.dark:text-slate-200]="true">
-                {{ formatarReais(item.saldo) }}
-              </td>
-              <td class="py-3 pr-4 text-center text-xs">
-                @if (item.situacao === 1 && item.diasAtraso > 0) {
-                  <span class="text-rose-600 font-semibold">{{ item.diasAtraso }}d</span>
-                } @else {
-                  <span class="text-slate-400">—</span>
-                }
-              </td>
-              <td class="py-3 pr-4 text-center">
-                <span class="inline-block px-2 py-0.5 rounded-full text-xs font-semibold {{ classeSituacao(item.situacao) }}">
-                  {{ rotuloSituacao(item.situacao) }}
-                </span>
-              </td>
-              <td class="py-3 pr-2 text-right">
-                @if (item.situacao === 1) {
-                  <button (click)="abrirModalBaixa(item, $event)"
-                          class="px-2 py-1 rounded-lg bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400 font-bold text-xs hover:bg-emerald-200 dark:hover:bg-emerald-900/60 transition-all whitespace-nowrap">
-                    Dar baixa
-                  </button>
-                }
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
+      <ng-template #cabecalho>
+        <tr>
+          <th class="px-6 py-4">Fornecedor</th>
+          <th class="px-6 py-4">Doc / Histórico</th>
+          <th class="px-6 py-4">Vencimento</th>
+          <th class="px-6 py-4 text-right">Valor</th>
+          <th class="px-6 py-4 text-right">Saldo</th>
+          <th class="px-3 py-4 text-center">Atraso</th>
+          <th class="px-6 py-4 text-center">Status</th>
+          <th class="px-6 py-4"></th>
+        </tr>
+      </ng-template>
+
+      <ng-template #linha let-item>
+        <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+          <td class="px-6 py-4 font-medium text-slate-800 dark:text-slate-100">
+            {{ item.fornecedor || '—' }}
+          </td>
+          <td class="px-6 py-4 text-slate-500 text-xs">
+            {{ item.numeroDocumento || item.historico || '—' }}
+            @if (item.parcela && item.numeroParcelas) {
+              <span class="text-slate-400"> · {{ item.parcela }}/{{ item.numeroParcelas }}</span>
+            }
+          </td>
+          <td class="px-6 py-4 text-sm text-slate-500">{{ formatarData(item.dataVencimento) }}</td>
+          <td class="px-6 py-4 text-right font-semibold text-slate-700 dark:text-slate-200">
+            {{ formatarReais(item.valor) }}
+          </td>
+          <td class="px-6 py-4 text-right font-semibold"
+              [class.text-rose-600]="item.situacao === 1 && item.diasAtraso > 0"
+              [class.text-slate-700]="item.situacao === 2 || item.diasAtraso === 0"
+              [class.dark:text-slate-200]="true">
+            {{ formatarReais(item.saldo) }}
+          </td>
+          <td class="px-3 py-4 text-center text-xs">
+            @if (item.situacao === 1 && item.diasAtraso > 0) {
+              <span class="text-rose-600 font-semibold">{{ item.diasAtraso }}d</span>
+            } @else {
+              <span class="text-slate-400">—</span>
+            }
+          </td>
+          <td class="px-6 py-4 text-center">
+            <span class="inline-block px-2 py-0.5 rounded-full text-xs font-semibold {{ classeSituacao(item.situacao) }}">
+              {{ rotuloSituacao(item.situacao) }}
+            </span>
+          </td>
+          <td class="px-6 py-4 text-right">
+            @if (item.situacao === 1) {
+              <button (click)="abrirModalBaixa(item, $event)"
+                      class="px-2 py-1 rounded-lg bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400 font-bold text-xs hover:bg-emerald-200 dark:hover:bg-emerald-900/60 transition-all whitespace-nowrap">
+                Dar baixa
+              </button>
+            }
+          </td>
+        </tr>
+      </ng-template>
 
     </app-listagem-paginada>
 

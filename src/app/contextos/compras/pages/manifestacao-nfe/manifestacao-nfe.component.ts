@@ -6,13 +6,15 @@ import { NfeSefaz, NotaManifestacaoResumo } from '../../models/manifestacao-nfe.
 import { ToastService } from '../../../../core/feedback/toast.service';
 import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 import { BreadcrumbComponent } from '../../../../shared/components/breadcrumb/breadcrumb.component';
+import { ListagemPaginadaComponent } from '../../../../shared/components/listagem-paginada/listagem-paginada.component';
+import { ModalComponent } from '../../../../shared/components/modal/modal.component';
 
 type Aba = 'sefaz' | 'notas';
 
 @Component({
   selector: 'app-manifestacao-nfe',
   standalone: true,
-  imports: [FormsModule, PageHeaderComponent, BreadcrumbComponent],
+  imports: [FormsModule, PageHeaderComponent, BreadcrumbComponent, ListagemPaginadaComponent, ModalComponent],
   templateUrl: './manifestacao-nfe.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })

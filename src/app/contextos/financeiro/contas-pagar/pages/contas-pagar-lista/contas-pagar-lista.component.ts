@@ -7,11 +7,12 @@ import { ToastService } from '../../../../../core/feedback/toast.service';
 import { PageHeaderComponent } from '../../../../../shared/components/page-header/page-header.component';
 import { BreadcrumbComponent } from '../../../../../shared/components/breadcrumb/breadcrumb.component';
 import { ListagemPaginadaComponent } from '../../../../../shared/components/listagem-paginada/listagem-paginada.component';
+import { ModalComponent } from '../../../../../shared/components/modal/modal.component';
 
 @Component({
   selector: 'app-contas-pagar-lista',
   standalone: true,
-  imports: [FormsModule, PageHeaderComponent, BreadcrumbComponent, ListagemPaginadaComponent],
+  imports: [FormsModule, PageHeaderComponent, BreadcrumbComponent, ListagemPaginadaComponent, ModalComponent],
   templateUrl: './contas-pagar-lista.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })

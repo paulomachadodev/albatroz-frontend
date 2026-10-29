@@ -20,7 +20,13 @@ Toda feature que envolve dado vindo/indo pra API (novo filtro, nova coluna, novo
 
 ## ⚠️ Antes de escrever QUALQUER UI (obrigatório)
 
-Ler `.claude/standards/angular/listagem-padrao.md` inteiro antes de criar botão, toggle, tabela, modal, drawer, listagem, coluna de ações ou fluxo de salvar — nessa ordem de prioridade. Esse standard já resolve: botão de ação (`app-btn-icone`, nunca link cru pra 2+ ações), liga/desliga (`app-toggle`, nunca checkbox cru), listagem paginada, modal, drawer, dropdown de ações em massa, e a regra de **1 botão Salvar por registro** (nunca 1 por seção/aba do mesmo formulário). Criar um desses do zero sem checar aqui primeiro é bug, não estilo — já aconteceu (2026-08-21: telas de produto nasceram com botão Salvar espalhado e sem usar o padrão de ação existente porque esse arquivo não foi lido antes).
+Carregar AMBOS os standards antes de criar qualquer HTML novo:
+
+1. **`.claude/standards/angular/template-estrutura.md`** — estrutura obrigatória do wrapper de página, token `bg-primary` (nunca `bg-blue-*` hardcoded), botões, abas, cards, inputs, badges. Violações frequentes: usar `bg-blue-600` em vez de `bg-primary`, tab com `border-blue-600` em vez de `[class.border-primary]`, modal hand-rolled em vez de `<app-modal>`, wrapper sem `bg-background-light dark:bg-background-dark`.
+
+2. **`.claude/standards/angular/listagem-padrao.md`** — `app-listagem-paginada`, `app-modal`, `app-page-header`, `app-btn-icone`, `app-spinner`, `app-drawer`, `app-overlay-progresso`, autosave proibido, PrimeNG first. Criar qualquer desses do zero sem checar aqui é bug — já aconteceu (2026-08-21).
+
+Padrão canônico de referência para uma nova tela: ver `.claude/examples/` (tela de listagem: `notas-entrada-lista`, tela de detalhe com abas: `contatos-detalhe`).
 
 ---
 

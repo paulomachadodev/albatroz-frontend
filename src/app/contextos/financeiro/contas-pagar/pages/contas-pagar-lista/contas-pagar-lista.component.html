@@ -123,119 +123,99 @@
   </div>
 </div>
 
-@if (modalBaixaAberta()) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" (click)="fecharModalBaixa()">
-    <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md mx-4 p-6 space-y-5" (click)="$event.stopPropagation()">
-      <div class="flex items-center justify-between">
-        <h2 class="text-lg font-bold text-slate-900 dark:text-slate-100">Dar baixa</h2>
-        <button (click)="fecharModalBaixa()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
-          <span class="material-symbols-outlined">close</span>
-        </button>
-      </div>
-
-      @if (contaBaixando(); as conta) {
-        <div class="bg-slate-50 dark:bg-slate-800 rounded-xl p-4 text-sm space-y-1">
-          <p class="font-semibold text-slate-800 dark:text-slate-100">{{ conta.fornecedor || 'Sem fornecedor' }}</p>
-          <p class="text-slate-500">{{ conta.numeroDocumento || conta.historico || '—' }}</p>
-          <p class="text-slate-500">Vencimento: {{ formatarData(conta.dataVencimento) }} · Saldo: {{ formatarReais(conta.saldo) }}</p>
-        </div>
-
-        <div class="space-y-4">
-          <div>
-            <label class="block text-xs font-semibold text-slate-500 mb-1">Data do pagamento *</label>
-            <input type="date" [(ngModel)]="dataPagamentoBaixa"
-                   class="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-slate-500 mb-1">Valor pago *</label>
-            <input type="number" [(ngModel)]="valorBaixa" step="0.01" min="0.01"
-                   class="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
-          </div>
-        </div>
-      }
-
-      <div class="flex gap-3 justify-end pt-2">
-        <button (click)="fecharModalBaixa()"
-                class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
-          Cancelar
-        </button>
-        <button (click)="confirmarBaixa()"
-                [disabled]="salvandoBaixa() || !dataPagamentoBaixa || valorBaixa <= 0"
-                class="flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 text-white font-bold text-sm hover:bg-emerald-700 disabled:opacity-50 transition-all">
-          @if (salvandoBaixa()) {
-            <span class="material-symbols-outlined text-sm animate-spin">progress_activity</span>
-          }
-          Confirmar pagamento
-        </button>
-      </div>
-    </div>
-  </div>
-}
-
-@if (modalCriarAberta()) {
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" (click)="fecharModalCriar()">
-    <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-lg mx-4 p-6 space-y-5" (click)="$event.stopPropagation()">
-      <div class="flex items-center justify-between">
-        <h2 class="text-lg font-bold text-slate-900 dark:text-slate-100">Nova conta a pagar</h2>
-        <button (click)="fecharModalCriar()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
-          <span class="material-symbols-outlined">close</span>
-        </button>
+<app-modal [aberto]="modalBaixaAberta()" titulo="Dar baixa" tamanho="md" (fechar)="fecharModalBaixa()">
+  <div class="px-6 pb-6 space-y-5">
+    @if (contaBaixando(); as conta) {
+      <div class="bg-slate-50 dark:bg-slate-800 rounded-xl p-4 text-sm space-y-1">
+        <p class="font-semibold text-slate-800 dark:text-slate-100">{{ conta.fornecedor || 'Sem fornecedor' }}</p>
+        <p class="text-slate-500">{{ conta.numeroDocumento || conta.historico || '—' }}</p>
+        <p class="text-slate-500">Vencimento: {{ formatarData(conta.dataVencimento) }} · Saldo: {{ formatarReais(conta.saldo) }}</p>
       </div>
 
       <div class="space-y-4">
-        <div class="grid grid-cols-2 gap-4">
-          <div class="col-span-2">
-            <label class="block text-xs font-semibold text-slate-500 mb-1">Histórico</label>
-            <input type="text" [(ngModel)]="formCriar.historico" placeholder="Descrição da conta"
-                   class="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-slate-500 mb-1">Valor *</label>
-            <input type="number" [(ngModel)]="formCriar.valor" step="0.01" min="0.01" placeholder="0,00"
-                   class="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-slate-500 mb-1">Número do documento</label>
-            <input type="text" [(ngModel)]="formCriar.numeroDocumento" placeholder="NF, boleto..."
-                   class="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-slate-500 mb-1">Vencimento *</label>
-            <input type="date" [(ngModel)]="formCriar.dataVencimento"
-                   class="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-slate-500 mb-1">Competência *</label>
-            <input type="date" [(ngModel)]="formCriar.competencia"
-                   class="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-slate-500 mb-1">Parcela</label>
-            <input type="number" [(ngModel)]="formCriar.parcela" min="1" placeholder="Ex: 1"
-                   class="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
-          </div>
-          <div>
-            <label class="block text-xs font-semibold text-slate-500 mb-1">Total de parcelas</label>
-            <input type="number" [(ngModel)]="formCriar.numeroParcelas" min="1" placeholder="Ex: 3"
-                   class="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
-          </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 mb-1">Data do pagamento *</label>
+          <input type="date" [(ngModel)]="dataPagamentoBaixa"
+                 class="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 mb-1">Valor pago *</label>
+          <input type="number" [(ngModel)]="valorBaixa" step="0.01" min="0.01"
+                 class="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
         </div>
       </div>
+    }
 
-      <div class="flex gap-3 justify-end pt-2">
-        <button (click)="fecharModalCriar()"
-                class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
-          Cancelar
-        </button>
-        <button (click)="confirmarCriar()"
-                [disabled]="salvandoCriar() || !formCriar.valor || !formCriar.dataVencimento"
-                class="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all">
-          @if (salvandoCriar()) {
-            <span class="material-symbols-outlined text-sm animate-spin">progress_activity</span>
-          }
-          Criar conta
-        </button>
-      </div>
+    <div class="flex gap-3 justify-end pt-2">
+      <button (click)="fecharModalBaixa()"
+              class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
+        Cancelar
+      </button>
+      <button (click)="confirmarBaixa()"
+              [disabled]="salvandoBaixa() || !dataPagamentoBaixa || valorBaixa <= 0"
+              class="flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 text-white font-bold text-sm hover:bg-emerald-700 disabled:opacity-50 transition-all">
+        @if (salvandoBaixa()) {
+          <span class="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+        }
+        Confirmar pagamento
+      </button>
     </div>
   </div>
-}
+</app-modal>
+
+<app-modal [aberto]="modalCriarAberta()" titulo="Nova conta a pagar" tamanho="lg" (fechar)="fecharModalCriar()">
+  <div class="px-6 pb-6 space-y-5">
+    <div class="grid grid-cols-2 gap-4">
+      <div class="col-span-2">
+        <label class="block text-xs font-semibold text-slate-500 mb-1">Histórico</label>
+        <input type="text" [(ngModel)]="formCriar.historico" placeholder="Descrição da conta"
+               class="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-slate-500 mb-1">Valor *</label>
+        <input type="number" [(ngModel)]="formCriar.valor" step="0.01" min="0.01" placeholder="0,00"
+               class="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-slate-500 mb-1">Número do documento</label>
+        <input type="text" [(ngModel)]="formCriar.numeroDocumento" placeholder="NF, boleto..."
+               class="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-slate-500 mb-1">Vencimento *</label>
+        <input type="date" [(ngModel)]="formCriar.dataVencimento"
+               class="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-slate-500 mb-1">Competência *</label>
+        <input type="date" [(ngModel)]="formCriar.competencia"
+               class="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-slate-500 mb-1">Parcela</label>
+        <input type="number" [(ngModel)]="formCriar.parcela" min="1" placeholder="Ex: 1"
+               class="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-slate-500 mb-1">Total de parcelas</label>
+        <input type="number" [(ngModel)]="formCriar.numeroParcelas" min="1" placeholder="Ex: 3"
+               class="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+      </div>
+    </div>
+
+    <div class="flex gap-3 justify-end pt-2">
+      <button (click)="fecharModalCriar()"
+              class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
+        Cancelar
+      </button>
+      <button (click)="confirmarCriar()"
+              [disabled]="salvandoCriar() || !formCriar.valor || !formCriar.dataVencimento"
+              class="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all">
+        @if (salvandoCriar()) {
+          <span class="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+        }
+        Criar conta
+      </button>
+    </div>
+  </div>
+</app-modal>

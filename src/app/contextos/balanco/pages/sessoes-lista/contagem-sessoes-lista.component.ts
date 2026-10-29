@@ -168,6 +168,7 @@ export class ContagemSessoesListaComponent implements OnInit {
       },
       error: err => {
         this.processando.set(false);
+        this.carregar(1);
         this.toast.erroServidor(err, 'Não foi possível encerrar essa contagem.');
       }
     });

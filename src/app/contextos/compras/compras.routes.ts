@@ -45,5 +45,10 @@ export const COMPRAS_ROUTES: Routes = [
     path: 'ctes/:id',
     loadComponent: () =>
       import('./pages/cte-detalhe/cte-detalhe.component').then(m => m.CteDetalheComponent)
+  },
+  {
+    path: 'manifestacao',
+    loadComponent: () =>
+      import('./pages/manifestacao-nfe/manifestacao-nfe.component').then(m => m.ManifestacaoNfeComponent)
   }
 ];

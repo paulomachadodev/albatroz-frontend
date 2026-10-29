@@ -86,7 +86,8 @@ export class SidebarComponent implements OnInit {
             { label: 'Fornecedores', rota: '/compras/fornecedores', icone: 'storefront', permissao: 'produtos:ler' },
             { label: 'Pedidos', rota: '/compras/pedidos', icone: 'receipt_long', permissao: 'produtos:ler' },
             { label: 'Entrada de Notas', rota: '/compras/notas-entrada', icone: 'inventory', permissao: 'produtos:ler' },
-            { label: 'CT-e', rota: '/compras/ctes', icone: 'local_shipping', permissao: 'produtos:ler' }
+            { label: 'CT-e', rota: '/compras/ctes', icone: 'local_shipping', permissao: 'produtos:ler' },
+            { label: 'Manifestação NF-e', rota: '/compras/manifestacao', icone: 'verified', permissao: 'compras:ler' }
           ]
         },
         {

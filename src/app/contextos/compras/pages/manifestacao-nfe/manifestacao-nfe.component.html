@@ -1,0 +1,222 @@
+<app-breadcrumb [itens]="[{label:'Compras',rota:'/compras'},{label:'Manifestação NF-e'}]" />
+
+<app-page-header titulo="Manifestação NF-e" subtitulo="Consulte e manifeste notas fiscais eletrônicas no portal SEFAZ" />
+
+<div class="flex-1 flex flex-col min-h-0 px-4 pb-6 gap-4">
+
+  <div class="flex items-center gap-1 border-b border-slate-200 dark:border-slate-700">
+    <button
+      (click)="alternarAba('sefaz')"
+      [class]="abaAtiva() === 'sefaz'
+        ? 'px-4 py-2.5 text-sm font-medium text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400 -mb-px'
+        : 'px-4 py-2.5 text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'">
+      <span class="material-symbols-outlined text-base align-middle mr-1">cloud_download</span>
+      Consultar SEFAZ
+    </button>
+    <button
+      (click)="alternarAba('notas')"
+      [class]="abaAtiva() === 'notas'
+        ? 'px-4 py-2.5 text-sm font-medium text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400 -mb-px'
+        : 'px-4 py-2.5 text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'">
+      <span class="material-symbols-outlined text-base align-middle mr-1">receipt_long</span>
+      Minhas Notas
+    </button>
+  </div>
+
+  @if (abaAtiva() === 'sefaz') {
+    <div class="flex flex-col gap-4">
+      <div class="flex items-center justify-between">
+        <p class="text-sm text-slate-500 dark:text-slate-400">
+          Busca novas NF-e disponíveis para sua empresa no portal nacional SEFAZ.
+        </p>
+        <button
+          (click)="consultarSefaz()"
+          [disabled]="consultando()"
+          class="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors">
+          @if (consultando()) {
+            <span class="material-symbols-outlined text-base animate-spin">progress_activity</span>
+            Consultando...
+          } @else {
+            <span class="material-symbols-outlined text-base">cloud_sync</span>
+            Consultar SEFAZ
+          }
+        </button>
+      </div>
+
+      @if (nfesSefaz().length > 0) {
+        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+          <table class="w-full text-sm">
+            <thead class="bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 uppercase text-xs">
+              <tr>
+                <th class="px-4 py-3 text-left font-medium">Chave</th>
+                <th class="px-4 py-3 text-left font-medium">Emitente</th>
+                <th class="px-4 py-3 text-left font-medium">Data</th>
+                <th class="px-4 py-3 text-right font-medium">Valor</th>
+                <th class="px-4 py-3 text-center font-medium">No sistema</th>
+                <th class="px-4 py-3 text-center font-medium">Ações</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+              @for (nfe of nfesSefaz(); track nfe.nsu) {
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                  <td class="px-4 py-3 font-mono text-xs text-slate-500 dark:text-slate-400">
+                    {{ formatarChave(nfe.chaveNfe) }}
+                  </td>
+                  <td class="px-4 py-3 text-slate-700 dark:text-slate-300">
+                    {{ nfe.nomeEmitente ?? '-' }}
+                  </td>
+                  <td class="px-4 py-3 text-slate-600 dark:text-slate-400">
+                    {{ formatarData(nfe.dataEmissao) }}
+                  </td>
+                  <td class="px-4 py-3 text-right font-medium text-slate-700 dark:text-slate-300">
+                    {{ formatarReais(nfe.valorTotal) }}
+                  </td>
+                  <td class="px-4 py-3 text-center">
+                    @if (nfe.jaNoSistema) {
+                      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400">
+                        <span class="material-symbols-outlined text-xs">check_circle</span>
+                        Sim
+                      </span>
+                    } @else {
+                      <span class="text-slate-400 dark:text-slate-500 text-xs">Não</span>
+                    }
+                  </td>
+                  <td class="px-4 py-3">
+                    @if (nfe.podeManifestacao) {
+                      <div class="flex items-center justify-center gap-1">
+                        <button
+                          (click)="registrarCiencia(nfe.chaveNfe)"
+                          [disabled]="chaveEmAcao() === nfe.chaveNfe"
+                          title="Ciência da operação"
+                          class="px-2 py-1 text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 dark:text-blue-400 rounded disabled:opacity-40 transition-colors">
+                          Ciência
+                        </button>
+                        <button
+                          (click)="registrarConfirmacao(nfe.chaveNfe)"
+                          [disabled]="chaveEmAcao() === nfe.chaveNfe"
+                          title="Confirmação da operação"
+                          class="px-2 py-1 text-xs bg-emerald-50 hover:bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:hover:bg-emerald-900/50 dark:text-emerald-400 rounded disabled:opacity-40 transition-colors">
+                          Confirmar
+                        </button>
+                        <button
+                          (click)="abrirModalNaoRealizada(nfe.chaveNfe)"
+                          [disabled]="chaveEmAcao() === nfe.chaveNfe"
+                          title="Operação não realizada"
+                          class="px-2 py-1 text-xs bg-amber-50 hover:bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:hover:bg-amber-900/50 dark:text-amber-400 rounded disabled:opacity-40 transition-colors">
+                          Não realizada
+                        </button>
+                      </div>
+                    } @else {
+                      <span class="text-xs text-slate-400 dark:text-slate-500 text-center block">Manifestada</span>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else if (!consultando()) {
+        <div class="flex flex-col items-center justify-center py-16 text-slate-400 dark:text-slate-500 gap-3">
+          <span class="material-symbols-outlined text-5xl">cloud_off</span>
+          <p class="text-sm">Clique em "Consultar SEFAZ" para buscar novas NF-e.</p>
+        </div>
+      }
+    </div>
+  }
+
+  @if (abaAtiva() === 'notas') {
+    <div class="flex flex-col gap-4">
+      @if (carregando()) {
+        <div class="flex items-center justify-center py-16 text-slate-400 dark:text-slate-500 gap-2">
+          <span class="material-symbols-outlined animate-spin">progress_activity</span>
+          <span class="text-sm">Carregando...</span>
+        </div>
+      } @else if (notas().length === 0) {
+        <div class="flex flex-col items-center justify-center py-16 text-slate-400 dark:text-slate-500 gap-3">
+          <span class="material-symbols-outlined text-5xl">receipt_long</span>
+          <p class="text-sm">Nenhuma nota com manifestação registrada ainda.</p>
+        </div>
+      } @else {
+        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+          <table class="w-full text-sm">
+            <thead class="bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 uppercase text-xs">
+              <tr>
+                <th class="px-4 py-3 text-left font-medium">Nº Nota</th>
+                <th class="px-4 py-3 text-left font-medium">Fornecedor</th>
+                <th class="px-4 py-3 text-left font-medium">Emissão</th>
+                <th class="px-4 py-3 text-right font-medium">Valor</th>
+                <th class="px-4 py-3 text-center font-medium">Manifestação</th>
+                <th class="px-4 py-3 text-center font-medium">XML</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+              @for (nota of notas(); track nota.id) {
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                  <td class="px-4 py-3 font-medium text-slate-700 dark:text-slate-300">
+                    {{ nota.numeroNota ?? '-' }}
+                  </td>
+                  <td class="px-4 py-3 text-slate-600 dark:text-slate-400">
+                    {{ nota.nomeFornecedor ?? '-' }}
+                  </td>
+                  <td class="px-4 py-3 text-slate-600 dark:text-slate-400">
+                    {{ formatarData(nota.dataEmissao) }}
+                  </td>
+                  <td class="px-4 py-3 text-right font-medium text-slate-700 dark:text-slate-300">
+                    {{ formatarReais(nota.valorTotal) }}
+                  </td>
+                  <td class="px-4 py-3 text-center">
+                    <span [class]="'inline-flex px-2 py-0.5 rounded-full text-xs font-medium ' + classeManifestacao(nota.manifestacaoStatus)">
+                      {{ rotuloManifestacao(nota.manifestacaoStatus) }}
+                    </span>
+                  </td>
+                  <td class="px-4 py-3 text-center">
+                    @if (nota.temXml) {
+                      <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-emerald-50 dark:bg-emerald-900/30">
+                        <span class="material-symbols-outlined text-sm text-emerald-600 dark:text-emerald-400">description</span>
+                      </span>
+                    } @else {
+                      <span class="text-slate-300 dark:text-slate-600 text-xs">—</span>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  }
+
+</div>
+
+@if (modalJustificativa()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-md p-6 flex flex-col gap-4">
+      <h2 class="text-base font-semibold text-slate-800 dark:text-slate-100">
+        Operação Não Realizada
+      </h2>
+      <p class="text-sm text-slate-500 dark:text-slate-400">
+        Informe o motivo pelo qual a operação não foi realizada. Mínimo 15 caracteres.
+      </p>
+      <textarea
+        [(ngModel)]="justificativa"
+        rows="4"
+        placeholder="Ex: Mercadoria não recebida, pedido cancelado..."
+        class="w-full text-sm rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 p-3 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500">
+      </textarea>
+      <div class="flex items-center justify-end gap-2">
+        <button
+          (click)="fecharModal()"
+          class="px-4 py-2 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
+          Cancelar
+        </button>
+        <button
+          (click)="confirmarNaoRealizada()"
+          [disabled]="justificativa.trim().length < 15"
+          class="px-4 py-2 text-sm bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white font-medium rounded-lg transition-colors">
+          Confirmar
+        </button>
+      </div>
+    </div>
+  </div>
+}

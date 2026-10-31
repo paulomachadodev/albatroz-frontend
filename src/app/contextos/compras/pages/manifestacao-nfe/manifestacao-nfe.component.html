@@ -3,148 +3,87 @@
 
     <app-breadcrumb [itens]="[{label:'Início',rota:'/dashboard'},{label:'Compras',rota:'/compras'},{label:'Manifestação NF-e'}]" />
 
-    <app-page-header titulo="Manifestação NF-e" subtitulo="Consulte e manifeste NF-e de entrada no portal nacional SEFAZ.">
-      @if (abaAtiva() === 'sefaz') {
-        <div acoes class="flex gap-2">
-          <button (click)="consultarSefaz()" [disabled]="consultando()"
-                  class="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all">
-            @if (consultando()) {
-              <span class="material-symbols-outlined text-base animate-spin">progress_activity</span>
-              Consultando...
-            } @else {
-              <span class="material-symbols-outlined text-base">cloud_sync</span>
-              Consultar SEFAZ
-            }
-          </button>
-        </div>
-      }
+    <app-page-header titulo="Manifestação NF-e" subtitulo="NF-e de entrada sincronizadas pelo Tiny. Manifeste diretamente no SEFAZ.">
+      <div acoes class="flex gap-2">
+        <button (click)="carregarNotas()" [disabled]="carregando()"
+                class="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all">
+          @if (carregando()) {
+            <span class="material-symbols-outlined text-base animate-spin">progress_activity</span>
+            Carregando...
+          } @else {
+            <span class="material-symbols-outlined text-base">refresh</span>
+            Atualizar
+          }
+        </button>
+      </div>
     </app-page-header>
 
-    <nav class="flex items-center gap-6 border-b border-slate-200 dark:border-slate-700">
-      <button (click)="alternarAba('sefaz')"
-              class="pb-3 text-sm font-bold border-b-2 transition-colors whitespace-nowrap"
-              [class.border-primary]="abaAtiva() === 'sefaz'" [class.text-primary]="abaAtiva() === 'sefaz'"
-              [class.border-transparent]="abaAtiva() !== 'sefaz'" [class.text-slate-500]="abaAtiva() !== 'sefaz'">
-        Consultar SEFAZ
-      </button>
-      <button (click)="alternarAba('notas')"
-              class="pb-3 text-sm font-bold border-b-2 transition-colors whitespace-nowrap"
-              [class.border-primary]="abaAtiva() === 'notas'" [class.text-primary]="abaAtiva() === 'notas'"
-              [class.border-transparent]="abaAtiva() !== 'notas'" [class.text-slate-500]="abaAtiva() !== 'notas'">
-        Minhas Notas
-      </button>
-    </nav>
+    <app-listagem-paginada
+      [itens]="notas()"
+      [carregando]="carregando()"
+      [totalRegistros]="notas().length"
+      [totalPaginas]="1"
+      tituloVazio="Nenhuma NF-e de entrada encontrada.">
 
-    @if (abaAtiva() === 'sefaz') {
-      <app-listagem-paginada
-        [itens]="nfesSefaz()"
-        [carregando]="consultando()"
-        [totalRegistros]="nfesSefaz().length"
-        [totalPaginas]="1"
-        tituloVazio="Clique em 'Consultar SEFAZ' para buscar NF-e disponíveis.">
+      <ng-template #cabecalho>
+        <tr>
+          <th class="px-6 py-4">Nº Nota</th>
+          <th class="px-6 py-4">Fornecedor</th>
+          <th class="px-6 py-4">Emissão</th>
+          <th class="px-6 py-4 text-right">Valor</th>
+          <th class="px-6 py-4 text-center">Manifestação</th>
+          <th class="px-6 py-4 text-center">XML</th>
+          <th class="px-6 py-4 text-center">Ações</th>
+        </tr>
+      </ng-template>
 
-        <ng-template #cabecalho>
-          <tr>
-            <th class="px-6 py-4">Chave NF-e</th>
-            <th class="px-6 py-4">Emitente</th>
-            <th class="px-6 py-4">Emissão</th>
-            <th class="px-6 py-4 text-right">Valor</th>
-            <th class="px-6 py-4 text-center">No sistema</th>
-            <th class="px-6 py-4 text-center">Ações</th>
-          </tr>
-        </ng-template>
-
-        <ng-template #linha let-nfe>
-          <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-            <td class="px-6 py-4 font-mono text-xs text-slate-500 dark:text-slate-400">
-              ...{{ nfe.chaveNfe.slice(-8) }}
-            </td>
-            <td class="px-6 py-4 font-medium text-slate-800 dark:text-slate-100">
-              {{ nfe.nomeEmitente ?? '—' }}
-            </td>
-            <td class="px-6 py-4 text-sm text-slate-500">{{ formatarData(nfe.dataEmissao) }}</td>
-            <td class="px-6 py-4 text-right font-semibold text-slate-700 dark:text-slate-200">
-              {{ formatarReais(nfe.valorTotal) }}
-            </td>
-            <td class="px-6 py-4 text-center">
-              @if (nfe.jaNoSistema) {
-                <span class="inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400">Sim</span>
-              } @else {
-                <span class="text-slate-400 text-xs">—</span>
-              }
-            </td>
-            <td class="px-6 py-4 text-center" (click)="$event.stopPropagation()">
-              @if (nfe.podeManifestacao) {
-                <div class="flex items-center justify-center gap-1">
-                  <button (click)="registrarCiencia(nfe.chaveNfe)" [disabled]="chaveEmAcao() === nfe.chaveNfe"
-                          class="px-2 py-1 rounded-lg bg-primary/10 text-primary font-bold text-xs hover:bg-primary/20 disabled:opacity-50 transition-all">
-                    Ciência
-                  </button>
-                  <button (click)="registrarConfirmacao(nfe.chaveNfe)" [disabled]="chaveEmAcao() === nfe.chaveNfe"
-                          class="px-2 py-1 rounded-lg bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400 font-bold text-xs hover:bg-emerald-200 dark:hover:bg-emerald-900/60 disabled:opacity-50 transition-all">
-                    Confirmar
-                  </button>
-                  <button (click)="abrirModalNaoRealizada(nfe.chaveNfe)" [disabled]="chaveEmAcao() === nfe.chaveNfe"
-                          class="px-2 py-1 rounded-lg bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400 font-bold text-xs hover:bg-amber-200 dark:hover:bg-amber-900/60 disabled:opacity-50 transition-all">
-                    Não realizada
-                  </button>
-                </div>
-              } @else {
-                <span class="inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">Manifestada</span>
-              }
-            </td>
-          </tr>
-        </ng-template>
-      </app-listagem-paginada>
-    }
-
-    @if (abaAtiva() === 'notas') {
-      <app-listagem-paginada
-        [itens]="notas()"
-        [carregando]="carregando()"
-        [totalRegistros]="notas().length"
-        [totalPaginas]="1"
-        tituloVazio="Nenhuma NF-e de entrada encontrada.">
-
-        <ng-template #cabecalho>
-          <tr>
-            <th class="px-6 py-4">Nº Nota</th>
-            <th class="px-6 py-4">Fornecedor</th>
-            <th class="px-6 py-4">Emissão</th>
-            <th class="px-6 py-4 text-right">Valor</th>
-            <th class="px-6 py-4 text-center">Manifestação</th>
-            <th class="px-6 py-4 text-center">XML</th>
-          </tr>
-        </ng-template>
-
-        <ng-template #linha let-nota>
-          <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-            <td class="px-6 py-4 font-mono text-xs text-slate-600 dark:text-slate-300">
-              {{ nota.numeroNota ?? '-' }}
-            </td>
-            <td class="px-6 py-4 font-medium text-slate-800 dark:text-slate-100">
-              {{ nota.nomeFornecedor ?? '—' }}
-            </td>
-            <td class="px-6 py-4 text-sm text-slate-500">{{ formatarData(nota.dataEmissao) }}</td>
-            <td class="px-6 py-4 text-right font-semibold text-slate-700 dark:text-slate-200">
-              {{ formatarReais(nota.valorTotal) }}
-            </td>
-            <td class="px-6 py-4 text-center">
-              <span class="inline-block px-2 py-0.5 rounded-full text-xs font-semibold {{ classeManifestacao(nota.manifestacaoStatus) }}">
-                {{ rotuloManifestacao(nota.manifestacaoStatus) }}
-              </span>
-            </td>
-            <td class="px-6 py-4 text-center">
-              @if (nota.temXml) {
-                <span class="material-symbols-outlined text-base text-emerald-600 dark:text-emerald-400">description</span>
-              } @else {
-                <span class="text-slate-300 dark:text-slate-600 text-xs">—</span>
-              }
-            </td>
-          </tr>
-        </ng-template>
-      </app-listagem-paginada>
-    }
+      <ng-template #linha let-nota>
+        <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+          <td class="px-6 py-4 font-mono text-xs text-slate-600 dark:text-slate-300">
+            {{ nota.numeroNota ?? '-' }}
+          </td>
+          <td class="px-6 py-4 font-medium text-slate-800 dark:text-slate-100">
+            {{ nota.nomeFornecedor ?? '—' }}
+          </td>
+          <td class="px-6 py-4 text-sm text-slate-500">{{ formatarData(nota.dataEmissao) }}</td>
+          <td class="px-6 py-4 text-right font-semibold text-slate-700 dark:text-slate-200">
+            {{ formatarReais(nota.valorTotal) }}
+          </td>
+          <td class="px-6 py-4 text-center">
+            <span class="inline-block px-2 py-0.5 rounded-full text-xs font-semibold {{ classeManifestacao(nota.manifestacaoStatus) }}">
+              {{ rotuloManifestacao(nota.manifestacaoStatus) }}
+            </span>
+          </td>
+          <td class="px-6 py-4 text-center">
+            @if (nota.temXml) {
+              <span class="material-symbols-outlined text-base text-emerald-600 dark:text-emerald-400">description</span>
+            } @else {
+              <span class="text-slate-300 dark:text-slate-600 text-xs">—</span>
+            }
+          </td>
+          <td class="px-6 py-4 text-center" (click)="$event.stopPropagation()">
+            @if (!nota.manifestacaoStatus && nota.chaveAcesso) {
+              <div class="flex items-center justify-center gap-1">
+                <button (click)="registrarCiencia(nota.chaveAcesso)" [disabled]="chaveEmAcao() === nota.chaveAcesso"
+                        class="px-2 py-1 rounded-lg bg-primary/10 text-primary font-bold text-xs hover:bg-primary/20 disabled:opacity-50 transition-all">
+                  Ciência
+                </button>
+                <button (click)="registrarConfirmacao(nota.chaveAcesso)" [disabled]="chaveEmAcao() === nota.chaveAcesso"
+                        class="px-2 py-1 rounded-lg bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400 font-bold text-xs hover:bg-emerald-200 dark:hover:bg-emerald-900/60 disabled:opacity-50 transition-all">
+                  Confirmar
+                </button>
+                <button (click)="abrirModalNaoRealizada(nota.chaveAcesso)" [disabled]="chaveEmAcao() === nota.chaveAcesso"
+                        class="px-2 py-1 rounded-lg bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400 font-bold text-xs hover:bg-amber-200 dark:hover:bg-amber-900/60 disabled:opacity-50 transition-all">
+                  Não realizada
+                </button>
+              </div>
+            } @else {
+              <span class="text-slate-300 dark:text-slate-600 text-xs">—</span>
+            }
+          </td>
+        </tr>
+      </ng-template>
+    </app-listagem-paginada>
 
   </div>
 </div>

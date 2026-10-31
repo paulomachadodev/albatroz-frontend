@@ -2,14 +2,12 @@ import { Component, OnInit, signal } from '@angular/core';
 import { formatDate } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ManifestacaoNfeService } from '../../services/manifestacao-nfe.service';
-import { NfeSefaz, NotaManifestacaoResumo } from '../../models/manifestacao-nfe.model';
+import { NotaManifestacaoResumo } from '../../models/manifestacao-nfe.model';
 import { ToastService } from '../../../../core/feedback/toast.service';
 import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 import { BreadcrumbComponent } from '../../../../shared/components/breadcrumb/breadcrumb.component';
 import { ListagemPaginadaComponent } from '../../../../shared/components/listagem-paginada/listagem-paginada.component';
 import { ModalComponent } from '../../../../shared/components/modal/modal.component';
-
-type Aba = 'sefaz' | 'notas';
 
 @Component({
   selector: 'app-manifestacao-nfe',
@@ -19,16 +17,9 @@ type Aba = 'sefaz' | 'notas';
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
 export class ManifestacaoNfeComponent implements OnInit {
-  abaAtiva = signal<Aba>('sefaz');
   carregando = signal(false);
-  consultando = signal(false);
-
-  nfesSefaz = signal<NfeSefaz[]>([]);
   notas = signal<NotaManifestacaoResumo[]>([]);
-
   chaveEmAcao = signal<string | null>(null);
-  notaEmAcao = signal<number | null>(null);
-
   modalJustificativa = signal(false);
   chaveParaNaoRealizada = signal<string | null>(null);
   justificativa = '';
@@ -40,34 +31,6 @@ export class ManifestacaoNfeComponent implements OnInit {
 
   ngOnInit() {
     this.carregarNotas();
-  }
-
-  alternarAba(aba: Aba) {
-    this.abaAtiva.set(aba);
-    if (aba === 'notas') {
-      this.carregarNotas();
-    }
-  }
-
-  consultarSefaz() {
-    this.consultando.set(true);
-    this.service.consultarSefaz().subscribe({
-      next: res => {
-        this.consultando.set(false);
-        const lista = (res.dados as any) ?? [];
-        this.nfesSefaz.set(lista);
-        if (lista.length === 0) {
-          this.toast.info('Nenhuma NF-e nova disponível no SEFAZ.');
-        } else {
-          this.toast.sucesso(`${lista.length} NF-e(s) encontrada(s) no SEFAZ.`);
-        }
-      },
-      error: err => {
-        this.consultando.set(false);
-        const msg = err?.error?.erro ?? 'Falha ao consultar o SEFAZ.';
-        this.toast.erro(msg);
-      }
-    });
   }
 
   carregarNotas() {
@@ -148,9 +111,6 @@ export class ManifestacaoNfeComponent implements OnInit {
   }
 
   private atualizarStatusLocal(chave: string, status: string) {
-    this.nfesSefaz.update(lista =>
-      lista.map(n => n.chaveNfe === chave ? { ...n, podeManifestacao: false } : n)
-    );
     this.notas.update(lista =>
       lista.map(n => n.chaveAcesso === chave ? { ...n, manifestacaoStatus: status } : n)
     );
@@ -163,7 +123,7 @@ export class ManifestacaoNfeComponent implements OnInit {
       desconhecida:  'Desconhecimento',
       nao_realizada: 'Não Realizada'
     };
-    return status ? (rotulos[status] ?? status) : '-';
+    return status ? (rotulos[status] ?? status) : 'Pendente';
   }
 
   classeManifestacao(status: string | null): string {
@@ -172,7 +132,7 @@ export class ManifestacaoNfeComponent implements OnInit {
       case 'confirmada':    return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400';
       case 'desconhecida':  return 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300';
       case 'nao_realizada': return 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400';
-      default:              return 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400';
+      default:              return 'bg-rose-100 text-rose-600 dark:bg-rose-900/40 dark:text-rose-400';
     }
   }
 
@@ -183,9 +143,5 @@ export class ManifestacaoNfeComponent implements OnInit {
   formatarData(valor: string | null): string {
     if (!valor) return '-';
     try { return formatDate(valor, 'dd/MM/yyyy', 'pt-BR'); } catch { return '-'; }
-  }
-
-  formatarChave(chave: string): string {
-    return chave.length === 44 ? `...${chave.slice(-8)}` : chave;
   }
 }

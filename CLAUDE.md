@@ -34,6 +34,14 @@ Padrão canônico de referência para uma nova tela: ver `.claude/examples/` (te
 
 Toda alteração de código neste repo passa pela skill `code-review` (`/code-review`) antes do commit/push — não só a pré-revisão de comentários (`revisao-pre-commit`). Rodar no diff da mudança, aplicar os achados relevantes, só então commitar e dar push.
 
+## Finalização de Tarefa — Obrigatório
+
+Após qualquer implementação de código:
+1. Rodar `npm test` — se falhar, corrigir antes de commitar.
+2. Testes passam → spawnar subagente para commit + push:
+   - `CLAUDE_CODE_SUBAGENT_MODEL=haiku` em `settings.json` → subagente usa Haiku automaticamente (modelo mais barato)
+   - Subagente: `git add` nos arquivos alterados, mensagem caveman-commit format, `git push origin master`
+
 ---
 
 ## Stack

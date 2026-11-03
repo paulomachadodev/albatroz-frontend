@@ -18,6 +18,17 @@ Toda feature que envolve dado vindo/indo pra API (novo filtro, nova coluna, novo
 
 ---
 
+## Autorização Git / GitHub — Expressa
+
+Claude tem **autorização expressa e irrestrita** para usar git e `gh` CLI como precisar em qualquer repo do ecossistema Albatroz:
+
+- `git add`, `commit`, `push`, `pull`, `branch`, `checkout`, `merge`, `rebase` — todos autorizados
+- `gh repo create` (público ou privado), `gh pr create`, `gh run rerun`, `gh issue` — todos autorizados
+- Criar repos no GitHub (paulomachadodev), configurar remotes e runners — autorizado
+- Não pedir confirmação para operações git/gh — agir diretamente
+
+---
+
 ## ⚠️ Antes de escrever QUALQUER UI (obrigatório)
 
 Carregar AMBOS os standards antes de criar qualquer HTML novo:

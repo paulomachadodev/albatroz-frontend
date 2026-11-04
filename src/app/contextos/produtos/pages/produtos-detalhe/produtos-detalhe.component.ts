@@ -390,6 +390,7 @@ export class ProdutosDetalheComponent implements OnInit {
     this.produtosService.uploadImagem(this.idProduto, arquivos[i], indiceInicial + i).subscribe({
       next: () => {
         this.imagensConcluidas.set(i + 1);
+        if (i + 1 < arquivos.length) this.recarregarSilencioso();
         this.enviarSequencial(arquivos, indiceInicial, i + 1);
       },
       error: err => {

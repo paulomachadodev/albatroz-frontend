@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, computed, signal } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { EscolasService } from '../../services/escolas.service';
@@ -36,7 +36,14 @@ export class EscolasListaComponent implements OnInit {
   escolaEmEdicao = signal<Escola | null>(null);
   salvando = signal(false);
   enviandoLogo = signal(false);
+  arrastandoLogo = signal(false);
   logoAtual = signal<string | null>(null);
+  logoPendente = signal<File | null>(null);
+  previaLogoPendente = signal<string | null>(null);
+  logoExibido = computed(() => this.previaLogoPendente() ?? this.logoAtual());
+
+  private static readonly TIPOS_LOGO = ['image/png', 'image/jpeg', 'image/webp'];
+  private static readonly TAMANHO_MAXIMO_LOGO = 2 * 1024 * 1024;
 
   nome = '';
   bairro = '';
@@ -100,6 +107,8 @@ export class EscolasListaComponent implements OnInit {
   abrirCriar() {
     this.modoDrawer.set('criar');
     this.escolaEmEdicao.set(null);
+    this.limparLogoPendente();
+    this.logoAtual.set(null);
     this.nome = '';
     this.bairro = '';
     this.cidade = '';
@@ -121,6 +130,7 @@ export class EscolasListaComponent implements OnInit {
   }
 
   fecharDrawer() {
+    this.limparLogoPendente();
     this.drawerAberto.set(false);
   }
 
@@ -131,24 +141,79 @@ export class EscolasListaComponent implements OnInit {
   aoSelecionarLogo(evento: Event) {
     const entrada = evento.target as HTMLInputElement;
     const arquivo = entrada.files?.[0];
-    const escola = this.escolaEmEdicao();
-    if (!arquivo || !escola) return;
+    entrada.value = '';
+    if (arquivo) this.definirLogo(arquivo);
+  }
 
+  aoArrastarSobreLogo(evento: DragEvent) {
+    evento.preventDefault();
+    this.arrastandoLogo.set(true);
+  }
+
+  aoSairDoArrasteLogo() {
+    this.arrastandoLogo.set(false);
+  }
+
+  aoSoltarLogo(evento: DragEvent) {
+    evento.preventDefault();
+    this.arrastandoLogo.set(false);
+    const arquivo = evento.dataTransfer?.files?.[0];
+    if (arquivo) this.definirLogo(arquivo);
+  }
+
+  removerLogoPendente() {
+    this.limparLogoPendente();
+  }
+
+  private definirLogo(arquivo: File) {
+    if (!EscolasListaComponent.TIPOS_LOGO.includes(arquivo.type)) {
+      this.toast.erro('O logo deve ser PNG, JPEG ou WebP.');
+      return;
+    }
+    if (arquivo.size > EscolasListaComponent.TAMANHO_MAXIMO_LOGO) {
+      this.toast.erro('O logo deve ter até 2 MB.');
+      return;
+    }
+
+    const escola = this.escolaEmEdicao();
+    if (this.modoDrawer() === 'editar' && escola) {
+      this.enviarLogoDaEscola(escola.id, arquivo);
+      return;
+    }
+
+    this.limparLogoPendente();
+    this.logoPendente.set(arquivo);
+    this.previaLogoPendente.set(URL.createObjectURL(arquivo));
+  }
+
+  private enviarLogoDaEscola(idEscola: number, arquivo: File) {
     this.enviandoLogo.set(true);
-    this.escolasService.enviarLogo(escola.id, arquivo).subscribe({
+    this.escolasService.enviarLogo(idEscola, arquivo).subscribe({
       next: res => {
         this.enviandoLogo.set(false);
-        entrada.value = '';
         this.logoAtual.set(res.dados?.logoUrl ?? null);
         this.toast.sucesso('Logo atualizado.');
         this.carregar(this.paginaAtual());
       },
       error: err => {
         this.enviandoLogo.set(false);
-        entrada.value = '';
         this.toast.erroServidor(err, 'Não foi possível enviar o logo.');
       }
     });
+  }
+
+  private limparLogoPendente() {
+    const previa = this.previaLogoPendente();
+    if (previa) URL.revokeObjectURL(previa);
+    this.logoPendente.set(null);
+    this.previaLogoPendente.set(null);
+  }
+
+  private concluirSalvamento(mensagem: string) {
+    this.salvando.set(false);
+    this.toast.sucesso(mensagem);
+    this.fecharDrawer();
+    this.carregar(this.paginaAtual());
   }
 
   aoAlternarParceira(valor: boolean) {
@@ -180,11 +245,20 @@ export class EscolasListaComponent implements OnInit {
       : this.escolasService.atualizar(this.escolaEmEdicao()!.id, payload);
 
     request.subscribe({
-      next: () => {
-        this.salvando.set(false);
-        this.toast.sucesso(this.modoDrawer() === 'criar' ? 'Escola criada.' : 'Escola atualizada.');
-        this.fecharDrawer();
-        this.carregar(this.paginaAtual());
+      next: res => {
+        const logo = this.logoPendente();
+        const idCriada = res.dados?.id;
+        if (this.modoDrawer() === 'criar' && logo && idCriada) {
+          this.escolasService.enviarLogo(idCriada, logo).subscribe({
+            next: () => this.concluirSalvamento('Escola criada.'),
+            error: () => {
+              this.toast.erro('Escola criada, mas o logo não foi enviado. Edite a escola para tentar de novo.');
+              this.concluirSalvamento('Escola criada.');
+            }
+          });
+          return;
+        }
+        this.concluirSalvamento(this.modoDrawer() === 'criar' ? 'Escola criada.' : 'Escola atualizada.');
       },
       error: err => {
         this.salvando.set(false);

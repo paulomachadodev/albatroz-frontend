@@ -95,25 +95,40 @@
             (fechar)="cancelar()">
 
   <div class="space-y-4">
-    @if (modoDrawer() === 'editar') {
-      <div class="flex items-center gap-4">
-        <div class="w-20 h-20 shrink-0 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden">
-          @if (logoAtual()) {
-            <img [src]="logoAtual()!" alt="Logo da escola" class="w-full h-full object-contain p-1"/>
-          } @else {
-            <span class="material-symbols-outlined text-slate-400">school</span>
-          }
+    <div>
+      <label class="text-xs font-semibold text-slate-500 block mb-1">Logo</label>
+      <label class="relative flex flex-col items-center justify-center gap-2 h-44 rounded-xl border-2 border-dashed cursor-pointer transition-colors overflow-hidden"
+             [class]="arrastandoLogo()
+               ? 'border-primary bg-primary/5'
+               : 'border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800/50 hover:border-primary/60'"
+             (dragover)="aoArrastarSobreLogo($event)"
+             (dragleave)="aoSairDoArrasteLogo()"
+             (drop)="aoSoltarLogo($event)">
+        @if (logoExibido()) {
+          <img [src]="logoExibido()!" alt="Logo da escola" class="max-h-full max-w-full object-contain p-3"/>
+          <span class="absolute bottom-2 left-1/2 -translate-x-1/2 text-[11px] font-semibold bg-slate-900/70 text-white rounded-full px-3 py-1">
+            Arraste outra imagem ou clique para trocar
+          </span>
+        } @else {
+          <span class="material-symbols-outlined text-4xl text-slate-400">add_photo_alternate</span>
+          <span class="text-sm font-semibold text-slate-600 dark:text-slate-300">Arraste o logo aqui ou clique para escolher</span>
+          <span class="text-xs text-slate-500">PNG, JPEG ou WebP, até 2 MB</span>
+        }
+        <input type="file" accept="image/png,image/jpeg,image/webp" class="hidden"
+               (change)="aoSelecionarLogo($event)" [disabled]="enviandoLogo()"/>
+        @if (enviandoLogo()) {
+          <div class="absolute inset-0 bg-white/70 dark:bg-slate-900/70 flex items-center justify-center text-sm font-semibold text-slate-600 dark:text-slate-300">
+            Enviando...
+          </div>
+        }
+      </label>
+      @if (logoPendente()) {
+        <div class="flex items-center justify-between mt-2 text-xs text-slate-500">
+          <span>O logo será enviado ao salvar a escola.</span>
+          <button type="button" (click)="removerLogoPendente()" class="font-bold text-rose-600 hover:underline">Remover</button>
         </div>
-        <div>
-          <label class="text-xs font-semibold text-slate-500 block mb-1">Logo (PNG, JPEG ou WebP, até 2 MB)</label>
-          <input type="file" accept="image/png,image/jpeg,image/webp" (change)="aoSelecionarLogo($event)" [disabled]="enviandoLogo()"
-                 class="text-xs text-slate-600 dark:text-slate-300"/>
-          @if (enviandoLogo()) {
-            <p class="text-xs text-slate-500 mt-1">Enviando...</p>
-          }
-        </div>
-      </div>
-    }
+      }
+    </div>
 
     <div>
       <label class="text-xs font-semibold text-slate-500">Nome</label>

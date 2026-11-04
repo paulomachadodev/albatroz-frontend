@@ -44,9 +44,9 @@
             <select [(ngModel)]="filtro.status"
                     class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none">
               <option [ngValue]="undefined">Todos</option>
-              <option value="cotada">Cotada</option>
-              <option value="re-cotada">Re-cotada</option>
-              <option value="liberada">Liberada</option>
+              @for (opcao of opcoesStatus; track opcao.valor) {
+                <option [ngValue]="opcao.valor">{{ opcao.rotulo }}</option>
+              }
             </select>
           </div>
         </div>
@@ -98,7 +98,7 @@
           <td class="px-6 py-4 text-center text-sm font-medium">{{ item.itensLiberados }}/{{ item.totalItens }}</td>
           <td class="px-6 py-4 text-right text-sm font-bold">{{ formatarReais(item.totalEstimado) }}</td>
           <td class="px-6 py-4 text-center">
-            <span class="px-2 py-0.5 rounded-full text-xs font-bold" [class]="classeStatus(item.status)">{{ item.status }}</span>
+            <span class="px-2 py-0.5 rounded-full text-xs font-bold" [class]="classeStatus(item.status)">{{ rotuloStatus(item.status) }}</span>
           </td>
         </tr>
       </ng-template>

@@ -35,6 +35,8 @@ export class EscolasListaComponent implements OnInit {
   modoDrawer = signal<ModoDrawer>('criar');
   escolaEmEdicao = signal<Escola | null>(null);
   salvando = signal(false);
+  enviandoLogo = signal(false);
+  logoAtual = signal<string | null>(null);
 
   nome = '';
   bairro = '';
@@ -109,6 +111,7 @@ export class EscolasListaComponent implements OnInit {
   abrirEditar(escola: Escola) {
     this.modoDrawer.set('editar');
     this.escolaEmEdicao.set(escola);
+    this.logoAtual.set(escola.logoUrl ?? null);
     this.nome = escola.nome;
     this.bairro = escola.bairro ?? '';
     this.cidade = escola.cidade ?? '';
@@ -123,6 +126,29 @@ export class EscolasListaComponent implements OnInit {
 
   cancelar() {
     this.fecharDrawer();
+  }
+
+  aoSelecionarLogo(evento: Event) {
+    const entrada = evento.target as HTMLInputElement;
+    const arquivo = entrada.files?.[0];
+    const escola = this.escolaEmEdicao();
+    if (!arquivo || !escola) return;
+
+    this.enviandoLogo.set(true);
+    this.escolasService.enviarLogo(escola.id, arquivo).subscribe({
+      next: res => {
+        this.enviandoLogo.set(false);
+        entrada.value = '';
+        this.logoAtual.set(res.dados?.logoUrl ?? null);
+        this.toast.sucesso('Logo atualizado.');
+        this.carregar(this.paginaAtual());
+      },
+      error: err => {
+        this.enviandoLogo.set(false);
+        entrada.value = '';
+        this.toast.erroServidor(err, 'Não foi possível enviar o logo.');
+      }
+    });
   }
 
   aoAlternarParceira(valor: boolean) {

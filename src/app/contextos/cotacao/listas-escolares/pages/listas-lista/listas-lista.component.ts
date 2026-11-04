@@ -1,3 +1,4 @@
+import { ROTULO_STATUS_LISTA, StatusListaEscolar } from '../../models/lista-escolar-status';
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
@@ -124,12 +125,19 @@ export class ListasListaComponent implements OnInit {
     });
   }
 
-  classeStatus(status: string): string {
-    const mapa: Record<string, string> = {
-      liberada:   'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400',
-      cotada:     'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400',
-      'existente': 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400',
-      're-cotada': 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400'
+  readonly opcoesStatus = Object.values(StatusListaEscolar).filter((v): v is StatusListaEscolar => typeof v === 'number').map(v => ({ valor: v, rotulo: ROTULO_STATUS_LISTA[v] }));
+
+  rotuloStatus(status: StatusListaEscolar): string {
+    return ROTULO_STATUS_LISTA[status];
+  }
+
+  classeStatus(status: StatusListaEscolar): string {
+    const mapa: Record<number, string> = {
+      [StatusListaEscolar.Liberada]:   'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400',
+      [StatusListaEscolar.Liberando]:  'bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-400',
+      [StatusListaEscolar.Cotada]:     'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400',
+      [StatusListaEscolar.Existente]:  'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400',
+      [StatusListaEscolar.ReCotada]:   'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400'
     };
     return mapa[status] ?? 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400';
   }

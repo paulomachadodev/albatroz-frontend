@@ -1,3 +1,4 @@
+import { StatusListaEscolar } from '../models/lista-escolar-status';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from '../../../../core/http/api.service';
@@ -10,7 +11,7 @@ import { OpcaoSelectBusca } from '../../../../shared/components/select-busca/sel
 export interface ListaEscolarFiltro {
   idEscola?: number;
   idSerie?: number;
-  status?: string;
+  status?: StatusListaEscolar;
   de?: string;
   ate?: string;
   ordenarPor?: string;

@@ -19,25 +19,25 @@
             Cancelar
           </button>
 
-          <button (click)="exportarExcel()" [disabled]="lista()!.status !== 'liberada'"
+          <button (click)="exportarExcel()" [disabled]="lista()!.status !== statusLista.Liberada"
                   class="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-bold text-sm hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                   title="Exportar itens pra Excel (disponível depois de liberar)">
             <span class="material-symbols-outlined text-sm">table_view</span> Excel
           </button>
 
-          <button (click)="baixarPdf()" [disabled]="lista()!.status !== 'liberada' || !lista()!.pdfCotacaoUrl"
+          <button (click)="baixarPdf()" [disabled]="lista()!.status !== statusLista.Liberada || !lista()!.pdfCotacaoUrl"
                   class="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-rose-50 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 font-bold text-sm hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                   title="Baixar PDF do orçamento (disponível depois de liberar)">
             <span class="material-symbols-outlined text-sm">picture_as_pdf</span> PDF
           </button>
 
-          @if (lista()!.status === 'liberada') {
+          @if (lista()!.status === statusLista.Liberada) {
             <button (click)="editarLista()" [disabled]="reabrindoLista()"
                     class="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-amber-500 text-white font-bold text-sm hover:bg-amber-600 shadow-lg shadow-amber-500/20 transition-all disabled:opacity-50">
               <span class="material-symbols-outlined text-sm">edit</span>
               {{ reabrindoLista() ? 'Reabrindo...' : 'Editar lista' }}
             </button>
-          } @else if (lista()!.status === 'liberando') {
+          } @else if (lista()!.status === statusLista.Liberando) {
             <button disabled
                     class="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-emerald-600/60 text-white font-bold text-sm shadow-lg shadow-emerald-600/20 cursor-not-allowed">
               <span class="material-symbols-outlined text-sm animate-spin">progress_activity</span>
@@ -154,19 +154,19 @@
                   <td class="px-4 py-3 text-right text-sm font-bold">{{ formatarReais(item.subtotal) }}</td>
                   <td class="px-4 py-3 text-center">
                     <span class="px-2 py-0.5 rounded-full text-xs font-bold" [class]="classeStatusItem(item.statusItem)">
-                      {{ item.statusItem.replace('_', ' ') }}
+                      {{ rotuloStatusItem(item.statusItem) }}
                     </span>
                   </td>
                   <td class="px-4 py-3">
                     <div class="flex items-center justify-center gap-2">
-                      <button (click)="marcarNaoVendemos(item)" [disabled]="item.liberado || item.statusItem === 'nao_encontrado'" title="Não vendemos"
+                      <button (click)="marcarNaoVendemos(item)" [disabled]="item.liberado || item.statusItem === statusItem.NaoEncontrado" title="Não vendemos"
                               class="w-8 h-8 flex items-center justify-center rounded-lg transition-all disabled:opacity-50"
-                              [class]="item.statusItem === 'nao_encontrado'
+                              [class]="item.statusItem === statusItem.NaoEncontrado
                                 ? 'bg-rose-600 text-white'
                                 : 'bg-slate-100 dark:bg-slate-800 text-slate-400 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-900/30 dark:hover:text-rose-400'">
                         <span class="material-symbols-outlined text-base">close</span>
                       </button>
-                      <button (click)="item.liberado ? desliberarItem(item) : liberarItem(item)" [disabled]="item.statusItem === 'nao_encontrado'" title="Liberado"
+                      <button (click)="item.liberado ? desliberarItem(item) : liberarItem(item)" [disabled]="item.statusItem === statusItem.NaoEncontrado" title="Liberado"
                               class="w-8 h-8 flex items-center justify-center rounded-lg transition-all disabled:opacity-50"
                               [class]="item.liberado
                                 ? 'bg-emerald-600 text-white'

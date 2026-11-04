@@ -1,3 +1,4 @@
+import { ROTULO_STATUS_ITEM, StatusItemListaEscolar, StatusListaEscolar } from '../../models/lista-escolar-status';
 import { Component, OnInit, computed, signal } from '@angular/core';
 
 import { ActivatedRoute, Router } from '@angular/router';
@@ -43,7 +44,7 @@ export class ListaDetalheComponent implements OnInit {
   todosItensResolvidos = computed(() => {
     const l = this.lista();
     if (!l || l.itens.length === 0) return false;
-    return l.itens.every(i => i.liberado || i.statusItem === 'nao_encontrado');
+    return l.itens.every(i => i.liberado || i.statusItem === StatusItemListaEscolar.NaoEncontrado);
   });
 
   constructor(
@@ -159,14 +160,14 @@ export class ListaDetalheComponent implements OnInit {
           const dados = res.dados ?? null;
           this.lista.set(dados);
 
-          if (dados?.status === 'liberando' && tentativas < MAX_TENTATIVAS) {
+          if (dados?.status === StatusListaEscolar.Liberando && tentativas < MAX_TENTATIVAS) {
             this.aguardarLiberacao(tentativas + 1);
             return;
           }
 
-          if (dados?.status === 'liberada') {
+          if (dados?.status === StatusListaEscolar.Liberada) {
             this.toast.sucesso('Lista liberada.', 'PDF gerado — contatos que já solicitaram serão notificados automaticamente.');
-          } else if (dados?.status === 'liberando') {
+          } else if (dados?.status === StatusListaEscolar.Liberando) {
             this.toast.erro('Liberação demorando demais', 'Ainda processando — atualize a página em alguns minutos pra conferir.');
           } else {
             this.toast.erro('Falha ao liberar', 'Não foi possível gerar o PDF do orçamento. Tente liberar de novo.');
@@ -204,7 +205,7 @@ export class ListaDetalheComponent implements OnInit {
       'Qtd': i.quantidade,
       'Preço unit.': i.precoUnitario ?? 0,
       'Subtotal': i.subtotal ?? 0,
-      'Status': i.statusItem,
+      'Status': ROTULO_STATUS_ITEM[i.statusItem],
       'Liberado': i.liberado ? 'Sim' : 'Não'
     }));
 
@@ -350,11 +351,18 @@ export class ListaDetalheComponent implements OnInit {
     });
   }
 
-  classeStatusItem(status: string): string {
-    const mapa: Record<string, string> = {
-      encontrado:          'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400',
-      nao_encontrado:      'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-400',
-      marca_substituida:   'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400'
+  readonly statusLista = StatusListaEscolar;
+  readonly statusItem = StatusItemListaEscolar;
+
+  rotuloStatusItem(status: StatusItemListaEscolar): string {
+    return ROTULO_STATUS_ITEM[status];
+  }
+
+  classeStatusItem(status: StatusItemListaEscolar): string {
+    const mapa: Record<number, string> = {
+      [StatusItemListaEscolar.Encontrado]:       'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400',
+      [StatusItemListaEscolar.NaoEncontrado]:    'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-400',
+      [StatusItemListaEscolar.MarcaSubstituida]: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400'
     };
     return mapa[status] ?? 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400';
   }

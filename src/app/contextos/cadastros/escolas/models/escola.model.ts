@@ -3,6 +3,7 @@ export interface Escola {
   empresaId: number;
   nome: string;
   bairro?: string;
+  logoUrl?: string | null;
   cidade: string;
   parceira: boolean;
   ativo: boolean;

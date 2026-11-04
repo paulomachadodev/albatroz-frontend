@@ -1,10 +1,12 @@
+import { StatusItemListaEscolar, StatusListaEscolar } from './lista-escolar-status';
+
 export interface ListaEscolarResumo {
   id: number;
   escolaNome?: string;
   idSerie?: number;
   serie?: string;
   anoLetivo?: number;
-  status: string;
+  status: StatusListaEscolar;
   totalEstimado?: number;
   totalItens: number;
   itensLiberados: number;
@@ -22,7 +24,7 @@ export interface ListaEscolarItem {
   nomeProduto?: string;
   precoUnitario?: number;
   subtotal?: number;
-  statusItem: string;
+  statusItem: StatusItemListaEscolar;
   liberado: boolean;
 }
 
@@ -33,7 +35,7 @@ export interface ListaEscolarDetalhe {
   idSerie?: number;
   serie?: string;
   anoLetivo?: number;
-  status: string;
+  status: StatusListaEscolar;
   totalEstimado?: number;
   pdfCotacaoUrl?: string;
   itens: ListaEscolarItem[];

@@ -62,16 +62,16 @@ export class SidebarComponent implements OnInit {
       itens: [
         { label: 'Produtos',     rota: '/produtos',            icone: 'inventory_2', permissao: 'produtos:ler' },
         { label: 'Busca preço',  rota: '/produtos/busca-preco', icone: 'qr_code_scanner', permissao: 'produtos:ler' },
-        { label: 'Contatos',     rota: '/cadastros/contatos',  icone: 'contacts' },
-        { label: 'Escolas',      rota: '/cadastros/escolas',   icone: 'apartment' },
-        { label: 'Séries',       rota: '/cadastros/series',    icone: 'auto_stories' }
+        { label: 'Contatos',     rota: '/cadastros/contatos',  icone: 'contacts', permissao: 'contatos:ler' },
+        { label: 'Escolas',      rota: '/cadastros/escolas',   icone: 'apartment', permissao: 'cadastros:ler' },
+        { label: 'Séries',       rota: '/cadastros/series',    icone: 'auto_stories', permissao: 'cadastros:ler' }
       ]
     },
     {
       titulo: 'Operacional',
       icone: 'bolt',
       itens: [
-        { label: 'Orçamentos', rota: '/cotacoes/listas-escolares', icone: 'request_quote' },
+        { label: 'Orçamentos', rota: '/cotacoes/listas-escolares', icone: 'request_quote', permissao: 'cotacoes:ler' },
         {
           label: 'Estoque', icone: 'package_2',
           subItens: [
@@ -82,18 +82,18 @@ export class SidebarComponent implements OnInit {
         {
           label: 'Compras', icone: 'shopping_cart',
           subItens: [
-            { label: 'Relatório', rota: '/compras', icone: 'trending_up', permissao: 'produtos:ler' },
-            { label: 'Fornecedores', rota: '/compras/fornecedores', icone: 'storefront', permissao: 'produtos:ler' },
-            { label: 'Pedidos', rota: '/compras/pedidos', icone: 'receipt_long', permissao: 'produtos:ler' },
-            { label: 'Entrada de Notas', rota: '/compras/notas-entrada', icone: 'inventory', permissao: 'produtos:ler' },
-            { label: 'CT-e', rota: '/compras/ctes', icone: 'local_shipping', permissao: 'produtos:ler' },
+            { label: 'Relatório', rota: '/compras', icone: 'trending_up', permissao: 'compras:ler' },
+            { label: 'Fornecedores', rota: '/compras/fornecedores', icone: 'storefront', permissao: 'compras:ler' },
+            { label: 'Pedidos', rota: '/compras/pedidos', icone: 'receipt_long', permissao: 'compras:ler' },
+            { label: 'Entrada de Notas', rota: '/compras/notas-entrada', icone: 'inventory', permissao: 'compras:ler' },
+            { label: 'CT-e', rota: '/compras/ctes', icone: 'local_shipping', permissao: 'compras:ler' },
             { label: 'Manifestação NF-e', rota: '/compras/manifestacao', icone: 'verified', permissao: 'compras:ler' }
           ]
         },
         {
           label: 'Vendas', icone: 'point_of_sale',
           subItens: [
-            { label: 'Relatório', rota: '/vendas/relatorio-produtos', icone: 'trending_up' }
+            { label: 'Relatório', rota: '/vendas/relatorio-produtos', icone: 'trending_up', permissao: 'vendas:ler' }
           ]
         },
         { label: 'Albia IA',   rota: '/albia',     icone: 'auto_awesome', badge: 'NOVO' }
@@ -103,14 +103,14 @@ export class SidebarComponent implements OnInit {
       titulo: 'WhatsApp',
       icone: 'forum',
       itens: [
-        { label: 'Atendimentos', rota: '/whatsapp/atendimentos', icone: 'support_agent' }
+        { label: 'Atendimentos', rota: '/whatsapp/atendimentos', icone: 'support_agent', permissao: 'atendimento:ler' }
       ]
     },
     {
       titulo: 'Financeiro',
       icone: 'payments',
       itens: [
-        { label: 'Cartões',          rota: '/financeiro/cartoes',       icone: 'credit_card' },
+        { label: 'Cartões',          rota: '/financeiro/cartoes',       icone: 'credit_card', permissao: 'financeiro:ler' },
         { label: 'Contas a Pagar',   rota: '/financeiro/contas-pagar',  icone: 'payments',         permissao: 'financeiro:ler' },
         { label: 'Conciliação DDA',  rota: '/financeiro/dda',           icone: 'account_balance',  permissao: 'financeiro:ler' }
       ]
@@ -137,7 +137,7 @@ export class SidebarComponent implements OnInit {
       titulo: 'Integrações',
       icone: 'integration_instructions',
       itens: [
-        { label: 'ERP Tiny', rota: '/integracoes/tiny', icone: 'dashboard', apenasComTiny: true }
+        { label: 'ERP Tiny', rota: '/integracoes/tiny', icone: 'dashboard', permissao: 'configuracoes:ler', apenasComTiny: true }
       ]
     }
   ];

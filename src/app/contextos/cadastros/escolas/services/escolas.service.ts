@@ -24,6 +24,12 @@ export class EscolasService {
     return this.api.patch<Escola>(`${this.endpoint}/${id}`, requisicao);
   }
 
+  enviarLogo(id: number, arquivo: File): Observable<Resultado<{ logoUrl: string }>> {
+    const formData = new FormData();
+    formData.append('arquivo', arquivo);
+    return this.api.post<{ logoUrl: string }>(`${this.endpoint}/${id}/logo`, formData);
+  }
+
   excluir(id: number): Observable<Resultado<void>> {
     return this.api.delete<void>(`${this.endpoint}/${id}`);
   }

@@ -19,6 +19,14 @@
             Cancelar
           </button>
 
+          @if (podeExcluirLista()) {
+            <button (click)="excluirLista()" [disabled]="lista()!.status === statusLista.Liberando"
+                    class="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-rose-50 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 font-bold text-sm hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                    title="Excluir a lista e o PDF gerado">
+              <span class="material-symbols-outlined text-sm">delete</span> Excluir lista
+            </button>
+          }
+
           <button (click)="exportarExcel()" [disabled]="lista()!.status !== statusLista.Liberada"
                   class="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-bold text-sm hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                   title="Exportar itens pra Excel (disponível depois de liberar)">

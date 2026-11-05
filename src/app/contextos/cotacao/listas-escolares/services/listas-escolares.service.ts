@@ -60,6 +60,10 @@ export class ListasEscolaresService {
     return this.api.post<{ whatsappIdsParaNotificar: string[] }>(`${this.endpoint}/${idLista}/liberar`, {});
   }
 
+  excluirLista(idLista: number): Observable<Resultado<void>> {
+    return this.api.delete<void>(`${this.endpoint}/${idLista}`);
+  }
+
   reabrirEdicao(idLista: number): Observable<Resultado<void>> {
     return this.api.post<void>(`${this.endpoint}/${idLista}/reabrir`, {});
   }

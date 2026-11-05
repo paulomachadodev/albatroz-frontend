@@ -86,9 +86,10 @@ export class ListasEscolaresService {
     return this.api.get<OpcaoSelectBusca[]>(`${this.endpoint}/filtros/series`, { termo });
   }
 
-  enviarArquivo(arquivo: File): Observable<Resultado<{ idLista: number | null; status: string }>> {
+  enviarArquivo(arquivo: File, substituir = false): Observable<Resultado<{ idLista: number | null; status: string }>> {
     const formData = new FormData();
     formData.append('arquivo', arquivo);
-    return this.api.post<{ idLista: number | null; status: string }>(`${this.endpoint}/enviar-arquivo`, formData);
+    const rota = substituir ? `${this.endpoint}/enviar-arquivo?substituir=true` : `${this.endpoint}/enviar-arquivo`;
+    return this.api.post<{ idLista: number | null; status: string }>(rota, formData);
   }
 }

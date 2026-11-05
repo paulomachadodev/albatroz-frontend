@@ -7,6 +7,7 @@ import { map } from 'rxjs';
 import { ListasEscolaresService, ListaEscolarFiltro } from '../../services/listas-escolares.service';
 import { ListaEscolarResumo } from '../../models/lista-escolar.model';
 import { ToastService } from '../../../../../core/feedback/toast.service';
+import { ConfirmService } from '../../../../../core/feedback/confirm.service';
 import { ListagemPaginadaComponent } from '../../../../../shared/components/listagem-paginada/listagem-paginada.component';
 import { PageHeaderComponent } from '../../../../../shared/components/page-header/page-header.component';
 import { SelectBuscaComponent, OpcaoSelectBusca } from '../../../../../shared/components/select-busca/select-busca.component';
@@ -52,7 +53,8 @@ export class ListasListaComponent implements OnInit {
 
   constructor(
     private listasService: ListasEscolaresService,
-    private toast: ToastService
+    private toast: ToastService,
+    private confirm: ConfirmService
   ) {}
 
   ngOnInit() {
@@ -109,11 +111,32 @@ export class ListasListaComponent implements OnInit {
     const arquivo = input.files?.[0];
     if (!arquivo) return;
 
+    this.enviarParaCotacao(arquivo, false, input);
+  }
+
+  private enviarParaCotacao(arquivo: File, substituir: boolean, input: HTMLInputElement) {
     this.enviandoArquivo.set(true);
-    this.listasService.enviarArquivo(arquivo).subscribe({
-      next: () => {
-        this.toast.sucesso('Lista enviada pra Albia cotar — aparece na listagem assim que terminar.');
+    this.listasService.enviarArquivo(arquivo, substituir).subscribe({
+      next: async res => {
         this.enviandoArquivo.set(false);
+
+        if (res.dados?.status === 'existente_confirmar_substituicao') {
+          const confirmado = await this.confirm.confirmar(
+            'Já existe uma lista para essa escola, série e ano',
+            'Substituir pela nova? A lista volta para conferência, os itens são refeitos e o PDF atual é apagado.',
+            { textoConfirmar: 'Substituir' }
+          );
+          if (confirmado) {
+            this.enviarParaCotacao(arquivo, true, input);
+            return;
+          }
+          input.value = '';
+          return;
+        }
+
+        this.toast.sucesso(substituir
+          ? 'Lista substituída — voltou para conferência.'
+          : 'Lista enviada pra Albia cotar — aparece na listagem assim que terminar.');
         input.value = '';
         this.carregar(1);
       },

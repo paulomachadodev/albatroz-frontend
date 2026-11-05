@@ -58,6 +58,14 @@ export interface CurvaAbcResumo {
   skusCurvaCQuantidade: number;
 }
 
+export interface ListasEmConferenciaResumo {
+  total: number;
+  comPrecoAlterado: number;
+  comSemEstoque: number;
+  comPendenciaIa: number;
+  diasMaisAntiga: number;
+}
+
 export interface ContasAPagarResumo {
   valorVencido: number;
   quantidadeVencidas: number;
@@ -104,6 +112,7 @@ export interface DashboardResumo {
   vendasPorCategoria: CategoriaVenda[];
   contagemEstoque: ContagemEstoqueResumo;
   melhoresDiasSemana: MelhorDiaSemana[];
+  listasEmConferencia: ListasEmConferenciaResumo;
 }
 
 @Injectable({ providedIn: 'root' })

@@ -1,4 +1,4 @@
-import { MotivoPendenciaItem, StatusItemListaEscolar, StatusListaEscolar } from './lista-escolar-status';
+import { MotivoPendenciaItem, MotivoReconferenciaItem, StatusItemListaEscolar, StatusListaEscolar } from './lista-escolar-status';
 
 export interface ListaEscolarResumo {
   id: number;
@@ -31,6 +31,8 @@ export interface ListaEscolarItem {
   liberado: boolean;
   pendenteRevisao: boolean;
   motivoPendencia?: MotivoPendenciaItem;
+  motivoReconferencia?: MotivoReconferenciaItem;
+  precoAnterior?: number;
 }
 
 export interface ListaEscolarDetalhe {

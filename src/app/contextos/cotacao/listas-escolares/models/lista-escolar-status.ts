@@ -37,3 +37,8 @@ export const ROTULO_MOTIVO_PENDENCIA: Record<MotivoPendenciaItem, string> = {
   [MotivoPendenciaItem.RecuperadoNaVerificacao]: 'Linha recuperada na verificação — confira descrição e quantidade',
   [MotivoPendenciaItem.TextoIlegivel]: 'Texto ilegível na lista — confira com o documento original'
 };
+
+export enum MotivoReconferenciaItem {
+  PrecoAlterado = 1,
+  EstoqueInsuficiente = 2
+}

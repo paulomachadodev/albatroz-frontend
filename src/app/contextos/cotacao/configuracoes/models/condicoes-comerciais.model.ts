@@ -10,4 +10,6 @@ export interface CondicoesComerciais {
   textoAvisoPrecoEstoque: string;
   whatsappAtendimento: string;
   textoHorarioAtendimento: string;
+  reconferirPorPreco: boolean;
+  reconferirPorEstoque: boolean;
 }

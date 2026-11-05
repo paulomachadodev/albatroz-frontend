@@ -151,6 +151,8 @@ export class ConfiguracoesPaginaComponent implements OnInit {
   textoAvisoPrecoEstoque = '';
   whatsappAtendimento = '';
   textoHorarioAtendimento = '';
+  reconferirPorPreco = false;
+  reconferirPorEstoque = false;
 
   formListaOperacao: 'soma' | 'diminui' = 'soma';
   get formListaPercentualAbsoluto(): number {
@@ -467,6 +469,8 @@ export class ConfiguracoesPaginaComponent implements OnInit {
           this.textoAvisoPrecoEstoque = dados.textoAvisoPrecoEstoque;
           this.whatsappAtendimento = dados.whatsappAtendimento;
           this.textoHorarioAtendimento = dados.textoHorarioAtendimento;
+          this.reconferirPorPreco = dados.reconferirPorPreco;
+          this.reconferirPorEstoque = dados.reconferirPorEstoque;
         } else {
           this.condicoesComerciaisCadastradas.set(false);
         }
@@ -492,7 +496,9 @@ export class ConfiguracoesPaginaComponent implements OnInit {
       textoObservacaoCores: this.textoObservacaoCores,
       textoAvisoPrecoEstoque: this.textoAvisoPrecoEstoque,
       whatsappAtendimento: this.whatsappAtendimento,
-      textoHorarioAtendimento: this.textoHorarioAtendimento
+      textoHorarioAtendimento: this.textoHorarioAtendimento,
+      reconferirPorPreco: this.reconferirPorPreco,
+      reconferirPorEstoque: this.reconferirPorEstoque
     }).subscribe({
       next: () => {
         this.salvandoCondicoesComerciais.set(false);

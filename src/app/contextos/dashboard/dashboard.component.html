@@ -356,6 +356,39 @@
           }
         </div>
 
+        <div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <h3 class="font-bold text-slate-900 dark:text-slate-100 mb-4">Listas escolares a conferir</h3>
+          @if (resumo()!.listasEmConferencia.total === 0) {
+            <div class="flex flex-col items-center py-8 text-center">
+              <span class="material-symbols-outlined text-emerald-600 bg-emerald-100 dark:bg-emerald-900/40 p-2 rounded-lg mb-3">task_alt</span>
+              <p class="text-sm font-semibold text-emerald-600">Nenhuma lista aguardando conferência</p>
+            </div>
+          } @else {
+            <div class="p-4 rounded-lg bg-amber-50 dark:bg-amber-900/20 cursor-pointer hover:opacity-90 transition-opacity"
+                 [routerLink]="['/cotacoes/listas-escolares']">
+              <div class="flex items-center gap-1.5 mb-2">
+                <span class="material-symbols-outlined text-amber-600 text-[18px]">fact_check</span>
+                <p class="text-[11px] font-semibold uppercase text-amber-600">Aguardando conferência</p>
+              </div>
+              <p class="text-lg font-bold text-amber-600">{{ resumo()!.listasEmConferencia.total }} lista(s)</p>
+              <p class="text-[11px] text-slate-400 mt-0.5">
+                A mais antiga espera há {{ resumo()!.listasEmConferencia.diasMaisAntiga }} dia(s)
+              </p>
+              <ul class="mt-3 space-y-1 text-xs text-slate-500 dark:text-slate-400">
+                @if (resumo()!.listasEmConferencia.comPrecoAlterado > 0) {
+                  <li>{{ resumo()!.listasEmConferencia.comPrecoAlterado }} com preço alterado</li>
+                }
+                @if (resumo()!.listasEmConferencia.comSemEstoque > 0) {
+                  <li>{{ resumo()!.listasEmConferencia.comSemEstoque }} com item sem estoque</li>
+                }
+                @if (resumo()!.listasEmConferencia.comPendenciaIa > 0) {
+                  <li>{{ resumo()!.listasEmConferencia.comPendenciaIa }} com pendência da leitura da IA</li>
+                }
+              </ul>
+            </div>
+          }
+        </div>
+
       </div>
 
       <app-modal [aberto]="modalVendedoresAberto()" titulo="Meta por vendedor" tamanho="lg" (fechar)="fecharModalVendedores()">

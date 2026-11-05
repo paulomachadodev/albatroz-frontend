@@ -132,6 +132,18 @@
                     @if (item.linhaOriginal && item.linhaOriginal !== item.descricaoNaLista) {
                       <p class="text-xs text-slate-400">Na lista: {{ item.linhaOriginal }}</p>
                     }
+                    @if (item.motivoReconferencia === motivoReconferencia.PrecoAlterado) {
+                      <p class="mt-1 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-sky-100 dark:bg-sky-900/40 text-sky-700 dark:text-sky-400 text-xs font-bold">
+                        <span class="material-symbols-outlined text-sm">sell</span>
+                        Preço mudou de {{ formatarReais(item.precoAnterior) }} para {{ formatarReais(item.precoUnitario) }}
+                      </p>
+                    }
+                    @if (item.motivoReconferencia === motivoReconferencia.EstoqueInsuficiente) {
+                      <p class="mt-1 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-400 text-xs font-bold">
+                        <span class="material-symbols-outlined text-sm">inventory_2</span>
+                        Estoque não cobre a quantidade — troque o produto ou confirme
+                      </p>
+                    }
                     @if (item.pendenteRevisao) {
                       <p class="mt-1 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 text-xs font-bold">
                         <span class="material-symbols-outlined text-sm">warning</span>

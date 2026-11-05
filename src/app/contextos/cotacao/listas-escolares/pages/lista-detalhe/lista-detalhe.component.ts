@@ -1,4 +1,4 @@
-import { ROTULO_MOTIVO_PENDENCIA, ROTULO_STATUS_ITEM, StatusItemListaEscolar, StatusListaEscolar } from '../../models/lista-escolar-status';
+import { MotivoReconferenciaItem, ROTULO_MOTIVO_PENDENCIA, ROTULO_STATUS_ITEM, StatusItemListaEscolar, StatusListaEscolar } from '../../models/lista-escolar-status';
 import { Component, OnInit, computed, signal } from '@angular/core';
 
 import { ActivatedRoute, Router } from '@angular/router';
@@ -50,7 +50,7 @@ export class ListaDetalheComponent implements OnInit {
   todosItensResolvidos = computed(() => {
     const l = this.lista();
     if (!l || l.itens.length === 0) return false;
-    return l.itens.every(i => !i.pendenteRevisao && (i.liberado || this.semProdutoParaVender(i)));
+    return l.itens.every(i => !i.pendenteRevisao && !i.motivoReconferencia && (i.liberado || this.semProdutoParaVender(i)));
   });
 
   semProdutoParaVender(item: ListaEscolarItem): boolean {
@@ -59,7 +59,7 @@ export class ListaDetalheComponent implements OnInit {
   }
 
   podeConfirmarItem(item: ListaEscolarItem): boolean {
-    return item.pendenteRevisao || !this.semProdutoParaVender(item);
+    return item.pendenteRevisao || !!item.motivoReconferencia || !this.semProdutoParaVender(item);
   }
 
   rotuloMotivoPendencia(item: ListaEscolarItem): string {
@@ -415,6 +415,7 @@ export class ListaDetalheComponent implements OnInit {
 
   readonly statusLista = StatusListaEscolar;
   readonly statusItem = StatusItemListaEscolar;
+  readonly motivoReconferencia = MotivoReconferenciaItem;
 
   rotuloStatusItem(status: StatusItemListaEscolar): string {
     return ROTULO_STATUS_ITEM[status];

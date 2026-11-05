@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { ApiService } from '../../../../core/http/api.service';
 import { Resultado, Paginacao } from '../../../../core/models';
 import { ParametrosPaginacao } from '../../../../core/models/paginacao.model';
-import { ListaEscolarResumo, ListaEscolarDetalhe, ProdutoBusca } from '../models/lista-escolar.model';
+import { CategoriaListaEscolar, ListaEscolarResumo, ListaEscolarDetalhe, ProdutoBusca } from '../models/lista-escolar.model';
 import { ListaEscolarAtualizarRequisicao, ListaEscolarItemAtualizarRequisicao, ListaEscolarItemAdicionarRequisicao } from '../dtos/lista-escolar-item-atualizar.dto';
 import { OpcaoSelectBusca } from '../../../../shared/components/select-busca/select-busca.component';
 
@@ -66,6 +66,10 @@ export class ListasEscolaresService {
 
   buscarProdutos(termo: string): Observable<Resultado<ProdutoBusca[]>> {
     return this.api.get<ProdutoBusca[]>(`${this.endpoint}/produtos/busca`, { termo });
+  }
+
+  listarCategorias(): Observable<Resultado<CategoriaListaEscolar[]>> {
+    return this.api.get<CategoriaListaEscolar[]>(`${this.endpoint}/categorias`);
   }
 
   buscarEscolasComCotacao(termo: string): Observable<Resultado<OpcaoSelectBusca[]>> {

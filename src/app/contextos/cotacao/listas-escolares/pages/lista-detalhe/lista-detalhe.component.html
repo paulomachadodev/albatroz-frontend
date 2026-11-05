@@ -81,6 +81,19 @@
         </div>
       </section>
 
+      @if (itensPendentesRevisao() > 0) {
+        <div class="px-4 py-3 rounded-lg bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-sm font-medium flex items-center gap-2">
+          <span class="material-symbols-outlined text-base">warning</span>
+          {{ itensPendentesRevisao() }} item(ns) pendente(s) de revisão — a IA recuperou ou não conseguiu ler essas linhas. Confira com o documento original e confirme cada item para poder liberar a lista.
+        </div>
+      }
+
+      <datalist id="categorias-lista">
+        @for (categoria of categorias(); track categoria.id) {
+          <option [value]="categoria.nome"></option>
+        }
+      </datalist>
+
       <section class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col" style="max-height: 65vh;">
         <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between shrink-0">
           <h3 class="font-bold text-slate-900 dark:text-slate-100">Itens ({{ lista()!.itens.length }})</h3>
@@ -108,11 +121,20 @@
                   <td class="px-4 py-3 text-sm">
                     <p class="font-medium text-slate-900 dark:text-slate-100">{{ item.descricaoNaLista }}</p>
                     @if (item.marcaNaLista) { <p class="text-xs text-slate-400">Marca: {{ item.marcaNaLista }}</p> }
+                    @if (item.linhaOriginal && item.linhaOriginal !== item.descricaoNaLista) {
+                      <p class="text-xs text-slate-400">Na lista: {{ item.linhaOriginal }}</p>
+                    }
+                    @if (item.pendenteRevisao) {
+                      <p class="mt-1 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 text-xs font-bold">
+                        <span class="material-symbols-outlined text-sm">warning</span>
+                        {{ rotuloMotivoPendencia(item) }}
+                      </p>
+                    }
                   </td>
                   <td class="px-4 py-3 text-sm">
-                    <input type="text" [value]="item.categoriaItem || ''" placeholder="Categoria"
+                    <input type="text" list="categorias-lista" [value]="item.categoriaItem || ''" placeholder="Categoria"
                            (change)="alterarCategoria(item, $any($event.target).value)"
-                           class="w-36 px-2 py-1 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+                           class="w-44 px-2 py-1 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
                   </td>
                   <td class="px-4 py-3 text-sm text-slate-500">{{ item.codigoProduto || '-' }}</td>
                   <td class="px-4 py-3 text-sm min-w-64">
@@ -166,7 +188,8 @@
                                 : 'bg-slate-100 dark:bg-slate-800 text-slate-400 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-900/30 dark:hover:text-rose-400'">
                         <span class="material-symbols-outlined text-base">close</span>
                       </button>
-                      <button (click)="item.liberado ? desliberarItem(item) : liberarItem(item)" [disabled]="item.statusItem === statusItem.NaoEncontrado" title="Liberado"
+                      <button (click)="item.liberado ? desliberarItem(item) : liberarItem(item)" [disabled]="!podeConfirmarItem(item)"
+                              [title]="item.pendenteRevisao ? 'Confirmar revisão do item' : 'Liberado'"
                               class="w-8 h-8 flex items-center justify-center rounded-lg transition-all disabled:opacity-50"
                               [class]="item.liberado
                                 ? 'bg-emerald-600 text-white'

@@ -144,6 +144,13 @@ export class ConfiguracoesPaginaComponent implements OnInit {
   parcelasMaximas = 6;
   descontoPixDinheiroPercentual = 5;
   descontoEscolaParceiraPercentual = 10;
+  validadeDias = 7;
+  textoEntrega = '';
+  textoRetirada = '';
+  textoObservacaoCores = '';
+  textoAvisoPrecoEstoque = '';
+  whatsappAtendimento = '';
+  textoHorarioAtendimento = '';
 
   formListaOperacao: 'soma' | 'diminui' = 'soma';
   get formListaPercentualAbsoluto(): number {
@@ -453,6 +460,13 @@ export class ConfiguracoesPaginaComponent implements OnInit {
           this.parcelasMaximas = dados.parcelasMaximas;
           this.descontoPixDinheiroPercentual = dados.descontoPixDinheiroPercentual;
           this.descontoEscolaParceiraPercentual = dados.descontoEscolaParceiraPercentual;
+          this.validadeDias = dados.validadeDias;
+          this.textoEntrega = dados.textoEntrega ?? '';
+          this.textoRetirada = dados.textoRetirada ?? '';
+          this.textoObservacaoCores = dados.textoObservacaoCores;
+          this.textoAvisoPrecoEstoque = dados.textoAvisoPrecoEstoque;
+          this.whatsappAtendimento = dados.whatsappAtendimento;
+          this.textoHorarioAtendimento = dados.textoHorarioAtendimento;
         } else {
           this.condicoesComerciaisCadastradas.set(false);
         }
@@ -471,7 +485,14 @@ export class ConfiguracoesPaginaComponent implements OnInit {
       parcelaMinimaValor: this.parcelaMinimaValor,
       parcelasMaximas: this.parcelasMaximas,
       descontoPixDinheiroPercentual: this.descontoPixDinheiroPercentual,
-      descontoEscolaParceiraPercentual: this.descontoEscolaParceiraPercentual
+      descontoEscolaParceiraPercentual: this.descontoEscolaParceiraPercentual,
+      validadeDias: this.validadeDias,
+      textoEntrega: this.textoEntrega.trim() || null,
+      textoRetirada: this.textoRetirada.trim() || null,
+      textoObservacaoCores: this.textoObservacaoCores,
+      textoAvisoPrecoEstoque: this.textoAvisoPrecoEstoque,
+      whatsappAtendimento: this.whatsappAtendimento,
+      textoHorarioAtendimento: this.textoHorarioAtendimento
     }).subscribe({
       next: () => {
         this.salvandoCondicoesComerciais.set(false);

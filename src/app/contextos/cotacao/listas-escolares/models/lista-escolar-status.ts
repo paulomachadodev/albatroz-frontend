@@ -9,7 +9,13 @@ export enum StatusListaEscolar {
 export enum StatusItemListaEscolar {
   Encontrado = 1,
   NaoEncontrado = 2,
-  MarcaSubstituida = 3
+  MarcaSubstituida = 3,
+  SemEstoque = 4
+}
+
+export enum MotivoPendenciaItem {
+  RecuperadoNaVerificacao = 1,
+  TextoIlegivel = 2
 }
 
 export const ROTULO_STATUS_LISTA: Record<StatusListaEscolar, string> = {
@@ -23,5 +29,11 @@ export const ROTULO_STATUS_LISTA: Record<StatusListaEscolar, string> = {
 export const ROTULO_STATUS_ITEM: Record<StatusItemListaEscolar, string> = {
   [StatusItemListaEscolar.Encontrado]: 'encontrado',
   [StatusItemListaEscolar.NaoEncontrado]: 'não encontrado',
-  [StatusItemListaEscolar.MarcaSubstituida]: 'marca substituída'
+  [StatusItemListaEscolar.MarcaSubstituida]: 'marca substituída',
+  [StatusItemListaEscolar.SemEstoque]: 'sem estoque'
+};
+
+export const ROTULO_MOTIVO_PENDENCIA: Record<MotivoPendenciaItem, string> = {
+  [MotivoPendenciaItem.RecuperadoNaVerificacao]: 'Linha recuperada na verificação — confira descrição e quantidade',
+  [MotivoPendenciaItem.TextoIlegivel]: 'Texto ilegível na lista — confira com o documento original'
 };

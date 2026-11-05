@@ -1,4 +1,4 @@
-import { StatusItemListaEscolar, StatusListaEscolar } from './lista-escolar-status';
+import { MotivoPendenciaItem, StatusItemListaEscolar, StatusListaEscolar } from './lista-escolar-status';
 
 export interface ListaEscolarResumo {
   id: number;
@@ -17,7 +17,10 @@ export interface ListaEscolarItem {
   id: number;
   descricaoNaLista: string;
   marcaNaLista?: string;
+  idCategoria?: number;
   categoriaItem?: string;
+  nomeSecaoOriginal?: string;
+  linhaOriginal?: string;
   quantidade: number;
   idProduto?: number;
   codigoProduto?: string;
@@ -26,18 +29,22 @@ export interface ListaEscolarItem {
   subtotal?: number;
   statusItem: StatusItemListaEscolar;
   liberado: boolean;
+  pendenteRevisao: boolean;
+  motivoPendencia?: MotivoPendenciaItem;
 }
 
 export interface ListaEscolarDetalhe {
   id: number;
   idEscola?: number;
   escolaNome?: string;
+  escolaLogoUrl?: string;
   idSerie?: number;
   serie?: string;
   anoLetivo?: number;
   status: StatusListaEscolar;
   totalEstimado?: number;
   pdfCotacaoUrl?: string;
+  pdfGeradoEm?: string;
   itens: ListaEscolarItem[];
 }
 
@@ -47,4 +54,11 @@ export interface ProdutoBusca {
   nome: string;
   preco?: number;
   estoque?: number;
+}
+
+export interface CategoriaListaEscolar {
+  id: number;
+  nome: string;
+  pularBuscaProduto: boolean;
+  totalItens: number;
 }

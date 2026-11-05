@@ -1,4 +1,4 @@
-import { ROTULO_STATUS_ITEM, StatusItemListaEscolar, StatusListaEscolar } from '../../models/lista-escolar-status';
+import { ROTULO_MOTIVO_PENDENCIA, ROTULO_STATUS_ITEM, StatusItemListaEscolar, StatusListaEscolar } from '../../models/lista-escolar-status';
 import { Component, OnInit, computed, signal } from '@angular/core';
 
 import { ActivatedRoute, Router } from '@angular/router';
@@ -7,7 +7,7 @@ import { map, of } from 'rxjs';
 import * as XLSX from 'xlsx';
 import { ListasEscolaresService } from '../../services/listas-escolares.service';
 import { EscolasService } from '../../../../cadastros/escolas/services/escolas.service';
-import { ListaEscolarDetalhe, ListaEscolarItem, ProdutoBusca } from '../../models/lista-escolar.model';
+import { CategoriaListaEscolar, ListaEscolarDetalhe, ListaEscolarItem, ProdutoBusca } from '../../models/lista-escolar.model';
 import { ToastService } from '../../../../../core/feedback/toast.service';
 import { ConfirmService } from '../../../../../core/feedback/confirm.service';
 import { SelectBuscaComponent, OpcaoSelectBusca } from '../../../../../shared/components/select-busca/select-busca.component';
@@ -41,11 +41,29 @@ export class ListaDetalheComponent implements OnInit {
   novoItem = { descricaoNaLista: '', quantidade: 1 };
   adicionandoItem = signal(false);
 
+  categorias = signal<CategoriaListaEscolar[]>([]);
+
+  itensPendentesRevisao = computed(() =>
+    (this.lista()?.itens ?? []).filter(i => i.pendenteRevisao).length);
+
   todosItensResolvidos = computed(() => {
     const l = this.lista();
     if (!l || l.itens.length === 0) return false;
-    return l.itens.every(i => i.liberado || i.statusItem === StatusItemListaEscolar.NaoEncontrado);
+    return l.itens.every(i => !i.pendenteRevisao && (i.liberado || this.semProdutoParaVender(i)));
   });
+
+  semProdutoParaVender(item: ListaEscolarItem): boolean {
+    return item.statusItem === StatusItemListaEscolar.NaoEncontrado
+      || item.statusItem === StatusItemListaEscolar.SemEstoque;
+  }
+
+  podeConfirmarItem(item: ListaEscolarItem): boolean {
+    return item.pendenteRevisao || !this.semProdutoParaVender(item);
+  }
+
+  rotuloMotivoPendencia(item: ListaEscolarItem): string {
+    return item.motivoPendencia ? ROTULO_MOTIVO_PENDENCIA[item.motivoPendencia] : '';
+  }
 
   constructor(
     private route: ActivatedRoute,
@@ -59,6 +77,14 @@ export class ListaDetalheComponent implements OnInit {
   ngOnInit() {
     this.idLista = Number(this.route.snapshot.paramMap.get('id'));
     this.carregar();
+    this.carregarCategorias();
+  }
+
+  private carregarCategorias() {
+    this.listasService.listarCategorias().subscribe({
+      next: res => this.categorias.set(res.dados ?? []),
+      error: err => this.toast.erroServidor(err, 'Não foi possível carregar as categorias.')
+    });
   }
 
   carregar() {
@@ -285,7 +311,10 @@ export class ListaDetalheComponent implements OnInit {
       naoVendemos: false,
       categoriaNome: nome
     }).subscribe({
-      next: () => this.recarregarSilencioso(),
+      next: () => {
+        this.recarregarSilencioso();
+        this.carregarCategorias();
+      },
       error: err => this.toast.erroServidor(err, 'Não foi possível alterar a categoria.')
     });
   }
@@ -362,7 +391,8 @@ export class ListaDetalheComponent implements OnInit {
     const mapa: Record<number, string> = {
       [StatusItemListaEscolar.Encontrado]:       'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400',
       [StatusItemListaEscolar.NaoEncontrado]:    'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-400',
-      [StatusItemListaEscolar.MarcaSubstituida]: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400'
+      [StatusItemListaEscolar.MarcaSubstituida]: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400',
+      [StatusItemListaEscolar.SemEstoque]:       'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-400'
     };
     return mapa[status] ?? 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400';
   }

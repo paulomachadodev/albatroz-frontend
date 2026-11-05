@@ -543,6 +543,52 @@
           <p class="text-xs text-slate-400 mt-1">Substitui o desconto padrão (não soma) quando a escola está marcada como parceira.</p>
         </div>
 
+        <div>
+          <label class="text-xs font-semibold text-slate-500">Validade do orçamento (dias)</label>
+          <input type="number" min="1" max="365" [(ngModel)]="validadeDias"
+                 class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+          <p class="text-xs text-slate-400 mt-1">Contados a partir da data de emissão do PDF.</p>
+        </div>
+
+        <div>
+          <label class="text-xs font-semibold text-slate-500">Entrega</label>
+          <textarea rows="2" [(ngModel)]="textoEntrega"
+                    class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"></textarea>
+          <p class="text-xs text-slate-400 mt-1">Deixe vazio para não exibir a linha de entrega no orçamento.</p>
+        </div>
+
+        <div>
+          <label class="text-xs font-semibold text-slate-500">Retirada na loja</label>
+          <textarea rows="2" [(ngModel)]="textoRetirada"
+                    class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"></textarea>
+          <p class="text-xs text-slate-400 mt-1">Deixe vazio para não exibir a linha de retirada no orçamento.</p>
+        </div>
+
+        <div>
+          <label class="text-xs font-semibold text-slate-500">Observação sobre troca de cores</label>
+          <textarea rows="3" [(ngModel)]="textoObservacaoCores"
+                    class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"></textarea>
+        </div>
+
+        <div>
+          <label class="text-xs font-semibold text-slate-500">Aviso de preço e estoque</label>
+          <textarea rows="3" [(ngModel)]="textoAvisoPrecoEstoque"
+                    class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"></textarea>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="text-xs font-semibold text-slate-500">WhatsApp de atendimento (rodapé do orçamento)</label>
+            <input type="text" maxlength="20" [(ngModel)]="whatsappAtendimento"
+                   class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-slate-500">Horário de atendimento (rodapé do orçamento)</label>
+            <input type="text" [(ngModel)]="textoHorarioAtendimento"
+                   class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+          </div>
+        </div>
+
         <div class="pt-2">
           <button type="button" (click)="salvarCondicoesComerciais()" [disabled]="salvandoCondicoesComerciais()"
                   class="px-5 py-2.5 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all">

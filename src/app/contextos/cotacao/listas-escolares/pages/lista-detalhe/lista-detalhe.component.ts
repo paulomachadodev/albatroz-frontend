@@ -273,6 +273,19 @@ export class ListaDetalheComponent implements OnInit {
     this.itemEmBusca.set(item.id);
     this.termoBusca = '';
     this.resultadosBusca.set([]);
+    this.carregarResultados('', item.id);
+  }
+
+  private carregarResultados(termo: string, idItem: number) {
+    this.buscandoProduto.set(true);
+    this.listasService.buscarProdutos(termo, termo ? undefined : idItem).subscribe({
+      next: res => {
+        if (this.itemEmBusca() !== idItem) return;
+        this.resultadosBusca.set(res.dados ?? []);
+        this.buscandoProduto.set(false);
+      },
+      error: () => this.buscandoProduto.set(false)
+    });
   }
 
   fecharBuscaProduto() {
@@ -287,18 +300,15 @@ export class ListaDetalheComponent implements OnInit {
   aoDigitarBusca(valor: string) {
     this.termoBusca = valor;
     if (this.debounce) clearTimeout(this.debounce);
-    if (valor.trim().length < 2) { this.resultadosBusca.set([]); return; }
 
-    this.debounce = setTimeout(() => {
-      this.buscandoProduto.set(true);
-      this.listasService.buscarProdutos(valor.trim()).subscribe({
-        next: res => {
-          this.resultadosBusca.set(res.dados ?? []);
-          this.buscandoProduto.set(false);
-        },
-        error: () => this.buscandoProduto.set(false)
-      });
-    }, 300);
+    const idItem = this.itemEmBusca();
+    if (idItem === null) return;
+
+    const termo = valor.trim();
+    const termoValido = termo.length >= 2;
+    this.debounce = setTimeout(
+      () => this.carregarResultados(termoValido ? termo : '', idItem),
+      termoValido ? 300 : 0);
   }
 
   selecionarProduto(item: ListaEscolarItem, produto: ProdutoBusca) {

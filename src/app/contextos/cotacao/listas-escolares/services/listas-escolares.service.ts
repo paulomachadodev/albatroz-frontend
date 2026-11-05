@@ -68,8 +68,10 @@ export class ListasEscolaresService {
     return this.api.post<void>(`${this.endpoint}/${idLista}/reabrir`, {});
   }
 
-  buscarProdutos(termo: string): Observable<Resultado<ProdutoBusca[]>> {
-    return this.api.get<ProdutoBusca[]>(`${this.endpoint}/produtos/busca`, { termo });
+  buscarProdutos(termo: string, idItem?: number): Observable<Resultado<ProdutoBusca[]>> {
+    const parametros: Record<string, string | number> = { termo };
+    if (idItem !== undefined) parametros['idItem'] = idItem;
+    return this.api.get<ProdutoBusca[]>(`${this.endpoint}/produtos/busca`, parametros);
   }
 
   listarCategorias(): Observable<Resultado<CategoriaListaEscolar[]>> {

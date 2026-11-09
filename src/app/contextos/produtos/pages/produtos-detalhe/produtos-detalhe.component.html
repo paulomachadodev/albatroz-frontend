@@ -96,7 +96,7 @@
         </nav>
       </div>
 
-      <!-- Aba Geral — somente leitura, sync Tiny -->
+
       @if (abaAtiva() === 'geral') {
         <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-6">
           <div class="flex items-center gap-2">
@@ -137,7 +137,7 @@
         </div>
       }
 
-      <!-- Aba Complementos — categoria/marca/dimensões (Tiny, leitura) + quantidade por caixa (ERP, editável) -->
+
       @if (abaAtiva() === 'complementos') {
         <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-6">
           <div class="flex items-center gap-2">
@@ -252,7 +252,7 @@
                              class="pointer-events-none w-full h-full max-w-none object-cover rounded-xl bg-white shadow-2xl ring-1 ring-slate-200 dark:ring-slate-700"/>
                         <div class="absolute top-2 right-2 flex gap-1">
                           <app-btn-icone icone="delete" titulo="Excluir imagem" variante="perigo"
-                                         [desabilitado]="excluindoImagemId() === imagem.id"
+                                         [desabilitado]="excluindoImagemId() !== null"
                                          (clicar)="excluirImagem(imagem)"></app-btn-icone>
                         </div>
                       </div>
@@ -469,7 +469,7 @@
         </div>
       }
 
-      <!-- Aba Fiscal — tributação por produto (erp.produto_tributacao) -->
+
       @if (abaAtiva() === 'fiscal') {
         <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-6">
           @if (carregandoTributacao()) {
@@ -547,7 +547,7 @@
         </div>
       }
 
-      <!-- Aba Preço — só leitura; listas são configuração do ERP (Configurações > Venda) -->
+
       @if (abaAtiva() === 'preco') {
         <div class="space-y-4">
           <p class="text-xs text-slate-400">
@@ -596,7 +596,7 @@
         </div>
       }
 
-      <!-- Aba Fornecedores — produto_fornecedor_erp -->
+
       @if (abaAtiva() === 'fornecedores') {
         <div class="space-y-4">
           @if (modoEdicao()) {
@@ -689,7 +689,7 @@
         </div>
       }
 
-      <!-- Aba Análise — reaproveita os mesmos cálculos já validados no Metabase -->
+
       @if (abaAtiva() === 'analise') {
         @if (carregandoAnalise()) {
           <div class="text-sm text-slate-500">Carregando análise...</div>
@@ -835,7 +835,7 @@
         }
       }
 
-      <!-- Aba Variações / Kit — cada linha é produto real, clicável, abre a própria página -->
+
       @if (abaAtiva() === 'variacoes' && produto()!.tipo === 'variacao') {
         <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
           <table class="w-full text-left">
@@ -906,7 +906,7 @@
         </div>
       }
 
-      <!-- Aba Estoque -->
+
       @if (abaAtiva() === 'estoque') {
         <div class="space-y-4">
           <div class="grid grid-cols-3 gap-4">
@@ -973,7 +973,7 @@
 <app-overlay-progresso [visivel]="enviandoImagem()" mensagem="Enviando imagens..."
                         [concluidas]="imagensConcluidas()" [total]="imagensTotal()"></app-overlay-progresso>
 
-<!-- Sair com alterações não salvas -->
+
 <app-modal [aberto]="modalSairAberto()" titulo="Sair sem salvar?" tamanho="sm" (fechar)="responderSaida('cancelar')">
   <div class="px-6 pb-6 space-y-4">
     <p class="text-sm text-slate-600 dark:text-slate-400">Você tem alterações não salvas nesse produto. O que deseja fazer?</p>

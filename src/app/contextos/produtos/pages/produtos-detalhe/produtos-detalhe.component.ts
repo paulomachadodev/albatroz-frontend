@@ -140,6 +140,7 @@ export class ProdutosDetalheComponent implements OnInit {
   private origemCompras = false;
 
   private resetarEstadoNavegacao() {
+    this.excluindoImagemId.set(null);
     this.modoEdicao.set(false);
     this.sujo.set(false);
     this.estoque.set(null);
@@ -454,27 +455,44 @@ export class ProdutosDetalheComponent implements OnInit {
   }
 
   async excluirImagem(imagem: ProdutoImagem) {
+    if (this.excluindoImagemId() !== null) return;
+    const idProduto = this.idProduto;
     const confirmado = await this.confirm.confirmar(
       'Excluir essa imagem?',
       'A imagem é removida definitivamente do produto e não pode ser recuperada.',
       { textoConfirmar: 'Excluir' }
     );
-    if (!confirmado) return;
+    if (!confirmado || this.idProduto !== idProduto || this.excluindoImagemId() !== null) return;
 
     this.excluindoImagemId.set(imagem.id);
-    this.produtosService.excluirImagem(this.idProduto, imagem.id).subscribe({
+    this.produtosService.excluirImagem(idProduto, imagem.id).subscribe({
       next: () => {
+        if (this.idProduto !== idProduto) return;
+        this.produto.update(produto => produto ? {
+          ...produto,
+          imagens: produto.imagens
+            .filter(item => item.id !== imagem.id)
+            .sort((a, b) => a.indice - b.indice)
+            .map((item, indice) => ({ ...item, indice: indice + 1 }))
+        } : produto);
         this.excluindoImagemId.set(null);
         this.toast.sucesso('Imagem excluída.');
-        this.recarregarSilencioso();
       },
       error: err => {
+        if (this.idProduto !== idProduto) return;
         this.excluindoImagemId.set(null);
-        this.toast.erroServidor(err, 'Não foi possível excluir a imagem.');
+        this.toast.erroServidor(err, 'Não foi possível concluir a exclusão da imagem.');
+        this.produtosService.obter(idProduto).subscribe({
+          next: res => {
+            if (this.idProduto !== idProduto || !res.dados) return;
+            const imagens = res.dados.imagens;
+            this.produto.update(produto => produto ? { ...produto, imagens } : produto);
+          },
+          error: () => this.toast.erro('Não foi possível atualizar a galeria. Recarregue o produto.')
+        });
       }
     });
   }
-
   async excluirTodasImagens() {
     const confirmado = await this.confirm.confirmar(
       'Excluir todas as imagens deste produto?',

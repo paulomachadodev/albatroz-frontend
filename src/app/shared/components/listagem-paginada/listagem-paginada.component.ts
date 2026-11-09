@@ -30,6 +30,7 @@ export class ListagemPaginadaComponent<T> implements AfterViewInit {
   filtrosWrapper = viewChild<ElementRef<HTMLDivElement>>('filtrosWrapper');
   filtrosExpandidos = signal(false);
   filtrosCabemNumaLinha = signal(false);
+  buscaEmFoco = signal(false);
 
   ngAfterViewInit() {
     const altura = this.filtrosWrapper()?.nativeElement.scrollHeight ?? 0;
@@ -40,13 +41,24 @@ export class ListagemPaginadaComponent<T> implements AfterViewInit {
     this.filtrosExpandidos.update(v => !v);
   }
 
+  aoFocarNoFiltro(evento: FocusEvent) {
+    const alvo = evento.target as HTMLElement | null;
+    this.buscaEmFoco.set(!!alvo?.closest('app-select-busca'));
+  }
+
+  aoSairDoFiltro() {
+    this.buscaEmFoco.set(false);
+  }
+
   classeConteudoFiltros(): string {
-    const desktopExpandido = this.filtrosCabemNumaLinha() || this.filtrosExpandidos();
-    const mobileExpandido = this.filtrosExpandidos();
+    const aberto = this.filtrosExpandidos() || this.buscaEmFoco();
+    const desktopExpandido = this.filtrosCabemNumaLinha() || aberto;
     return [
-      'transition-all duration-200 overflow-hidden',
-      mobileExpandido ? 'max-h-none opacity-100' : 'max-h-0 opacity-0',
-      desktopExpandido ? 'md:max-h-none md:opacity-100 md:overflow-visible' : 'md:max-h-[84px] md:opacity-100'
+      'transition-all duration-200 p-1 -m-1',
+      aberto ? 'max-h-none opacity-100 overflow-visible' : 'max-h-0 opacity-0 overflow-hidden',
+      desktopExpandido
+        ? 'md:max-h-none md:opacity-100 md:overflow-visible'
+        : 'md:max-h-[84px] md:opacity-100 md:overflow-hidden'
     ].join(' ');
   }
 

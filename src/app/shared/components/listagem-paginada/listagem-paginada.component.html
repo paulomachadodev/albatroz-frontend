@@ -6,7 +6,8 @@
       <span class="material-symbols-outlined text-lg">{{ filtrosExpandidos() ? 'expand_less' : 'expand_more' }}</span>
     </button>
   </div>
-  <div #filtrosWrapper [class]="classeConteudoFiltros()">
+  <div #filtrosWrapper [class]="classeConteudoFiltros()"
+       (focusin)="aoFocarNoFiltro($event)" (focusout)="aoSairDoFiltro()">
     <ng-content select="[filtros]"></ng-content>
   </div>
   <ng-content select="[filtrosBotoes]"></ng-content>

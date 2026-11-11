@@ -477,6 +477,7 @@ export class ProdutosDetalheComponent implements OnInit {
         } : produto);
         this.excluindoImagemId.set(null);
         this.toast.sucesso('Imagem excluída.');
+        if (this.marketplaces().length > 0) this.carregarMarketplaces();
       },
       error: err => {
         if (this.idProduto !== idProduto) return;

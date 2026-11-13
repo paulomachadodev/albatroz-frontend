@@ -11,6 +11,7 @@ import { OpcaoSelectBusca } from '../../../../shared/components/select-busca/sel
 export interface ListaEscolarFiltro {
   idEscola?: number;
   idSerie?: number;
+  anoLetivo?: number;
   status?: StatusListaEscolar;
   de?: string;
   ate?: string;
@@ -84,6 +85,10 @@ export class ListasEscolaresService {
 
   buscarSeriesComCotacao(termo: string): Observable<Resultado<OpcaoSelectBusca[]>> {
     return this.api.get<OpcaoSelectBusca[]>(`${this.endpoint}/filtros/series`, { termo });
+  }
+
+  listarAnosLetivos(): Observable<Resultado<number[]>> {
+    return this.api.get<number[]>(`${this.endpoint}/filtros/anos`);
   }
 
   enviarArquivo(arquivo: File, substituir = false): Observable<Resultado<{ idLista: number | null; status: string }>> {

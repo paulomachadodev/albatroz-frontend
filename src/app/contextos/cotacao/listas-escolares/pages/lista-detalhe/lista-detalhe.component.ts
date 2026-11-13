@@ -10,7 +10,6 @@ import { EscolasService } from '../../../../cadastros/escolas/services/escolas.s
 import { CategoriaListaEscolar, ListaEscolarDetalhe, ListaEscolarItem, ProdutoBusca } from '../../models/lista-escolar.model';
 import { ToastService } from '../../../../../core/feedback/toast.service';
 import { ConfirmService } from '../../../../../core/feedback/confirm.service';
-import { AuthService } from '../../../../../core/auth/auth.service';
 import { SelectBuscaComponent, OpcaoSelectBusca } from '../../../../../shared/components/select-busca/select-busca.component';
 import { BtnIconeComponent } from '../../../../../shared/components/btn-icone/btn-icone.component';
 import { BreadcrumbComponent } from '../../../../../shared/components/breadcrumb/breadcrumb.component';
@@ -72,30 +71,8 @@ export class ListaDetalheComponent implements OnInit {
     private listasService: ListasEscolaresService,
     private escolasService: EscolasService,
     private toast: ToastService,
-    private confirm: ConfirmService,
-    private auth: AuthService
+    private confirm: ConfirmService
   ) {}
-
-  podeExcluirLista(): boolean {
-    return this.auth.temPermissao('cotacoes:excluir');
-  }
-
-  async excluirLista() {
-    const confirmado = await this.confirm.confirmar(
-      'Excluir essa lista inteira?',
-      'Os itens, os vínculos com clientes e o PDF gerado serão apagados. Essa ação não pode ser desfeita.',
-      { textoConfirmar: 'Excluir lista' }
-    );
-    if (!confirmado) return;
-
-    this.listasService.excluirLista(this.idLista).subscribe({
-      next: () => {
-        this.toast.sucesso('Lista excluída.');
-        this.router.navigate(['/cotacoes/listas-escolares']);
-      },
-      error: err => this.toast.erroServidor(err, 'Não foi possível excluir a lista.')
-    });
-  }
 
   ngOnInit() {
     this.idLista = Number(this.route.snapshot.paramMap.get('id'));

@@ -11,6 +11,9 @@
       <div class="flex flex-wrap items-center justify-between gap-4">
         <h1 class="text-page-title text-slate-900 dark:text-slate-100">
           {{ lista()!.escolaNome || 'Lista avulsa' }}
+          @if (lista()!.anoLetivo) {
+            <span class="ml-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-base font-bold align-middle">{{ lista()!.anoLetivo }}</span>
+          }
         </h1>
 
         <div class="flex flex-wrap items-center gap-2">
@@ -18,14 +21,6 @@
                   class="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
             Cancelar
           </button>
-
-          @if (podeExcluirLista()) {
-            <button (click)="excluirLista()" [disabled]="lista()!.status === statusLista.Liberando"
-                    class="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-rose-50 dark:bg-rose-900/30 text-rose-700 dark:text-rose-400 font-bold text-sm hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-                    title="Excluir a lista e o PDF gerado">
-              <span class="material-symbols-outlined text-sm">delete</span> Excluir lista
-            </button>
-          }
 
           <button (click)="exportarExcel()" [disabled]="lista()!.status !== statusLista.Liberada"
                   class="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 font-bold text-sm hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
@@ -64,7 +59,7 @@
 
       <section class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
         <h3 class="font-bold text-slate-900 dark:text-slate-100 mb-4">Escola</h3>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <label class="text-xs font-semibold text-slate-500">Escola</label>
             <div class="mt-1">
@@ -79,6 +74,12 @@
                                  [placeholder]="escolaSelecionada() ? 'Buscar série...' : 'Escolha a escola primeiro'"
                                  [buscar]="buscarSeries" (selecionado)="aoSelecionarSerie($event)"/>
             </div>
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-slate-500">Ano letivo</label>
+            <p class="mt-1 px-3 py-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-sm font-bold text-slate-700 dark:text-slate-200">
+              {{ lista()!.anoLetivo || 'Não identificado' }}
+            </p>
           </div>
         </div>
         <div class="pt-4">

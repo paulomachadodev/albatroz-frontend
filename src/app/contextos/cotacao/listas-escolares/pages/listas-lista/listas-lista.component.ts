@@ -13,11 +13,13 @@ import { PageHeaderComponent } from '../../../../../shared/components/page-heade
 import { SelectBuscaComponent, OpcaoSelectBusca } from '../../../../../shared/components/select-busca/select-busca.component';
 import { Ordenacao, ThOrdenavelComponent } from '../../../../../shared/components/th-ordenavel/th-ordenavel.component';
 import { BreadcrumbComponent } from '../../../../../shared/components/breadcrumb/breadcrumb.component';
+import { BtnIconeComponent } from '../../../../../shared/components/btn-icone/btn-icone.component';
+import { AuthService } from '../../../../../core/auth/auth.service';
 
 @Component({
   selector: 'app-listas-lista',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, ListagemPaginadaComponent, PageHeaderComponent, SelectBuscaComponent, ThOrdenavelComponent, BreadcrumbComponent],
+  imports: [CommonModule, RouterLink, FormsModule, ListagemPaginadaComponent, PageHeaderComponent, SelectBuscaComponent, ThOrdenavelComponent, BreadcrumbComponent, BtnIconeComponent],
   templateUrl: './listas-lista.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
@@ -34,6 +36,7 @@ export class ListasListaComponent implements OnInit {
   escolaFiltro = signal<OpcaoSelectBusca | null>(null);
   serieFiltro = signal<OpcaoSelectBusca | null>(null);
   enviandoArquivo = signal(false);
+  anosLetivos = signal<number[]>([]);
 
   buscarEscolas = (termo: string) =>
     this.listasService.buscarEscolasComCotacao(termo).pipe(map(res => res.dados ?? []));
@@ -54,11 +57,50 @@ export class ListasListaComponent implements OnInit {
   constructor(
     private listasService: ListasEscolaresService,
     private toast: ToastService,
-    private confirm: ConfirmService
+    private confirm: ConfirmService,
+    private auth: AuthService
   ) {}
 
   ngOnInit() {
-    this.carregar();
+    this.listasService.listarAnosLetivos().subscribe({
+      next: res => {
+        const anos = res.dados ?? [];
+        this.anosLetivos.set(anos);
+        this.filtro.anoLetivo = anos[0];
+        this.carregar();
+      },
+      error: () => this.carregar()
+    });
+  }
+
+  podeExcluirLista(): boolean {
+    return this.auth.temPermissao('cotacoes:excluir');
+  }
+
+  async excluirLista(item: ListaEscolarResumo) {
+    const identificacao = [item.escolaNome || 'Lista avulsa', item.serie, item.anoLetivo].filter(Boolean).join(' · ');
+    const confirmado = await this.confirm.confirmar(
+      `Excluir a lista "${identificacao}"?`,
+      'Os itens, os vínculos com clientes e o PDF gerado serão apagados. Essa ação não pode ser desfeita.',
+      { textoConfirmar: 'Excluir lista' }
+    );
+    if (!confirmado) return;
+
+    this.listasService.excluirLista(item.id).subscribe({
+      next: () => {
+        this.toast.sucesso('Lista excluída.');
+        const ultimaDaPagina = this.itens().length === 1 && this.paginaAtual() > 1;
+        this.carregar(ultimaDaPagina ? this.paginaAtual() - 1 : this.paginaAtual());
+        this.atualizarAnosLetivos();
+      },
+      error: err => this.toast.erroServidor(err, 'Não foi possível excluir a lista.')
+    });
+  }
+
+  private atualizarAnosLetivos() {
+    this.listasService.listarAnosLetivos().subscribe({
+      next: res => this.anosLetivos.set(res.dados ?? [])
+    });
   }
 
   carregar(pagina = 1) {
@@ -83,7 +125,7 @@ export class ListasListaComponent implements OnInit {
   }
 
   limparFiltros() {
-    this.filtro = {};
+    this.filtro = { anoLetivo: this.anosLetivos()[0] };
     this.escolaFiltro.set(null);
     this.serieFiltro.set(null);
     this.ordenacaoAtual.set(null);
@@ -138,6 +180,7 @@ export class ListasListaComponent implements OnInit {
           ? 'Lista substituída — voltou para conferência.'
           : 'Lista enviada pra Albia cotar — aparece na listagem assim que terminar.');
         input.value = '';
+        this.atualizarAnosLetivos();
         this.carregar(1);
       },
       error: err => {
@@ -147,6 +190,8 @@ export class ListasListaComponent implements OnInit {
       }
     });
   }
+
+  readonly statusLista = StatusListaEscolar;
 
   readonly opcoesStatus = Object.values(StatusListaEscolar).filter((v): v is StatusListaEscolar => typeof v === 'number').map(v => ({ valor: v, rotulo: ROTULO_STATUS_LISTA[v] }));
 

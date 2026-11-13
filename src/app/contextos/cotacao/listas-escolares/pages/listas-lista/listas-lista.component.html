@@ -40,6 +40,16 @@
             </div>
           </div>
           <div>
+            <label class="text-xs font-semibold text-slate-500">Ano letivo</label>
+            <select [(ngModel)]="filtro.anoLetivo"
+                    class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none">
+              <option [ngValue]="undefined">Todos</option>
+              @for (ano of anosLetivos(); track ano) {
+                <option [ngValue]="ano">{{ ano }}</option>
+              }
+            </select>
+          </div>
+          <div>
             <label class="text-xs font-semibold text-slate-500">Status</label>
             <select [(ngModel)]="filtro.status"
                     class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none">
@@ -72,6 +82,9 @@
             <app-th-ordenavel campo="serie" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Série</app-th-ordenavel>
           </th>
           <th class="px-6 py-4 text-center">
+            <app-th-ordenavel campo="anoLetivo" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Ano letivo</app-th-ordenavel>
+          </th>
+          <th class="px-6 py-4 text-center">
             <app-th-ordenavel campo="totalItens" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Itens</app-th-ordenavel>
           </th>
           <th class="px-6 py-4 text-center">Liberados</th>
@@ -81,6 +94,7 @@
           <th class="px-6 py-4 text-center">
             <app-th-ordenavel campo="status" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Status</app-th-ordenavel>
           </th>
+          <th class="px-6 py-4 text-right">Ações</th>
         </tr>
       </ng-template>
 
@@ -94,11 +108,19 @@
           <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
             {{ item.serie || '-' }}
           </td>
+          <td class="px-6 py-4 text-center text-sm font-medium">{{ item.anoLetivo || '-' }}</td>
           <td class="px-6 py-4 text-center text-sm font-medium">{{ item.totalItens }}</td>
           <td class="px-6 py-4 text-center text-sm font-medium">{{ item.itensLiberados }}/{{ item.totalItens }}</td>
           <td class="px-6 py-4 text-right text-sm font-bold">{{ formatarReais(item.totalEstimado) }}</td>
           <td class="px-6 py-4 text-center">
             <span class="px-2 py-0.5 rounded-full text-xs font-bold" [class]="classeStatus(item.status)">{{ rotuloStatus(item.status) }}</span>
+          </td>
+          <td class="px-6 py-4 text-right" (click)="$event.stopPropagation()">
+            @if (podeExcluirLista()) {
+              <app-btn-icone icone="delete" titulo="Excluir lista" variante="perigo"
+                             [desabilitado]="item.status === statusLista.Liberando"
+                             (clicar)="excluirLista(item)"></app-btn-icone>
+            }
           </td>
         </tr>
       </ng-template>

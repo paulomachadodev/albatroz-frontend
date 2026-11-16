@@ -61,7 +61,7 @@ export class IaConfiguracaoComponent extends ConfiguracaoFormularioBase implemen
   async salvar(): Promise<void> {
     this.form.markAllAsTouched();
     if (!this.podeEditar() || !this.disponivel() || this.processando() || this.form.invalid) return;
-    const confirmado = await this.confirm.confirmar('Validar e salvar chave Google?', 'A validação realiza uma chamada mínima ao Google, que pode gerar cobrança na sua conta. Uma chave inválida mantém a configuração anterior. Os fluxos atuais de IA não serão alterados.', { textoConfirmar: 'Validar e salvar' });
+    const confirmado = await this.confirm.confirmar('Validar e salvar chave Google?', 'A validação realiza uma chamada mínima ao Google, que pode gerar cobrança na sua conta. Uma chave inválida mantém a configuração anterior.', { textoConfirmar: 'Validar e salvar' });
     if (!confirmado || !this.podeEditar() || !this.disponivel() || this.processando() || this.form.invalid) return;
     this.processando.set(true);
     const { chave, modelo } = this.form.getRawValue();
@@ -71,7 +71,7 @@ export class IaConfiguracaoComponent extends ConfiguracaoFormularioBase implemen
         if (!resposta.sucesso || !resposta.dados) { this.toast.erro('Não foi possível validar e salvar a chave.'); return; }
         this.configuracao.set(resposta.dados);
         this.marcarSalvo();
-        this.toast.sucesso('Chave validada e salva.', 'Os fluxos atuais de IA permanecem como estão.');
+        this.toast.sucesso('Chave validada e salva.');
       },
       error: erro => { this.form.controls.chave.reset(''); this.toast.erroServidor(erro, 'Não foi possível confirmar a operação. Atualize a tela antes de repetir; a tentativa pode ter custo.'); }
     });
@@ -79,7 +79,7 @@ export class IaConfiguracaoComponent extends ConfiguracaoFormularioBase implemen
 
   async remover(): Promise<void> {
     if (!this.podeRemover() || this.processando()) return;
-    const confirmado = await this.confirm.confirmar('Remover chave Google cadastrada?', 'Remove somente a credencial cadastrada nesta área. Os fluxos atuais de IA continuam como estão.', { textoConfirmar: 'Remover chave' });
+    const confirmado = await this.confirm.confirmar('Remover chave Google cadastrada?', 'A credencial da empresa atual será removida.', { textoConfirmar: 'Remover chave' });
     if (!confirmado || !this.podeRemover() || this.processando()) return;
     this.processando.set(true);
     this.service.remover().pipe(takeUntil(this.contextoEncerrado), takeUntilDestroyed(this.destroyRef), finalize(() => this.processando.set(false))).subscribe({

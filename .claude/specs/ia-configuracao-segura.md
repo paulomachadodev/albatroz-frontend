@@ -9,3 +9,6 @@ A chave nunca preenche o campo nem é persistida no navegador; é limpa após a 
 O backend responde habilitado=false enquanto a implantação segura estiver pendente, bloqueando cadastro/remoção. Cadastrar/remover não altera fluxos em produção. Sem painel de consumo, migração de consumidores existentes, limites ou Marketing nesta entrega.
 
 Validação: 37 testes ChromeHeadless aprovados (7 novos), build de produção aprovado. Casos novos cobrem PBAC, bloqueio por implantação pendente, confirmação de custo, limpeza do segredo, preservação após falha, exclusão confirmada/cancelada e troca de contexto durante confirmação/requisição.
+## Ajuste aprovado em 2026-11-16
+
+Cadastro habilitado após confirmação do SQL. Interface sem textos de roadmap ou implantação futura. Campo secreto usa placeholder de bolinhas somente quando o backend informa chave configurada; valor permanece vazio, nunca recebe segredo existente ou máscara para envio. Sem chave cadastrada, placeholder vazio. Remoção limpa também o indicador visual.

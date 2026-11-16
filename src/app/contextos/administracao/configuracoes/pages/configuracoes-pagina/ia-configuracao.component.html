@@ -1,19 +1,22 @@
 <div class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark px-4 sm:px-6 lg:px-8 xl:px-10 py-6 lg:py-8">
   <div class="w-full space-y-8">
     <app-breadcrumb [itens]="[{label:'Início',rota:'/dashboard'},{label:'Configurações',rota:'/configuracoes'},{label:'Inteligência artificial'}]" />
-    <app-page-header titulo="Inteligência artificial" subtitulo="Configure a chave Google da empresa atual para os próximos recursos de IA do ERP." />
-    <a routerLink="/configuracoes" class="inline-block text-sm font-semibold text-primary hover:underline">Voltar às configurações</a>
+    <app-page-header titulo="Inteligência artificial" subtitulo="Gerencie a chave Google e o modelo da empresa atual." />
+    <div class="flex flex-wrap gap-4">
+      <a routerLink="/configuracoes" class="inline-block text-sm font-semibold text-primary hover:underline">Voltar às configurações</a>
+      <a routerLink="/configuracoes/ia/validacoes" class="inline-block text-sm font-semibold text-primary hover:underline">Histórico de validações</a>
+    </div>
     @if (carregando()) {
       <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 h-96 animate-pulse" aria-label="Carregando configuração de IA"></div>
     } @else {
       <section class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-6">
         <div class="space-y-2 text-sm text-slate-600 dark:text-slate-300">
           <h2 class="font-bold text-slate-900 dark:text-white">Google Gemini · chave própria</h2>
-          <p>O uso é pago diretamente ao Google pela empresa. Cadastrar ou remover uma chave aqui não troca os fluxos de IA que já estão em produção.</p>
+          <p>O uso é pago diretamente ao Google pela empresa.</p>
           @if (!disponivel()) {
-            <p class="font-semibold">Implantação pendente. O cadastro ficará disponível após a liberação segura deste recurso.</p>
+            <p class="font-semibold">Cadastro temporariamente indisponível.</p>
           }
-          <p>Estado: <strong>{{ configuracao()?.configurada ? 'Chave configurada' : 'Sem chave cadastrada nesta área' }}</strong></p>
+          <p>Estado: <strong>{{ configuracao()?.configurada ? 'Chave configurada' : 'Sem chave cadastrada' }}</strong></p>
           @if (configuracao()?.marcador) { <p class="break-all">Identificação: {{ configuracao()?.marcador }}</p> }
           @if (configuracao()?.modelo) { <p class="break-all">Modelo cadastrado: {{ configuracao()?.modelo }}</p> }
           @if (configuracao()?.validadoEm) { <p>Última validação: {{ configuracao()?.validadoEm | date:'dd/MM/yyyy HH:mm' }}</p> }
@@ -22,7 +25,7 @@
           <fieldset [disabled]="!podeEditar() || !disponivel() || processando()" class="grid grid-cols-1 lg:grid-cols-2 gap-4 min-w-0">
             <div class="min-w-0">
               <label for="ia-chave" class="text-xs font-semibold text-slate-500">{{ configuracao()?.configurada ? 'Nova chave Google' : 'Chave Google' }}</label>
-              <input pInputText id="ia-chave" type="password" formControlName="chave" autocomplete="new-password" spellcheck="false" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none" aria-describedby="ia-chave-ajuda" />
+              <input pInputText id="ia-chave" type="password" formControlName="chave" [placeholder]="configuracao()?.configurada ? '••••••••' : ''" autocomplete="new-password" spellcheck="false" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none" aria-describedby="ia-chave-ajuda" />
               <p id="ia-chave-ajuda" class="mt-1 text-xs text-slate-500">A chave existente nunca é exibida. Informe uma chave apenas para cadastrar ou substituir.</p>
               @if (form.controls.chave.touched && form.controls.chave.invalid) { <p class="text-xs text-red-600">Informe uma chave válida, sem espaços.</p> }
             </div>

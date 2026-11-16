@@ -42,7 +42,10 @@ describe('Configuração isolada de IA', () => {
     expect(pagina.form.controls.modelo.invalid).toBeTrue();
     pagina.form.reset({ chave: '', modelo: 'gemini-2.5-flash-lite' });
     expect(api.put).not.toHaveBeenCalled();
-    expect(harness.routeNativeElement?.textContent).toContain('não troca os fluxos');
+    const campo = harness.routeNativeElement?.querySelector<HTMLInputElement>('#ia-chave');
+    expect(campo?.placeholder).toBe('••••••••');
+    expect(campo?.value).toBe('');
+    expect(harness.routeNativeElement?.textContent).not.toContain('próximos recursos');
     permissoes.set(['configuracoes:ler']);
     await harness.navigateByUrl('/configuracoes');
     await harness.navigateByUrl('/configuracoes/ia');
@@ -58,7 +61,7 @@ describe('Configuração isolada de IA', () => {
     await pagina.remover();
     expect(api.put).not.toHaveBeenCalled();
     expect(api.delete).not.toHaveBeenCalled();
-    expect(harness.routeNativeElement?.textContent).toContain('Implantação pendente');
+    expect(harness.routeNativeElement?.textContent).toContain('Cadastro temporariamente indisponível');
   });
 
   it('confirma chamada faturável, salva somente endpoint dedicado e limpa segredo', async () => {
@@ -115,6 +118,8 @@ describe('Configuração isolada de IA', () => {
     await pagina.remover();
     expect(api.delete).toHaveBeenCalledOnceWith('/v1/configuracoes/ia');
     expect(pagina.configuracao()?.configurada).toBeFalse();
+    harness.detectChanges();
+    expect(harness.routeNativeElement?.querySelector<HTMLInputElement>('#ia-chave')?.placeholder).toBe('');
   });
 
   it('descarta resposta da sessão anterior durante troca de empresa', async () => {

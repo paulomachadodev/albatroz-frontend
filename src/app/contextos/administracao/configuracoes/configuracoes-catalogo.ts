@@ -34,6 +34,7 @@ export const CONFIGURACOES_GRUPOS: GrupoConfiguracao[] = [
     { id: 'naturezas', titulo: 'Naturezas de operação', descricao: 'Cadastro de regras de tributação.', rota: '/fiscal/naturezas-operacao', permissao: 'configuracoes:ler', termos: 'imposto fiscal cfop' }
   ] },
   { id: 'inteligencia-artificial', titulo: 'Inteligência artificial', destinos: [
+    { id: 'ia-validacoes', titulo: 'Histórico de validações Google', descricao: 'Tentativas de validação e tokens informados pelo Google.', rota: '/configuracoes/ia/validacoes', permissao: 'ia_configuracoes:ler', termos: 'consumo tokens histórico validação ia' },
     { id: 'ia-configuracao', titulo: 'Inteligência artificial', descricao: 'Chave Google e modelo da empresa atual.', rota: '/configuracoes/ia', permissao: 'ia_configuracoes:ler', termos: 'google gemini chave credencial modelo ia' }
   ] },
   { id: 'integracoes', titulo: 'Integrações e canais', destinos: [

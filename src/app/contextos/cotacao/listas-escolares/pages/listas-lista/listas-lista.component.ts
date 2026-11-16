@@ -22,6 +22,7 @@ interface ItemEnvio {
   arquivo: File;
   estado: EstadoEnvio;
   substituir: boolean;
+  existente?: string;
 }
 
 @Component({
@@ -220,10 +221,10 @@ export class ListasListaComponent implements OnInit, OnDestroy {
 
     const duplicadas = this.envios().filter(e => e.estado === 'duplicada');
     if (duplicadas.length > 0) {
-      const nomes = duplicadas.map(e => e.arquivo.name).join(', ');
+      const detalhes = duplicadas.map(e => `${e.arquivo.name} → já existe: ${e.existente ?? 'lista com mesma escola, série e ano'}`).join(' | ');
       const confirmado = await this.confirm.confirmar(
         `${duplicadas.length} lista(s) já existem para essa escola, série e ano`,
-        `Substituir tudo? As listas voltam para conferência, os itens são refeitos e os PDFs atuais são apagados. Arquivos: ${nomes}`,
+        `Substituir tudo? As listas voltam para conferência, os itens são refeitos e os PDFs atuais são apagados. ${detalhes}`,
         { textoConfirmar: 'Substituir tudo', textoCancelar: 'Cancelar' }
       );
       if (confirmado) {
@@ -250,7 +251,7 @@ export class ListasListaComponent implements OnInit, OnDestroy {
       try {
         const res = await firstValueFrom(this.listasService.enviarArquivo(proximo.arquivo, proximo.substituir));
         const duplicada = res.dados?.status === 'existente_confirmar_substituicao';
-        this.definirEstadoEnvio(proximo.arquivo, duplicada ? 'duplicada' : 'pronta');
+        this.definirEstadoEnvio(proximo.arquivo, duplicada ? 'duplicada' : 'pronta', res.dados?.listaExistente ?? undefined);
         if (!duplicada) this.recarregarSilencioso();
       } catch (err) {
         this.definirEstadoEnvio(proximo.arquivo, 'erro');
@@ -259,8 +260,8 @@ export class ListasListaComponent implements OnInit, OnDestroy {
     }
   }
 
-  private definirEstadoEnvio(arquivo: File, estado: EstadoEnvio) {
-    this.envios.update(lista => lista.map(e => e.arquivo === arquivo ? { ...e, estado } : e));
+  private definirEstadoEnvio(arquivo: File, estado: EstadoEnvio, existente?: string) {
+    this.envios.update(lista => lista.map(e => e.arquivo === arquivo ? { ...e, estado, existente: existente ?? e.existente } : e));
   }
 
   rotuloEstadoEnvio(estado: EstadoEnvio): string {

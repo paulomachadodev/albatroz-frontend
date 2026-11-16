@@ -91,10 +91,10 @@ export class ListasEscolaresService {
     return this.api.get<number[]>(`${this.endpoint}/filtros/anos`);
   }
 
-  enviarArquivo(arquivo: File, substituir = false): Observable<Resultado<{ idLista: number | null; status: string }>> {
+  enviarArquivo(arquivo: File, substituir = false): Observable<Resultado<{ idLista: number | null; status: string; listaExistente?: string | null }>> {
     const formData = new FormData();
     formData.append('arquivo', arquivo);
     const rota = substituir ? `${this.endpoint}/enviar-arquivo?substituir=true` : `${this.endpoint}/enviar-arquivo`;
-    return this.api.post<{ idLista: number | null; status: string }>(rota, formData);
+    return this.api.post<{ idLista: number | null; status: string; listaExistente?: string | null }>(rota, formData);
   }
 }

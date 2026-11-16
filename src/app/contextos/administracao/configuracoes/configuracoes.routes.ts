@@ -6,6 +6,7 @@ const editarConfiguracao = { canActivate: [permissaoGuard], canDeactivate: [conf
 
 export const CONFIGURACOES_ROUTES: Routes = [
   { path: '', pathMatch: 'full', title: 'Configurações', loadComponent: () => import('./pages/configuracoes-pagina/configuracoes-pagina.component').then(m => m.ConfiguracoesPaginaComponent) },
+  { path: 'ia', ...editarConfiguracao, data: { permissao: 'ia_configuracoes:ler' }, title: 'Inteligência artificial', loadComponent: () => import('./pages/configuracoes-pagina/ia-configuracao.component').then(m => m.IaConfiguracaoComponent) },
   { path: 'email', ...editarConfiguracao, title: 'E-mail e SMTP', loadComponent: () => import('./pages/configuracoes-pagina/email-configuracao.component').then(m => m.EmailConfiguracaoComponent) },
   { path: 'listas-preco', ...editarConfiguracao, data: { permissao: 'produtos:ler' }, title: 'Listas de preço', loadComponent: () => import('./pages/configuracoes-pagina/venda-configuracao.component').then(m => m.VendaConfiguracaoComponent) },
   { path: 'metas', ...editarConfiguracao, title: 'Metas e vendedores', loadComponent: () => import('./pages/configuracoes-pagina/metas-configuracao.component').then(m => m.MetasConfiguracaoComponent) },

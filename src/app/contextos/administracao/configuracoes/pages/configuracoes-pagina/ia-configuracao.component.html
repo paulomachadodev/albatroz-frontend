@@ -1,0 +1,48 @@
+<div class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark px-4 sm:px-6 lg:px-8 xl:px-10 py-6 lg:py-8">
+  <div class="w-full space-y-8">
+    <app-breadcrumb [itens]="[{label:'Início',rota:'/dashboard'},{label:'Configurações',rota:'/configuracoes'},{label:'Inteligência artificial'}]" />
+    <app-page-header titulo="Inteligência artificial" subtitulo="Configure a chave Google da empresa atual para os próximos recursos de IA do ERP." />
+    <a routerLink="/configuracoes" class="inline-block text-sm font-semibold text-primary hover:underline">Voltar às configurações</a>
+    @if (carregando()) {
+      <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 h-96 animate-pulse" aria-label="Carregando configuração de IA"></div>
+    } @else {
+      <section class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-6">
+        <div class="space-y-2 text-sm text-slate-600 dark:text-slate-300">
+          <h2 class="font-bold text-slate-900 dark:text-white">Google Gemini · chave própria</h2>
+          <p>O uso é pago diretamente ao Google pela empresa. Cadastrar ou remover uma chave aqui não troca os fluxos de IA que já estão em produção.</p>
+          @if (!disponivel()) {
+            <p class="font-semibold">Implantação pendente. O cadastro ficará disponível após a liberação segura deste recurso.</p>
+          }
+          <p>Estado: <strong>{{ configuracao()?.configurada ? 'Chave configurada' : 'Sem chave cadastrada nesta área' }}</strong></p>
+          @if (configuracao()?.marcador) { <p class="break-all">Identificação: {{ configuracao()?.marcador }}</p> }
+          @if (configuracao()?.modelo) { <p class="break-all">Modelo cadastrado: {{ configuracao()?.modelo }}</p> }
+          @if (configuracao()?.validadoEm) { <p>Última validação: {{ configuracao()?.validadoEm | date:'dd/MM/yyyy HH:mm' }}</p> }
+        </div>
+        <form [formGroup]="form" (ngSubmit)="salvar()" class="space-y-4">
+          <fieldset [disabled]="!podeEditar() || !disponivel() || processando()" class="grid grid-cols-1 lg:grid-cols-2 gap-4 min-w-0">
+            <div class="min-w-0">
+              <label for="ia-chave" class="text-xs font-semibold text-slate-500">{{ configuracao()?.configurada ? 'Nova chave Google' : 'Chave Google' }}</label>
+              <input pInputText id="ia-chave" type="password" formControlName="chave" autocomplete="new-password" spellcheck="false" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none" aria-describedby="ia-chave-ajuda" />
+              <p id="ia-chave-ajuda" class="mt-1 text-xs text-slate-500">A chave existente nunca é exibida. Informe uma chave apenas para cadastrar ou substituir.</p>
+              @if (form.controls.chave.touched && form.controls.chave.invalid) { <p class="text-xs text-red-600">Informe uma chave válida, sem espaços.</p> }
+            </div>
+            <div class="min-w-0">
+              <label for="ia-modelo" class="text-xs font-semibold text-slate-500">Modelo Google</label>
+              <input pInputText id="ia-modelo" type="text" formControlName="modelo" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none" />
+              @if (form.controls.modelo.touched && form.controls.modelo.invalid) { <p class="text-xs text-red-600">Informe um identificador de modelo Gemini válido.</p> }
+            </div>
+          </fieldset>
+          <p class="text-sm text-slate-500">Validar e salvar realiza uma chamada mínima ao Google e pode gerar cobrança. A validação não ocorre ao abrir esta página.</p>
+          <div class="flex flex-wrap gap-3">
+            @if (podeEditar()) {
+              <button type="submit" [disabled]="!disponivel() || processando() || form.invalid" class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all">{{ processando() ? 'Processando...' : 'Validar e salvar' }}</button>
+            }
+            @if (podeRemover()) {
+              <button type="button" (click)="remover()" [disabled]="processando()" class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-red-600 font-bold text-sm disabled:opacity-50">Remover chave</button>
+            }
+          </div>
+        </form>
+      </section>
+    }
+  </div>
+</div>

@@ -33,6 +33,9 @@ export const CONFIGURACOES_GRUPOS: GrupoConfiguracao[] = [
     { id: 'fiscal', titulo: 'Fiscal e bancos CNAB', descricao: 'Certificado A1, regime tributário e arquivos bancários.', rota: '/configuracoes/fiscal', permissao: 'configuracoes:ler', termos: 'pfx emissão nfe cte ambiente banco' },
     { id: 'naturezas', titulo: 'Naturezas de operação', descricao: 'Cadastro de regras de tributação.', rota: '/fiscal/naturezas-operacao', permissao: 'configuracoes:ler', termos: 'imposto fiscal cfop' }
   ] },
+  { id: 'inteligencia-artificial', titulo: 'Inteligência artificial', destinos: [
+    { id: 'ia-configuracao', titulo: 'Inteligência artificial', descricao: 'Chave Google e modelo da empresa atual.', rota: '/configuracoes/ia', permissao: 'ia_configuracoes:ler', termos: 'google gemini chave credencial modelo ia' }
+  ] },
   { id: 'integracoes', titulo: 'Integrações e canais', destinos: [
     { id: 'email', titulo: 'E-mail e SMTP', descricao: 'Servidor de envio e remetente.', rota: '/configuracoes/email', permissao: 'configuracoes:ler', termos: 'smtp comunicação email' },
     { id: 'integracoes', titulo: 'Catálogos e site', descricao: 'Google Merchant, catálogo Meta e endereço do site.', rota: '/configuracoes/catalogos', permissao: 'configuracoes:ler', termos: 'feed facebook instagram integração' },

@@ -2,6 +2,19 @@ import { CONFIGURACOES_GRUPOS, filtrarConfiguracoes } from '../../contextos/admi
 import { MENU_CATALOGO, encontrarPagina, filtrarMenu, listarPaginas, normalizarBusca } from './menu-catalogo';
 
 describe('Navegação autorizada', () => {
+  it('concentra os destinos administrativos em configurações sem duplicações', () => {
+    expect(MENU_CATALOGO.some(item => item.id === 'administracao')).toBeFalse();
+    const paginas = listarPaginas(filtrarMenu(MENU_CATALOGO, () => true, true, true));
+    for (const rota of ['/usuarios', '/perfis', '/relatorios']) {
+      const destinos = paginas.filter(p => p.item.rota === rota);
+      expect(destinos.length).toBe(1);
+      expect(destinos[0].ancestrais).toEqual(['configuracoes', 'configuracoes-pessoas']);
+    }
+    const grupos = filtrarConfiguracoes(chave => chave === 'relatorios:ler', false);
+    expect(grupos[0].titulo).toBe('Administração');
+    expect(grupos[0].destinos.map(d => d.rota)).toEqual(['/relatorios']);
+  });
+
   it('remove recursivamente destinos negados e grupos vazios', () => {
     const menu = filtrarMenu(MENU_CATALOGO, chave => chave === 'compras:ler', false, false);
     const paginas = listarPaginas(menu);

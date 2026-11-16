@@ -57,11 +57,6 @@ export const MENU_CATALOGO: ItemMenu[] = [
     { id: 'naturezas', label: 'Naturezas de operação', rota: '/fiscal/naturezas-operacao', permissao: 'configuracoes:ler' }
   ] },
   { id: 'albia', label: 'Albia IA', icone: 'auto_awesome', rota: '/albia' },
-  { id: 'administracao', label: 'Administração', icone: 'admin_panel_settings', filhos: [
-    { id: 'usuarios', label: 'Usuários', rota: '/usuarios', permissao: 'usuarios:ler' },
-    { id: 'perfis', label: 'Perfis e permissões', rota: '/perfis', permissao: 'perfis:ler' },
-    { id: 'relatorios', label: 'Relatórios', rota: '/relatorios', permissao: 'relatorios:ler' }
-  ] },
   { id: 'configuracoes', label: 'Configurações', icone: 'settings', rota: '/configuracoes', filhos: CONFIGURACOES_GRUPOS.map(grupo => ({
     id: `configuracoes-${grupo.id}`, label: grupo.titulo, filhos: grupo.destinos.map(destino => ({
       id: `configuracoes-${destino.id}`, label: destino.titulo, rota: destino.rota, permissao: destino.permissao, apenasComTiny: destino.apenasComTiny

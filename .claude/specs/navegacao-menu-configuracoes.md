@@ -22,3 +22,7 @@ Baseline: 11 testes originais aprovados. Resultado: 29 testes aprovados, incluin
 ## Entrega operacional
 
 Não há tabela/chave de feature flag de navegação já inventariada. Esta reorganização de frontend pode ser liberada por versão e revertida pela imagem anterior sem alteração de dados; flag específica por empresa permanece pendência operacional caso seja exigido rollout seletivo. Não criar migração/configuração de banco apenas para a troca visual.
+
+## Ajuste aprovado — Administração em Configurações
+
+Em 2026-11-16, o usuário solicitou remover Administração da lateral e reunir seus destinos em Configurações. O grupo Administração da central reúne Usuários, Perfis e permissões e Relatórios, preservando rotas e permissões. Cada destino administrativo aparece uma única vez no catálogo de navegação.

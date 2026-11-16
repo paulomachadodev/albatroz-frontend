@@ -18,9 +18,10 @@ export const CONFIGURACOES_GRUPOS: GrupoConfiguracao[] = [
   { id: 'empresa', titulo: 'Empresa', destinos: [
     { id: 'dados-empresa', titulo: 'Dados da empresa', descricao: 'Cadastro, endereço e contatos.', rota: '/configuracoes/dados-empresa', permissao: 'configuracoes:ler', termos: 'cnpj razão social nome fantasia' }
   ] },
-  { id: 'pessoas', titulo: 'Pessoas e acesso', destinos: [
+  { id: 'pessoas', titulo: 'Administração', destinos: [
     { id: 'usuarios', titulo: 'Usuários', descricao: 'Pessoas que acessam o sistema.', rota: '/usuarios', permissao: 'usuarios:ler', termos: 'equipe login senha' },
-    { id: 'perfis', titulo: 'Perfis e permissões', descricao: 'Acesso aos recursos da empresa.', rota: '/perfis', permissao: 'perfis:ler', termos: 'segurança autorização' }
+    { id: 'perfis', titulo: 'Perfis e permissões', descricao: 'Acesso aos recursos da empresa.', rota: '/perfis', permissao: 'perfis:ler', termos: 'segurança autorização' },
+    { id: 'relatorios', titulo: 'Relatórios', descricao: 'Acesso aos relatórios administrativos.', rota: '/relatorios', permissao: 'relatorios:ler', termos: 'administração' }
   ] },
   { id: 'comercial', titulo: 'Comercial e operação', destinos: [
     { id: 'venda', titulo: 'Listas de preço', descricao: 'Tabelas e regras de cálculo.', rota: '/configuracoes/listas-preco', permissao: 'produtos:ler', termos: 'venda valores percentual' },

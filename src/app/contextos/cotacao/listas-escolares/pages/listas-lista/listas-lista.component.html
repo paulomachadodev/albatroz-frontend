@@ -5,10 +5,10 @@
 
     <app-page-header titulo="Gestão de Listas Cotadas" subtitulo="Revise, corrija o match de produto e libere listas escolares cotadas pela Albia.">
       <label acoes class="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all cursor-pointer"
-             [class.opacity-50]="enviandoArquivo()">
-        <span class="material-symbols-outlined text-sm">upload_file</span>
-        {{ enviandoArquivo() ? 'Enviando...' : 'Enviar lista pra cotar' }}
-        <input type="file" accept="image/*,.pdf" class="hidden" [disabled]="enviandoArquivo()" (change)="aoSelecionarArquivo($event)"/>
+             [class.opacity-80]="enviosEmAndamento() > 0">
+        <span class="material-symbols-outlined text-sm" [class.animate-spin]="enviosEmAndamento() > 0">{{ enviosEmAndamento() > 0 ? 'progress_activity' : 'upload_file' }}</span>
+        {{ enviosEmAndamento() > 0 ? 'Cotando ' + enviosEmAndamento() + ' lista(s)... enviar outra' : 'Enviar lista pra cotar' }}
+        <input type="file" accept="image/*,.pdf" class="hidden" (change)="aoSelecionarArquivo($event)"/>
       </label>
     </app-page-header>
 

@@ -1,5 +1,5 @@
 import { ROTULO_STATUS_LISTA, StatusListaEscolar } from '../../models/lista-escolar-status';
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -23,7 +23,7 @@ import { AuthService } from '../../../../../core/auth/auth.service';
   templateUrl: './listas-lista.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
-export class ListasListaComponent implements OnInit {
+export class ListasListaComponent implements OnInit, OnDestroy {
   carregando = signal(true);
   itens = signal<ListaEscolarResumo[]>([]);
   totalRegistros = signal(0);
@@ -35,7 +35,9 @@ export class ListasListaComponent implements OnInit {
   filtro: ListaEscolarFiltro = {};
   escolaFiltro = signal<OpcaoSelectBusca | null>(null);
   serieFiltro = signal<OpcaoSelectBusca | null>(null);
-  enviandoArquivo = signal(false);
+  enviosEmAndamento = signal(0);
+  private intervaloAtualizacao?: ReturnType<typeof setInterval>;
+  private static readonly INTERVALO_ATUALIZACAO_MS = 10000;
   anosLetivos = signal<number[]>([]);
 
   buscarEscolas = (termo: string) =>
@@ -62,6 +64,7 @@ export class ListasListaComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    this.intervaloAtualizacao = setInterval(() => this.recarregarSilencioso(), ListasListaComponent.INTERVALO_ATUALIZACAO_MS);
     this.listasService.listarAnosLetivos().subscribe({
       next: res => {
         const anos = res.dados ?? [];
@@ -70,6 +73,21 @@ export class ListasListaComponent implements OnInit {
         this.carregar();
       },
       error: () => this.carregar()
+    });
+  }
+
+  ngOnDestroy() {
+    if (this.intervaloAtualizacao) clearInterval(this.intervaloAtualizacao);
+  }
+
+  private recarregarSilencioso() {
+    if (document.hidden || this.carregando()) return;
+    this.listasService.listar({ pagina: this.paginaAtual(), tamanho: this.tamanhoPagina() }, this.filtro).subscribe({
+      next: res => {
+        this.itens.set(res.dados?.dados ?? []);
+        this.totalRegistros.set(res.dados?.totalRegistros ?? 0);
+        this.totalPaginas.set(res.dados?.totalPaginas ?? 1);
+      }
     });
   }
 
@@ -151,16 +169,18 @@ export class ListasListaComponent implements OnInit {
   aoSelecionarArquivo(event: Event) {
     const input = event.target as HTMLInputElement;
     const arquivo = input.files?.[0];
+    input.value = '';
     if (!arquivo) return;
 
-    this.enviarParaCotacao(arquivo, false, input);
+    this.toast.sucesso(`Enviando "${arquivo.name}" pra Albia cotar. Pode continuar usando a tela, a lista aparece na listagem assim que ficar pronta.`);
+    this.enviarParaCotacao(arquivo, false);
   }
 
-  private enviarParaCotacao(arquivo: File, substituir: boolean, input: HTMLInputElement) {
-    this.enviandoArquivo.set(true);
+  private enviarParaCotacao(arquivo: File, substituir: boolean) {
+    this.enviosEmAndamento.update(n => n + 1);
     this.listasService.enviarArquivo(arquivo, substituir).subscribe({
       next: async res => {
-        this.enviandoArquivo.set(false);
+        this.enviosEmAndamento.update(n => n - 1);
 
         if (res.dados?.status === 'existente_confirmar_substituicao') {
           const confirmado = await this.confirm.confirmar(
@@ -168,25 +188,20 @@ export class ListasListaComponent implements OnInit {
             'Substituir pela nova? A lista volta para conferência, os itens são refeitos e o PDF atual é apagado.',
             { textoConfirmar: 'Substituir' }
           );
-          if (confirmado) {
-            this.enviarParaCotacao(arquivo, true, input);
-            return;
-          }
-          input.value = '';
+          if (confirmado) this.enviarParaCotacao(arquivo, true);
           return;
         }
 
         this.toast.sucesso(substituir
-          ? 'Lista substituída — voltou para conferência.'
-          : 'Lista enviada pra Albia cotar — aparece na listagem assim que terminar.');
-        input.value = '';
+          ? `"${arquivo.name}" substituída — voltou para conferência.`
+          : `"${arquivo.name}" enviada — aparece na listagem assim que a Albia terminar.`);
         this.atualizarAnosLetivos();
-        this.carregar(1);
+        this.recarregarSilencioso();
       },
       error: err => {
-        this.toast.erroServidor(err, 'Não foi possível enviar o arquivo.');
-        this.enviandoArquivo.set(false);
-        input.value = '';
+        this.enviosEmAndamento.update(n => n - 1);
+        this.toast.erroServidor(err, `Não foi possível enviar "${arquivo.name}". Confira a listagem antes de reenviar.`);
+        this.recarregarSilencioso();
       }
     });
   }

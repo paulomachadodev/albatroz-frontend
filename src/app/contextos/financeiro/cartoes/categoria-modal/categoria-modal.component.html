@@ -1,5 +1,5 @@
 <app-modal [aberto]="true" titulo="Categorias de despesa" tamanho="sm" (fechar)="fechar.emit()">
-  <div class="px-6 pb-6 flex-1 overflow-y-auto">
+  <div class="space-y-4">
 
     <div class="flex gap-2 mb-4">
       <input class="input-modern text-sm flex-1" [(ngModel)]="novaCategoria"
@@ -68,9 +68,9 @@
       </div>
     }
 
-    <div class="mt-6">
-      <button class="btn-ghost w-full text-sm" (click)="fechar.emit()">Fechar</button>
-    </div>
 
+  </div>
+  <div modalRodape>
+    <button class="btn-ghost" (click)="fechar.emit()">Fechar</button>
   </div>
 </app-modal>

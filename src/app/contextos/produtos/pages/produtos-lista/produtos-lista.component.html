@@ -312,10 +312,13 @@
       </button>
     }
   </div>
+  <div modalRodape>
+    <button type="button" class="btn-ghost" (click)="fecharModalMassa()">Fechar</button>
+  </div>
 </app-modal>
 
 <app-modal [aberto]="modalMarketplaceAberto()" titulo="Habilitar/desabilitar marketplace" tamanho="sm" (fechar)="fecharModalMarketplace()">
-  <div class="px-6 pb-6 space-y-4">
+  <div class="space-y-4">
     <p class="text-sm text-slate-500 dark:text-slate-400">
       Aplica em {{ qtdSelecionados() }} produto(s) selecionado(s). Não muda a elegibilidade do produto — só a intenção de enviar ou não.
     </p>
@@ -334,13 +337,13 @@
         <option [ngValue]="false">Desabilitar</option>
       </select>
     </div>
-    <div class="flex justify-end gap-2 pt-2">
-      <button (click)="fecharModalMarketplace()" class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm">Cancelar</button>
-      <button (click)="aplicarMarketplaceEmMassa()" [disabled]="processandoMarketplace()"
-              class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50">
-        {{ processandoMarketplace() ? 'Aplicando...' : 'Aplicar' }}
-      </button>
-    </div>
+  </div>
+  <div modalRodape>
+    <button (click)="fecharModalMarketplace()" class="btn-ghost">Cancelar</button>
+    <button (click)="aplicarMarketplaceEmMassa()" [disabled]="processandoMarketplace()"
+      class="btn-primary">
+      {{ processandoMarketplace() ? 'Aplicando...' : 'Aplicar' }}
+    </button>
   </div>
 </app-modal>
 
@@ -389,5 +392,8 @@
         Fechar
       </button>
     }
+  </div>
+  <div modalRodape>
+    <button type="button" class="btn-ghost" (click)="fecharModalFornecedores()">Fechar</button>
   </div>
 </app-modal>

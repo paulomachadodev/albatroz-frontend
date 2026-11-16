@@ -331,12 +331,12 @@
       <input type="checkbox" [(ngModel)]="formEndereco.principal" class="rounded border-slate-300 text-primary focus:ring-primary/20"/>
       Endereço principal
     </label>
-    <div class="pt-2 flex gap-2">
-      <button type="button" (click)="fecharModalEndereco()" class="flex-1 px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">Cancelar</button>
-      <button type="button" (click)="salvarEndereco()" [disabled]="salvandoEndereco()" class="flex-1 px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all">
-        {{ salvandoEndereco() ? 'Salvando...' : 'Salvar' }}
-      </button>
-    </div>
+  </div>
+  <div modalRodape>
+    <button type="button" (click)="fecharModalEndereco()" class="btn-ghost">Cancelar</button>
+    <button type="button" (click)="salvarEndereco()" [disabled]="salvandoEndereco()" class="btn-primary">
+      {{ salvandoEndereco() ? 'Salvando...' : 'Salvar' }}
+    </button>
   </div>
 </app-modal>
 
@@ -358,11 +358,11 @@
       <label class="text-xs text-slate-500">E-mail</label>
       <input type="email" [(ngModel)]="formRepresentante.email" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
     </div>
-    <div class="pt-2 flex gap-2">
-      <button type="button" (click)="fecharModalRepresentante()" class="flex-1 px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">Cancelar</button>
-      <button type="button" (click)="salvarRepresentante()" [disabled]="salvandoRepresentante()" class="flex-1 px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all">
-        {{ salvandoRepresentante() ? 'Salvando...' : 'Salvar' }}
-      </button>
-    </div>
+  </div>
+  <div modalRodape>
+    <button type="button" (click)="fecharModalRepresentante()" class="btn-ghost">Cancelar</button>
+    <button type="button" (click)="salvarRepresentante()" [disabled]="salvandoRepresentante()" class="btn-primary">
+      {{ salvandoRepresentante() ? 'Salvando...' : 'Salvar' }}
+    </button>
   </div>
 </app-modal>

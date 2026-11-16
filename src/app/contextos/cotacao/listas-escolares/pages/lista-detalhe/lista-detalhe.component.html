@@ -127,12 +127,10 @@
             <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
               @for (item of lista()!.itens; track item.id) {
                 <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors align-top">
-                  <td class="px-4 py-3 text-sm">
-                    <p class="font-medium text-slate-900 dark:text-slate-100">{{ item.descricaoNaLista }}</p>
-                    @if (item.marcaNaLista) { <p class="text-xs text-slate-400">Marca: {{ item.marcaNaLista }}</p> }
-                    @if (item.linhaOriginal && item.linhaOriginal !== item.descricaoNaLista) {
-                      <p class="text-xs text-slate-400">Na lista: {{ item.linhaOriginal }}</p>
-                    }
+                  <td class="px-4 py-3 text-sm w-56 max-w-56"
+                      [attr.title]="dicaItemLista(item)">
+                    <p class="font-medium text-slate-900 dark:text-slate-100 line-clamp-2 cursor-help">{{ item.descricaoNaLista }}</p>
+                    @if (item.marcaNaLista) { <p class="text-xs text-slate-400 truncate">Marca: {{ item.marcaNaLista }}</p> }
                     @if (item.motivoReconferencia === motivoReconferencia.PrecoAlterado) {
                       <p class="mt-1 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-sky-100 dark:bg-sky-900/40 text-sky-700 dark:text-sky-400 text-xs font-bold">
                         <span class="material-symbols-outlined text-sm">sell</span>
@@ -158,44 +156,19 @@
                            class="w-44 px-2 py-1 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
                   </td>
                   <td class="px-4 py-3 text-sm text-slate-500">{{ item.codigoProduto || '-' }}</td>
-                  <td class="px-4 py-3 text-sm min-w-64">
-                    <div class="relative">
-                      <input type="text" [value]="item.nomeProduto || 'Sem produto casado'" readonly
-                             (focus)="abrirBuscaProduto(item)"
-                             [class.text-slate-400]="!item.nomeProduto"
-                             class="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm cursor-pointer focus:ring-2 focus:ring-primary/20 outline-none"/>
-
-                      @if (itemEmBusca() === item.id) {
-                        <div class="absolute z-20 left-0 right-0 mt-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg">
-                          <input type="text" [ngModel]="termoBusca" (ngModelChange)="aoDigitarBusca($event)"
-                                 placeholder="Filtrar por código ou descrição..." autofocus
-                                 (blur)="fecharBuscaProdutoComAtraso()" (keydown.escape)="fecharBuscaProduto()"
-                                 class="w-full px-3 py-2 bg-slate-100 dark:bg-slate-900 border-none rounded-t-lg text-sm outline-none"/>
-                          @if (buscandoProduto()) {
-                            <p class="px-3 py-2 text-xs text-slate-400">Buscando...</p>
-                          } @else if (resultadosBusca().length > 0) {
-                            <p class="px-3 pt-2 text-xs font-semibold text-slate-400">
-                              {{ termoBusca.trim().length >= 2 ? 'Resultados' : 'Em estoque, mais indicados primeiro' }}
-                            </p>
-                            <ul class="max-h-72 overflow-y-auto">
-                              @for (produto of resultadosBusca(); track produto.id) {
-                                <li (mousedown)="selecionarProduto(item, produto)"
-                                    class="px-3 py-2 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer flex justify-between gap-2"
-                                    [class.bg-primary/5]="produto.id === item.idProduto">
-                                  <span>
-                                    <span class="text-slate-400">{{ produto.codigo }}</span> {{ produto.nome }}
-                                    <span class="text-xs text-slate-400">(estoque: {{ produto.estoque ?? 0 }})</span>
-                                  </span>
-                                  <span class="font-bold shrink-0">{{ formatarReais(produto.preco) }}</span>
-                                </li>
-                              }
-                            </ul>
-                          } @else {
-                            <p class="px-3 py-2 text-xs text-slate-400">Nenhum produto encontrado.</p>
-                          }
-                        </div>
+                  <td class="px-4 py-3 text-sm w-[26rem] min-w-72">
+                    <button type="button" (click)="abrirBuscaProduto(item)" [disabled]="item.liberado"
+                            title="Trocar produto"
+                            class="w-full text-left px-3 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200/70 dark:hover:bg-slate-700/60 transition-colors disabled:cursor-default disabled:hover:bg-slate-100 dark:disabled:hover:bg-slate-800">
+                      @if (item.nomeProduto) {
+                        <span class="block text-sm font-semibold text-slate-900 dark:text-slate-100 whitespace-normal break-words">{{ item.nomeProduto }}</span>
+                        @if (item.codigoProduto) {
+                          <span class="block text-xs text-slate-400">SKU {{ item.codigoProduto }}</span>
+                        }
+                      } @else {
+                        <span class="block text-sm text-slate-400">Sem produto casado — clique para escolher</span>
                       }
-                    </div>
+                    </button>
                   </td>
                   <td class="px-4 py-3 text-center">
                     <input type="number" min="1" [value]="item.quantidade"
@@ -210,6 +183,10 @@
                   </td>
                   <td class="px-4 py-3">
                     <div class="flex items-center justify-center gap-2">
+                      <button (click)="abrirBuscaProduto(item)" [disabled]="item.liberado" title="Trocar produto"
+                              class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-400 hover:bg-primary/10 hover:text-primary transition-all disabled:opacity-50">
+                        <span class="material-symbols-outlined text-base">edit</span>
+                      </button>
                       <button (click)="marcarNaoVendemos(item)" [disabled]="item.liberado || item.statusItem === statusItem.NaoEncontrado" title="Não vendemos"
                               class="w-8 h-8 flex items-center justify-center rounded-lg transition-all disabled:opacity-50"
                               [class]="item.statusItem === statusItem.NaoEncontrado
@@ -254,3 +231,93 @@
 
   </div>
 </div>
+
+<app-modal [aberto]="itemEditando() !== null" titulo="Trocar produto do item"
+           subtitulo="Escolha o produto da loja que atende o item pedido na lista."
+           tamanho="4xl" (fechar)="fecharBuscaProduto()">
+  @if (itemEditando(); as item) {
+    <div class="grid sm:grid-cols-2 gap-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800">
+      <div class="min-w-0">
+        <p class="text-xs font-semibold text-slate-500">Pedido na lista</p>
+        <p class="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100 break-words">{{ item.descricaoNaLista }}</p>
+        <p class="mt-0.5 text-xs text-slate-400">
+          Quantidade: {{ item.quantidade }}@if (item.marcaNaLista) { · Marca: {{ item.marcaNaLista }} }
+        </p>
+        @if (item.linhaOriginal && item.linhaOriginal !== item.descricaoNaLista) {
+          <p class="mt-0.5 text-xs text-slate-400">Na lista: {{ item.linhaOriginal }}</p>
+        }
+      </div>
+      <div class="min-w-0">
+        <p class="text-xs font-semibold text-slate-500">Produto atual</p>
+        <p class="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100 break-words">{{ item.nomeProduto || 'Sem produto casado' }}</p>
+        @if (item.nomeProduto) {
+          <p class="mt-0.5 text-xs text-slate-400">SKU {{ item.codigoProduto }} · {{ formatarReais(item.precoUnitario) }}</p>
+        }
+      </div>
+    </div>
+
+    <div class="sticky -top-5 z-10 -mx-6 px-6 pt-4 pb-3 bg-white dark:bg-slate-900">
+      <div class="relative">
+        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xl">search</span>
+        <input type="text" [ngModel]="termoBusca" (ngModelChange)="aoDigitarBusca($event)"
+               placeholder="Buscar por código ou descrição..." autofocus
+               class="w-full pl-11 pr-4 py-2.5 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20"/>
+      </div>
+      <p class="mt-2 text-xs text-slate-400">
+        @if (buscandoProduto()) {
+          Buscando...
+        } @else if (termoBusca.trim().length >= 2) {
+          {{ resultadosBusca().length }} resultado(s)
+        } @else {
+          Em estoque, os mais indicados para esse item primeiro
+        }
+      </p>
+    </div>
+
+    @if (!buscandoProduto() && resultadosBusca().length === 0) {
+      <p class="py-10 text-center text-sm text-slate-400">Nenhum produto encontrado.</p>
+    } @else {
+      <ul class="space-y-2">
+        @for (produto of resultadosBusca(); track produto.id) {
+          <li (click)="escolherProduto(produto)"
+              class="flex items-center gap-4 p-3 rounded-xl border cursor-pointer transition-all"
+              [class]="produtoEscolhido()?.id === produto.id
+                ? 'border-primary bg-primary/5 ring-2 ring-primary/20'
+                : 'border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50'">
+            <div class="size-16 shrink-0 rounded-lg bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 overflow-hidden flex items-center justify-center">
+              @if (produto.imagemUrl) {
+                <img [src]="produto.imagemUrl" [alt]="produto.nome" loading="lazy" class="size-full object-contain"/>
+              } @else {
+                <span class="material-symbols-outlined text-slate-300">image</span>
+              }
+            </div>
+            <div class="min-w-0 flex-1">
+              <p class="text-sm font-semibold text-slate-900 dark:text-slate-100 break-words">{{ produto.nome }}</p>
+              <p class="mt-0.5 text-xs text-slate-400">
+                SKU {{ produto.codigo }}@if (produto.id === item.idProduto) { · <span class="font-bold text-primary">produto atual</span> }
+              </p>
+            </div>
+            <div class="shrink-0 text-right">
+              <p class="text-sm font-bold text-slate-900 dark:text-slate-100">{{ formatarReais(produto.preco) }}</p>
+              @if ((produto.estoque ?? 0) > 0) {
+                <span class="inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400">
+                  {{ produto.estoque }} em estoque
+                </span>
+              } @else {
+                <span class="inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-bold bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-400">
+                  Sem estoque
+                </span>
+              }
+            </div>
+          </li>
+        }
+      </ul>
+    }
+  }
+  <div modalRodape>
+    <button type="button" class="btn-ghost" (click)="fecharBuscaProduto()">Cancelar</button>
+    <button type="button" class="btn-primary" (click)="confirmarTroca()" [disabled]="!produtoEscolhido() || salvandoTroca()">
+      {{ salvandoTroca() ? 'Salvando...' : 'Usar este produto' }}
+    </button>
+  </div>
+</app-modal>

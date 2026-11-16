@@ -160,7 +160,7 @@
       </div>
 
 <app-modal [aberto]="modalCnabAberto()" [titulo]="cnabEditandoId ? 'Editar banco CNAB' : 'Novo banco CNAB'" tamanho="md" (fechar)="fecharModalCnab()">
-  <div class="px-6 pb-6 space-y-4">
+  <div class="space-y-4">
     <div class="grid sm:grid-cols-2 gap-4">
       <div>
         <label class="text-xs font-semibold text-slate-500">Banco</label>
@@ -194,15 +194,15 @@
         </div>
       }
     </div>
-    <div class="flex justify-end gap-3 pt-2">
-      <button type="button" (click)="fecharModalCnab()"
-              class="px-4 py-2 rounded-lg text-sm font-bold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
-        Cancelar
-      </button>
-      <button type="button" (click)="salvarCnab()" [disabled]="salvandoCnab()"
-              class="px-5 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all">
-        {{ salvandoCnab() ? 'Salvando...' : 'Salvar' }}
-      </button>
-    </div>
+  </div>
+  <div modalRodape>
+    <button type="button" (click)="fecharModalCnab()"
+      class="btn-ghost">
+      Cancelar
+    </button>
+    <button type="button" (click)="salvarCnab()" [disabled]="salvandoCnab()"
+      class="btn-primary">
+      {{ salvandoCnab() ? 'Salvando...' : 'Salvar' }}
+    </button>
   </div>
 </app-modal></fieldset>}</div></div>

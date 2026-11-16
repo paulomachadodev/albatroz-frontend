@@ -1,18 +1,6 @@
-<app-modal [aberto]="true" tamanho="2xl">
+<app-modal [aberto]="true" titulo="Cartões não cadastrados na fatura" subtitulo="Foram encontrados cartões na fatura que não estão cadastrados. Cadastre-os para continuar." tamanho="2xl" [fecharAoClicarFora]="false">
 
-    <div class="px-6 py-5 border-b border-slate-200 dark:border-slate-800 shrink-0">
-      <div class="flex items-center gap-3">
-        <div class="size-10 rounded-xl bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center shrink-0">
-          <span class="material-symbols-outlined text-amber-600 dark:text-amber-400">credit_card_off</span>
-        </div>
-        <div>
-          <h2 class="text-lg font-bold text-slate-900 dark:text-slate-100">Cartões não cadastrados na fatura</h2>
-          <p class="text-sm text-slate-500 dark:text-slate-400">Foram encontrados cartões na fatura que não estão cadastrados. Cadastre-os para continuar.</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+    <div class="space-y-4">
       @for (item of itens(); track item.finalCartao) {
 
         <div class="rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
@@ -174,11 +162,11 @@
       }
     </div>
 
-    <div class="px-6 py-4 border-t border-slate-200 dark:border-slate-800 shrink-0 flex items-center justify-between gap-3">
-      <p class="text-xs text-slate-400">
+    <div modalRodape>
+      <p class="mr-auto text-xs text-slate-400">
         {{ itens().length }} cartão(ões) a resolver
       </p>
-      <button class="btn-primary text-sm flex items-center gap-2"
+      <button class="btn-primary"
               (click)="concluir()"
               [disabled]="!todosResolvidos()">
         <span class="material-symbols-outlined text-base">check_circle</span>

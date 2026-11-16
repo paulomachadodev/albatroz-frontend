@@ -153,7 +153,7 @@
 
 <app-modal [aberto]="modalCriarProdutoAberto()" titulo="Criar Produto" (fechar)="fecharModalCriarProduto()">
   @if (itemSelecionado()) {
-    <div class="space-y-4 min-w-96">
+    <div class="space-y-4">
       <div class="bg-slate-50 dark:bg-slate-800 rounded-lg p-3 text-xs text-slate-500 space-y-1">
         <p><span class="font-semibold">xProd:</span> {{ itemSelecionado()!.descricaoNota }}</p>
         <p><span class="font-semibold">NCM:</span> {{ itemSelecionado()!.ncm ?? '-' }}</p>
@@ -185,16 +185,16 @@
         <p class="mt-1 text-xs text-slate-400">Title Case obrigatório — sem ponto final.</p>
       </div>
 
-      <div class="flex gap-2 justify-end pt-2">
-        <button (click)="fecharModalCriarProduto()"
-                class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
-          Cancelar
-        </button>
-        <button (click)="confirmarCriacaoProduto()" [disabled]="criandoProduto()"
-                class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all">
-          {{ criandoProduto() ? 'Criando...' : 'Criar Produto' }}
-        </button>
-      </div>
     </div>
   }
+  <div modalRodape>
+    <button (click)="fecharModalCriarProduto()"
+      class="btn-ghost">
+      Cancelar
+    </button>
+    <button (click)="confirmarCriacaoProduto()" [disabled]="criandoProduto()"
+      class="btn-primary">
+      {{ criandoProduto() ? 'Criando...' : 'Criar Produto' }}
+    </button>
+  </div>
 </app-modal>

@@ -1,5 +1,5 @@
 <app-modal [aberto]="true" [titulo]="titulo" tamanho="md" (fechar)="cancelar()">
-  <div class="px-6 pb-6 flex-1 overflow-y-auto">
+  <div class="space-y-4">
 
     <div class="space-y-4">
 
@@ -84,18 +84,18 @@
       </div>
     }
 
-    <div class="flex gap-3 mt-6">
-      <button class="btn-ghost flex-1 text-sm" (click)="cancelar()" [disabled]="salvando()">
-        Cancelar
-      </button>
-      <button class="btn-primary flex-1 text-sm" (click)="salvar()" [disabled]="salvando()">
-        @if (salvando()) {
-          <app-spinner tamanho="sm" [claro]="true"></app-spinner>
-        } @else {
-          {{ modoEdicao ? 'Salvar alterações' : 'Criar cartão' }}
-        }
-      </button>
-    </div>
 
+  </div>
+  <div modalRodape>
+    <button class="btn-ghost" (click)="cancelar()" [disabled]="salvando()">
+      Cancelar
+    </button>
+    <button class="btn-primary" (click)="salvar()" [disabled]="salvando()">
+      @if (salvando()) {
+      <app-spinner tamanho="sm" [claro]="true"></app-spinner>
+      } @else {
+      {{ modoEdicao ? 'Salvar alterações' : 'Criar cartão' }}
+      }
+    </button>
   </div>
 </app-modal>

@@ -89,7 +89,7 @@
 </div>
 
 <app-modal [aberto]="modalJustificativa()" titulo="Operação Não Realizada" tamanho="md" (fechar)="fecharModal()">
-  <div class="px-6 pb-6 flex flex-col gap-4">
+  <div class="flex flex-col gap-4">
     <p class="text-sm text-slate-500 dark:text-slate-400">
       Informe o motivo pelo qual a operação não foi realizada. Mínimo 15 caracteres.
     </p>
@@ -100,15 +100,15 @@
                 class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none resize-none">
       </textarea>
     </div>
-    <div class="flex items-center justify-end gap-2">
-      <button (click)="fecharModal()"
-              class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
-        Cancelar
-      </button>
-      <button (click)="confirmarNaoRealizada()" [disabled]="justificativa.trim().length < 15"
-              class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all">
-        Confirmar
-      </button>
-    </div>
+  </div>
+  <div modalRodape>
+    <button (click)="fecharModal()"
+      class="btn-ghost">
+      Cancelar
+    </button>
+    <button (click)="confirmarNaoRealizada()" [disabled]="justificativa.trim().length < 15"
+      class="btn-primary">
+      Confirmar
+    </button>
   </div>
 </app-modal>

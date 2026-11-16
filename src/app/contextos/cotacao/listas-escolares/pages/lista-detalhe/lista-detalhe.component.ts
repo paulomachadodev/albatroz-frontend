@@ -13,11 +13,12 @@ import { ConfirmService } from '../../../../../core/feedback/confirm.service';
 import { SelectBuscaComponent, OpcaoSelectBusca } from '../../../../../shared/components/select-busca/select-busca.component';
 import { BtnIconeComponent } from '../../../../../shared/components/btn-icone/btn-icone.component';
 import { BreadcrumbComponent } from '../../../../../shared/components/breadcrumb/breadcrumb.component';
+import { ModalComponent } from '../../../../../shared/components/modal/modal.component';
 
 @Component({
   selector: 'app-lista-detalhe',
   standalone: true,
-  imports: [FormsModule, SelectBuscaComponent, BtnIconeComponent, BreadcrumbComponent],
+  imports: [FormsModule, SelectBuscaComponent, BtnIconeComponent, BreadcrumbComponent, ModalComponent],
   templateUrl: './lista-detalhe.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
@@ -32,6 +33,9 @@ export class ListaDetalheComponent implements OnInit {
   termoBusca = '';
   resultadosBusca = signal<ProdutoBusca[]>([]);
   buscandoProduto = signal(false);
+  produtoEscolhido = signal<ProdutoBusca | null>(null);
+  salvandoTroca = signal(false);
+  itemEditando = computed(() => this.lista()?.itens.find(i => i.id === this.itemEmBusca()) ?? null);
   private debounce?: ReturnType<typeof setTimeout>;
 
   escolaSelecionada = signal<OpcaoSelectBusca | null>(null);
@@ -248,6 +252,7 @@ export class ListaDetalheComponent implements OnInit {
 
   abrirBuscaProduto(item: ListaEscolarItem) {
     this.itemEmBusca.set(item.id);
+    this.produtoEscolhido.set(null);
     this.termoBusca = '';
     this.resultadosBusca.set([]);
     this.carregarResultados('', item.id);
@@ -267,11 +272,19 @@ export class ListaDetalheComponent implements OnInit {
 
   fecharBuscaProduto() {
     this.itemEmBusca.set(null);
+    this.produtoEscolhido.set(null);
     this.resultadosBusca.set([]);
   }
 
-  fecharBuscaProdutoComAtraso() {
-    setTimeout(() => this.fecharBuscaProduto(), 150);
+  escolherProduto(produto: ProdutoBusca) {
+    this.produtoEscolhido.set(produto);
+  }
+
+  confirmarTroca() {
+    const item = this.itemEditando();
+    const produto = this.produtoEscolhido();
+    if (!item || !produto) return;
+    this.selecionarProduto(item, produto);
   }
 
   aoDigitarBusca(valor: string) {
@@ -289,17 +302,22 @@ export class ListaDetalheComponent implements OnInit {
   }
 
   selecionarProduto(item: ListaEscolarItem, produto: ProdutoBusca) {
+    this.salvandoTroca.set(true);
     this.listasService.atualizarItem(this.idLista, item.id, {
       idProduto: produto.id,
       quantidade: item.quantidade,
       naoVendemos: false
     }).subscribe({
       next: () => {
+        this.salvandoTroca.set(false);
         this.toast.sucesso('Produto atualizado.');
         this.fecharBuscaProduto();
         this.recarregarSilencioso();
       },
-      error: err => this.toast.erroServidor(err, 'Não foi possível trocar o produto.')
+      error: err => {
+        this.salvandoTroca.set(false);
+        this.toast.erroServidor(err, 'Não foi possível trocar o produto.');
+      }
     });
   }
 
@@ -406,6 +424,13 @@ export class ListaDetalheComponent implements OnInit {
       [StatusItemListaEscolar.SemEstoque]:       'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-400'
     };
     return mapa[status] ?? 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400';
+  }
+
+  dicaItemLista(item: ListaEscolarItem): string {
+    const linhas = [item.descricaoNaLista];
+    if (item.marcaNaLista) linhas.push(`Marca: ${item.marcaNaLista}`);
+    if (item.linhaOriginal && item.linhaOriginal !== item.descricaoNaLista) linhas.push(`Na lista: ${item.linhaOriginal}`);
+    return linhas.join('\n');
   }
 
   formatarReais(valor?: number): string {

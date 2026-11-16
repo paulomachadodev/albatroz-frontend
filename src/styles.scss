@@ -74,6 +74,13 @@ body {
          hover:bg-slate-50 dark:hover:bg-slate-700;
 }
 
+.btn-danger {
+  @apply inline-flex items-center justify-center gap-2 px-5 py-2.5
+         rounded-lg bg-rose-600 text-white font-bold text-sm
+         transition-all hover:bg-rose-700
+         disabled:opacity-60 disabled:cursor-not-allowed;
+}
+
 /* Remove spinners from number inputs globally */
 input[type="number"] {
   -moz-appearance: textfield;

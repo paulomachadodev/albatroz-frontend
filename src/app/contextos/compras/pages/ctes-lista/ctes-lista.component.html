@@ -87,7 +87,7 @@
 </div>
 
 <app-modal [aberto]="modalManualAberto()" titulo="Criar CT-e Manual" (fechar)="fecharModalManual()">
-  <div class="space-y-4 min-w-80">
+  <div class="space-y-4">
     <div class="grid grid-cols-2 gap-4">
       <div>
         <label class="text-sm font-semibold text-slate-700 dark:text-slate-200">Número CT-e</label>
@@ -137,15 +137,15 @@
         </select>
       </div>
     </div>
-    <div class="flex gap-2 justify-end pt-2">
-      <button (click)="fecharModalManual()"
-              class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
-        Cancelar
-      </button>
-      <button (click)="salvarManual()" [disabled]="salvandoManual()"
-              class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all">
-        {{ salvandoManual() ? 'Criando...' : 'Criar CT-e' }}
-      </button>
-    </div>
+  </div>
+  <div modalRodape>
+    <button (click)="fecharModalManual()"
+      class="btn-ghost">
+      Cancelar
+    </button>
+    <button (click)="salvarManual()" [disabled]="salvandoManual()"
+      class="btn-primary">
+      {{ salvandoManual() ? 'Criando...' : 'Criar CT-e' }}
+    </button>
   </div>
 </app-modal>

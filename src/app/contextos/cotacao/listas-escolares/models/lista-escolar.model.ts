@@ -56,6 +56,7 @@ export interface ProdutoBusca {
   nome: string;
   preco?: number;
   estoque?: number;
+  imagemUrl?: string | null;
 }
 
 export interface CategoriaListaEscolar {

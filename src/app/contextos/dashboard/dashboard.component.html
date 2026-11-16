@@ -127,7 +127,7 @@
     </div>
 
     <app-modal [aberto]="modalFormaPagamentoAberto()" titulo="Vendas por forma de pagamento" tamanho="md" (fechar)="fecharModalFormaPagamento()">
-      <div class="p-6 pt-0 overflow-y-auto">
+      <div class="space-y-4">
         <table class="w-full text-sm">
           <thead>
             <tr class="text-[11px] uppercase text-slate-400 text-left">
@@ -149,6 +149,9 @@
             }
           </tbody>
         </table>
+      </div>
+      <div modalRodape>
+        <button type="button" class="btn-ghost" (click)="fecharModalFormaPagamento()">Fechar</button>
       </div>
     </app-modal>
 
@@ -392,7 +395,7 @@
       </div>
 
       <app-modal [aberto]="modalVendedoresAberto()" titulo="Meta por vendedor" tamanho="lg" (fechar)="fecharModalVendedores()">
-        <div class="p-6 pt-0 overflow-y-auto">
+        <div class="space-y-4">
           <ul class="space-y-4">
             @for (v of resumo()!.metaPorVendedor; track v.idVendedor ?? v.nome) {
               <li [class]="v.semVendedor ? 'p-2 -mx-2 rounded-xl bg-slate-50 dark:bg-slate-800/40' : 'p-2 -mx-2 rounded-xl'">
@@ -428,6 +431,9 @@
               </li>
             }
           </ul>
+        </div>
+        <div modalRodape>
+          <button type="button" class="btn-ghost" (click)="fecharModalVendedores()">Fechar</button>
         </div>
       </app-modal>
     }

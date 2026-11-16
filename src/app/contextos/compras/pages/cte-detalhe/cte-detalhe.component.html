@@ -125,7 +125,7 @@
 </div>
 
 <app-modal [aberto]="modalVincularAberto()" titulo="Vincular Nota de Entrada" (fechar)="fecharModalVincular()">
-  <div class="space-y-4 min-w-72">
+  <div class="space-y-4">
     <div>
       <label class="text-sm font-semibold text-slate-700 dark:text-slate-200">ID da Nota de Entrada</label>
       <input type="number" [(ngModel)]="notaIdParaVincular" min="1"
@@ -133,22 +133,22 @@
              placeholder="Ex: 42"/>
       <p class="mt-1 text-xs text-slate-400">Informe o ID interno da nota de entrada já importada.</p>
     </div>
-    <div class="flex gap-2 justify-end pt-2">
-      <button (click)="fecharModalVincular()"
-              class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
-        Cancelar
-      </button>
-      <button (click)="vincularNota()" [disabled]="vinculando()"
-              class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all">
-        {{ vinculando() ? 'Vinculando...' : 'Vincular' }}
-      </button>
-    </div>
+  </div>
+  <div modalRodape>
+    <button (click)="fecharModalVincular()"
+      class="btn-ghost">
+      Cancelar
+    </button>
+    <button (click)="vincularNota()" [disabled]="vinculando()"
+      class="btn-primary">
+      {{ vinculando() ? 'Vinculando...' : 'Vincular' }}
+    </button>
   </div>
 </app-modal>
 
 <app-modal [aberto]="modalPreviewAberto()" titulo="Preview do Rateio de Frete" (fechar)="fecharPreview()">
   @if (carregandoPreview()) {
-    <div class="flex items-center justify-center py-8 min-w-96">
+    <div class="flex items-center justify-center py-8">
       <span class="material-symbols-outlined animate-spin text-3xl text-primary">progress_activity</span>
     </div>
   }
@@ -189,4 +189,7 @@
       </div>
     </div>
   }
+  <div modalRodape>
+    <button type="button" class="btn-ghost" (click)="fecharPreview()">Fechar</button>
+  </div>
 </app-modal>

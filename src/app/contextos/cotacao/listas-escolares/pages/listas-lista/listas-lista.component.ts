@@ -3,7 +3,7 @@ import { Component, OnDestroy, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { map } from 'rxjs';
+import { firstValueFrom, map } from 'rxjs';
 import { ListasEscolaresService, ListaEscolarFiltro } from '../../services/listas-escolares.service';
 import { ListaEscolarResumo } from '../../models/lista-escolar.model';
 import { ToastService } from '../../../../../core/feedback/toast.service';
@@ -15,6 +15,14 @@ import { Ordenacao, ThOrdenavelComponent } from '../../../../../shared/component
 import { BreadcrumbComponent } from '../../../../../shared/components/breadcrumb/breadcrumb.component';
 import { BtnIconeComponent } from '../../../../../shared/components/btn-icone/btn-icone.component';
 import { AuthService } from '../../../../../core/auth/auth.service';
+
+type EstadoEnvio = 'fila' | 'enviando' | 'pronta' | 'duplicada' | 'erro';
+
+interface ItemEnvio {
+  arquivo: File;
+  estado: EstadoEnvio;
+  substituir: boolean;
+}
 
 @Component({
   selector: 'app-listas-lista',
@@ -35,7 +43,9 @@ export class ListasListaComponent implements OnInit, OnDestroy {
   filtro: ListaEscolarFiltro = {};
   escolaFiltro = signal<OpcaoSelectBusca | null>(null);
   serieFiltro = signal<OpcaoSelectBusca | null>(null);
-  enviosEmAndamento = signal(0);
+  envios = signal<ItemEnvio[]>([]);
+  zonaTravada = signal(false);
+  arrastandoSobreZona = signal(false);
   private intervaloAtualizacao?: ReturnType<typeof setInterval>;
   private static readonly INTERVALO_ATUALIZACAO_MS = 10000;
   anosLetivos = signal<number[]>([]);
@@ -166,44 +176,98 @@ export class ListasListaComponent implements OnInit, OnDestroy {
     this.carregar(1);
   }
 
-  aoSelecionarArquivo(event: Event) {
+  aoSelecionarArquivos(event: Event) {
     const input = event.target as HTMLInputElement;
-    const arquivo = input.files?.[0];
+    const arquivos = Array.from(input.files ?? []);
     input.value = '';
-    if (!arquivo) return;
-
-    this.toast.sucesso(`Enviando "${arquivo.name}" pra Albia cotar. Pode continuar usando a tela, a lista aparece na listagem assim que ficar pronta.`);
-    this.enviarParaCotacao(arquivo, false);
+    this.receberArquivos(arquivos);
   }
 
-  private enviarParaCotacao(arquivo: File, substituir: boolean) {
-    this.enviosEmAndamento.update(n => n + 1);
-    this.listasService.enviarArquivo(arquivo, substituir).subscribe({
-      next: async res => {
-        this.enviosEmAndamento.update(n => n - 1);
+  aoArrastarSobre(event: DragEvent) {
+    event.preventDefault();
+    if (!this.zonaTravada()) this.arrastandoSobreZona.set(true);
+  }
 
-        if (res.dados?.status === 'existente_confirmar_substituicao') {
-          const confirmado = await this.confirm.confirmar(
-            'Já existe uma lista para essa escola, série e ano',
-            'Substituir pela nova? A lista volta para conferência, os itens são refeitos e o PDF atual é apagado.',
-            { textoConfirmar: 'Substituir' }
-          );
-          if (confirmado) this.enviarParaCotacao(arquivo, true);
-          return;
-        }
+  aoSairDaZona() {
+    this.arrastandoSobreZona.set(false);
+  }
 
-        this.toast.sucesso(substituir
-          ? `"${arquivo.name}" substituída — voltou para conferência.`
-          : `"${arquivo.name}" enviada — aparece na listagem assim que a Albia terminar.`);
-        this.atualizarAnosLetivos();
-        this.recarregarSilencioso();
-      },
-      error: err => {
-        this.enviosEmAndamento.update(n => n - 1);
-        this.toast.erroServidor(err, `Não foi possível enviar "${arquivo.name}". Confira a listagem antes de reenviar.`);
-        this.recarregarSilencioso();
+  aoSoltar(event: DragEvent) {
+    event.preventDefault();
+    this.arrastandoSobreZona.set(false);
+    this.receberArquivos(Array.from(event.dataTransfer?.files ?? []));
+  }
+
+  private receberArquivos(arquivos: File[]) {
+    if (this.zonaTravada()) return;
+
+    const aceitos = arquivos.filter(a => a.type.startsWith('image/') || a.type === 'application/pdf');
+    if (aceitos.length < arquivos.length) {
+      this.toast.aviso('Alguns arquivos foram ignorados', 'Só PDF e imagens são aceitos.');
+    }
+    if (aceitos.length === 0) return;
+
+    this.envios.set(aceitos.map(arquivo => ({ arquivo, estado: 'fila' as const, substituir: false })));
+    this.zonaTravada.set(true);
+    this.toast.sucesso(
+      `${aceitos.length} lista(s) enviada(s)`,
+      'Estarão disponíveis na listagem assim que ficarem prontas. Pode continuar usando a tela.');
+    void this.processarEnvios();
+  }
+
+  private async processarEnvios() {
+    await this.processarFila();
+
+    const duplicadas = this.envios().filter(e => e.estado === 'duplicada');
+    if (duplicadas.length > 0) {
+      const nomes = duplicadas.map(e => e.arquivo.name).join(', ');
+      const confirmado = await this.confirm.confirmar(
+        `${duplicadas.length} lista(s) já existem para essa escola, série e ano`,
+        `Substituir tudo? As listas voltam para conferência, os itens são refeitos e os PDFs atuais são apagados. Arquivos: ${nomes}`,
+        { textoConfirmar: 'Substituir tudo', textoCancelar: 'Cancelar' }
+      );
+      if (confirmado) {
+        this.envios.update(lista => lista.map(e => e.estado === 'duplicada' ? { ...e, estado: 'fila' as const, substituir: true } : e));
+        await this.processarFila();
       }
-    });
+    }
+
+    const prontas = this.envios().filter(e => e.estado === 'pronta').length;
+    if (prontas > 0) this.toast.sucesso(`${prontas} lista(s) pronta(s) na listagem.`);
+
+    this.envios.set([]);
+    this.zonaTravada.set(false);
+    this.atualizarAnosLetivos();
+    this.recarregarSilencioso();
+  }
+
+  private async processarFila() {
+    for (;;) {
+      const proximo = this.envios().find(e => e.estado === 'fila');
+      if (!proximo) return;
+
+      this.definirEstadoEnvio(proximo.arquivo, 'enviando');
+      try {
+        const res = await firstValueFrom(this.listasService.enviarArquivo(proximo.arquivo, proximo.substituir));
+        const duplicada = res.dados?.status === 'existente_confirmar_substituicao';
+        this.definirEstadoEnvio(proximo.arquivo, duplicada ? 'duplicada' : 'pronta');
+        if (!duplicada) this.recarregarSilencioso();
+      } catch (err) {
+        this.definirEstadoEnvio(proximo.arquivo, 'erro');
+        this.toast.erroServidor(err, `Não foi possível enviar "${proximo.arquivo.name}". Confira a listagem antes de reenviar.`);
+      }
+    }
+  }
+
+  private definirEstadoEnvio(arquivo: File, estado: EstadoEnvio) {
+    this.envios.update(lista => lista.map(e => e.arquivo === arquivo ? { ...e, estado } : e));
+  }
+
+  rotuloEstadoEnvio(estado: EstadoEnvio): string {
+    const rotulos: Record<EstadoEnvio, string> = {
+      fila: 'Na fila', enviando: 'Cotando...', pronta: 'Pronta', duplicada: 'Já existe', erro: 'Erro'
+    };
+    return rotulos[estado];
   }
 
   readonly statusLista = StatusListaEscolar;

@@ -3,14 +3,38 @@
 
     <app-breadcrumb [itens]="[{label:'Início',rota:'/dashboard'},{label:'Orçamento'},{label:'Lista Escolar'}]"></app-breadcrumb>
 
-    <app-page-header titulo="Gestão de Listas Cotadas" subtitulo="Revise, corrija o match de produto e libere listas escolares cotadas pela Albia.">
-      <label acoes class="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all cursor-pointer"
-             [class.opacity-80]="enviosEmAndamento() > 0">
-        <span class="material-symbols-outlined text-sm" [class.animate-spin]="enviosEmAndamento() > 0">{{ enviosEmAndamento() > 0 ? 'progress_activity' : 'upload_file' }}</span>
-        {{ enviosEmAndamento() > 0 ? 'Cotando ' + enviosEmAndamento() + ' lista(s)... enviar outra' : 'Enviar lista pra cotar' }}
-        <input type="file" accept="image/*,.pdf" class="hidden" (change)="aoSelecionarArquivo($event)"/>
-      </label>
-    </app-page-header>
+    <app-page-header titulo="Gestão de Listas Cotadas" subtitulo="Revise, corrija o match de produto e libere listas escolares cotadas pela Albia."></app-page-header>
+
+    <div (drop)="aoSoltar($event)" (dragover)="aoArrastarSobre($event)" (dragleave)="aoSairDaZona()"
+         class="border border-dashed rounded-xl px-4 py-3 transition-colors"
+         [class]="arrastandoSobreZona() ? 'border-primary bg-primary/5' : 'border-slate-300 dark:border-slate-700'"
+         [class.opacity-70]="zonaTravada()">
+      <div class="flex flex-wrap items-center gap-3 text-sm text-slate-500 dark:text-slate-400">
+        <span class="material-symbols-outlined text-xl" [class.animate-spin]="zonaTravada()">{{ zonaTravada() ? 'progress_activity' : 'cloud_upload' }}</span>
+        @if (zonaTravada()) {
+          <span class="font-semibold">Cotando as listas enviadas — a zona libera quando todas ficarem prontas.</span>
+        } @else {
+          <span>Arraste as listas (PDF ou imagem) aqui para cotar, várias de uma vez, ou</span>
+          <label class="px-3 py-1.5 rounded-lg bg-primary text-white font-bold text-xs hover:bg-primary/90 cursor-pointer transition-all">
+            Selecionar arquivos
+            <input type="file" accept="image/*,.pdf" multiple class="hidden" (change)="aoSelecionarArquivos($event)"/>
+          </label>
+        }
+      </div>
+      @if (envios().length > 0) {
+        <ul class="mt-2 flex flex-wrap gap-2">
+          @for (envio of envios(); track envio.arquivo) {
+            <li class="flex items-center gap-1.5 px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-xs text-slate-600 dark:text-slate-300">
+              <span class="max-w-48 truncate">{{ envio.arquivo.name }}</span>
+              <span class="font-bold"
+                    [class.text-emerald-600]="envio.estado === 'pronta'"
+                    [class.text-red-600]="envio.estado === 'erro'"
+                    [class.text-amber-600]="envio.estado === 'duplicada'">{{ rotuloEstadoEnvio(envio.estado) }}</span>
+            </li>
+          }
+        </ul>
+      }
+    </div>
 
     <app-listagem-paginada
       [itens]="itens()"

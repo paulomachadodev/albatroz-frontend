@@ -1,0 +1,19 @@
+<div class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark px-4 sm:px-6 lg:px-8 xl:px-10 py-6 lg:py-8"><div class="w-full space-y-8"><app-breadcrumb [itens]="[{label:'Configurações',rota:'/configuracoes'},{label:'Comercial e operação'},{label:'Parâmetros de estoque'}]" /><app-page-header titulo="Parâmetros de estoque" subtitulo="Configurações da empresa da sessão." ><a acoes routerLink="/configuracoes" class="text-sm text-primary hover:underline">Voltar às configurações</a></app-page-header>@if(carregando()){<p class="text-sm text-slate-500">Carregando configurações…</p>}@else{<fieldset [disabled]="!podeEditar()" class="min-w-0 space-y-6">
+      <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-4">
+        <p class="text-sm font-bold text-slate-900 dark:text-slate-100">Meta diária de contagem de estoque</p>
+        <p class="text-sm text-slate-500 dark:text-slate-400">
+          Quantos produtos a equipe deve contar por dia, em média. Usado no card do dashboard pra acompanhar se a rotina de contagem está em dia. Ajuste com calma — melhor uma meta baixa cumprida todo dia do que uma alta que ninguém segue.
+        </p>
+        <div class="sm:w-64">
+          <label class="text-xs font-semibold text-slate-500">Itens por dia</label>
+          <input type="number" min="1" [(ngModel)]="metaContagemDiaria"
+                 class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+        </div>
+        <div class="pt-2">
+          <button type="button" (click)="salvarMetaContagem()" [disabled]="salvandoMetaContagem()"
+                  class="px-5 py-2.5 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all">
+            {{ salvandoMetaContagem() ? 'Salvando...' : 'Salvar' }}
+          </button>
+        </div>
+      </div>
+    </fieldset>}</div></div>

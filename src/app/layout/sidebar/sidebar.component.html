@@ -1,275 +1,127 @@
-<header class="md:hidden fixed top-0 inset-x-0 z-40 h-14 flex items-center gap-2 px-2
-               bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
-  <button type="button" (click)="abrirMenuMobile()"
-          class="size-11 flex items-center justify-center rounded-lg text-slate-600 dark:text-slate-300
-                 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-    <span class="material-symbols-outlined">menu</span>
+<header class="md:hidden fixed top-0 inset-x-0 z-40 h-14 flex items-center gap-3 px-3 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
+  <button type="button" (click)="abrirMobile()" aria-label="Abrir menu" [attr.aria-expanded]="mobileAberto()" aria-controls="menu-mobile" class="size-11 flex items-center justify-center rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">
+    <span class="material-symbols-outlined" aria-hidden="true">menu</span>
   </button>
   <app-logo-badge tamanho="sm" />
-  <span class="font-bold text-slate-900 dark:text-slate-100 text-sm">Albatroz</span>
+  <span class="text-sm font-semibold text-slate-900 dark:text-slate-100">ERP</span>
 </header>
 
-@if (menuMobileAberto()) {
-  <div class="md:hidden fixed inset-0 z-50 flex" style="animation: fade-in 150ms ease-out">
-    <div class="w-72 max-w-[85vw] h-full bg-white dark:bg-slate-900 flex flex-col overflow-y-auto shadow-2xl">
-      <div class="h-14 shrink-0 flex items-center justify-between px-4 border-b border-slate-200 dark:border-slate-800">
-        <span class="font-bold text-slate-900 dark:text-slate-100 text-sm">Menu</span>
-        <button type="button" (click)="fecharMenuMobile()"
-                class="size-11 flex items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800">
-          <span class="material-symbols-outlined">close</span>
-        </button>
-      </div>
-
-      <nav class="flex-1 overflow-y-auto py-2 px-2 space-y-3">
-        @for (grupo of gruposVisiveis(); track grupo.titulo) {
-          <div>
-            <div class="px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-slate-400">{{ grupo.titulo }}</div>
-            <ul class="space-y-1">
-              @for (item of grupo.itens; track item.label) {
-                <li>
-                  @if (item.subItens) {
-                    <button type="button" (click)="toggleItem(item.label)"
-                            class="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm
-                                   text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">
-                      <span class="material-symbols-outlined shrink-0">{{ item.icone }}</span>
-                      <span class="flex-1 text-left truncate">{{ item.label }}</span>
-                      <span class="material-symbols-outlined text-base transition-transform" [class.rotate-180]="itemExpandido(item.label)">expand_more</span>
-                    </button>
-                    @if (itemExpandido(item.label)) {
-                      <ul class="mt-1 ml-4 pl-3 border-l border-slate-200 dark:border-slate-800 space-y-1">
-                        @for (sub of item.subItens; track sub.rota) {
-                          <li>
-                            <a [routerLink]="sub.rota" routerLinkActive="bg-primary/10 text-primary font-semibold" (click)="fecharMenuMobile()"
-                               class="flex items-center gap-3 px-3 py-3 rounded-lg text-sm
-                                      text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">
-                              <span class="material-symbols-outlined text-base shrink-0">{{ sub.icone }}</span>
-                              <span class="truncate">{{ sub.label }}</span>
-                            </a>
-                          </li>
-                        }
-                      </ul>
-                    }
-                  } @else {
-                    <a [routerLink]="item.rota" routerLinkActive="bg-primary/10 text-primary font-semibold" (click)="fecharMenuMobile()"
-                       class="flex items-center gap-3 px-3 py-3 rounded-lg text-sm
-                              text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">
-                      <span class="material-symbols-outlined shrink-0">{{ item.icone }}</span>
-                      <span class="flex-1 truncate">{{ item.label }}</span>
-                      @if (item.badge) {
-                        <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-primary text-white">{{ item.badge }}</span>
-                      }
-                    </a>
-                  }
-                </li>
-              }
-            </ul>
-          </div>
-        }
-      </nav>
-
-      <div class="border-t border-slate-200 dark:border-slate-800 shrink-0 p-2 space-y-1">
-        <div class="flex items-center gap-2.5 px-3 py-2">
-          <div class="size-9 rounded-lg bg-primary text-white text-sm font-semibold flex items-center justify-center shrink-0">
-            {{ iniciais() }}
-          </div>
-          <div class="flex-1 min-w-0">
-            <div class="text-sm font-medium text-slate-800 dark:text-slate-100 leading-tight truncate">{{ usuario()?.nome ?? 'Visitante' }}</div>
-            <div class="text-xs text-slate-400 leading-tight truncate">{{ usuario()?.perfis?.[0] ?? '—' }}</div>
-          </div>
-        </div>
-        <button type="button" (click)="irParaMeuPerfil()"
-                class="w-full text-left px-3 py-3 rounded-lg text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2">
-          <span class="material-symbols-outlined text-lg">person</span>
-          Meu perfil
-        </button>
-        <button type="button" (click)="irParaConfiguracoes()"
-                class="w-full text-left px-3 py-3 rounded-lg text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2">
-          <span class="material-symbols-outlined text-lg">settings</span>
-          Configurações
-        </button>
-        <button type="button" (click)="theme.alternar()"
-                class="w-full text-left px-3 py-3 rounded-lg text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2">
-          <span class="material-symbols-outlined text-lg">{{ theme.temaAtual() === 'dark' ? 'light_mode' : 'dark_mode' }}</span>
-          {{ theme.temaAtual() === 'dark' ? 'Modo claro' : 'Modo escuro' }}
-        </button>
-        <button type="button" (click)="sair()"
-                class="w-full text-left px-3 py-3 rounded-lg text-sm text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 flex items-center gap-2">
-          <span class="material-symbols-outlined text-lg">logout</span>
-          Sair
-        </button>
-      </div>
-    </div>
-    <div class="flex-1 bg-black/40" (click)="fecharMenuMobile()"></div>
+<aside class="hidden md:flex h-dvh shrink-0 sticky top-0 flex-col bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 motion-safe:transition-[width] motion-safe:duration-150" [class.w-64]="!recolhido()" [class.w-20]="recolhido()" aria-label="Navegação principal">
+  <div class="h-20 shrink-0 flex items-center gap-3 px-5">
+    <app-logo-badge />
+    @if (!recolhido()) {
+      <div class="min-w-0"><div class="font-semibold text-slate-900 dark:text-slate-100">ERP</div><div class="text-xs text-slate-500">Sua área de trabalho</div></div>
+    }
   </div>
-}
+  <div class="px-3 pb-3">
+    @if (recolhido()) {
+      <button type="button" (click)="alternarRecolhido()" aria-label="Expandir menu e buscar página" title="Buscar página" class="size-11 mx-auto flex items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"><span class="material-symbols-outlined" aria-hidden="true">search</span></button>
+    } @else {
+      <label class="flex items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-700 px-3 py-2">
+        <span class="material-symbols-outlined text-lg text-slate-400" aria-hidden="true">search</span>
+        <input #buscaDesktop pInputText [value]="busca()" (input)="buscar($event)" aria-label="Buscar página" placeholder="Buscar página…" class="w-full min-w-0 text-sm bg-transparent border-0 outline-none text-slate-800 dark:text-slate-100" />
+      </label>
+    }
+  </div>
+  <div class="flex-1 overflow-y-auto overscroll-contain px-2 pb-4 min-h-0">
+    <ng-container *ngTemplateOutlet="navegacao; context: { compacto: recolhido(), mobile: false }" />
+  </div>
+  <div class="shrink-0 border-t border-slate-200 dark:border-slate-800 p-2">
+    <ng-container *ngTemplateOutlet="rodape; context: { compacto: recolhido() }" />
+    <button type="button" (click)="alternarRecolhido()" [attr.aria-label]="recolhido() ? 'Expandir menu' : 'Recolher menu'" class="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800" [class.justify-center]="recolhido()">
+      <span class="material-symbols-outlined text-xl" aria-hidden="true">{{ recolhido() ? 'left_panel_open' : 'left_panel_close' }}</span>
+      @if (!recolhido()) { <span>Recolher menu</span> }
+    </button>
+  </div>
+</aside>
 
-<div class="hidden md:flex h-screen shrink-0">
+<dialog #dialogoMobile id="menu-mobile" aria-label="Menu de navegação" (cancel)="$event.preventDefault(); fecharMobile()" (click)="aoClicarDialogo($event)" class="m-0 h-dvh max-h-none w-full max-w-none bg-transparent p-0 backdrop:bg-black/40 border-0">
+  <div class="flex h-full w-80 max-w-[88vw] flex-col bg-white dark:bg-slate-900 shadow-xl" (click)="$event.stopPropagation()">
+    <div class="flex h-16 shrink-0 items-center gap-3 border-b border-slate-200 dark:border-slate-800 px-4">
+      <app-logo-badge tamanho="sm" /><span class="flex-1 font-semibold text-slate-900 dark:text-slate-100">Menu</span>
+      <button type="button" (click)="fecharMobile()" aria-label="Fechar menu" class="size-11 flex items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"><span class="material-symbols-outlined" aria-hidden="true">close</span></button>
+    </div>
+    <label class="m-3 flex items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-700 px-3 py-2">
+      <span class="material-symbols-outlined text-slate-400 text-lg" aria-hidden="true">search</span>
+      <input pInputText [value]="busca()" (input)="buscar($event)" aria-label="Buscar página no menu" placeholder="Buscar página…" class="w-full min-w-0 bg-transparent border-0 outline-none text-base text-slate-800 dark:text-slate-100" />
+    </label>
+    <div class="flex-1 overflow-y-auto overscroll-contain px-2 pb-4 min-h-0"><ng-container *ngTemplateOutlet="navegacao; context: { compacto: false, mobile: true }" /></div>
+    <div class="shrink-0 border-t border-slate-200 dark:border-slate-800 p-2"><ng-container *ngTemplateOutlet="rodape; context: { compacto: false }" /></div>
+  </div>
+</dialog>
 
-  <aside class="h-screen shrink-0 sticky top-0 flex flex-col overflow-hidden
-                bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 z-40
-                transition-[width] duration-200 ease-out"
-         (mouseenter)="aoEntrarAreaMenu()"
-         (mouseleave)="aoSairAreaMenu()"
-         [class.w-56]="colunaAExpandida()"
-         [class.w-20]="!colunaAExpandida()">
-
-    <a routerLink="/dashboard" class="h-16 shrink-0 flex items-center justify-center gap-2 px-2">
-      <app-logo-badge [comSombra]="true" />
-      @if (colunaAExpandida()) {
-        <div class="min-w-0" style="animation: fade-in 150ms ease-out">
-          <div class="font-bold text-slate-900 dark:text-slate-100 text-sm leading-tight truncate">Albatroz</div>
-          <div class="text-[11px] text-slate-400 leading-tight">Tecnologia</div>
-        </div>
-      }
-    </a>
-
-    <nav class="flex-1 py-3 px-2 space-y-0.5 overflow-y-auto">
-      @for (grupo of gruposVisiveis(); track grupo.titulo) {
-        <button type="button"
-                (mouseenter)="aoHoverContexto(grupo.titulo)"
-                (click)="aoHoverContexto(grupo.titulo)"
-                class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors"
-                [class.justify-center]="!colunaAExpandida()"
-                [class.bg-primary/10]="contextoHover() === grupo.titulo"
-                [class.text-primary]="contextoHover() === grupo.titulo"
-                [class.font-semibold]="contextoHover() === grupo.titulo"
-                [class.text-slate-600]="contextoHover() !== grupo.titulo"
-                [class.dark:text-slate-400]="contextoHover() !== grupo.titulo"
-                [class.hover:bg-slate-100]="contextoHover() !== grupo.titulo"
-                [class.dark:hover:bg-slate-800]="contextoHover() !== grupo.titulo"
-                [title]="!colunaAExpandida() ? grupo.titulo : ''">
-          <span class="material-symbols-outlined shrink-0 text-xl">{{ grupo.icone }}</span>
-          @if (colunaAExpandida()) {
-            <span class="flex-1 text-left truncate" style="animation: fade-in 150ms ease-out">{{ grupo.titulo }}</span>
-            <span class="material-symbols-outlined text-base opacity-50">chevron_right</span>
-          }
-        </button>
-      }
+<ng-template #navegacao let-compacto="compacto" let-mobile="mobile">
+  @if (busca().trim()) {
+    <nav aria-label="Resultados da busca" aria-live="polite">
+      @for (pagina of resultados(); track pagina.item.id) {
+        <a [routerLink]="pagina.item.rota" (click)="aoNavegar()" class="block rounded-lg px-3 py-3 hover:bg-slate-100 dark:hover:bg-slate-800"><div class="text-sm font-medium text-slate-800 dark:text-slate-100">{{ pagina.item.label }}</div><div class="text-xs text-slate-500 break-words">{{ pagina.caminho }}</div></a>
+      } @empty { <p class="px-3 py-4 text-sm text-slate-500">Nenhuma página encontrada.</p> }
     </nav>
-
-    <div class="relative border-t border-slate-200 dark:border-slate-800 shrink-0"
-         (mouseenter)="aoHoverContexto('__usuario__')">
-      @if (usuarioMenuAberto()) {
-        <div class="fixed inset-0 z-40" (click)="fecharUsuarioMenu()"></div>
-        <div class="absolute left-2 bottom-full mb-2 w-56 card p-1.5 z-50" style="animation: dropdown-in 150ms ease-out">
-          <div class="px-3 py-2 border-b border-slate-100 dark:border-slate-800">
-            <div class="text-sm font-semibold text-slate-800 dark:text-slate-100 truncate">{{ usuario()?.nome }}</div>
-            <div class="text-xs text-slate-400 truncate">{{ usuario()?.email }}</div>
-          </div>
-          <button (click)="irParaMeuPerfil()"
-                  class="w-full text-left px-3 py-2 rounded-lg text-sm
-                         text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2">
-            <span class="material-symbols-outlined text-lg">person</span>
-            Meu perfil
-          </button>
-          <button (click)="irParaConfiguracoes()"
-                  class="w-full text-left px-3 py-2 rounded-lg text-sm
-                         text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2">
-            <span class="material-symbols-outlined text-lg">settings</span>
-            Configurações
-          </button>
-          <button (click)="theme.alternar()"
-                  class="w-full text-left px-3 py-2 rounded-lg text-sm
-                         text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2">
-            <span class="material-symbols-outlined text-lg">{{ theme.temaAtual() === 'dark' ? 'light_mode' : 'dark_mode' }}</span>
-            {{ theme.temaAtual() === 'dark' ? 'Modo claro' : 'Modo escuro' }}
-          </button>
-          <div class="h-px bg-slate-100 dark:bg-slate-800 my-1"></div>
-          <button (click)="sair()"
-                  class="w-full text-left px-3 py-2 rounded-lg text-sm
-                         text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 flex items-center gap-2">
-            <span class="material-symbols-outlined text-lg">logout</span>
-            Sair
-          </button>
-        </div>
-      }
-      <button (click)="toggleUsuarioMenu()"
-              class="w-full flex items-center gap-2.5 px-3 py-3 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-              [class.justify-center]="!colunaAExpandida()">
-        <div class="size-9 rounded-lg bg-primary text-white text-sm font-semibold flex items-center justify-center shadow-sm shrink-0">
-          {{ iniciais() }}
-        </div>
-        @if (colunaAExpandida()) {
-          <div class="flex-1 text-left min-w-0" style="animation: fade-in 150ms ease-out">
-            <div class="text-sm font-medium text-slate-800 dark:text-slate-100 leading-tight truncate">{{ usuario()?.nome ?? 'Visitante' }}</div>
-            <div class="text-xs text-slate-400 leading-tight truncate">{{ usuario()?.perfis?.[0] ?? '—' }}</div>
-          </div>
-          <span class="material-symbols-outlined text-slate-400 text-lg transition-transform" [class.rotate-180]="usuarioMenuAberto()">expand_more</span>
+  } @else {
+    @if (!compacto && favoritos().length) {
+      <div class="px-3 pt-2 pb-1 text-xs font-medium text-slate-400">FAVORITOS</div>
+      <nav aria-label="Favoritos" class="mb-3">
+        @for (pagina of favoritos(); track pagina.item.id) {
+          <a [routerLink]="pagina.item.rota" (click)="aoNavegar()" [attr.aria-current]="paginaAtiva()?.item?.id === pagina.item.id ? 'page' : null" class="block px-3 py-2.5 rounded-lg text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">{{ pagina.item.label }}</a>
         }
-      </button>
-    </div>
-
-    <div class="flex items-center px-3 py-2 border-t border-slate-200 dark:border-slate-800 shrink-0"
-         (mouseenter)="aoHoverContexto('__usuario__')"
-         [class.justify-center]="!colunaAExpandida()" [class.justify-between]="colunaAExpandida()">
-      @if (colunaAExpandida()) {
-        <span class="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400" style="animation: fade-in 150ms ease-out">
-          <span class="material-symbols-outlined text-lg">push_pin</span>
-          Fixar menu
-        </span>
-        <app-toggle [valor]="fixado()" (valorMudou)="alternarFixado($event)"></app-toggle>
-      } @else {
-        <button (click)="alternarFixado(true)" title="Fixar menu" class="text-slate-400 hover:text-primary transition-colors">
-          <span class="material-symbols-outlined">push_pin</span>
-        </button>
-      }
-    </div>
-  </aside>
-
-  @if (grupoExibido(); as grupo) {
-    <aside class="h-screen w-64 fixed top-0 left-56 flex flex-col
-                  bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 shadow-2xl z-30"
-           style="animation: flyout-in 150ms ease-out"
-           (mouseenter)="aoEntrarAreaMenu()"
-           (mouseleave)="aoSairAreaMenu()">
-      <div class="h-16 flex items-center px-4 border-b border-slate-200 dark:border-slate-800">
-        <span class="font-bold text-slate-900 dark:text-slate-100 text-sm">{{ grupo.titulo }}</span>
-      </div>
-      <nav class="flex-1 overflow-y-auto py-3 px-2 space-y-1">
-        <ul class="space-y-1">
-          @for (item of grupo.itens; track item.label) {
-            <li>
-              @if (item.subItens) {
-                <button (click)="toggleItem(item.label)"
-                        class="w-full group flex items-center gap-3 px-3 py-2.5 rounded-lg
-                               text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100
-                               transition-colors">
-                  <span class="material-symbols-outlined shrink-0">{{ item.icone }}</span>
-                  <span class="text-sm flex-1 truncate text-left">{{ item.label }}</span>
-                  <span class="material-symbols-outlined text-sm transition-transform" [class.rotate-180]="itemExpandido(item.label)">expand_more</span>
-                </button>
-                @if (itemExpandido(item.label)) {
-                  <ul class="mt-1 ml-4 pl-3 border-l border-slate-200 dark:border-slate-800 space-y-1">
-                    @for (sub of item.subItens; track sub.rota) {
-                      <li>
-                        <a [routerLink]="sub.rota" routerLinkActive="bg-primary/10 text-primary font-semibold" (click)="aoClicarItem()"
-                           class="group flex items-center gap-3 px-3 py-2 rounded-lg text-sm
-                                  text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100 transition-colors">
-                          <span class="material-symbols-outlined text-sm shrink-0">{{ sub.icone }}</span>
-                          <span class="truncate">{{ sub.label }}</span>
-                        </a>
-                      </li>
-                    }
-                  </ul>
-                }
-              } @else {
-                <a [routerLink]="item.rota" routerLinkActive="bg-primary/10 text-primary font-semibold" (click)="aoClicarItem()"
-                   class="group flex items-center gap-3 px-3 py-2.5 rounded-lg
-                          text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100
-                          transition-colors">
-                  <span class="material-symbols-outlined shrink-0">{{ item.icone }}</span>
-                  <span class="text-sm flex-1 truncate">{{ item.label }}</span>
-                  @if (item.badge) {
-                    <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-primary text-white">
-                      {{ item.badge }}
-                    </span>
-                  }
-                </a>
-              }
-            </li>
-          }
-        </ul>
       </nav>
-    </aside>
+    }
+    @if (!compacto && recentes().length) {
+      <button type="button" (click)="alternarRecentes()" [attr.aria-expanded]="recentesAbertos()" class="flex items-center justify-between w-full px-3 py-2 text-xs text-slate-500"><span>Recentes</span><span aria-hidden="true">{{ recentesAbertos() ? '−' : '+' }}</span></button>
+      @if (recentesAbertos()) {
+        <nav aria-label="Páginas recentes" class="mb-3">
+          @for (pagina of recentes(); track pagina.item.id) {
+            <a [routerLink]="pagina.item.rota" (click)="aoNavegar()" class="block px-3 py-2.5 text-sm text-slate-600 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">{{ pagina.item.label }}</a>
+          }
+        </nav>
+      }
+    }
+    @if (!compacto) { <div class="px-3 pt-2 pb-1 text-xs font-medium text-slate-400">MÓDULOS</div> }
+    <nav aria-label="Módulos"><ng-container *ngTemplateOutlet="arvore; context: { $implicit: modulos(), nivel: 0, compacto: compacto, mobile: mobile }" /></nav>
   }
-</div>
+</ng-template>
+
+<ng-template #arvore let-itens let-nivel="nivel" let-compacto="compacto" let-mobile="mobile">
+  <ul class="space-y-0.5">
+    @for (item of itens; track item.id) {
+      <li>
+        @if (item.filhos) {
+          <button type="button" (click)="alternarRamo(item)" [attr.aria-expanded]="!compacto && expandido(item)" [attr.aria-controls]="(mobile ? 'mobile-' : 'desktop-') + item.id" [attr.title]="compacto ? item.label : null" [attr.aria-label]="compacto ? item.label : null" [class.text-primary]="ativo(item)" [class.bg-primary/5]="ativo(item)" [class.justify-center]="compacto" class="w-full flex items-center gap-3 px-3 py-2.5 min-h-11 md:min-h-10 rounded-lg text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">
+            @if (nivel === 0) { <span class="material-symbols-outlined text-xl shrink-0" aria-hidden="true">{{ item.icone }}</span> }
+            @if (!compacto) { <span class="flex-1 text-left">{{ item.label }}</span><span class="text-xs text-slate-400" aria-hidden="true">{{ expandido(item) ? '−' : '+' }}</span> }
+          </button>
+          @if (!compacto && expandido(item)) {
+            <div [id]="(mobile ? 'mobile-' : 'desktop-') + item.id" class="ml-5 pl-2 border-l border-slate-200 dark:border-slate-800"><ng-container *ngTemplateOutlet="arvore; context: { $implicit: item.filhos, nivel: nivel + 1, compacto: false, mobile: mobile }" /></div>
+          }
+        } @else {
+          <div class="flex items-center rounded-lg" [class.bg-primary/10]="ativo(item)">
+            <a [routerLink]="item.rota" (click)="aoNavegar()" [attr.aria-current]="ativo(item) ? 'page' : null" [attr.title]="compacto ? item.label : null" [attr.aria-label]="compacto ? item.label : null" [class.text-primary]="ativo(item)" [class.font-semibold]="ativo(item)" [class.justify-center]="compacto" class="min-w-0 flex-1 flex items-center gap-3 px-3 py-2.5 min-h-11 md:min-h-10 rounded-lg text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">
+              @if (nivel === 0) { <span class="material-symbols-outlined text-xl shrink-0" aria-hidden="true">{{ item.icone }}</span> }
+              @if (!compacto) { <span>{{ item.label }}</span> }
+            </a>
+            @if (!compacto) { <button type="button" (click)="alternarFavorito(item)" [attr.aria-label]="(favorito(item) ? 'Remover dos favoritos: ' : 'Favoritar: ') + item.label" [attr.aria-pressed]="favorito(item)" class="shrink-0 size-10 flex items-center justify-center rounded-lg text-sm text-slate-400 hover:text-primary focus:text-primary">{{ favorito(item) ? '★' : '☆' }}</button> }
+          </div>
+        }
+      </li>
+    }
+  </ul>
+</ng-template>
+
+<ng-template #rodape let-compacto="compacto">
+  @if (configuracoes(); as item) {
+    <a [routerLink]="item.rota" (click)="aoNavegar()" [attr.aria-current]="ativo(item) ? 'page' : null" [class.text-primary]="ativo(item)" [class.bg-primary/10]="ativo(item)" [class.justify-center]="compacto" title="Configurações" class="w-full flex items-center gap-3 px-3 py-2.5 min-h-11 rounded-lg text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"><span class="material-symbols-outlined text-xl" aria-hidden="true">settings</span>@if (!compacto) { <span>Configurações</span> }</a>
+  }
+  <div class="relative">
+    @if (usuarioMenuAberto()) {
+      <div class="absolute left-0 bottom-full mb-2 w-60 max-w-[80vw] rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-2 shadow-xl z-50">
+        <a routerLink="/meu-perfil" (click)="aoNavegar()" class="block rounded-lg px-3 py-3 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800">Meu perfil</a>
+        <button type="button" (click)="theme.alternar()" class="w-full text-left rounded-lg px-3 py-3 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800">{{ theme.temaAtual() === 'dark' ? 'Modo claro' : 'Modo escuro' }}</button>
+        <button type="button" (click)="sair()" class="w-full text-left rounded-lg px-3 py-3 text-sm text-rose-600 dark:text-rose-400 hover:bg-slate-100 dark:hover:bg-slate-800">Sair</button>
+      </div>
+    }
+    <button type="button" (click)="alternarUsuario()" [attr.aria-expanded]="usuarioMenuAberto()" aria-label="Menu do usuário" [class.justify-center]="compacto" class="w-full flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800">
+      <span class="size-8 rounded-full bg-primary/10 text-primary text-xs font-semibold flex items-center justify-center shrink-0">{{ iniciais() }}</span>
+      @if (!compacto) { <span class="min-w-0 text-left"><span class="block text-sm font-medium text-slate-800 dark:text-slate-100 truncate">{{ usuario()?.nome }}</span><span class="block text-xs text-slate-500">Preferências e sessão</span></span> }
+    </button>
+  </div>
+</ng-template>

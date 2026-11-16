@@ -1,0 +1,96 @@
+<div class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark px-4 sm:px-6 lg:px-8 xl:px-10 py-6 lg:py-8"><div class="w-full space-y-8"><app-breadcrumb [itens]="[{label:'Configurações',rota:'/configuracoes'},{label:'Integrações e canais'},{label:'Catálogos e site'}]" /><app-page-header titulo="Catálogos e site" subtitulo="Configurações da empresa da sessão." ><a acoes routerLink="/configuracoes" class="text-sm text-primary hover:underline">Voltar às configurações</a></app-page-header>@if(carregando()){<p class="text-sm text-slate-500">Carregando configurações…</p>}@else{<fieldset [disabled]="!podeEditar()" class="min-w-0 space-y-6">
+      <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-8">
+        <div class="space-y-4">
+          <p class="text-sm font-bold text-slate-900 dark:text-slate-100">Google Merchant Center</p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="text-xs font-semibold text-slate-500">Merchant ID</label>
+              <input type="text" [(ngModel)]="googleMerchantId" placeholder="123456789"
+                     class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-slate-500">Modo de envio</label>
+              <select [(ngModel)]="googleFeedModo" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none">
+                <option value="url">Feed por URL (mais simples)</option>
+                <option value="api">Content API (Service Account)</option>
+              </select>
+            </div>
+          </div>
+          @if (googleFeedModo === 'api') {
+            <div>
+              <label class="text-xs font-semibold text-slate-500">Service Account (JSON)</label>
+              <textarea rows="4" [(ngModel)]="googleServiceAccountJson" placeholder="Cole aqui o JSON da service account com acesso ao Merchant Center"
+                        class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-xs font-mono outline-none resize-none"></textarea>
+            </div>
+          } @else {
+            <div>
+              <label class="text-xs font-semibold text-slate-500 inline-flex items-center gap-1">
+                Token do feed
+                <app-campo-hint texto="Vai como parte da URL que você cadastra no Merchant Center — invente uma string aleatória, só serve pra impedir que outros vejam seu catálogo."></app-campo-hint>
+              </label>
+              <input type="text" [(ngModel)]="googleFeedToken" placeholder="uma-string-secreta-qualquer"
+                     class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+              @if (googleFeedToken) {
+                <p class="mt-1 text-xs text-slate-400 break-all">URL do feed: {{ urlFeed('google') }}</p>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="space-y-4 pt-6 border-t border-slate-200 dark:border-slate-800">
+          <p class="text-sm font-bold text-slate-900 dark:text-slate-100">Meta (Instagram/Facebook)</p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="text-xs font-semibold text-slate-500">Catalog ID</label>
+              <input type="text" [(ngModel)]="metaCatalogId" placeholder="123456789"
+                     class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-slate-500">Modo de envio</label>
+              <select [(ngModel)]="metaFeedModo" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none">
+                <option value="url">Feed por URL (mais simples)</option>
+                <option value="api">Catalog API (Token de sistema)</option>
+              </select>
+            </div>
+          </div>
+          @if (metaFeedModo === 'api') {
+            <div>
+              <label class="text-xs font-semibold text-slate-500">Token de sistema</label>
+              <input type="password" [(ngModel)]="metaTokenSistema" placeholder="Token de usuário de sistema com catalog_management"
+                     class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+            </div>
+          } @else {
+            <div>
+              <label class="text-xs font-semibold text-slate-500 inline-flex items-center gap-1">
+                Token do feed
+                <app-campo-hint texto="Vai como parte da URL que você cadastra no Catalog Manager — invente uma string aleatória."></app-campo-hint>
+              </label>
+              <input type="text" [(ngModel)]="metaFeedToken" placeholder="uma-string-secreta-qualquer"
+                     class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+              @if (metaFeedToken) {
+                <p class="mt-1 text-xs text-slate-400 break-all">URL do feed: {{ urlFeed('meta') }}</p>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="space-y-4 pt-6 border-t border-slate-200 dark:border-slate-800">
+          <p class="text-sm font-bold text-slate-900 dark:text-slate-100">Site</p>
+          <div>
+            <label class="text-xs font-semibold text-slate-500 inline-flex items-center gap-1">
+              URL base do site
+              <app-campo-hint texto="Usada pra montar o link de cada produto no feed (ex: https://loja.albatrozpapelaria.com.br). Deixe em branco até o site/vitrine existir."></app-campo-hint>
+            </label>
+            <input type="text" [(ngModel)]="siteBaseUrl" placeholder="https://loja.exemplo.com.br"
+                   class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+          </div>
+        </div>
+
+        <div class="pt-2">
+          <button type="button" (click)="salvarIntegracoes()" [disabled]="salvandoIntegracoes()"
+                  class="px-5 py-2.5 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all">
+            {{ salvandoIntegracoes() ? 'Salvando...' : 'Salvar' }}
+          </button>
+        </div>
+      </div>
+    </fieldset>}</div></div>

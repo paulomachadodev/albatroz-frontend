@@ -1,0 +1,108 @@
+<div class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark px-4 sm:px-6 lg:px-8 xl:px-10 py-6 lg:py-8"><div class="w-full space-y-8"><app-breadcrumb [itens]="[{label:'Configurações',rota:'/configuracoes'},{label:'Comercial e operação'},{label:'Listas de preço'}]" /><app-page-header titulo="Listas de preço" subtitulo="Configurações da empresa da sessão." ><a acoes routerLink="/configuracoes" class="text-sm text-primary hover:underline">Voltar às configurações</a></app-page-header>@if(carregando()){<p class="text-sm text-slate-500">Carregando configurações…</p>}@else{<fieldset [disabled]="!podeEditar()" class="min-w-0 space-y-6">
+      <div class="space-y-4">
+        <div class="flex items-center justify-between">
+          <p class="text-sm text-slate-500 dark:text-slate-400">
+            Listas de preço disponíveis pros produtos — a lista Padrão vem do Tiny (fixa), as demais calculam % sobre venda ou custo.
+          </p>
+          <button type="button" (click)="abrirNovaLista()"
+                  class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all flex items-center gap-1.5 shrink-0">
+            <span class="material-symbols-outlined text-base">add</span> Nova lista
+          </button>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+          <table class="w-full text-left">
+            <thead class="bg-slate-50 dark:bg-slate-800/50 text-xs font-semibold text-slate-500">
+              <tr>
+                <th class="px-6 py-4">Lista</th>
+                <th class="px-6 py-4">Tipo</th>
+                <th class="px-6 py-4">Cálculo</th>
+                <th class="px-6 py-4 text-right">Ações</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+              @if (carregandoListas()) {
+                <tr><td colspan="4" class="px-6 py-8 text-center text-sm text-slate-500">Carregando...</td></tr>
+              } @else if (listasPreco().length === 0) {
+                <tr><td colspan="4" class="px-6 py-8 text-center text-sm text-slate-500">Nenhuma lista cadastrada.</td></tr>
+              } @else {
+                @for (lista of listasPreco(); track lista.id) {
+                  <tr>
+                    <td class="px-6 py-4 text-sm font-bold text-slate-900 dark:text-slate-100">
+                      {{ lista.nome }}
+                      @if (lista.padrao) { <span class="ml-2 text-[10px] font-bold px-1.5 py-0.5 rounded bg-primary/10 text-primary uppercase">Padrão</span> }
+                      @if (!lista.ativo) { <span class="ml-2 text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-700 text-slate-500 uppercase">Inativa</span> }
+                    </td>
+                    <td class="px-6 py-4 text-sm text-slate-500 dark:text-slate-400 capitalize">{{ lista.tipo }}</td>
+                    <td class="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">
+                      @if (lista.modoCalculo === 'fixo') {
+                        Fixo (Tiny)
+                      } @else {
+                        {{ (lista.percentual ?? 0) >= 0 ? '+' : '' }}{{ lista.percentual }}% sobre {{ lista.modoCalculo === 'percentual_venda' ? 'venda' : 'custo' }}
+                      }
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                      <button (click)="abrirEditarLista(lista)" class="text-xs font-bold text-primary hover:underline">Editar</button>
+                    </td>
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+<app-modal [aberto]="modalListaAberto()" [titulo]="listaEditandoId ? 'Editar lista de preço' : 'Nova lista de preço'" tamanho="md" (fechar)="fecharModalLista()">
+  <div class="px-6 pb-6 space-y-4">
+    <div>
+      <label class="text-xs font-semibold text-slate-500">Nome</label>
+      <input type="text" [(ngModel)]="formLista.nome"
+             class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+    </div>
+    <div>
+      <label class="text-xs font-semibold text-slate-500">Tipo</label>
+      <select [(ngModel)]="formLista.tipo" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none">
+        <option value="empresa">Empresa</option>
+        <option value="escola">Escola</option>
+        <option value="site">Site</option>
+        <option value="marketplace">Marketplace</option>
+        <option value="outro">Outro</option>
+      </select>
+    </div>
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="text-xs font-semibold text-slate-500">Cálculo</label>
+        <select [(ngModel)]="formLista.modoCalculo" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none">
+          <option value="percentual_venda">Sobre preço de venda</option>
+          <option value="percentual_custo">Sobre preço de custo</option>
+        </select>
+      </div>
+      <div>
+        <label class="text-xs font-semibold text-slate-500 inline-flex items-center gap-1">
+          Percentual
+          <app-campo-hint texto="Positivo (Soma) = acréscimo sobre o preço base. Negativo (Diminui) = desconto. Aplicado sobre venda ou custo, conforme o Cálculo ao lado."></app-campo-hint>
+        </label>
+        <div class="mt-1 flex gap-2">
+          <select [(ngModel)]="formListaOperacao" (ngModelChange)="aoMudarOperacaoLista()" class="px-2 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none">
+            <option value="soma">+ Soma</option>
+            <option value="diminui">− Diminui</option>
+          </select>
+          <input type="number" step="0.01" min="0" [(ngModel)]="formListaPercentualAbsoluto"
+                 class="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+        </div>
+      </div>
+    </div>
+    @if (listaEditandoId) {
+      <label class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+        <input type="checkbox" [(ngModel)]="formLista.ativo" class="size-4 rounded"/> Lista ativa
+      </label>
+    }
+    <div class="flex justify-end gap-2 pt-2">
+      <button (click)="fecharModalLista()" class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm">Cancelar</button>
+      <button (click)="salvarLista()" [disabled]="salvandoLista()"
+              class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50">
+        {{ salvandoLista() ? 'Salvando...' : 'Salvar' }}
+      </button>
+    </div>
+  </div>
+</app-modal></fieldset>}</div></div>

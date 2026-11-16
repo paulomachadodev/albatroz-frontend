@@ -1,271 +1,236 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
-import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { NgTemplateOutlet } from '@angular/common';
+import { Component, ElementRef, HostListener, OnDestroy, computed, effect, inject, signal, untracked, viewChild } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { NavigationEnd, Router, RouterLink } from '@angular/router';
+import { filter } from 'rxjs';
+import { InputTextModule } from 'primeng/inputtext';
 import { AuthService } from '../../core/auth/auth.service';
 import { ThemeService } from '../../core/theme/theme.service';
 import { EmpresaFlagsService } from '../../core/empresa/empresa-flags.service';
-import { ToggleComponent } from '../../shared/components/toggle/toggle.component';
 import { LogoBadgeComponent } from '../../shared/components/logo-badge/logo-badge.component';
+import { ScrollLockService } from '../../shared/services/scroll-lock.service';
+import { ItemMenu, MENU_CATALOGO, encontrarPagina, filtrarMenu, listarPaginas, normalizarBusca } from './menu-catalogo';
 
-export interface ItemMenu {
-  label: string;
-  rota?:  string;
-  icone: string;
-  badge?: string;
-  permissao?: string;
-  apenasComTiny?: boolean;
-  subItens?: ItemMenu[];
+interface PreferenciasMenu {
+  recolhido: boolean;
+  expandidos: string[];
+  favoritos: string[];
+  recentes: string[];
 }
-
-export interface GrupoMenu {
-  titulo: string;
-  icone: string;
-  itens: ItemMenu[];
-}
-
-const CHAVE_LOCALSTORAGE_FIXADO = 'menu-fixado';
 
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, ToggleComponent, LogoBadgeComponent],
+  imports: [NgTemplateOutlet, RouterLink, InputTextModule, LogoBadgeComponent],
   templateUrl: './sidebar.component.html'
 })
-export class SidebarComponent implements OnInit {
-  private auth         = inject(AuthService);
-  private router       = inject(Router);
-  private empresaFlags = inject(EmpresaFlagsService);
-  theme = inject(ThemeService);
+export class SidebarComponent implements OnDestroy {
+  readonly auth = inject(AuthService);
+  readonly theme = inject(ThemeService);
+  private readonly router = inject(Router);
+  private readonly empresaFlags = inject(EmpresaFlagsService);
+  private readonly scrollLock = inject(ScrollLockService);
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly dialogo = viewChild<ElementRef<HTMLDialogElement>>('dialogoMobile');
+  private readonly buscaDesktop = viewChild<ElementRef<HTMLInputElement>>('buscaDesktop');
+  private ultimoFoco: HTMLElement | null = null;
+  private timerFoco?: ReturnType<typeof setTimeout>;
+  private scrollTravado = false;
+  readonly usuario = this.auth.usuario;
+  readonly url = signal(this.router.url);
+  readonly recolhido = signal(false);
+  readonly expandidos = signal<string[]>([]);
+  readonly favoritosIds = signal<string[]>([]);
+  readonly recentesIds = signal<string[]>([]);
+  readonly busca = signal('');
+  readonly recentesAbertos = signal(false);
+  readonly usuarioMenuAberto = signal(false);
+  readonly mobileAberto = signal(false);
+  readonly menu = computed(() => filtrarMenu(MENU_CATALOGO, chave => this.auth.temPermissao(chave), this.empresaFlags.tinyAtivo(), this.auth.podeAcessarDashboard()));
+  readonly modulos = computed(() => this.menu().filter(item => item.id !== 'configuracoes'));
+  readonly configuracoes = computed(() => this.menu().find(item => item.id === 'configuracoes'));
+  readonly paginas = computed(() => listarPaginas(this.menu()).filter((pagina, indice, paginas) => paginas.findIndex(candidata => candidata.item.rota === pagina.item.rota) === indice));
+  readonly paginaAtiva = computed(() => encontrarPagina(this.paginas(), this.url()));
+  readonly favoritos = computed(() => this.favoritosIds().flatMap(id => this.paginas().filter(p => p.item.id === id)).slice(0, 8));
+  readonly recentes = computed(() => this.recentesIds().flatMap(id => this.paginas().filter(p => p.item.id === id)).slice(0, 5));
+  readonly resultados = computed(() => {
+    const termos = normalizarBusca(this.busca()).split(/\s+/).filter(Boolean);
+    return termos.length ? this.paginas().filter(p => termos.every(termo => normalizarBusca(p.caminho).includes(termo))) : [];
+  });
+  readonly iniciais = computed(() => this.usuario()?.nome?.split(/\s+/).filter(Boolean).slice(0, 2).map(parte => parte[0]).join('').toUpperCase() ?? '?');
+  private readonly chavePreferencias = computed(() => {
+    const usuario = this.usuario();
+    const empresa = this.auth.empresaIdAtual();
+    return usuario && empresa ? `erp.menu.v2:${empresa}:${usuario.id}` : null;
+  });
 
-  fixado = signal(this.carregarFixado());
-  contextoHover = signal<string | null>(null);
-  menuMobileAberto = signal(false);
-
-  colunaAExpandida = computed(() => this.fixado() || this.contextoHover() !== null);
-
-  private expandidosPorItem = new Map<string, ReturnType<typeof signal<boolean>>>();
-
-  ngOnInit(): void {
+  constructor() {
     this.empresaFlags.carregar();
-  }
-
-  grupos: GrupoMenu[] = [
-    {
-      titulo: 'Visão geral',
-      icone: 'space_dashboard',
-      itens: [
-        { label: 'Dashboard',  rota: '/dashboard', icone: 'dashboard' }
-      ]
-    },
-    {
-      titulo: 'Cadastros',
-      icone: 'folder_open',
-      itens: [
-        { label: 'Produtos',     rota: '/produtos',            icone: 'inventory_2', permissao: 'produtos:ler' },
-        { label: 'Busca preço',  rota: '/produtos/busca-preco', icone: 'qr_code_scanner', permissao: 'produtos:ler' },
-        { label: 'Contatos',     rota: '/cadastros/contatos',  icone: 'contacts', permissao: 'contatos:ler' },
-        { label: 'Escolas',      rota: '/cadastros/escolas',   icone: 'apartment', permissao: 'cadastros:ler' },
-        { label: 'Séries',       rota: '/cadastros/series',    icone: 'auto_stories', permissao: 'cadastros:ler' }
-      ]
-    },
-    {
-      titulo: 'Operacional',
-      icone: 'bolt',
-      itens: [
-        { label: 'Orçamentos', rota: '/cotacoes/listas-escolares', icone: 'request_quote', permissao: 'cotacoes:ler' },
-        {
-          label: 'Estoque', icone: 'package_2',
-          subItens: [
-            { label: 'Dashboard', rota: '/estoque', icone: 'query_stats', permissao: 'estoque:ler' },
-            { label: 'Balanço', rota: '/balanco', icone: 'qr_code_scanner', permissao: 'estoque:ler', apenasComTiny: true }
-          ]
-        },
-        {
-          label: 'Compras', icone: 'shopping_cart',
-          subItens: [
-            { label: 'Relatório', rota: '/compras', icone: 'trending_up', permissao: 'compras:ler' },
-            { label: 'Fornecedores', rota: '/compras/fornecedores', icone: 'storefront', permissao: 'compras:ler' },
-            { label: 'Pedidos', rota: '/compras/pedidos', icone: 'receipt_long', permissao: 'compras:ler' },
-            { label: 'Entrada de Notas', rota: '/compras/notas-entrada', icone: 'inventory', permissao: 'compras:ler' },
-            { label: 'CT-e', rota: '/compras/ctes', icone: 'local_shipping', permissao: 'compras:ler' },
-            { label: 'Manifestação NF-e', rota: '/compras/manifestacao', icone: 'verified', permissao: 'compras:ler' }
-          ]
-        },
-        {
-          label: 'Vendas', icone: 'point_of_sale',
-          subItens: [
-            { label: 'Relatório', rota: '/vendas/relatorio-produtos', icone: 'trending_up', permissao: 'vendas:ler' }
-          ]
-        },
-        { label: 'Albia IA',   rota: '/albia',     icone: 'auto_awesome', badge: 'NOVO' }
-      ]
-    },
-    {
-      titulo: 'WhatsApp',
-      icone: 'forum',
-      itens: [
-        { label: 'Atendimentos', rota: '/whatsapp/atendimentos', icone: 'support_agent', permissao: 'atendimento:ler' }
-      ]
-    },
-    {
-      titulo: 'Financeiro',
-      icone: 'payments',
-      itens: [
-        { label: 'Cartões',          rota: '/financeiro/cartoes',       icone: 'credit_card', permissao: 'financeiro:ler' },
-        { label: 'Contas a Pagar',   rota: '/financeiro/contas-pagar',  icone: 'payments',         permissao: 'financeiro:ler' },
-        { label: 'Conciliação DDA',  rota: '/financeiro/dda',           icone: 'account_balance',  permissao: 'financeiro:ler' }
-      ]
-    },
-    {
-      titulo: 'Fiscal',
-      icone: 'receipt_long',
-      itens: [
-        { label: 'Naturezas de operação', rota: '/fiscal/naturezas-operacao', icone: 'gavel', permissao: 'configuracoes:ler' }
-      ]
-    },
-    {
-      titulo: 'Administração',
-      icone: 'admin_panel_settings',
-      itens: [
-        { label: 'Usuários',     rota: '/usuarios',     icone: 'group', permissao: 'usuarios:ler' },
-        { label: 'Perfis',       rota: '/perfis',       icone: 'shield', permissao: 'perfis:ler' },
-        { label: 'Relatórios',   rota: '/relatorios',   icone: 'bar_chart', permissao: 'relatorios:ler' },
-        { label: 'Dados da empresa', rota: '/configuracoes/dados-empresa', icone: 'business', permissao: 'configuracoes:ler' },
-        { label: 'Configurações',rota: '/configuracoes',icone: 'settings', permissao: 'configuracoes:ler' }
-      ]
-    },
-    {
-      titulo: 'Integrações',
-      icone: 'integration_instructions',
-      itens: [
-        { label: 'ERP Tiny', rota: '/integracoes/tiny', icone: 'dashboard', permissao: 'configuracoes:ler', apenasComTiny: true }
-      ]
-    }
-  ];
-
-  gruposVisiveis = computed<GrupoMenu[]>(() => {
-    const tinyAtivo = this.empresaFlags.flags()?.tinyAtivo ?? false;
-
-    const permitido = (item: ItemMenu): boolean => {
-      if (!item.permissao || this.auth.temPermissao(item.permissao)) {
-        return !item.apenasComTiny || tinyAtivo;
+    this.router.events.pipe(filter(evento => evento instanceof NavigationEnd), takeUntilDestroyed()).subscribe(evento => {
+      this.url.set(evento.urlAfterRedirects);
+      this.fecharMobile();
+      this.usuarioMenuAberto.set(false);
+      this.busca.set('');
+    });
+    effect(() => {
+      const chave = this.chavePreferencias();
+      untracked(() => {
+      const preferencias = this.lerPreferencias(chave);
+      this.recolhido.set(preferencias.recolhido);
+      this.expandidos.set(preferencias.expandidos);
+      this.favoritosIds.set(preferencias.favoritos);
+      this.recentesIds.set(preferencias.recentes);
+      this.busca.set('');
+      this.recentesAbertos.set(false);
+      this.usuarioMenuAberto.set(false);
+      this.fecharMobile();
+      });
+    });
+    effect(() => {
+      const pagina = this.paginaAtiva();
+      if (pagina) {
+        this.expandidos.update(ids => [...new Set([...ids, ...pagina.ancestrais])]);
+        this.recentesIds.update(ids => [pagina.item.id, ...ids.filter(id => id !== pagina.item.id)].slice(0, 5));
+        untracked(() => this.persistir());
       }
-      return false;
-    };
+    });
+  }
 
-    const filtrarItens = (itens: ItemMenu[]): ItemMenu[] =>
-      itens
-        .filter(permitido)
-        .map(item => item.subItens ? { ...item, subItens: filtrarItens(item.subItens) } : item)
-        .filter(item => !item.subItens || item.subItens.length > 0);
+  expandido(item: ItemMenu): boolean {
+    return this.expandidos().includes(item.id);
+  }
 
-    const ehAdministrador = this.usuario()?.perfis?.includes('Administrador') ?? false;
+  buscar(evento: Event): void {
+    this.busca.set((evento.target as HTMLInputElement).value);
+  }
 
-    return this.grupos
-      .filter(grupo => grupo.titulo !== 'Visão geral' || ehAdministrador)
-      .map(grupo => ({ ...grupo, itens: filtrarItens(grupo.itens) }))
-      .filter(grupo => grupo.itens.length > 0);
-  });
+  ativo(item: ItemMenu): boolean {
+    const pagina = this.paginaAtiva();
+    return pagina?.item.id === item.id || !!pagina?.ancestrais.includes(item.id);
+  }
 
-  grupoExibido = computed<GrupoMenu | null>(() => {
-    const titulo = this.contextoHover();
-    if (!titulo) return null;
-    return this.gruposVisiveis().find(g => g.titulo === titulo) ?? null;
-  });
-
-  usuario    = this.auth.usuario;
-  usuarioMenuAberto = signal(false);
-
-  iniciais = computed(() => {
-    const u = this.usuario();
-    if (!u?.nome) return '?';
-    const partes = u.nome.trim().split(/\s+/);
-    const ini = partes.length >= 2
-      ? partes[0][0] + partes[partes.length - 1][0]
-      : partes[0].slice(0, 2);
-    return ini.toUpperCase();
-  });
-
-  private carregarFixado(): boolean {
-    try {
-      return localStorage.getItem(CHAVE_LOCALSTORAGE_FIXADO) === 'true';
-    } catch {
-      return false;
+  alternarRamo(item: ItemMenu): void {
+    if (this.recolhido()) {
+      this.recolhido.set(false);
+      this.expandidos.update(ids => [...new Set([...ids, item.id])]);
+    } else {
+      this.expandidos.update(ids => ids.includes(item.id) ? ids.filter(id => id !== item.id) : [...ids, item.id]);
     }
+    this.persistir();
   }
 
-  alternarFixado(fixar: boolean): void {
-    this.fixado.set(fixar);
-    try { localStorage.setItem(CHAVE_LOCALSTORAGE_FIXADO, String(fixar)); } catch { }
+  alternarRecolhido(): void {
+    this.recolhido.update(valor => !valor);
+    this.usuarioMenuAberto.set(false);
+    this.busca.set('');
+    this.persistir();
   }
 
-  private timeoutFecharMenu?: ReturnType<typeof setTimeout>;
-
-  private cancelarFechamento(): void {
-    if (this.timeoutFecharMenu) {
-      clearTimeout(this.timeoutFecharMenu);
-      this.timeoutFecharMenu = undefined;
-    }
+  favorito(item: ItemMenu): boolean {
+    return this.favoritosIds().includes(item.id);
   }
 
-  aoHoverContexto(titulo: string): void {
-    this.cancelarFechamento();
-    this.contextoHover.set(titulo);
+  alternarRecentes(): void {
+    this.recentesAbertos.update(valor => !valor);
   }
 
-  aoEntrarAreaMenu(): void {
-    this.cancelarFechamento();
+  alternarUsuario(): void {
+    this.usuarioMenuAberto.update(valor => !valor);
   }
 
-  aoSairAreaMenu(): void {
-    this.cancelarFechamento();
-    this.timeoutFecharMenu = setTimeout(() => this.contextoHover.set(null), 150);
+  alternarFavorito(item: ItemMenu): void {
+    this.favoritosIds.update(ids => ids.includes(item.id) ? ids.filter(id => id !== item.id) : [...ids, item.id].slice(-8));
+    this.persistir();
   }
 
-  aoClicarItem(): void {
-    this.contextoHover.set(null);
-  }
-
-  abrirMenuMobile(): void {
-    this.menuMobileAberto.set(true);
-  }
-
-  fecharMenuMobile(): void {
-    this.menuMobileAberto.set(false);
-  }
-
-  toggleItem(label: string): void {
-    const sig = this.expandidosPorItem.get(label) ?? signal(true);
-    sig.set(!sig());
-    this.expandidosPorItem.set(label, sig);
-  }
-
-  itemExpandido(label: string): boolean {
-    const sig = this.expandidosPorItem.get(label);
-    return sig ? sig() : true;
-  }
-
-  toggleUsuarioMenu(): void {
-    this.usuarioMenuAberto.update(v => !v);
-  }
-
-  fecharUsuarioMenu(): void {
+  aoNavegar(): void {
+    this.busca.set('');
+    this.fecharMobile();
     this.usuarioMenuAberto.set(false);
   }
 
-  irParaMeuPerfil(): void {
-    this.fecharUsuarioMenu();
-    this.fecharMenuMobile();
-    this.router.navigate(['/meu-perfil']);
+  abrirMobile(): void {
+    const dialogo = this.dialogo()?.nativeElement;
+    if (!dialogo || dialogo.open) return;
+    this.ultimoFoco = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    dialogo.showModal();
+    this.mobileAberto.set(true);
+    this.scrollLock.travar();
+    this.scrollTravado = true;
   }
 
-  irParaConfiguracoes(): void {
-    this.fecharUsuarioMenu();
-    this.fecharMenuMobile();
-    this.router.navigate(['/configuracoes']);
+  fecharMobile(): void {
+    this.dialogo()?.nativeElement.close();
+    this.mobileAberto.set(false);
+    if (this.scrollTravado) this.scrollLock.destravar();
+    this.scrollTravado = false;
+    if (this.ultimoFoco?.isConnected) this.ultimoFoco.focus();
+    this.ultimoFoco = null;
+  }
+
+  aoClicarDialogo(evento: MouseEvent): void {
+    if (evento.target === this.dialogo()?.nativeElement) this.fecharMobile();
+  }
+
+  @HostListener('window:resize')
+  aoRedimensionar(): void {
+    if (window.matchMedia('(min-width: 768px)').matches && this.mobileAberto()) this.fecharMobile();
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  aoPressionarTecla(evento: KeyboardEvent): void {
+    if (evento.key === 'Escape') {
+      this.fecharMobile();
+      this.usuarioMenuAberto.set(false);
+      this.busca.set('');
+    }
+    if ((evento.ctrlKey || evento.metaKey) && evento.key.toLowerCase() === 'k') {
+      if (evento.target instanceof HTMLElement && evento.target.matches('input,textarea,[contenteditable="true"]')) return;
+      evento.preventDefault();
+      if (window.matchMedia('(max-width: 767px)').matches) this.abrirMobile();
+      else this.recolhido.set(false);
+      this.timerFoco = setTimeout(() => {
+        const input = this.mobileAberto() ? this.dialogo()?.nativeElement.querySelector<HTMLInputElement>('input') : this.buscaDesktop()?.nativeElement;
+        input?.focus();
+      });
+    }
+  }
+
+  @HostListener('document:click', ['$event'])
+  aoClicarFora(evento: MouseEvent): void {
+    if (evento.target instanceof Node && !this.host.nativeElement.contains(evento.target)) this.usuarioMenuAberto.set(false);
   }
 
   sair(): void {
+    this.fecharMobile();
     this.auth.logout();
-    this.router.navigate(['/login']);
+    void this.router.navigate(['/login']);
+  }
+
+  private lerPreferencias(chave: string | null): PreferenciasMenu {
+    const padrao: PreferenciasMenu = { recolhido: false, expandidos: [], favoritos: [], recentes: [] };
+    if (!chave) return padrao;
+    try {
+      const valor: Partial<PreferenciasMenu> = JSON.parse(localStorage.getItem(chave) ?? '{}');
+      const ids = (lista: unknown): string[] => Array.isArray(lista) ? lista.filter((id): id is string => typeof id === 'string').slice(0, 100) : [];
+      return { recolhido: valor.recolhido === true, expandidos: ids(valor.expandidos), favoritos: ids(valor.favoritos), recentes: ids(valor.recentes) };
+    } catch {
+      return padrao;
+    }
+  }
+
+  private persistir(): void {
+    const chave = this.chavePreferencias();
+    if (!chave) return;
+    try {
+      localStorage.setItem(chave, JSON.stringify({ recolhido: this.recolhido(), expandidos: this.expandidos(), favoritos: this.favoritosIds(), recentes: this.recentesIds() }));
+    } catch {
+      return;
+    }
+  }
+
+  ngOnDestroy(): void {
+    clearTimeout(this.timerFoco);
+    this.fecharMobile();
   }
 }

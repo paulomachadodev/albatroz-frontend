@@ -22,6 +22,5 @@ export const publicoGuard: CanActivateFn = () => {
 export const dashboardAccessGuard: CanActivateFn = () => {
   const auth = inject(AuthService);
   const router = inject(Router);
-  const ehAdministrador = auth.usuario()?.perfis?.includes('Administrador') ?? false;
-  return ehAdministrador ? true : router.createUrlTree(['/cadastros/contatos']);
+  return auth.podeAcessarDashboard() ? true : router.createUrlTree(['/cadastros/contatos']);
 };

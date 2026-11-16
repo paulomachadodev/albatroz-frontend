@@ -211,6 +211,10 @@ export class AuthService {
     return this._usuario()?.permissoes.includes(chave) ?? false;
   }
 
+  podeAcessarDashboard(): boolean {
+    return this._usuario()?.perfis.includes('Administrador') ?? false;
+  }
+
   empresaIdAtual(): number | null {
     const payload = this.decodeToken();
     if (!payload?.empresa_id) return null;

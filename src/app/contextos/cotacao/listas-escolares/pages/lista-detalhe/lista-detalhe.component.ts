@@ -13,12 +13,13 @@ import { ConfirmService } from '../../../../../core/feedback/confirm.service';
 import { SelectBuscaComponent, OpcaoSelectBusca } from '../../../../../shared/components/select-busca/select-busca.component';
 import { BtnIconeComponent } from '../../../../../shared/components/btn-icone/btn-icone.component';
 import { BreadcrumbComponent } from '../../../../../shared/components/breadcrumb/breadcrumb.component';
+import { SpinnerComponent } from '../../../../../shared/components/spinner/spinner.component';
 import { ModalComponent } from '../../../../../shared/components/modal/modal.component';
 
 @Component({
   selector: 'app-lista-detalhe',
   standalone: true,
-  imports: [FormsModule, SelectBuscaComponent, BtnIconeComponent, BreadcrumbComponent, ModalComponent],
+  imports: [FormsModule, SelectBuscaComponent, BtnIconeComponent, BreadcrumbComponent, ModalComponent, SpinnerComponent],
   templateUrl: './lista-detalhe.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })

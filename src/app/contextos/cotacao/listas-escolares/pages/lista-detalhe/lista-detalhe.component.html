@@ -265,7 +265,7 @@
       </div>
       <p class="mt-2 text-xs text-slate-400">
         @if (buscandoProduto()) {
-          Buscando...
+          &nbsp;
         } @else if (termoBusca.trim().length >= 2) {
           {{ resultadosBusca().length }} resultado(s)
         } @else {
@@ -274,7 +274,11 @@
       </p>
     </div>
 
-    @if (!buscandoProduto() && resultadosBusca().length === 0) {
+    @if (buscandoProduto()) {
+      <div class="py-16 flex justify-center">
+        <app-spinner tamanho="lg" label="Buscando produtos..."></app-spinner>
+      </div>
+    } @else if (resultadosBusca().length === 0) {
       <p class="py-10 text-center text-sm text-slate-400">Nenhum produto encontrado.</p>
     } @else {
       <ul class="space-y-2">

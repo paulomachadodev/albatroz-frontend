@@ -16,6 +16,7 @@ export interface GrupoConfiguracao {
 
 export const CONFIGURACOES_GRUPOS: GrupoConfiguracao[] = [
   { id: 'empresa', titulo: 'Empresa', destinos: [
+    { id: 'identidade-marca', titulo: 'Identidade da marca', descricao: 'Contexto, comunicação e identidade visual da empresa atual.', rota: '/configuracoes/identidade-marca', permissao: 'identidade_marca:ler', termos: 'logo marca cores paleta público segmento fontes tom voz' },
     { id: 'dados-empresa', titulo: 'Dados da empresa', descricao: 'Cadastro, endereço e contatos.', rota: '/configuracoes/dados-empresa', permissao: 'configuracoes:ler', termos: 'cnpj razão social nome fantasia' }
   ] },
   { id: 'pessoas', titulo: 'Administração', destinos: [

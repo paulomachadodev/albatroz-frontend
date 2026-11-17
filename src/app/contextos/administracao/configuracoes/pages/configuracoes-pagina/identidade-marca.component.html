@@ -1,0 +1,66 @@
+<div class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark px-4 sm:px-6 lg:px-8 xl:px-10 py-6 lg:py-8">
+  <div class="w-full space-y-8">
+    <app-breadcrumb [itens]="[{label:'Início',rota:'/dashboard'},{label:'Configurações',rota:'/configuracoes'},{label:'Identidade da marca'}]" />
+    <app-page-header titulo="Identidade da marca" subtitulo="Contexto e identidade visual da empresa atual.">
+      <button acoes type="button" (click)="carregar()" [disabled]="carregando() || salvando() || !acessoValido()" class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-sm font-bold disabled:opacity-50">Atualizar</button>
+    </app-page-header>
+    @if (carregando()) {
+      <div class="h-64 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 animate-pulse" aria-label="Carregando identidade"></div>
+    } @else if (dados(); as identidade) {
+      @if (!identidade.habilitado) {
+        <p role="status" class="text-sm text-slate-500">Configuração de identidade da marca indisponível.</p>
+      } @else {
+        <section class="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 flex flex-col sm:flex-row gap-5 items-start" aria-label="Referências do cadastro da empresa">
+          @if (logoSeguro(identidade.logoUrl); as logo) { <img [src]="logo" alt="Logotipo cadastrado da empresa atual" class="w-28 h-24 object-contain rounded-lg border border-slate-200 dark:border-slate-700 bg-white" referrerpolicy="no-referrer" /> }
+          <div class="min-w-0 space-y-2 text-sm">
+            <h2 class="font-bold">Cadastro da empresa</h2>
+            <p class="text-slate-500">Segmento cadastral: {{ identidade.segmentoCadastro || 'Não informado' }}.</p>
+            <p class="text-xs text-slate-500">O logotipo e o segmento cadastral são referências do cadastro da empresa. A identidade abaixo complementa essas informações.</p>
+            @if (!logoSeguro(identidade.logoUrl)) { <p class="text-xs text-slate-500">Nenhum logotipo disponível.</p> }
+            @if (podeAbrirCadastro()) { <a routerLink="/configuracoes/dados-empresa" class="text-xs font-semibold text-primary hover:underline">Abrir dados da empresa</a> }
+          </div>
+        </section>
+        @if (identidade.atualizadoEm) { <p class="text-xs text-slate-500">Última atualização: {{ identidade.atualizadoEm | date:'dd/MM/yyyy HH:mm:ss' }} local.</p> }
+        @if (!podeEditar()) { <p role="status" class="text-sm text-slate-500">Acesso somente para consulta.</p> }
+        @if (precisaAtualizar()) { <p role="alert" class="rounded-xl border border-amber-200 bg-amber-50 dark:bg-amber-950/20 px-4 py-3 text-sm text-amber-800 dark:text-amber-200">Não foi possível confirmar a gravação. Sua edição foi preservada. Atualize a consulta antes de salvar novamente.</p> }
+        <form [formGroup]="form" (ngSubmit)="salvar()" class="space-y-6">
+          <fieldset [disabled]="salvando() || !podeEditar()" class="space-y-6 min-w-0">
+            <section class="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 space-y-4" aria-labelledby="marca-contexto-titulo">
+              <h2 id="marca-contexto-titulo" class="font-bold">Contexto da marca</h2>
+              <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div><label for="marca-nome" class="text-xs font-semibold text-slate-500">Nome de divulgação *</label><input pInputText id="marca-nome" formControlName="nomeDivulgacao" maxlength="160" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm" /></div>
+                <div><label for="marca-segmentos" class="text-xs font-semibold text-slate-500">Segmentos e atividades</label><textarea id="marca-segmentos" formControlName="segmentos" rows="3" placeholder="Um item por linha" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm"></textarea></div>
+                <div><label for="marca-proposta" class="text-xs font-semibold text-slate-500">Proposta de valor</label><textarea id="marca-proposta" formControlName="propostaValor" rows="4" maxlength="4000" placeholder="O que diferencia a empresa e o valor que entrega" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm"></textarea></div>
+                <div><label for="marca-ofertas" class="text-xs font-semibold text-slate-500">Produtos e serviços oferecidos</label><textarea id="marca-ofertas" formControlName="ofertas" rows="4" maxlength="4000" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm"></textarea></div>
+                <div><label for="marca-publicos" class="text-xs font-semibold text-slate-500">Públicos</label><textarea id="marca-publicos" formControlName="publicos" rows="3" placeholder="Um item por linha" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm"></textarea></div>
+                <div><label for="marca-regioes" class="text-xs font-semibold text-slate-500">Regiões atendidas</label><textarea id="marca-regioes" formControlName="regioes" rows="3" placeholder="Um item por linha" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm"></textarea></div>
+              </div>
+              <p class="text-xs text-slate-500">Segmentos, públicos e regiões: até 20 itens por lista, de até 120 caracteres cada, sem repetição. Use uma linha por item.</p>
+            </section>
+            <section class="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 space-y-4" aria-labelledby="marca-comunicacao-titulo">
+              <h2 id="marca-comunicacao-titulo" class="font-bold">Comunicação</h2>
+              <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div><label for="marca-idioma" class="text-xs font-semibold text-slate-500">Idioma *</label><input pInputText id="marca-idioma" formControlName="idioma" maxlength="35" placeholder="pt-BR" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm" /></div>
+                <div><label for="marca-fuso" class="text-xs font-semibold text-slate-500">Fuso horário *</label><input pInputText id="marca-fuso" formControlName="fusoHorario" maxlength="100" placeholder="America/Sao_Paulo" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm" /></div>
+                <div><label for="marca-tom" class="text-xs font-semibold text-slate-500">Tom de voz</label><textarea id="marca-tom" formControlName="tomVoz" maxlength="1000" rows="4" placeholder="Como a marca se comunica" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm"></textarea></div>
+                <div><label for="marca-restricoes" class="text-xs font-semibold text-slate-500">Restrições de comunicação</label><textarea id="marca-restricoes" formControlName="restricoes" maxlength="4000" rows="4" placeholder="Termos, assuntos e alegações que devem ser evitados" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm"></textarea></div>
+              </div>
+            </section>
+            <section class="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 space-y-4" aria-labelledby="marca-visual-titulo">
+              <h2 id="marca-visual-titulo" class="font-bold">Identidade visual</h2>
+              <p class="text-xs text-slate-500">Preencha as cores conhecidas ou deixe em branco. Use o formato #RRGGBB.</p>
+              <div formGroupName="cores" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                @for (cor of cores; track cor.campo) {
+                  <div><label [for]="'marca-cor-' + cor.campo" class="text-xs font-semibold text-slate-500">{{ cor.rotulo }}</label><div class="mt-1 flex items-center gap-2"><span class="size-8 shrink-0 rounded-lg border border-slate-300 dark:border-slate-600" [style.backgroundColor]="corPreview(form.controls.cores.controls[cor.campo].value)" aria-hidden="true"></span><input pInputText [id]="'marca-cor-' + cor.campo" [formControlName]="cor.campo" maxlength="7" placeholder="#RRGGBB" class="w-full min-w-0 rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm" /></div></div>
+                }
+              </div>
+              <div><label for="marca-fontes" class="text-xs font-semibold text-slate-500">Fontes e alternativas autorizadas</label><input pInputText id="marca-fontes" formControlName="fontes" maxlength="500" placeholder="Nomes e orientações de uso das fontes da marca" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm" /></div>
+            </section>
+          </fieldset>
+          @if (form.invalid && form.touched) { <p role="alert" class="text-sm text-red-600">Revise o nome, o idioma, o fuso e as cores no formato #RRGGBB, além dos limites de texto.</p> }
+          @if (podeEditar()) { <div class="flex justify-end"><button type="submit" [disabled]="salvando() || form.invalid || !disponivel() || precisaAtualizar()" class="px-4 py-2 rounded-lg bg-primary text-white text-sm font-bold disabled:opacity-50">{{ salvando() ? 'Salvando...' : 'Salvar identidade' }}</button></div> }
+        </form>
+      }
+    }
+  </div>
+</div>

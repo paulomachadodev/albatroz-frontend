@@ -5,6 +5,7 @@ import { configuracaoAlteradaGuard } from './pages/configuracoes-pagina/configur
 const editarConfiguracao = { canActivate: [permissaoGuard], canDeactivate: [configuracaoAlteradaGuard], data: { permissao: 'configuracoes:ler' } };
 
 export const CONFIGURACOES_ROUTES: Routes = [
+  { path: 'identidade-marca', canActivate: [permissaoGuard], canDeactivate: [configuracaoAlteradaGuard], data: { permissao: 'identidade_marca:ler' }, title: 'Identidade da marca', loadComponent: () => import('./pages/configuracoes-pagina/identidade-marca.component').then(m => m.IdentidadeMarcaComponent) },
   { path: 'ia/limites', canActivate: [permissaoGuard], canDeactivate: [configuracaoAlteradaGuard], data: { permissao: 'ia_configuracoes:ler' }, title: 'Limites de IA', loadComponent: () => import('./pages/configuracoes-pagina/ia-limites.component').then(m => m.IaLimitesComponent) },
   { path: 'ia/consumo', canActivate: [permissaoGuard], data: { permissao: 'ia_consumo:ler' }, title: 'Consumo de IA', loadComponent: () => import('./pages/configuracoes-pagina/ia-consumo.component').then(m => m.IaConsumoComponent) },
   { path: 'ia/validacoes', canActivate: [permissaoGuard], data: { permissao: 'ia_configuracoes:ler' }, title: 'Histórico de validações Google', loadComponent: () => import('./pages/configuracoes-pagina/ia-validacoes.component').then(m => m.IaValidacoesComponent) },

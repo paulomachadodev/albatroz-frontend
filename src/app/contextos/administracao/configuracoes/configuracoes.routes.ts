@@ -5,6 +5,7 @@ import { configuracaoAlteradaGuard } from './pages/configuracoes-pagina/configur
 const editarConfiguracao = { canActivate: [permissaoGuard], canDeactivate: [configuracaoAlteradaGuard], data: { permissao: 'configuracoes:ler' } };
 
 export const CONFIGURACOES_ROUTES: Routes = [
+  { path: 'ia/consumo', canActivate: [permissaoGuard], data: { permissao: 'ia_consumo:ler' }, title: 'Consumo de IA', loadComponent: () => import('./pages/configuracoes-pagina/ia-consumo.component').then(m => m.IaConsumoComponent) },
   { path: 'ia/validacoes', canActivate: [permissaoGuard], data: { permissao: 'ia_configuracoes:ler' }, title: 'Histórico de validações Google', loadComponent: () => import('./pages/configuracoes-pagina/ia-validacoes.component').then(m => m.IaValidacoesComponent) },
   { path: '', pathMatch: 'full', title: 'Configurações', loadComponent: () => import('./pages/configuracoes-pagina/configuracoes-pagina.component').then(m => m.ConfiguracoesPaginaComponent) },
   { path: 'ia', ...editarConfiguracao, data: { permissao: 'ia_configuracoes:ler' }, title: 'Inteligência artificial', loadComponent: () => import('./pages/configuracoes-pagina/ia-configuracao.component').then(m => m.IaConfiguracaoComponent) },

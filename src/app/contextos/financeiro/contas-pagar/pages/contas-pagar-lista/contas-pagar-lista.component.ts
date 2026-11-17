@@ -1,3 +1,4 @@
+import { dataCalendarioLocal } from '../../../../../shared/utils/data-local.util';
 import { Component, OnInit, signal } from '@angular/core';
 import { formatDate } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -171,6 +172,6 @@ export class ContasPagarListaComponent implements OnInit {
   }
 
   private hoje(): string {
-    return new Date().toISOString().substring(0, 10);
+    return dataCalendarioLocal();
   }
 }

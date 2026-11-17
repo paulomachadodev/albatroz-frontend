@@ -1,3 +1,4 @@
+import { dataCalendarioLocal } from '../../../../shared/utils/data-local.util';
 import { Component, OnInit, OnDestroy, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -190,7 +191,7 @@ export class FaturaUploadComponent implements OnInit, OnDestroy {
   adicionarLinha() {
     this.despesas.update(list => [...list, {
       idFatura: 0,
-      dataCompra: new Date().toISOString().split('T')[0],
+      dataCompra: dataCalendarioLocal(),
       descricaoOriginal: '',
       valor: 0,
       parcelaAtual: 1,

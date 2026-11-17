@@ -77,7 +77,7 @@ describe('Consumo de IA', () => {
     const pagina = await harness.navigateByUrl('/configuracoes/ia/consumo', IaConsumoComponent);
     pagina.form.setValue({ inicio: '2026-01-01', fim: '2026-02-01', finalidade: 'validacao_google', modelo: ' gemini-2.5-flash-lite ', status: 2 });
     pagina.aplicar();
-    expect(api.get.calls.mostRecent().args[1]).toEqual({ inicio: '2026-01-01T00:00:00.000Z', fim: '2026-02-01T00:00:00.000Z', pagina: 1, tamanhoPagina: 10, finalidade: 'validacao_google', modelo: 'gemini-2.5-flash-lite', status: 2 });
+    expect(api.get.calls.mostRecent().args[1]).toEqual({ inicio: new Date(2026, 0, 1).toISOString(), fim: new Date(2026, 1, 1).toISOString(), pagina: 1, tamanhoPagina: 10, finalidade: 'validacao_google', modelo: 'gemini-2.5-flash-lite', status: 2 });
     pagina.form.controls.modelo.setValue('outro');
     pagina.mudarPagina(2);
     expect(api.get.calls.mostRecent().args[1].modelo).toBe('gemini-2.5-flash-lite');

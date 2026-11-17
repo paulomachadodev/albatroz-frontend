@@ -186,9 +186,9 @@
               </span>
             } @else { <span class="text-slate-300">0</span> }
           </td>
-          <td class="px-6 py-4 text-sm text-slate-500">{{ item.inicio | date:'dd/MM/yyyy HH:mm':'America/Sao_Paulo' }}</td>
+          <td class="px-6 py-4 text-sm text-slate-500">{{ item.inicio | date:'dd/MM/yyyy HH:mm' }}</td>
           <td class="px-6 py-4 text-sm text-slate-500">
-            @if (item.fim) { {{ item.fim | date:'dd/MM/yyyy HH:mm':'America/Sao_Paulo' }} } @else {
+            @if (item.fim) { {{ item.fim | date:'dd/MM/yyyy HH:mm' }} } @else {
               <span class="px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400">em andamento</span>
             }
           </td>
@@ -269,7 +269,7 @@
               <span class="px-2 py-0.5 rounded-full text-[10px] font-bold" [ngClass]="classeRotuloRemetente(msg.quem)">
                 {{ rotuloRemetente(msg.quem) }}
               </span>
-              <span class="text-[10px] text-slate-400">{{ msg.dataHora | date:'dd/MM HH:mm':'America/Sao_Paulo' }}</span>
+              <span class="text-[10px] text-slate-400">{{ msg.dataHora | date:'dd/MM HH:mm' }}</span>
             </div>
             <p class="text-sm whitespace-pre-wrap" [innerHTML]="formatarMensagem(msg.mensagem)"></p>
           </div>

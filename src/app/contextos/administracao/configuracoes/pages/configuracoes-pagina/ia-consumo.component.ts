@@ -1,3 +1,4 @@
+import { dataCalendarioLocal, lerDataLocal } from '../../../../../shared/utils/data-local.util';
 import { Component, DestroyRef, computed, effect, inject, signal } from '@angular/core';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
@@ -31,8 +32,8 @@ export class IaConsumoComponent {
   private readonly empresaInicial = this.auth.empresaIdAtual();
   private consulta?: Subscription;
   private readonly hoje = new Date();
-  private readonly inicioPadrao = new Date(Date.UTC(this.hoje.getUTCFullYear(), this.hoje.getUTCMonth(), 1)).toISOString().slice(0, 10);
-  private readonly fimPadrao = new Date(Date.UTC(this.hoje.getUTCFullYear(), this.hoje.getUTCMonth() + 1, 1)).toISOString().slice(0, 10);
+  private readonly inicioPadrao = dataCalendarioLocal(new Date(this.hoje.getFullYear(), this.hoje.getMonth(), 1));
+  private readonly fimPadrao = dataCalendarioLocal(new Date(this.hoje.getFullYear(), this.hoje.getMonth() + 1, 1));
   readonly form = inject(FormBuilder).nonNullable.group({ inicio: this.inicioPadrao, fim: this.fimPadrao, finalidade: '', modelo: '', status: 0 });
   readonly dados = signal<IaConsumo | null>(null);
   readonly carregando = signal(true);
@@ -65,10 +66,10 @@ export class IaConsumoComponent {
 
   aplicar(): void {
     const periodo = this.form.getRawValue();
-    const inicio = this.dataUtc(periodo.inicio);
-    const fim = this.dataUtc(periodo.fim);
+    const inicio = lerDataLocal(periodo.inicio);
+    const fim = lerDataLocal(periodo.fim);
     if (!inicio || !fim || fim <= inicio || fim.getTime() - inicio.getTime() > 366 * 86400000) {
-      this.toast.aviso('Período inválido.', 'Informe datas UTC válidas, com fim posterior ao início e até 366 dias.');
+      this.toast.aviso('Período inválido.', 'Informe datas locais válidas, com fim posterior ao início e até 366 dias.');
       return;
     }
     this.periodoAplicado = periodo;
@@ -107,18 +108,13 @@ export class IaConsumoComponent {
     }
   }
 
-  private dataUtc(valor: string): Date | null {
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(valor)) return null;
-    const data = new Date(`${valor}T00:00:00.000Z`);
-    return Number.isFinite(data.getTime()) && data.toISOString().slice(0, 10) === valor ? data : null;
-  }
 
   private carregar(): void {
     this.consulta?.unsubscribe();
     if (!this.contextoValido()) return;
     this.carregando.set(true);
     this.dados.set(null);
-    this.consulta = this.service.listar({ inicio: `${this.periodoAplicado.inicio}T00:00:00.000Z`, fim: `${this.periodoAplicado.fim}T00:00:00.000Z`, pagina: this.pagina(), tamanhoPagina: this.tamanhoPagina(), ...(this.periodoAplicado.finalidade && { finalidade: this.periodoAplicado.finalidade }), ...(this.periodoAplicado.modelo.trim() && { modelo: this.periodoAplicado.modelo.trim() }), ...(this.periodoAplicado.status && { status: this.periodoAplicado.status }) })
+    this.consulta = this.service.listar({ inicio: lerDataLocal(this.periodoAplicado.inicio)!.toISOString(), fim: lerDataLocal(this.periodoAplicado.fim)!.toISOString(), pagina: this.pagina(), tamanhoPagina: this.tamanhoPagina(), ...(this.periodoAplicado.finalidade && { finalidade: this.periodoAplicado.finalidade }), ...(this.periodoAplicado.modelo.trim() && { modelo: this.periodoAplicado.modelo.trim() }), ...(this.periodoAplicado.status && { status: this.periodoAplicado.status }) })
       .pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: resposta => {
           if (!this.contextoValido()) return;

@@ -45,7 +45,7 @@ describe('Histórico de validações Google', () => {
     const harness = await RouterTestingHarness.create();
     const pagina = await harness.navigateByUrl('/configuracoes/ia/validacoes', IaValidacoesComponent);
     expect(api.get.calls.mostRecent().args[0]).toBe('/v1/configuracoes/ia/validacoes');
-    expect(api.get.calls.mostRecent().args[1].inicio).toMatch(/T00:00:00.000Z$/);
+    expect(new Date(api.get.calls.mostRecent().args[1].inicio).getHours()).toBe(0);
     expect(pagina.totalPaginas()).toBe(6);
     const texto = harness.routeNativeElement?.textContent ?? '';
     expect(texto).toContain('Não informado');
@@ -60,10 +60,10 @@ describe('Histórico de validações Google', () => {
     const pagina = await harness.navigateByUrl('/configuracoes/ia/validacoes', IaValidacoesComponent);
     pagina.form.setValue({ inicio: '2026-01-01', fim: '2026-02-01' });
     pagina.aplicar();
-    expect(api.get.calls.mostRecent().args[1]).toEqual({ inicio: '2026-01-01T00:00:00.000Z', fim: '2026-02-01T00:00:00.000Z', pagina: 1, tamanhoPagina: 10 });
+    expect(api.get.calls.mostRecent().args[1]).toEqual({ inicio: new Date(2026, 0, 1).toISOString(), fim: new Date(2026, 1, 1).toISOString(), pagina: 1, tamanhoPagina: 10 });
     pagina.form.controls.inicio.setValue('2026-01-20');
     pagina.mudarPagina(2);
-    expect(api.get.calls.mostRecent().args[1].inicio).toBe('2026-01-01T00:00:00.000Z');
+    expect(api.get.calls.mostRecent().args[1].inicio).toBe(new Date(2026, 0, 1).toISOString());
     expect(api.get.calls.mostRecent().args[1].pagina).toBe(2);
     pagina.mudarTamanho(50);
     expect(api.get.calls.mostRecent().args[1].pagina).toBe(1);

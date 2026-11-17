@@ -2,7 +2,7 @@
   <div class="w-full space-y-8">
     <app-breadcrumb [itens]="[{label:'Início',rota:'/dashboard'},{label:'Configurações',rota:'/configuracoes'},{label:'Consumo de IA'}]" />
     <app-page-header titulo="Consumo de IA" subtitulo="Requisições medidas e custos calculados da empresa atual." />
-    <p class="text-sm text-slate-500">Cobertura: somente validações da chave Google. O custo usa tarifa pública em USD e não representa a fatura do Google. Datas em UTC, início inclusivo e fim exclusivo.</p>
+    <p class="text-sm text-slate-500">Cobertura: somente validações da chave Google. O custo usa tarifa pública em USD e não representa a fatura do Google. Datas e períodos no horário local, início inclusivo e fim exclusivo.</p>
     @if (carregando()) {
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4" aria-label="Carregando resumo">
         @for (item of [1,2,3]; track item) { <div class="h-36 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 animate-pulse"></div> }
@@ -29,13 +29,13 @@
             <p class="text-xs text-slate-500">{{ consumo.resumo.semUsoInformado | number }} sem uso completo informado.</p>
           </div>
         </div>
-        <p class="text-xs text-slate-500">Período: {{ consumo.inicioUtc | date:'dd/MM/yyyy':'UTC' }} até {{ consumo.fimUtc | date:'dd/MM/yyyy':'UTC' }} (exclusivo). Resumo de todas as páginas e filtros aplicados. Consulta: {{ consumo.atualizadoEmUtc | date:'dd/MM/yyyy HH:mm:ss':'UTC' }} UTC. Cache já integra a entrada; raciocínio não deve ser somado novamente.</p>
+        <p class="text-xs text-slate-500">Período: {{ consumo.inicioUtc | date:'dd/MM/yyyy' }} até {{ consumo.fimUtc | date:'dd/MM/yyyy' }} (exclusivo). Resumo de todas as páginas e filtros aplicados. Consulta: {{ consumo.atualizadoEmUtc | date:'dd/MM/yyyy HH:mm:ss' }} local. Cache já integra a entrada; raciocínio não deve ser somado novamente.</p>
       }
     }
     <app-listagem-paginada [itens]="dados()?.itens ?? []" [carregando]="carregando()" [totalRegistros]="dados()?.total ?? 0" [paginaAtual]="pagina()" [totalPaginas]="totalPaginas()" [tamanhoPagina]="tamanhoPagina()" tituloVazio="Nenhuma requisição medida no período e filtros consultados." (paginaMudou)="mudarPagina($event)" (tamanhoPaginaMudou)="mudarTamanho($event)">
       <form filtros [formGroup]="form" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4" (ngSubmit)="aplicar()">
-        <div><label for="consumo-inicio" class="text-xs font-semibold text-slate-500">Início (UTC)</label><input pInputText id="consumo-inicio" type="date" formControlName="inicio" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm" /></div>
-        <div><label for="consumo-fim" class="text-xs font-semibold text-slate-500">Fim exclusivo (UTC)</label><input pInputText id="consumo-fim" type="date" formControlName="fim" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm" /></div>
+        <div><label for="consumo-inicio" class="text-xs font-semibold text-slate-500">Início (local)</label><input pInputText id="consumo-inicio" type="date" formControlName="inicio" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm" /></div>
+        <div><label for="consumo-fim" class="text-xs font-semibold text-slate-500">Fim exclusivo (local)</label><input pInputText id="consumo-fim" type="date" formControlName="fim" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm" /></div>
         <div class="lg:col-span-2"><label for="consumo-modelo" class="text-xs font-semibold text-slate-500">Modelo</label><input pInputText id="consumo-modelo" formControlName="modelo" maxlength="120" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm" /></div>
         <div><label for="consumo-finalidade" class="text-xs font-semibold text-slate-500">Finalidade</label><p-select inputId="consumo-finalidade" formControlName="finalidade" [options]="finalidades" optionLabel="rotulo" optionValue="valor" appendTo="body" [unstyled]="true" [pt]="selectPt" class="block mt-1" /></div>
         <div><label for="consumo-status" class="text-xs font-semibold text-slate-500">Resultado</label><p-select inputId="consumo-status" formControlName="status" [options]="resultados" optionLabel="rotulo" optionValue="valor" appendTo="body" [unstyled]="true" [pt]="selectPt" class="block mt-1" /></div>
@@ -44,7 +44,7 @@
       <ng-template #cabecalho><tr><th class="px-4 py-4">Data / finalidade</th><th class="px-4 py-4">Modelo / resultado</th><th class="px-4 py-4">Tokens</th><th class="px-4 py-4">Custo / tarifa</th></tr></ng-template>
       <ng-template #linha let-item>
         <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-          <td class="px-4 py-4">{{ item.iniciadoEmUtc | date:'dd/MM/yyyy HH:mm:ss':'UTC' }} UTC<span class="block text-xs text-slate-500">{{ item.finalidade === 'validacao_google' ? 'Validação Google' : item.finalidade }} · tentativa {{ item.numeroTentativa }}</span></td>
+          <td class="px-4 py-4">{{ item.iniciadoEmUtc | date:'dd/MM/yyyy HH:mm:ss' }} local<span class="block text-xs text-slate-500">{{ item.finalidade === 'validacao_google' ? 'Validação Google' : item.finalidade }} · tentativa {{ item.numeroTentativa }}</span></td>
           <td class="px-4 py-4 break-all">{{ item.modeloEfetivo ?? item.modeloSolicitado }}<span class="block text-xs text-slate-500">{{ status(item.status) }} · HTTP {{ item.httpStatus ?? 'não informado' }}</span></td>
           <td class="px-4 py-4">Entrada: {{ item.tokensEntrada === null ? 'Não informado' : (item.tokensEntrada | number) }}<br />Saída: {{ item.tokensSaida === null ? 'Não informado' : (item.tokensSaida | number) }}<span class="block text-xs text-slate-500">Raciocínio: {{ item.tokensThinking === null ? 'Não informado' : (item.tokensThinking | number) }} · Cache: {{ item.tokensCache === null ? 'Não informado' : (item.tokensCache | number) }}</span></td>
           <td class="px-4 py-4 break-all">{{ custo(item.custoUsd) }}<span class="block text-xs text-slate-500">{{ item.tarifaVersao ?? 'Sem tarifa aplicada' }}</span>@if (fonte(item.tarifaFonte); as url) { <a [href]="url" target="_blank" rel="noopener noreferrer" class="text-xs text-primary hover:underline">Fonte da tarifa</a> }</td>
@@ -52,7 +52,7 @@
       </ng-template>
       <ng-template #linhaMobile let-item>
         <div class="p-4 space-y-2 text-sm">
-          <p class="font-semibold">{{ status(item.status) }} · {{ item.iniciadoEmUtc | date:'dd/MM/yyyy HH:mm:ss':'UTC' }} UTC</p>
+          <p class="font-semibold">{{ status(item.status) }} · {{ item.iniciadoEmUtc | date:'dd/MM/yyyy HH:mm:ss' }} local</p>
           <p class="break-all">{{ item.modeloEfetivo ?? item.modeloSolicitado }}</p>
           <p>{{ item.finalidade === 'validacao_google' ? 'Validação Google' : item.finalidade }} · tentativa {{ item.numeroTentativa }} · HTTP {{ item.httpStatus ?? 'não informado' }}</p>
           <p>Entrada: {{ item.tokensEntrada === null ? 'Não informado' : (item.tokensEntrada | number) }} · Saída: {{ item.tokensSaida === null ? 'Não informado' : (item.tokensSaida | number) }}</p>

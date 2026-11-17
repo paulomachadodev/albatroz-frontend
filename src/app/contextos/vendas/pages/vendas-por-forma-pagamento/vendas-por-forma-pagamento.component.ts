@@ -72,7 +72,7 @@ export class VendasPorFormaPagamentoComponent implements OnInit {
 
   formatarData(valor: string): string {
     try {
-      return formatDate(valor, 'dd/MM/yyyy', 'pt-BR', 'America/Sao_Paulo');
+      return formatDate(valor, 'dd/MM/yyyy', 'pt-BR');
     } catch {
       return '-';
     }

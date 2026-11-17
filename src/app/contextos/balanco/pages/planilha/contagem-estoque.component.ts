@@ -161,7 +161,7 @@ export class ContagemEstoqueComponent implements OnInit {
       'EstoqueContado (preencher)': ''
     }));
 
-    const carimbo = formatDate(new Date(), 'yyyyMMdd_HHmm', 'pt-BR', 'America/Sao_Paulo');
+    const carimbo = formatDate(new Date(), 'yyyyMMdd_HHmm', 'pt-BR');
     const larguras = [12, 18, 45, 16, 24];
     exportarPlanilha(linhas, `contagem-estoque_${carimbo}`, 'Contagem', 'xlsx', larguras);
     this.toast.sucesso('Planilha exportada.', `${linhas.length} produto(s) na lista.`);
@@ -229,7 +229,7 @@ export class ContagemEstoqueComponent implements OnInit {
   formatarDataHora(valor: string | null): string {
     if (!valor) return 'Nunca contado';
     try {
-      return formatDate(valor, 'dd/MM/yyyy', 'pt-BR', 'America/Sao_Paulo');
+      return formatDate(valor, 'dd/MM/yyyy', 'pt-BR');
     } catch {
       return '-';
     }

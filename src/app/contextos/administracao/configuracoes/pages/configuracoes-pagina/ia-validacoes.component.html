@@ -2,7 +2,7 @@
   <div class="w-full space-y-8">
     <app-breadcrumb [itens]="[{label:'Início',rota:'/dashboard'},{label:'Configurações',rota:'/configuracoes'},{label:'Histórico de validações Google'}]" />
     <app-page-header titulo="Histórico de validações Google" subtitulo="Tentativas de validação de credenciais da empresa atual e tokens informados pelo Google." />
-    <p class="text-sm text-slate-500">Este histórico cobre somente as validações da chave Google. Datas e períodos em UTC. O fim do período é exclusivo. Cache já integra a entrada; raciocínio é exibido separadamente, sem somar novamente os tokens.</p>
+    <p class="text-sm text-slate-500">Este histórico cobre somente as validações da chave Google. Datas e períodos no horário local. O fim do período é exclusivo. Cache já integra a entrada; raciocínio é exibido separadamente, sem somar novamente os tokens.</p>
     @if (carregando()) {
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4" aria-label="Carregando resumo">
         @for (item of [1,2,3]; track item) {
@@ -30,22 +30,22 @@
           <div class="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 space-y-2">
             <p class="text-sm text-slate-500">Custo</p>
             <p class="text-xl font-bold">Apuração pendente</p>
-            <p class="text-xs text-slate-500">Última consulta: {{ historico.atualizadoEmUtc | date:'dd/MM/yyyy HH:mm:ss':'UTC' }} UTC</p>
+            <p class="text-xs text-slate-500">Última consulta: {{ historico.atualizadoEmUtc | date:'dd/MM/yyyy HH:mm:ss' }} local</p>
           </div>
         </div>
-        <p class="text-xs text-slate-500">Período consultado: {{ historico.inicioUtc | date:'dd/MM/yyyy':'UTC' }} até {{ historico.fimUtc | date:'dd/MM/yyyy':'UTC' }} (exclusivo), UTC. O resumo considera todas as páginas.</p>
+        <p class="text-xs text-slate-500">Período consultado: {{ historico.inicioUtc | date:'dd/MM/yyyy' }} até {{ historico.fimUtc | date:'dd/MM/yyyy' }} (exclusivo), local. O resumo considera todas as páginas.</p>
       }
     }
     <app-listagem-paginada [itens]="dados()?.itens ?? []" [carregando]="carregando()" [totalRegistros]="dados()?.total ?? 0" [paginaAtual]="pagina()" [totalPaginas]="totalPaginas()" [tamanhoPagina]="tamanhoPagina()" tituloVazio="Nenhuma validação encontrada no período." (paginaMudou)="mudarPagina($event)" (tamanhoPaginaMudou)="mudarTamanho($event)">
       <form filtros [formGroup]="form" class="grid grid-cols-1 sm:grid-cols-2 gap-4" (ngSubmit)="aplicar()">
-        <div><label for="validacoes-inicio" class="text-xs font-semibold text-slate-500">Início (UTC, inclusivo)</label><input pInputText id="validacoes-inicio" type="date" formControlName="inicio" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm" /></div>
-        <div><label for="validacoes-fim" class="text-xs font-semibold text-slate-500">Fim (UTC, exclusivo)</label><input pInputText id="validacoes-fim" type="date" formControlName="fim" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm" /></div>
+        <div><label for="validacoes-inicio" class="text-xs font-semibold text-slate-500">Início (local, inclusivo)</label><input pInputText id="validacoes-inicio" type="date" formControlName="inicio" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm" /></div>
+        <div><label for="validacoes-fim" class="text-xs font-semibold text-slate-500">Fim (local, exclusivo)</label><input pInputText id="validacoes-fim" type="date" formControlName="fim" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm" /></div>
       </form>
       <div filtrosBotoes class="flex justify-end mt-4"><button type="button" (click)="aplicar()" [disabled]="carregando() || !contextoValido()" class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm disabled:opacity-50">Consultar</button></div>
-      <ng-template #cabecalho><tr><th class="px-6 py-4">Data (UTC)</th><th class="px-6 py-4">Modelo</th><th class="px-6 py-4">Resultado</th><th class="px-6 py-4">Entrada / saída</th><th class="px-6 py-4">Raciocínio / cache</th><th class="px-6 py-4">Custo</th></tr></ng-template>
+      <ng-template #cabecalho><tr><th class="px-6 py-4">Data (local)</th><th class="px-6 py-4">Modelo</th><th class="px-6 py-4">Resultado</th><th class="px-6 py-4">Entrada / saída</th><th class="px-6 py-4">Raciocínio / cache</th><th class="px-6 py-4">Custo</th></tr></ng-template>
       <ng-template #linha let-item>
         <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-          <td class="px-6 py-4 whitespace-nowrap">{{ item.criadoEmUtc | date:'dd/MM/yyyy HH:mm:ss':'UTC' }}</td>
+          <td class="px-6 py-4 whitespace-nowrap">{{ item.criadoEmUtc | date:'dd/MM/yyyy HH:mm:ss' }}</td>
           <td class="px-6 py-4 break-words">{{ item.modeloEfetivo ?? item.modelo }}</td>
           <td class="px-6 py-4">{{ status(item.status) }}<span class="block text-xs text-slate-500">HTTP {{ item.httpStatus ?? 'não informado' }}</span></td>
           <td class="px-6 py-4">{{ item.tokensEntrada === null ? 'Não informado' : (item.tokensEntrada | number) }} / {{ item.tokensSaida === null ? 'Não informado' : (item.tokensSaida | number) }}</td>
@@ -55,7 +55,7 @@
       </ng-template>
       <ng-template #linhaMobile let-item>
         <div class="p-4 space-y-2 text-sm">
-          <p class="font-semibold">{{ status(item.status) }} · {{ item.criadoEmUtc | date:'dd/MM/yyyy HH:mm:ss':'UTC' }} UTC</p>
+          <p class="font-semibold">{{ status(item.status) }} · {{ item.criadoEmUtc | date:'dd/MM/yyyy HH:mm:ss' }} local</p>
           <p class="break-all">{{ item.modeloEfetivo ?? item.modelo }}</p>
           <p>HTTP {{ item.httpStatus ?? 'não informado' }} · Custo pendente</p>
           <p>Entrada: {{ item.tokensEntrada === null ? 'Não informado' : (item.tokensEntrada | number) }} · Saída: {{ item.tokensSaida === null ? 'Não informado' : (item.tokensSaida | number) }}</p>

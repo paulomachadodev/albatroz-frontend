@@ -46,13 +46,25 @@ export class IaConsumoComponent {
   private readonly fimPadrao = dataCalendarioLocal(new Date(this.hoje.getFullYear(), this.hoje.getMonth() + 1, 1));
   readonly form = inject(FormBuilder).nonNullable.group({ inicio: this.inicioPadrao, fim: this.fimPadrao, finalidade: '', modelo: '', status: 0, modulo: '', provedor: '' });
   readonly dados = signal<IaConsumo | null>(null);
+  readonly coberturaTexto = computed(() => {
+    switch (this.dados()?.cobertura) {
+      case 'validacao_google': return 'Cobertura: somente validações da chave Google.';
+      case 'fluxos_google': return 'Cobertura: validações da chave e fluxos Google instrumentados.';
+      default: return 'Cobertura não informada.';
+    }
+  });
   readonly carregando = signal(true);
   readonly pagina = signal(1);
   readonly tamanhoPagina = signal(10);
   readonly totalPaginas = computed(() => Math.max(1, Math.ceil((this.dados()?.total ?? 0) / this.tamanhoPagina())));
   readonly contextoValido = computed(() => this.auth.usuario()?.id === this.usuarioInicial && this.auth.empresaIdAtual() === this.empresaInicial && this.auth.temPermissao('ia_consumo:ler'));
   private periodoAplicado = this.form.getRawValue();
-  readonly finalidades = [{ rotulo: 'Todas', valor: '' }, { rotulo: 'Validação Google', valor: 'validacao_google' }];
+  readonly finalidades = [
+    { rotulo: 'Todas', valor: '' }, { rotulo: 'Validação Google', valor: 'validacao_google' },
+    { rotulo: 'Lista escolar', valor: 'lista_escolar' }, { rotulo: 'Fatura', valor: 'fatura' },
+    { rotulo: 'Classificação de produto', valor: 'classificacao_produto' }, { rotulo: 'Descrição de produto', valor: 'descricao_produto' },
+    { rotulo: 'Tendência de volta às aulas', valor: 'tendencia_volta_aulas' }, { rotulo: 'Embedding', valor: 'embedding' }
+  ];
   readonly resultados = [{ rotulo: 'Todos', valor: 0 }, { rotulo: 'Pendente', valor: 1 }, { rotulo: 'Sucesso', valor: 2 }, { rotulo: 'Falha', valor: 3 }, { rotulo: 'Indeterminada', valor: 4 }];
   readonly selectPt = {
     root: 'relative block w-full',
@@ -147,7 +159,7 @@ export class IaConsumoComponent {
   }
 
   nomeFinalidade(valor: string): string {
-    return valor === 'validacao_google' ? 'Validação Google' : valor;
+    return this.finalidades.find(finalidade => finalidade.valor === valor)?.rotulo ?? valor;
   }
 
   private graficoGrupos(grupos: IaConsumoGrupo[]): ChartData<'bar'> {

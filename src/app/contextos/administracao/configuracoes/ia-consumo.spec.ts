@@ -235,4 +235,19 @@ describe('Consumo de IA', () => {
     expect(pagina.exportando()).toBeFalse();
   });
 
+  it('exibe a cobertura ampliada somente quando informada pelo serviço', async () => {
+    const retorno = resposta(); retorno.dados!.cobertura = 'fluxos_google'; api.get.and.returnValue(of(retorno));
+    const harness = await RouterTestingHarness.create();
+    const pagina = await harness.navigateByUrl('/configuracoes/ia/consumo', IaConsumoComponent);
+    expect(harness.routeNativeElement?.textContent).toContain('fluxos Google instrumentados');
+    expect(harness.routeNativeElement?.textContent).not.toContain('somente validações');
+    expect(pagina.coberturaTexto()).not.toContain('todo');
+    expect(pagina.finalidades.map(finalidade => finalidade.valor)).toEqual(['', 'validacao_google', 'lista_escolar', 'fatura', 'classificacao_produto', 'descricao_produto', 'tendencia_volta_aulas', 'embedding']);
+    expect(pagina.nomeFinalidade('classificacao_produto')).toBe('Classificação de produto');
+    pagina.dados.set({ ...retorno.dados!, cobertura: 'cobertura_futura' });
+    expect(pagina.coberturaTexto()).toBe('Cobertura não informada.');
+    pagina.dados.set(null);
+    expect(pagina.coberturaTexto()).toBe('Cobertura não informada.');
+  });
+
 });

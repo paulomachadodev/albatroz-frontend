@@ -1,0 +1,65 @@
+<div class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark px-4 sm:px-6 lg:px-8 xl:px-10 py-6 lg:py-8">
+  <div class="w-full space-y-8">
+    <app-breadcrumb [itens]="[{label:'Início',rota:'/dashboard'},{label:'Configurações',rota:'/configuracoes'},{label:'Limites de IA'}]" />
+    <app-page-header titulo="Limites de IA" subtitulo="Orçamento, reservas e alertas da empresa atual.">
+      <button acoes type="button" (click)="carregar()" [disabled]="carregando() || processando() || alterado()" class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-sm font-bold disabled:opacity-50">Atualizar</button>
+    </app-page-header>
+    @if (carregando()) {
+      <div class="h-64 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 animate-pulse" aria-label="Carregando limites"></div>
+    } @else if (dados(); as limites) {
+      @if (!limites.habilitado) {
+        <p role="status" class="text-sm text-slate-500">Configuração de limites indisponível.</p>
+      } @else {
+        <p class="text-sm text-slate-500">Cobertura: somente validações Google. Reservas são estimativas de proteção; o custo real pode excedê-las. Os valores em USD não representam a fatura do provedor.</p>
+        <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4" aria-label="Saldo da competência">
+          <div class="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5"><p class="text-sm text-slate-500">Comprometido conhecido</p><p class="text-lg font-bold break-words">{{ moeda(limites.saldo.comprometidoUsd) }}</p><p class="text-xs text-slate-500">Competência {{ limites.saldo.competencia }} · {{ limites.configuracao.fusoHorario }}</p></div>
+          <div class="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5"><p class="text-sm text-slate-500">Apurado conhecido</p><p class="text-lg font-bold break-words">{{ moeda(limites.saldo.custoApuradoUsd) }}</p></div>
+          <div class="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5"><p class="text-sm text-slate-500">Reservado / incerto</p><p class="text-sm break-words">{{ moeda(limites.saldo.reservadoUsd) }} / {{ temValorDesconhecido() ? 'Valor desconhecido' : moeda(limites.saldo.incertoUsd) }}</p><p class="text-xs text-slate-500">{{ limites.saldo.emExecucao | number }} em execução · {{ limites.saldo.incertas | number }} incertas</p></div>
+          <div class="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5"><p class="text-sm text-slate-500">Disponível</p><p class="text-lg font-bold break-words">{{ temValorDesconhecido() ? 'Valor desconhecido' : moeda(limites.saldo.disponivelUsd) }}</p></div>
+        </section>
+        <p class="text-xs text-slate-500">Período da competência: {{ limites.saldo.inicioUtc | date:'dd/MM/yyyy HH:mm' }} a {{ limites.saldo.fimUtc | date:'dd/MM/yyyy HH:mm' }} (fim exclusivo), no horário local. @if (temValorDesconhecido()) { Há custos desconhecidos que não compõem a soma apurada. } Política {{ limites.configuracao.ativo ? 'ativa' : 'desligada' }}. Desligar a política não remove os valores já comprometidos.</p>
+        <form [formGroup]="form" (ngSubmit)="salvar()" class="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 space-y-4">
+          <h2 class="font-bold">Política da empresa atual</h2>
+          <p class="text-xs text-slate-500">Deixe orçamento, limite por execução ou concorrência vazios para não limitar. Zero é um limite de zero. O fuso da competência não pode mudar após existirem reservas.</p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+            <div><label for="limite-ativo" class="text-xs font-semibold text-slate-500">Proteção</label><p-select inputId="limite-ativo" formControlName="ativo" [options]="estadosPolitica" optionLabel="rotulo" optionValue="valor" [unstyled]="true" [pt]="selectPt" appendTo="body" class="block mt-1" /></div>
+            <div><label for="limite-orcamento" class="text-xs font-semibold text-slate-500">Orçamento mensal (USD)</label><input pInputText id="limite-orcamento" type="number" step="any" min="0" formControlName="orcamentoMensalUsd" placeholder="Sem limite" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm" /></div>
+            <div><label for="limite-execucao" class="text-xs font-semibold text-slate-500">Limite por execução (USD)</label><input pInputText id="limite-execucao" type="number" step="any" min="0" formControlName="limiteExecucaoUsd" placeholder="Sem limite" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm" /></div>
+            <div><label for="limite-reserva" class="text-xs font-semibold text-slate-500">Reserva por tentativa (USD)</label><input pInputText id="limite-reserva" type="number" step="any" min="0.000000000001" formControlName="reservaTentativaUsd" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm" /></div>
+            <div><label for="limite-concorrencia" class="text-xs font-semibold text-slate-500">Execuções simultâneas</label><input pInputText id="limite-concorrencia" type="number" step="1" min="1" formControlName="concorrenciaMaxima" placeholder="Sem limite" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm" /></div>
+            <div><label for="limite-alerta" class="text-xs font-semibold text-slate-500">Alertar ao atingir (%)</label><input pInputText id="limite-alerta" type="number" min="1" max="100" formControlName="alertaPercentual" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm" /></div>
+            <div class="xl:col-span-2"><label for="limite-fuso" class="text-xs font-semibold text-slate-500">Fuso da competência</label><input pInputText id="limite-fuso" formControlName="fusoHorario" placeholder="America/Sao_Paulo" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm" /></div>
+            <div class="sm:col-span-2 xl:col-span-4"><label for="limite-destinatarios" class="text-xs font-semibold text-slate-500">E-mails para alertas (separados por ponto e vírgula)</label><input pInputText id="limite-destinatarios" formControlName="destinatarios" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm" /><p class="mt-1 text-xs text-slate-500">Sem destinatários, os alertas ficam somente no ERP. O envio utiliza o SMTP da empresa atual.</p></div>
+          </div>
+          @if (form.invalid && form.touched) { <p role="alert" class="text-sm text-red-600">Revise os valores não negativos, a reserva positiva, a concorrência inteira, o percentual entre 1 e 100 e o fuso válido.</p> }
+          @if (podeEditar()) { <div class="flex justify-end"><button type="submit" [disabled]="processando() || form.invalid || !disponivel()" class="px-4 py-2 rounded-lg bg-primary text-white text-sm font-bold disabled:opacity-50">{{ processando() ? 'Processando...' : 'Salvar limites' }}</button></div> }
+        </form>
+        <section class="space-y-4" aria-labelledby="reservas-titulo">
+          <h2 id="reservas-titulo" class="font-bold">Reservas</h2>
+          <p class="text-xs text-slate-500">Valores incertos permanecem comprometidos até uma conciliação comprovada. O tempo decorrido não libera a reserva.</p>
+          <app-listagem-paginada [exibirFiltros]="false" [exibirPaginacao]="false" [itens]="limites.reservas" [totalRegistros]="limites.reservas.length" [totalPaginas]="1" tituloVazio="Nenhuma reserva nesta competência.">
+            <ng-template #cabecalho><tr><th class="px-4 py-4">Data / tentativa</th><th class="px-4 py-4">Situação</th><th class="px-4 py-4">Reservado / comprometido</th><th class="px-4 py-4">Ação</th></tr></ng-template>
+            <ng-template #linha let-reserva><tr><td class="px-4 py-4">{{ reserva.iniciadoEmUtc | date:'dd/MM/yyyy HH:mm:ss' }} local<span class="block text-xs break-all text-slate-500">{{ reserva.tentativaId }}</span></td><td class="px-4 py-4">{{ statusReserva(reserva.status) }}</td><td class="px-4 py-4">{{ reserva.semReserva ? 'Desconhecido / sem reserva' : (moeda(reserva.valorReservadoUsd) + ' / ' + moeda(reserva.valorComprometidoUsd)) }}</td><td class="px-4 py-4">@if (reserva.status === 3 && podeEditar()) { <button type="button" (click)="abrirConciliacao(reserva)" [disabled]="processando()" class="text-primary text-xs font-bold hover:underline disabled:opacity-50">Conciliar</button> }</td></tr></ng-template>
+            <ng-template #linhaMobile let-reserva><div class="p-4 space-y-2 text-sm"><p class="font-semibold">{{ statusReserva(reserva.status) }} · {{ reserva.iniciadoEmUtc | date:'dd/MM/yyyy HH:mm:ss' }} local</p><p class="break-all text-xs">{{ reserva.tentativaId }}</p><p>Reservado: {{ reserva.semReserva ? 'Desconhecido / sem reserva' : moeda(reserva.valorReservadoUsd) }}</p><p>Comprometido: {{ reserva.semReserva ? 'Desconhecido / sem reserva' : moeda(reserva.valorComprometidoUsd) }}</p>@if (reserva.status === 3 && podeEditar()) { <button type="button" (click)="abrirConciliacao(reserva)" [disabled]="processando()" class="text-primary text-xs font-bold disabled:opacity-50">Conciliar</button> }</div></ng-template>
+          </app-listagem-paginada>
+        </section>
+        <section class="space-y-4" aria-labelledby="alertas-titulo">
+          <h2 id="alertas-titulo" class="font-bold">Alertas</h2>
+          <app-listagem-paginada [exibirFiltros]="false" [exibirPaginacao]="false" [itens]="limites.alertas" [totalRegistros]="limites.alertas.length" [totalPaginas]="1" tituloVazio="Nenhum alerta nesta competência.">
+            <ng-template #cabecalho><tr><th class="px-4 py-4">Data / competência</th><th class="px-4 py-4">Comprometimento</th><th class="px-4 py-4">Entrega</th></tr></ng-template>
+            <ng-template #linha let-alerta><tr><td class="px-4 py-4">{{ alerta.criadoEmUtc | date:'dd/MM/yyyy HH:mm:ss' }} local<span class="block text-xs text-slate-500">{{ alerta.competencia }}</span></td><td class="px-4 py-4"><span class="block text-xs font-semibold">{{ tipoAlerta(alerta.tipo) }}</span>{{ moeda(alerta.comprometidoUsd) }}<span class="block text-xs text-slate-500">Limiar {{ alerta.percentual | number }}% · orçamento {{ moeda(alerta.orcamentoUsd) }}</span></td><td class="px-4 py-4">{{ statusAlerta(alerta.status) }} · {{ alerta.tentativasEnvio | number }} tentativas<span class="block text-xs text-slate-500">{{ alerta.ultimoErro }}</span></td></tr></ng-template>
+            <ng-template #linhaMobile let-alerta><div class="p-4 space-y-2 text-sm"><p>{{ alerta.criadoEmUtc | date:'dd/MM/yyyy HH:mm:ss' }} local · {{ alerta.competencia }}</p><p class="font-semibold">{{ tipoAlerta(alerta.tipo) }}</p><p>{{ moeda(alerta.comprometidoUsd) }} · limiar {{ alerta.percentual | number }}%</p><p>{{ statusAlerta(alerta.status) }} · {{ alerta.tentativasEnvio | number }} tentativas</p><p class="break-words text-xs text-slate-500">{{ alerta.ultimoErro }}</p></div></ng-template>
+          </app-listagem-paginada>
+        </section>
+      }
+    }
+  </div>
+</div>
+<app-modal [aberto]="reservaSelecionada() !== null" titulo="Conciliar reserva incerta" tamanho="md" [fecharAoClicarFora]="!processando()" (fechar)="fecharConciliacao()">
+  <form [formGroup]="conciliacao" (ngSubmit)="conciliar()" class="px-6 pb-6 space-y-4">
+    <p class="text-sm text-slate-500">Informe o valor comprovado e a justificativa. A ação será auditada. Zero confirma ausência de custo; não use zero por falta de informação.</p>
+    <div><label for="conciliacao-valor" class="text-xs font-semibold text-slate-500">Valor apurado (USD)</label><input pInputText id="conciliacao-valor" type="number" step="any" min="0" formControlName="valorApuradoUsd" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm" /></div>
+    <div><label for="conciliacao-justificativa" class="text-xs font-semibold text-slate-500">Justificativa e comprovação (10 a 500 caracteres, sem quebras de linha)</label><textarea id="conciliacao-justificativa" formControlName="justificativa" minlength="10" maxlength="500" rows="4" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm"></textarea></div>
+    <div class="flex justify-end gap-2"><button type="button" (click)="fecharConciliacao()" [disabled]="processando()" class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-sm font-bold disabled:opacity-50">Cancelar</button><button type="submit" [disabled]="processando() || conciliacao.invalid || !podeEditar() || !disponivel()" class="px-4 py-2 rounded-lg bg-primary text-white text-sm font-bold disabled:opacity-50">Conciliar</button></div>
+  </form>
+</app-modal>

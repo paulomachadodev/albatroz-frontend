@@ -20,3 +20,5 @@ Exportação CSV em GET /v1/ia/consumo/exportacao, com permissão própria ia_co
 IA-03B (limites, reservas e alertas) permanece fora desta entrega. Cadastro e fluxos de geração existentes preservados.
 
 Validação IA-03A: 60 testes ChromeHeadless aprovados, incluindo regressões de agregados/dias locais, microcustos e nulos, filtros aplicados, PBAC de exportação, cancelamento de download por tenant/permissão e descarte de erro Blob após destruir a página. Build de produção aprovado.
+
+IA-04: a mensagem de cobertura deve obedecer ao campo cobertura da resposta. validacao_google indica somente validação de chave; fluxos_google indica validações e fluxos Google instrumentados, sem alegar cobertura de todo ERP, n8n ou WhatsApp. Valor desconhecido/ausente não assume cobertura ativa. Limites de IA mantêm sua cobertura própria conforme o serviço responsável.

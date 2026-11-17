@@ -17,6 +17,8 @@ export class ListagemPaginadaComponent<T> implements AfterViewInit {
   paginaAtual = input<number>(1);
   totalPaginas = input<number>(1);
   tamanhoPagina = input<number>(10);
+  exibirFiltros = input(true);
+  exibirPaginacao = input(true);
   opcoesTamanhoPagina = input<number[]>([10, 50, 100]);
   tituloVazio = input<string>('Nenhum registro encontrado');
 

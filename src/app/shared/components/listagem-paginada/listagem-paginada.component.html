@@ -1,3 +1,4 @@
+@if (exibirFiltros()) {
 <section class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
   <div [class]="classeBotaoFiltros()">
     <button type="button" (click)="alternarFiltros()"
@@ -12,6 +13,7 @@
   </div>
   <ng-content select="[filtrosBotoes]"></ng-content>
 </section>
+}
 
 <ng-content select="[entreFiltrosEGrid]"></ng-content>
 
@@ -47,6 +49,7 @@
       </tbody>
     </table>
   </div>
+  @if (exibirPaginacao()) {
   <div class="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 flex flex-wrap gap-3 justify-between items-center">
     <div class="flex items-center gap-3">
       <p class="text-sm min-[480px]:text-xs text-slate-500">Página {{ paginaAtual() }} de {{ totalPaginas() }} · {{ totalRegistros() }} registros</p>
@@ -68,4 +71,5 @@
       </button>
     </div>
   </div>
+  }
 </section>

@@ -4,7 +4,7 @@
     <app-page-header titulo="Consumo de IA" subtitulo="Requisições medidas e custos calculados da empresa atual.">
       @if (podeExportar()) { <button acoes type="button" (click)="exportar()" [disabled]="exportando() || carregando() || !dados()?.habilitado" class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm disabled:opacity-50">{{ exportando() ? 'Exportando...' : 'Exportar CSV' }}</button> }
     </app-page-header>
-    <p class="text-sm text-slate-500">Cobertura: somente validações da chave Google. O custo usa tarifa pública em USD e não representa a fatura do Google. Datas e períodos no horário local, início inclusivo e fim exclusivo.</p>
+    <p class="text-sm text-slate-500">{{ coberturaTexto() }} O custo usa tarifa pública em USD e não representa a fatura do Google. Datas e períodos no horário local, início inclusivo e fim exclusivo.</p>
     @if (carregando()) {
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4" aria-label="Carregando resumo">
         @for (item of [1,2,3]; track item) { <div class="h-36 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 animate-pulse"></div> }
@@ -69,7 +69,7 @@
       <ng-template #cabecalho><tr><th class="px-4 py-4">Data / finalidade</th><th class="px-4 py-4">Modelo / resultado</th><th class="px-4 py-4">Tokens</th><th class="px-4 py-4">Custo / tarifa</th></tr></ng-template>
       <ng-template #linha let-item>
         <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-          <td class="px-4 py-4">{{ item.iniciadoEmUtc | date:'dd/MM/yyyy HH:mm:ss' }} local<span class="block text-xs text-slate-500">{{ item.finalidade === 'validacao_google' ? 'Validação Google' : item.finalidade }} · tentativa {{ item.numeroTentativa }}</span></td>
+          <td class="px-4 py-4">{{ item.iniciadoEmUtc | date:'dd/MM/yyyy HH:mm:ss' }} local<span class="block text-xs text-slate-500">{{ nomeFinalidade(item.finalidade) }} · tentativa {{ item.numeroTentativa }}</span></td>
           <td class="px-4 py-4 break-all">{{ item.modeloEfetivo ?? item.modeloSolicitado }}<span class="block text-xs text-slate-500">{{ status(item.status) }} · HTTP {{ item.httpStatus ?? 'não informado' }}</span></td>
           <td class="px-4 py-4">Entrada: {{ item.tokensEntrada === null ? 'Não informado' : (item.tokensEntrada | number) }}<br />Saída: {{ item.tokensSaida === null ? 'Não informado' : (item.tokensSaida | number) }}<span class="block text-xs text-slate-500">Raciocínio: {{ item.tokensThinking === null ? 'Não informado' : (item.tokensThinking | number) }} · Cache: {{ item.tokensCache === null ? 'Não informado' : (item.tokensCache | number) }}</span></td>
           <td class="px-4 py-4 break-all">{{ custo(item.custoUsd) }}<span class="block text-xs text-slate-500">{{ item.tarifaVersao ?? 'Sem tarifa aplicada' }}</span>@if (fonte(item.tarifaFonte); as url) { <a [href]="url" target="_blank" rel="noopener noreferrer" class="text-xs text-primary hover:underline">Fonte da tarifa</a> }</td>
@@ -79,7 +79,7 @@
         <div class="p-4 space-y-2 text-sm">
           <p class="font-semibold">{{ status(item.status) }} · {{ item.iniciadoEmUtc | date:'dd/MM/yyyy HH:mm:ss' }} local</p>
           <p class="break-all">{{ item.modeloEfetivo ?? item.modeloSolicitado }}</p>
-          <p>{{ item.finalidade === 'validacao_google' ? 'Validação Google' : item.finalidade }} · tentativa {{ item.numeroTentativa }} · HTTP {{ item.httpStatus ?? 'não informado' }}</p>
+          <p>{{ nomeFinalidade(item.finalidade) }} · tentativa {{ item.numeroTentativa }} · HTTP {{ item.httpStatus ?? 'não informado' }}</p>
           <p>Entrada: {{ item.tokensEntrada === null ? 'Não informado' : (item.tokensEntrada | number) }} · Saída: {{ item.tokensSaida === null ? 'Não informado' : (item.tokensSaida | number) }}</p>
           <p>Raciocínio: {{ item.tokensThinking === null ? 'Não informado' : (item.tokensThinking | number) }} · Cache: {{ item.tokensCache === null ? 'Não informado' : (item.tokensCache | number) }}</p>
           <p class="font-semibold break-all">{{ custo(item.custoUsd) }}</p><p class="text-xs text-slate-500 break-all">{{ item.tarifaVersao ?? 'Sem tarifa aplicada' }}</p>

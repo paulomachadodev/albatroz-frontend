@@ -6,6 +6,9 @@ import { SeriesService } from '../../services/series.service';
 import { Serie } from '../../models/serie.model';
 import { EscolasService } from '../../../escolas/services/escolas.service';
 import { ToastService } from '../../../../../core/feedback/toast.service';
+import { ConfirmService } from '../../../../../core/feedback/confirm.service';
+import { AuthService } from '../../../../../core/auth/auth.service';
+import { BtnIconeComponent } from '../../../../../shared/components/btn-icone/btn-icone.component';
 import { ListagemPaginadaComponent } from '../../../../../shared/components/listagem-paginada/listagem-paginada.component';
 import { DrawerComponent } from '../../../../../shared/components/drawer/drawer.component';
 import { PageHeaderComponent } from '../../../../../shared/components/page-header/page-header.component';
@@ -19,7 +22,7 @@ type ModoDrawer = 'criar' | 'editar';
 @Component({
   selector: 'app-series-lista',
   standalone: true,
-  imports: [FormsModule, ListagemPaginadaComponent, DrawerComponent, PageHeaderComponent, ToggleComponent, SelectBuscaComponent, ThOrdenavelComponent, BreadcrumbComponent],
+  imports: [FormsModule, ListagemPaginadaComponent, DrawerComponent, PageHeaderComponent, ToggleComponent, SelectBuscaComponent, ThOrdenavelComponent, BreadcrumbComponent, BtnIconeComponent],
   templateUrl: './series-lista.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
@@ -48,8 +51,32 @@ export class SeriesListaComponent implements OnInit {
   constructor(
     private seriesService: SeriesService,
     private escolasService: EscolasService,
-    private toast: ToastService
+    private toast: ToastService,
+    private confirm: ConfirmService,
+    private auth: AuthService
   ) {}
+
+  podeExcluir(): boolean {
+    return this.auth.temPermissao('cadastros:excluir');
+  }
+
+  async excluir(serie: Serie) {
+    const confirmado = await this.confirm.confirmar(
+      `Excluir a série "${serie.nome}" de ${serie.escolaNome}?`,
+      'Séries com listas escolares vinculadas não podem ser excluídas. Essa ação não pode ser desfeita.',
+      { textoConfirmar: 'Excluir série' }
+    );
+    if (!confirmado) return;
+
+    this.seriesService.excluir(serie.id).subscribe({
+      next: () => {
+        this.toast.sucesso('Série excluída.');
+        const ultimaDaPagina = this.itens().length === 1 && this.paginaAtual() > 1;
+        this.carregar(ultimaDaPagina ? this.paginaAtual() - 1 : this.paginaAtual());
+      },
+      error: err => this.toast.erroServidor(err, 'Não foi possível excluir a série.')
+    });
+  }
 
   buscarEscolas = (termo: string) => this.escolasService.buscar(termo).pipe(
     map(res => res.dados ?? [])

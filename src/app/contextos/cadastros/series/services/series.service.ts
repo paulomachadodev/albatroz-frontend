@@ -30,4 +30,8 @@ export class SeriesService {
   atualizar(id: number, requisicao: SerieAtualizarRequisicao): Observable<Resultado<Serie>> {
     return this.api.patch<Serie>(`${this.endpoint}/${id}`, requisicao);
   }
+
+  excluir(id: number): Observable<Resultado<void>> {
+    return this.api.delete<void>(`${this.endpoint}/${id}`);
+  }
 }

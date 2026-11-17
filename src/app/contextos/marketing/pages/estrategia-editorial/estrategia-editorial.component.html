@@ -1,0 +1,144 @@
+<div class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark px-4 sm:px-6 lg:px-8 xl:px-10 py-6 lg:py-8">
+  <div class="w-full space-y-8">
+    <app-breadcrumb [itens]="[{label:'Início',rota:'/dashboard'},{label:'Marketing'},{label:'Estratégia editorial'}]" />
+    <app-page-header titulo="Estratégia editorial" subtitulo="Defina objetivo, redes, linhas editoriais e limites de produção da empresa.">
+      <button acoes type="button" (click)="carregar()" [disabled]="carregando() || salvando() || !acessoValido()"
+              class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-sm font-bold disabled:opacity-50">Atualizar</button>
+    </app-page-header>
+
+    @if (carregando()) {
+      <div class="h-64 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 animate-pulse" aria-label="Carregando estratégia"></div>
+    } @else if (dados(); as estrategia) {
+      @if (!estrategia.habilitado) {
+        <p role="status" class="text-sm text-slate-500">Estratégia editorial indisponível.</p>
+      } @else {
+        @if (estrategia.atualizadoEm) {
+          <p class="text-xs text-slate-500">Última atualização: {{ estrategia.atualizadoEm | date:'dd/MM/yyyy HH:mm:ss' }} local.</p>
+        }
+        @if (!podeEditar()) { <p role="status" class="text-sm text-slate-500">Acesso somente para consulta.</p> }
+        @if (precisaAtualizar()) {
+          <p role="alert" class="rounded-xl border border-amber-200 bg-amber-50 dark:bg-amber-950/20 px-4 py-3 text-sm text-amber-800 dark:text-amber-200">
+            Não foi possível confirmar a gravação. Atualize a consulta antes de salvar novamente.
+          </p>
+        }
+
+        <form [formGroup]="form" (ngSubmit)="salvar()" class="space-y-6">
+          <fieldset [disabled]="salvando() || !podeEditar()" class="space-y-6 min-w-0">
+            <section class="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 space-y-4" aria-labelledby="estrategia-geral-titulo">
+              <h2 id="estrategia-geral-titulo" class="font-bold">Objetivo e produção</h2>
+              <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <div>
+                  <label for="estrategia-objetivo" class="text-xs font-semibold text-slate-500">Objetivo principal *</label>
+                  <select id="estrategia-objetivo" formControlName="objetivo" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm">
+                    @for (objetivo of objetivos; track objetivo.valor) {
+                      <option [ngValue]="objetivo.valor">{{ objetivo.rotulo }}</option>
+                    }
+                  </select>
+                </div>
+                <div>
+                  <label for="estrategia-pecas" class="text-xs font-semibold text-slate-500">Peças por semana (limite) *</label>
+                  <input id="estrategia-pecas" type="number" min="1" max="100" formControlName="pecasPorSemana" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm" />
+                </div>
+                <div>
+                  <label for="estrategia-limite" class="text-xs font-semibold text-slate-500">Limite de texto (caracteres, 0 = sem limite)</label>
+                  <input id="estrategia-limite" type="number" min="0" max="5000" formControlName="limiteTexto" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm" />
+                </div>
+                <div>
+                  <label for="estrategia-redes" class="text-xs font-semibold text-slate-500">Redes desejadas</label>
+                  <textarea id="estrategia-redes" formControlName="redes" rows="3" placeholder="Uma por linha" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm"></textarea>
+                </div>
+                <div>
+                  <label for="estrategia-formatos" class="text-xs font-semibold text-slate-500">Formatos aceitos</label>
+                  <textarea id="estrategia-formatos" formControlName="formatos" rows="3" placeholder="Um por linha (post, carrossel, vídeo curto...)" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm"></textarea>
+                </div>
+                <div>
+                  <label for="estrategia-proibidos" class="text-xs font-semibold text-slate-500">Assuntos proibidos</label>
+                  <textarea id="estrategia-proibidos" formControlName="assuntosProibidos" rows="3" placeholder="Um por linha" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm"></textarea>
+                </div>
+              </div>
+              <p class="text-xs text-slate-500">As peças por semana são um teto: a pauta nunca cria mais conteúdo que isso para cumprir percentuais.</p>
+            </section>
+
+            <section class="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 space-y-4" aria-labelledby="estrategia-linhas-titulo">
+              <div class="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h2 id="estrategia-linhas-titulo" class="font-bold">Linhas editoriais</h2>
+                  <p class="text-xs text-slate-500">A participação das linhas ativas deve somar 100%. Nomes e pesos são editáveis e podem ser desativados.</p>
+                </div>
+                @if (podeEditar()) {
+                  <div class="flex gap-2">
+                    <button type="button" (click)="aplicarSugestoes()" class="px-3 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-xs font-bold">Usar sugestões genéricas</button>
+                    <button type="button" (click)="adicionarLinha()" class="px-3 py-2 rounded-lg bg-primary text-white text-xs font-bold">Adicionar linha</button>
+                  </div>
+                }
+              </div>
+
+              @if (temLinhasAtivas()) {
+                <p role="status" class="text-sm font-semibold" [class.text-emerald-600]="participacaoValida()" [class.text-red-600]="!participacaoValida()">
+                  Total das linhas ativas: {{ totalAtivas() }}% {{ participacaoValida() ? '' : '(deve ser 100%)' }}
+                </p>
+              } @else {
+                <p class="text-sm text-slate-500">Nenhuma linha ativa. Você pode salvar sem linhas e definir depois.</p>
+              }
+
+              <div formArrayName="linhas" class="space-y-4">
+                @for (linha of linhas.controls; track $index) {
+                  <div [formGroupName]="$index" class="rounded-lg border border-slate-200 dark:border-slate-700 p-4 space-y-3">
+                    <div class="grid grid-cols-1 lg:grid-cols-4 gap-3">
+                      <div class="lg:col-span-2">
+                        <label [for]="'linha-nome-' + $index" class="text-xs font-semibold text-slate-500">Nome *</label>
+                        <input [id]="'linha-nome-' + $index" formControlName="nome" maxlength="120" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm" />
+                      </div>
+                      <div>
+                        <label [for]="'linha-part-' + $index" class="text-xs font-semibold text-slate-500">Participação (%)</label>
+                        <input [id]="'linha-part-' + $index" type="number" min="0" max="100" formControlName="participacao" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm" />
+                      </div>
+                      <label class="flex items-center gap-2 text-sm font-semibold mt-6">
+                        <input type="checkbox" formControlName="ativa" /> Ativa
+                      </label>
+                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+                      <div>
+                        <label [for]="'linha-obj-' + $index" class="text-xs font-semibold text-slate-500">Objetivo da linha</label>
+                        <textarea [id]="'linha-obj-' + $index" formControlName="objetivo" rows="2" maxlength="500" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm"></textarea>
+                      </div>
+                      <div>
+                        <label [for]="'linha-ex-' + $index" class="text-xs font-semibold text-slate-500">Exemplos</label>
+                        <textarea [id]="'linha-ex-' + $index" formControlName="exemplos" rows="2" maxlength="1000" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm"></textarea>
+                      </div>
+                      <div>
+                        <label [for]="'linha-res-' + $index" class="text-xs font-semibold text-slate-500">Restrições</label>
+                        <textarea [id]="'linha-res-' + $index" formControlName="restricoes" rows="2" maxlength="1000" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm"></textarea>
+                      </div>
+                      <div>
+                        <label [for]="'linha-fmt-' + $index" class="text-xs font-semibold text-slate-500">Formatos da linha</label>
+                        <textarea [id]="'linha-fmt-' + $index" formControlName="formatos" rows="2" placeholder="Um por linha" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm"></textarea>
+                      </div>
+                    </div>
+                    @if (podeEditar()) {
+                      <div class="flex justify-end">
+                        <button type="button" (click)="removerLinha($index)" class="text-xs font-bold text-red-600 hover:underline">Remover linha</button>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            </section>
+          </fieldset>
+
+          @if (form.invalid && form.touched) {
+            <p role="alert" class="text-sm text-red-600">Revise os campos obrigatórios e os limites de tamanho.</p>
+          }
+          @if (podeEditar()) {
+            <div class="flex justify-end">
+              <button type="submit" [disabled]="salvando() || form.invalid || !disponivel() || precisaAtualizar() || !participacaoValida()"
+                      class="px-4 py-2 rounded-lg bg-primary text-white text-sm font-bold disabled:opacity-50">
+                {{ salvando() ? 'Salvando...' : 'Salvar estratégia' }}
+              </button>
+            </div>
+          }
+        </form>
+      }
+    }
+  </div>
+</div>

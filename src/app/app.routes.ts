@@ -92,6 +92,13 @@ export const routes: Routes = [
           import('./contextos/cadastros/series/series.routes').then(m => m.SERIES_ROUTES)
       },
       {
+        path: 'marketing',
+        canActivate: [permissaoGuard],
+        data: { permissao: 'marketing:ler' },
+        loadChildren: () =>
+          import('./contextos/marketing/marketing.routes').then(m => m.MARKETING_ROUTES)
+      },
+      {
         path: 'cadastros/empresas',
         redirectTo: 'configuracoes/dados-empresa'
       },

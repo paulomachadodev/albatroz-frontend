@@ -1,0 +1,193 @@
+<div class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark px-4 sm:px-6 lg:px-8 xl:px-10 py-6 lg:py-8">
+  <div class="w-full space-y-8">
+
+    <app-breadcrumb [itens]="[{label:'Início',rota:'/dashboard'},{label:'Marketing'},{label:'Briefings'}]"></app-breadcrumb>
+
+    <app-page-header titulo="Briefings" subtitulo="Registre o pedido de cada conteúdo antes da criação. Confirmar um briefing não publica nada.">
+      @if (podeCriar()) {
+        <button acoes (click)="abrirCriar()"
+                class="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all">
+          <span class="material-symbols-outlined text-sm">add</span>
+          Novo briefing
+        </button>
+      }
+    </app-page-header>
+
+    <app-listagem-paginada
+      [itens]="itens()"
+      [carregando]="carregando()"
+      [totalRegistros]="totalRegistros()"
+      [paginaAtual]="paginaAtual()"
+      [totalPaginas]="totalPaginas()"
+      [tamanhoPagina]="tamanhoPagina()"
+      tituloVazio="Nenhum briefing encontrado"
+      (paginaMudou)="aoMudarPagina($event)"
+      (tamanhoPaginaMudou)="aoMudarTamanhoPagina($event)">
+
+      <div filtros class="space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div>
+            <label class="text-xs font-semibold text-slate-500">Assunto ou objetivo</label>
+            <input type="text" [(ngModel)]="filtroTexto" placeholder="Buscar"
+                   class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-slate-500">Rede</label>
+            <input type="text" [(ngModel)]="filtroRede" placeholder="Todas"
+                   class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-slate-500">Situação</label>
+            <select [(ngModel)]="filtroStatus"
+                    class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none">
+              <option value="">Todas</option>
+              @for (opcao of statusOpcoes; track opcao.valor) {
+                <option [value]="opcao.valor">{{ opcao.rotulo }}</option>
+              }
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div filtrosBotoes class="flex justify-end gap-2 mt-4">
+        <button (click)="aplicarFiltros()"
+                class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all">
+          Filtrar
+        </button>
+        <button (click)="limparFiltros()"
+                class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
+          Limpar
+        </button>
+      </div>
+
+      <ng-template #cabecalho>
+        <tr>
+          <th class="px-6 py-4">
+            <app-th-ordenavel campo="assunto" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Assunto</app-th-ordenavel>
+          </th>
+          <th class="px-6 py-4">
+            <app-th-ordenavel campo="rede" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Rede</app-th-ordenavel>
+          </th>
+          <th class="px-6 py-4">Formato</th>
+          <th class="px-6 py-4">
+            <app-th-ordenavel campo="prazo" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Prazo</app-th-ordenavel>
+          </th>
+          <th class="px-6 py-4 text-center">
+            <app-th-ordenavel campo="status" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Situação</app-th-ordenavel>
+          </th>
+        </tr>
+      </ng-template>
+
+      <ng-template #linha let-item>
+        <tr (click)="abrirEditar(item)" class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors cursor-pointer">
+          <td class="px-6 py-4 text-sm font-bold text-slate-900 dark:text-slate-100">{{ item.assunto }}</td>
+          <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{{ item.rede }}</td>
+          <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{{ item.formato }}</td>
+          <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{{ item.prazo ? (item.prazo | date:'dd/MM/yyyy') : '-' }}</td>
+          <td class="px-6 py-4 text-center">
+            <span class="px-2 py-0.5 rounded-full text-xs font-bold" [class]="classeStatus(item.status)">{{ rotuloStatus(item.status) }}</span>
+          </td>
+        </tr>
+      </ng-template>
+
+    </app-listagem-paginada>
+
+  </div>
+</div>
+
+<app-drawer [aberto]="drawerAberto()"
+            [titulo]="modoDrawer() === 'criar' ? 'Novo briefing' : 'Briefing'"
+            (fechar)="cancelar()">
+
+  <div class="space-y-4">
+    @if (somenteLeitura()) {
+      <p role="status" class="text-xs text-slate-500">Briefing somente para consulta.</p>
+    }
+    <fieldset [disabled]="somenteLeitura()" class="space-y-4 min-w-0">
+      <div>
+        <label class="text-xs font-semibold text-slate-500">Objetivo *</label>
+        <textarea [(ngModel)]="objetivo" rows="2" maxlength="500" placeholder="O que esta peça deve alcançar"
+                  class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"></textarea>
+      </div>
+      <div>
+        <label class="text-xs font-semibold text-slate-500">Assunto *</label>
+        <input type="text" [(ngModel)]="assunto" maxlength="300"
+               class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+      </div>
+      <div>
+        <label class="text-xs font-semibold text-slate-500">Público</label>
+        <input type="text" [(ngModel)]="publico" maxlength="300"
+               class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="text-xs font-semibold text-slate-500">Rede *</label>
+          <input type="text" [(ngModel)]="rede" maxlength="60" list="briefing-redes" placeholder="Ex: Instagram"
+                 class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+          <datalist id="briefing-redes">
+            @for (opcao of redesSugeridas(); track opcao) { <option [value]="opcao"></option> }
+          </datalist>
+        </div>
+        <div>
+          <label class="text-xs font-semibold text-slate-500">Formato *</label>
+          <input type="text" [(ngModel)]="formato" maxlength="60" placeholder="Ex: Post, carrossel"
+                 class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+        </div>
+        <div>
+          <label class="text-xs font-semibold text-slate-500">Linha editorial</label>
+          <input type="text" [(ngModel)]="linha" maxlength="120" list="briefing-linhas"
+                 class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+          <datalist id="briefing-linhas">
+            @for (opcao of linhasSugeridas(); track opcao) { <option [value]="opcao"></option> }
+          </datalist>
+        </div>
+        <div>
+          <label class="text-xs font-semibold text-slate-500">Prazo</label>
+          <input type="date" [(ngModel)]="prazo"
+                 class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+        </div>
+      </div>
+      <div>
+        <label class="text-xs font-semibold text-slate-500">Produto ou serviço (opcional)</label>
+        <input type="text" [(ngModel)]="produtoServico" maxlength="300"
+               class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+      </div>
+      <div>
+        <label class="text-xs font-semibold text-slate-500">Oferta</label>
+        <textarea [(ngModel)]="oferta" rows="2" maxlength="1000"
+                  class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"></textarea>
+      </div>
+      <div>
+        <label class="text-xs font-semibold text-slate-500">Referências e observações</label>
+        <textarea [(ngModel)]="referencias" rows="3" maxlength="2000"
+                  class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"></textarea>
+      </div>
+      @if (modoDrawer() === 'editar') {
+        <div>
+          <label class="text-xs font-semibold text-slate-500">Situação</label>
+          <select [(ngModel)]="status"
+                  class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none">
+            @for (opcao of statusOpcoes; track opcao.valor) {
+              <option [ngValue]="opcao.valor">{{ opcao.rotulo }}</option>
+            }
+          </select>
+          <p class="mt-1 text-xs text-slate-500">Briefing arquivado não pode mais ser editado.</p>
+        </div>
+      }
+    </fieldset>
+
+    <div class="pt-2 flex gap-2">
+      <button type="button" (click)="cancelar()"
+              class="flex-1 px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
+        {{ somenteLeitura() ? 'Fechar' : 'Cancelar' }}
+      </button>
+      @if (!somenteLeitura()) {
+        <button type="button" (click)="salvar()" [disabled]="salvando()"
+                class="flex-1 px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all">
+          {{ salvando() ? 'Salvando...' : 'Salvar' }}
+        </button>
+      }
+    </div>
+  </div>
+
+</app-drawer>

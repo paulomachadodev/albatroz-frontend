@@ -56,6 +56,10 @@ export const MENU_CATALOGO: ItemMenu[] = [
   { id: 'fiscal', label: 'Fiscal', icone: 'receipt_long', filhos: [
     { id: 'naturezas', label: 'Naturezas de operação', rota: '/fiscal/naturezas-operacao', permissao: 'configuracoes:ler' }
   ] },
+  { id: 'marketing', label: 'Marketing', icone: 'campaign', filhos: [
+    { id: 'marketing-estrategia', label: 'Estratégia editorial', rota: '/marketing/estrategia', permissao: 'marketing:ler' },
+    { id: 'marketing-briefings', label: 'Briefings', rota: '/marketing/briefings', permissao: 'marketing:ler' }
+  ] },
   { id: 'albia', label: 'Albia IA', icone: 'auto_awesome', rota: '/albia' },
   { id: 'configuracoes', label: 'Configurações', icone: 'settings', rota: '/configuracoes', filhos: CONFIGURACOES_GRUPOS.map(grupo => ({
     id: `configuracoes-${grupo.id}`, label: grupo.titulo, filhos: grupo.destinos.map(destino => ({

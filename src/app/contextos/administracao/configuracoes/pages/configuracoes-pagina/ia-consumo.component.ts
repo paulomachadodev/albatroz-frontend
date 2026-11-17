@@ -1,5 +1,9 @@
 import { dataCalendarioLocal, lerDataLocal } from '../../../../../shared/utils/data-local.util';
 import { Component, DestroyRef, computed, effect, inject, signal } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
+import { ChartModule } from 'primeng/chart';
+import { ChartData, ChartOptions } from 'chart.js';
+import { ThemeService } from '../../../../../core/theme/theme.service';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -13,17 +17,19 @@ import { BreadcrumbComponent } from '../../../../../shared/components/breadcrumb
 import { PageHeaderComponent } from '../../../../../shared/components/page-header/page-header.component';
 import { ListagemPaginadaComponent } from '../../../../../shared/components/listagem-paginada/listagem-paginada.component';
 import { IaConsumoService } from '../../services/ia-consumo.service';
-import { IaConsumo } from '../../models/ia-consumo.model';
+import { IaConsumo, IaConsumoFiltro, IaConsumoGrupo } from '../../models/ia-consumo.model';
 
 @Component({
   selector: 'app-ia-consumo',
   standalone: true,
-  imports: [DatePipe, DecimalPipe, ReactiveFormsModule, InputTextModule, SelectModule, BreadcrumbComponent, PageHeaderComponent, ListagemPaginadaComponent],
+  imports: [ChartModule, DatePipe, DecimalPipe, ReactiveFormsModule, InputTextModule, SelectModule, BreadcrumbComponent, PageHeaderComponent, ListagemPaginadaComponent],
   templateUrl: './ia-consumo.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
 export class IaConsumoComponent {
   private readonly auth = inject(AuthService);
+  private readonly theme = inject(ThemeService);
+  private exportacaoId = 0;
   private readonly service = inject(IaConsumoService);
   private readonly toast = inject(ToastService);
   private readonly destroyRef = inject(DestroyRef);
@@ -31,10 +37,14 @@ export class IaConsumoComponent {
   private readonly usuarioInicial = this.auth.usuario()?.id;
   private readonly empresaInicial = this.auth.empresaIdAtual();
   private consulta?: Subscription;
+  private exportacao?: Subscription;
+  readonly exportando = signal(false);
+  readonly fusoHorario = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+  readonly podeExportar = computed(() => this.contextoValido() && this.auth.temPermissao('ia_consumo:exportar'));
   private readonly hoje = new Date();
   private readonly inicioPadrao = dataCalendarioLocal(new Date(this.hoje.getFullYear(), this.hoje.getMonth(), 1));
   private readonly fimPadrao = dataCalendarioLocal(new Date(this.hoje.getFullYear(), this.hoje.getMonth() + 1, 1));
-  readonly form = inject(FormBuilder).nonNullable.group({ inicio: this.inicioPadrao, fim: this.fimPadrao, finalidade: '', modelo: '', status: 0 });
+  readonly form = inject(FormBuilder).nonNullable.group({ inicio: this.inicioPadrao, fim: this.fimPadrao, finalidade: '', modelo: '', status: 0, modulo: '', provedor: '' });
   readonly dados = signal<IaConsumo | null>(null);
   readonly carregando = signal(true);
   readonly pagina = signal(1);
@@ -53,12 +63,19 @@ export class IaConsumoComponent {
   };
 
   constructor() {
+    this.destroyRef.onDestroy(() => this.cancelarExportacao());
     effect(() => {
       if (!this.contextoValido()) {
         this.consulta?.unsubscribe();
+        this.cancelarExportacao();
         this.dados.set(null);
         this.carregando.set(false);
         void this.router.navigate(['/configuracoes'], { replaceUrl: true });
+      }
+    });
+    effect(() => {
+      if (!this.podeExportar()) {
+        this.cancelarExportacao();
       }
     });
     this.carregar();
@@ -109,12 +126,95 @@ export class IaConsumoComponent {
   }
 
 
+  readonly graficoDiario = computed<ChartData<'bar'>>(() => ({
+    labels: (this.dados()?.painel?.dias ?? []).map(dia => this.diaLocal(dia.data)),
+    datasets: [{ label: 'Custo calculado (USD)', data: (this.dados()?.painel?.dias ?? []).map(dia => dia.custoUsd), backgroundColor: contexto => getComputedStyle(contexto.chart.canvas).color, borderRadius: 4 }]
+  }));
+  readonly graficoFinalidades = computed(() => this.graficoGrupos(this.dados()?.painel?.finalidades ?? []));
+  readonly graficoModelos = computed(() => this.graficoGrupos(this.dados()?.painel?.modelos ?? []));
+  readonly opcoesGrafico = computed<ChartOptions<'bar'>>(() => {
+    const cor = this.theme.temaAtual() === 'dark' ? '#cbd5e1' : '#475569';
+    return {
+    responsive: true, maintainAspectRatio: false, animation: false,
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: contexto => this.custo(typeof contexto.raw === 'number' ? contexto.raw : null) } } },
+    scales: { y: { beginAtZero: true, ticks: { color: cor, callback: valor => this.custo(Number(valor)) } }, x: { ticks: { color: cor, autoSkip: true, maxRotation: 0 } } }
+    };
+  });
+
+  diaLocal(valor: string): string {
+    const partes = valor.split('-');
+    return partes.length === 3 ? partes[2] + '/' + partes[1] + '/' + partes[0] : valor;
+  }
+
+  nomeFinalidade(valor: string): string {
+    return valor === 'validacao_google' ? 'Validação Google' : valor;
+  }
+
+  private graficoGrupos(grupos: IaConsumoGrupo[]): ChartData<'bar'> {
+    return { labels: grupos.map(grupo => this.nomeFinalidade(grupo.nome)), datasets: [{ label: 'Custo calculado (USD)', data: grupos.map(grupo => grupo.custoUsd), backgroundColor: contexto => getComputedStyle(contexto.chart.canvas).color, borderRadius: 4 }] };
+  }
+
+  private filtroAplicado(): IaConsumoFiltro {
+    const periodo = this.periodoAplicado;
+    return {
+      inicio: lerDataLocal(periodo.inicio)!.toISOString(), fim: lerDataLocal(periodo.fim)!.toISOString(),
+      pagina: this.pagina(), tamanhoPagina: this.tamanhoPagina(), fusoHorario: this.fusoHorario,
+      ...(periodo.finalidade && { finalidade: periodo.finalidade }),
+      ...(periodo.modelo.trim() && { modelo: periodo.modelo.trim() }),
+      ...(periodo.modulo.trim() && { modulo: periodo.modulo.trim() }),
+      ...(periodo.provedor.trim() && { provedor: periodo.provedor.trim() }),
+      ...(periodo.status && { status: periodo.status })
+    };
+  }
+
+  exportar(): void {
+    if (!this.podeExportar() || this.exportando() || !this.dados()?.habilitado) return;
+    const exportacaoId = ++this.exportacaoId;
+    const periodo = { ...this.periodoAplicado };
+    this.exportando.set(true);
+    this.exportacao = this.service.exportar(this.filtroAplicado()).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: arquivo => {
+        if (!this.podeExportar() || exportacaoId !== this.exportacaoId) return;
+        const url = URL.createObjectURL(arquivo);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'consumo-ia-' + periodo.inicio + '-' + periodo.fim + '.csv';
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(url), 0);
+        this.exportando.set(false);
+      },
+      error: erro => { void this.erroExportacao(erro, exportacaoId); }
+    });
+  }
+
+  private async erroExportacao(erro: unknown, exportacaoId: number): Promise<void> {
+    let erroNormalizado = erro;
+    if (erro instanceof HttpErrorResponse && erro.error instanceof Blob) {
+      try {
+        const corpo: unknown = JSON.parse(await erro.error.text());
+        erroNormalizado = new HttpErrorResponse({ error: corpo, status: erro.status, statusText: erro.statusText });
+      } catch {
+        erroNormalizado = null;
+      }
+    }
+    if (!this.podeExportar() || exportacaoId !== this.exportacaoId) return;
+    this.exportando.set(false);
+    this.toast.erroServidor(erroNormalizado, 'Não foi possível exportar. Reduza o período ou os filtros e tente novamente.');
+  }
+
+  private cancelarExportacao(): void {
+    this.exportacaoId++;
+    this.exportacao?.unsubscribe();
+    this.exportando.set(false);
+  }
+
   private carregar(): void {
+    this.cancelarExportacao();
     this.consulta?.unsubscribe();
     if (!this.contextoValido()) return;
     this.carregando.set(true);
     this.dados.set(null);
-    this.consulta = this.service.listar({ inicio: lerDataLocal(this.periodoAplicado.inicio)!.toISOString(), fim: lerDataLocal(this.periodoAplicado.fim)!.toISOString(), pagina: this.pagina(), tamanhoPagina: this.tamanhoPagina(), ...(this.periodoAplicado.finalidade && { finalidade: this.periodoAplicado.finalidade }), ...(this.periodoAplicado.modelo.trim() && { modelo: this.periodoAplicado.modelo.trim() }), ...(this.periodoAplicado.status && { status: this.periodoAplicado.status }) })
+    this.consulta = this.service.listar(this.filtroAplicado())
       .pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: resposta => {
           if (!this.contextoValido()) return;

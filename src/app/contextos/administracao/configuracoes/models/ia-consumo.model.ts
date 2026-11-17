@@ -6,6 +6,9 @@ export interface IaConsumoFiltro {
   finalidade?: string;
   modelo?: string;
   status?: number;
+  modulo?: string;
+  provedor?: string;
+  fusoHorario?: string;
 }
 
 export interface IaConsumoItem {
@@ -33,9 +36,32 @@ export interface IaConsumoItem {
   tarifaFonte: string | null;
 }
 
+export interface IaConsumoGrupo {
+  nome: string;
+  tentativas: number;
+  custosPendentes: number;
+  custoUsd: number | null;
+}
+
+export interface IaConsumoDia {
+  data: string;
+  tentativas: number;
+  custosPendentes: number;
+  custoUsd: number | null;
+}
+
+export interface IaConsumoPainel {
+  fusoHorario: string;
+  inicioMedicaoUtc: string | null;
+  dias: IaConsumoDia[];
+  finalidades: IaConsumoGrupo[];
+  modelos: IaConsumoGrupo[];
+}
+
 export interface IaConsumo {
   habilitado: boolean;
   cobertura: string;
+  painel?: IaConsumoPainel;
   inicioUtc: string;
   fimUtc: string;
   atualizadoEmUtc: string;

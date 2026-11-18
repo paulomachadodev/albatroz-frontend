@@ -114,7 +114,7 @@ describe('Artes da peça', () => {
     artes.produto.set({ id: 99, nome: 'Caderno (C1)' });
     artes.form.patchValue({ formato: 3, subtitulo: ' Tudo para o ano ' });
     artes.gerar();
-    expect(api.gerar).toHaveBeenCalledWith(5, { formato: 3, modelo: 1, produtoId: 99, titulo: '', subtitulo: 'Tudo para o ano' });
+    expect(api.gerar).toHaveBeenCalledWith(5, { formato: 2, modelo: 1, produtoId: 99, titulo: '', subtitulo: 'Tudo para o ano' });
     expect(artes.modal()).toBeFalse();
   });
 

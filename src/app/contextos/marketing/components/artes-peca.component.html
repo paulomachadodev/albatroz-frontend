@@ -47,8 +47,13 @@
   <form [formGroup]="form" (ngSubmit)="gerar()" class="space-y-4">
     <fieldset [disabled]="processando()" class="space-y-4">
       <div>
-        <label for="arte-formato" class="text-xs font-semibold text-slate-500">Formato</label>
-        <p-select [unstyled]="true" [pt]="selectPt" inputId="arte-formato" formControlName="formato" [options]="formatos" optionLabel="rotulo" optionValue="valor" appendTo="body" class="block mt-1" />
+        @if (usaFoto()) {
+          <span class="text-xs font-semibold text-slate-500">Formato</span>
+          <p class="mt-1 text-sm">Feed retrato (1080 × 1350)</p>
+        } @else {
+          <label for="arte-formato" class="text-xs font-semibold text-slate-500">Formato</label>
+          <p-select [unstyled]="true" [pt]="selectPt" inputId="arte-formato" formControlName="formato" [options]="formatos" optionLabel="rotulo" optionValue="valor" appendTo="body" class="block mt-1" />
+        }
       </div>
       <div>
         <label for="arte-modelo" class="text-xs font-semibold text-slate-500">Modelo visual</label>

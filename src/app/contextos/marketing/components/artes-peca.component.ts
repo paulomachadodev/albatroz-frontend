@@ -52,7 +52,7 @@ export class ArtesPecaComponent {
   readonly buscarProdutos = this.service.buscarProdutosComFoto;
 
   readonly form = this.fb.nonNullable.group({
-    formato: [1, Validators.required],
+    formato: [2, Validators.required],
     modelo: [1, Validators.required],
     titulo: ['', Validators.maxLength(70)],
     subtitulo: ['', Validators.maxLength(120)]
@@ -67,6 +67,7 @@ export class ArtesPecaComponent {
     this.destroyRef.onDestroy(() => this.consulta?.unsubscribe());
     this.form.controls.modelo.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(valor => {
       this.modeloAtual.set(valor);
+      if (this.usaFoto()) this.form.controls.formato.setValue(2);
       if (!this.usaFoto()) {
         this.produto.set(null);
         if (!this.form.controls.titulo.value.trim()) this.form.controls.titulo.setValue(this.tituloSugerido().slice(0, 70));
@@ -103,7 +104,7 @@ export class ArtesPecaComponent {
 
   abrirCriacao(): void {
     if (!this.podeEditar()) return;
-    this.form.reset({ formato: 1, modelo: 1, titulo: '', subtitulo: '' });
+    this.form.reset({ formato: 2, modelo: 1, titulo: '', subtitulo: '' });
     this.modeloAtual.set(1);
     this.produto.set(null);
     this.modal.set(true);
@@ -121,7 +122,7 @@ export class ArtesPecaComponent {
     const valores = this.form.getRawValue();
     this.processando.set(true);
     this.service.gerar(this.pecaId(), {
-      formato: valores.formato, modelo: valores.modelo, produtoId: this.usaFoto() ? this.produto()!.id : null,
+      formato: this.usaFoto() ? 2 : valores.formato, modelo: valores.modelo, produtoId: this.usaFoto() ? this.produto()!.id : null,
       titulo: valores.titulo.trim(), subtitulo: valores.subtitulo.trim()
     }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: res => {

@@ -24,6 +24,10 @@ interface DiaGrade {
   pecas: PecaResumo[];
 }
 
+function inicioDaSemana(data: Date): Date {
+  return new Date(data.getFullYear(), data.getMonth(), data.getDate() - data.getDay());
+}
+
 function paraCampoLocal(iso: string | null): string {
   if (!iso) return '';
   const data = new Date(iso);
@@ -59,6 +63,9 @@ export class CalendarioMarketingComponent {
   readonly statusPeca = STATUS_PECA;
   readonly legenda = [1, 2, 3, 4];
 
+  readonly modo = signal<'mes' | 'semana'>('mes');
+  readonly semanaInicio = signal(inicioDaSemana(new Date()));
+  readonly arrastando = signal<PecaResumo | null>(null);
   readonly mes = signal(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
   readonly carregando = signal(true);
   readonly habilitado = signal(false);
@@ -69,13 +76,20 @@ export class CalendarioMarketingComponent {
   readonly novaData = new FormControl('', { nonNullable: true });
 
   readonly titulo = computed(() => {
+    if (this.modo() === 'semana') {
+      const inicio = this.semanaInicio();
+      const fim = new Date(inicio.getFullYear(), inicio.getMonth(), inicio.getDate() + 6);
+      const formato = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit' });
+      return formato.format(inicio) + ' a ' + formato.format(fim) + '/' + fim.getFullYear();
+    }
     const texto = new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric' }).format(this.mes());
     return texto.charAt(0).toUpperCase() + texto.slice(1);
   });
 
   readonly dias = computed<DiaGrade[]>(() => {
+    const semana = this.modo() === 'semana';
     const mes = this.mes();
-    const primeiro = new Date(mes.getFullYear(), mes.getMonth(), 1);
+    const primeiro = semana ? this.semanaInicio() : new Date(mes.getFullYear(), mes.getMonth(), 1);
     const hoje = dataCalendarioLocal();
     const cal = this.calendario();
     const datasUnicas = (cal?.datas ?? []).filter(d => !d.fim);
@@ -85,11 +99,13 @@ export class CalendarioMarketingComponent {
       const chave = dataCalendarioLocal(new Date(peca.planejadaPara));
       pecasPorDia.set(chave, [...(pecasPorDia.get(chave) ?? []), peca]);
     }
-    return Array.from({ length: 42 }, (_, i) => {
-      const data = new Date(primeiro.getFullYear(), primeiro.getMonth(), 1 - primeiro.getDay() + i);
+    return Array.from({ length: semana ? 7 : 42 }, (_, i) => {
+      const data = semana
+        ? new Date(primeiro.getFullYear(), primeiro.getMonth(), primeiro.getDate() + i)
+        : new Date(primeiro.getFullYear(), primeiro.getMonth(), 1 - primeiro.getDay() + i);
       const chave = dataCalendarioLocal(data);
       return {
-        chave, numero: data.getDate(), foraDoMes: data.getMonth() !== mes.getMonth(), hoje: chave === hoje,
+        chave, numero: data.getDate(), foraDoMes: !semana && data.getMonth() !== mes.getMonth(), hoje: chave === hoje,
         datas: datasUnicas.filter(d => d.inicio === chave).sort((a, b) => b.relevancia - a.relevancia),
         pecas: (pecasPorDia.get(chave) ?? []).sort((a, b) => (a.planejadaPara ?? '').localeCompare(b.planejadaPara ?? ''))
       };
@@ -114,7 +130,27 @@ export class CalendarioMarketingComponent {
     this.carregar();
   }
 
+  mudarModo(modo: 'mes' | 'semana'): void {
+    if (this.modo() === modo) return;
+    if (modo === 'semana') {
+      const hoje = new Date();
+      const base = this.mes().getMonth() === hoje.getMonth() && this.mes().getFullYear() === hoje.getFullYear() ? hoje : this.mes();
+      this.semanaInicio.set(inicioDaSemana(base));
+    } else {
+      const inicio = this.semanaInicio();
+      this.mes.set(new Date(inicio.getFullYear(), inicio.getMonth(), 1));
+    }
+    this.modo.set(modo);
+    this.carregar();
+  }
+
   mudarMes(deslocamento: number): void {
+    if (this.modo() === 'semana') {
+      const inicio = this.semanaInicio();
+      this.semanaInicio.set(new Date(inicio.getFullYear(), inicio.getMonth(), inicio.getDate() + 7 * deslocamento));
+      this.carregar();
+      return;
+    }
     const atual = this.mes();
     this.mes.set(new Date(atual.getFullYear(), atual.getMonth() + deslocamento, 1));
     this.carregar();
@@ -123,6 +159,7 @@ export class CalendarioMarketingComponent {
   irParaHoje(): void {
     const hoje = new Date();
     this.mes.set(new Date(hoje.getFullYear(), hoje.getMonth(), 1));
+    this.semanaInicio.set(inicioDaSemana(hoje));
     this.carregar();
   }
 
@@ -171,6 +208,39 @@ export class CalendarioMarketingComponent {
         else this.toast.erro('Não foi possível alterar a data.');
       },
       error: erro => { this.salvando.set(false); this.toast.erroServidor(erro, 'Não foi possível alterar a data. Atualize o calendário e tente de novo.'); }
+    });
+  }
+
+  iniciarArraste(evento: DragEvent, peca: PecaResumo): void {
+    if (!this.podeEditar() || this.salvando()) { evento.preventDefault(); return; }
+    this.arrastando.set(peca);
+    evento.dataTransfer?.setData('text/plain', String(peca.id));
+    if (evento.dataTransfer) evento.dataTransfer.effectAllowed = 'move';
+  }
+
+  permitirSoltar(evento: DragEvent): void {
+    if (this.arrastando()) evento.preventDefault();
+  }
+
+  soltar(evento: DragEvent, dia: DiaGrade): void {
+    evento.preventDefault();
+    const peca = this.arrastando();
+    this.arrastando.set(null);
+    if (!peca || !peca.planejadaPara || !this.podeEditar() || this.salvando()) return;
+    const atual = new Date(peca.planejadaPara);
+    const destino = lerDataLocal(dia.chave);
+    if (!destino || Number.isNaN(atual.getTime())) return;
+    if (dataCalendarioLocal(atual) === dia.chave) return;
+    destino.setHours(atual.getHours(), atual.getMinutes(), 0, 0);
+    this.salvando.set(true);
+    this.gravacao?.unsubscribe();
+    this.gravacao = this.pecasService.planejar(peca.id, destino.toISOString(), peca.versao).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: res => {
+        this.salvando.set(false);
+        if (res.sucesso) { this.toast.sucesso('Data prevista alterada.'); this.carregar(); }
+        else this.toast.erro('Não foi possível mover a peça.');
+      },
+      error: erro => { this.salvando.set(false); this.toast.erroServidor(erro, 'Não foi possível mover a peça. Atualize o calendário e tente de novo.'); this.carregar(); }
     });
   }
 

@@ -1,7 +1,7 @@
 <div class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark px-4 sm:px-6 lg:px-8 xl:px-10 py-6 lg:py-8">
   <div class="w-full space-y-6">
     <app-breadcrumb [itens]="[{label:'Início',rota:'/dashboard'},{label:'Marketing'},{label:'Calendário'}]"></app-breadcrumb>
-    <app-page-header titulo="Calendário de marketing" subtitulo="Postagens previstas e datas importantes para o comércio. Abra uma peça para mudar data e hora.">
+    <app-page-header titulo="Calendário de marketing" subtitulo="Postagens previstas e datas importantes para o comércio. Abra uma peça para mudar data e hora, ou arraste para outro dia.">
       <button acoes type="button" (click)="carregar()" [disabled]="carregando()" class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-sm font-bold">Atualizar</button>
     </app-page-header>
 
@@ -10,10 +10,14 @@
     } @else {
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div class="flex items-center gap-2">
-          <button type="button" (click)="mudarMes(-1)" aria-label="Mês anterior" class="size-9 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center"><span class="material-symbols-outlined text-base">chevron_left</span></button>
+          <button type="button" (click)="mudarMes(-1)" [attr.aria-label]="modo() === 'semana' ? 'Semana anterior' : 'Mês anterior'" class="size-9 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center"><span class="material-symbols-outlined text-base">chevron_left</span></button>
           <h2 class="min-w-44 text-center font-bold" aria-live="polite">{{ titulo() }}</h2>
-          <button type="button" (click)="mudarMes(1)" aria-label="Próximo mês" class="size-9 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center"><span class="material-symbols-outlined text-base">chevron_right</span></button>
-          <button type="button" (click)="irParaHoje()" class="ml-2 px-3 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-sm font-bold">Hoje</button>
+          <button type="button" (click)="mudarMes(1)" [attr.aria-label]="modo() === 'semana' ? 'Próxima semana' : 'Próximo mês'" class="size-9 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center"><span class="material-symbols-outlined text-base">chevron_right</span></button>
+          <div class="ml-2 flex rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 text-sm font-bold" role="group" aria-label="Visão do calendário">
+            <button type="button" (click)="mudarModo('mes')" [attr.aria-pressed]="modo() === 'mes'" class="px-3 py-2" [class]="modo() === 'mes' ? 'bg-primary text-white' : ''">Mês</button>
+            <button type="button" (click)="mudarModo('semana')" [attr.aria-pressed]="modo() === 'semana'" class="px-3 py-2" [class]="modo() === 'semana' ? 'bg-primary text-white' : ''">Semana</button>
+          </div>
+          <button type="button" (click)="irParaHoje()" class="px-3 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-sm font-bold">Hoje</button>
         </div>
         <ul class="flex flex-wrap gap-2 text-xs" aria-label="Legenda">
           @for (categoria of legenda; track categoria) { <li class="px-2 py-1 rounded-full" [class]="classeCategoria[categoria]">{{ categorias[categoria] }}</li> }
@@ -41,8 +45,9 @@
           </div>
           <div class="grid grid-cols-7">
             @for (dia of dias(); track dia.chave) {
-              <div class="min-h-28 border-b border-r border-slate-100 dark:border-slate-800 p-1.5 space-y-1" role="gridcell"
-                   [class]="dia.foraDoMes ? 'bg-slate-50 dark:bg-slate-950/40 text-slate-400' : ''">
+              <div class="border-b border-r border-slate-100 dark:border-slate-800 p-1.5 space-y-1" role="gridcell"
+                   [class]="(modo() === 'semana' ? 'min-h-72 ' : 'min-h-28 ') + (dia.foraDoMes ? 'bg-slate-50 dark:bg-slate-950/40 text-slate-400' : '')"
+                   (dragover)="permitirSoltar($event)" (drop)="soltar($event, dia)">
                 <div class="flex justify-end">
                   <span class="text-xs px-1.5 py-0.5 rounded-full" [class]="dia.hoje ? 'bg-primary text-white font-bold' : ''">{{ dia.numero }}</span>
                 </div>
@@ -50,8 +55,9 @@
                   <p class="px-1.5 py-0.5 rounded text-[11px] leading-tight break-words" [class]="classeCategoria[data.categoria] + (data.relevancia === 3 ? ' font-bold' : '')" [title]="data.dica">{{ data.nome }}</p>
                 }
                 @for (peca of dia.pecas; track peca.id) {
-                  <button type="button" (click)="abrir(peca)" class="w-full text-left px-1.5 py-0.5 rounded bg-primary text-white text-[11px] leading-tight truncate" [title]="peca.resumo">
-                    {{ peca.planejadaPara | date:'HH:mm' }} · {{ peca.rede }}@if (!peca.possuiArteAprovada) { · sem imagem }
+                  <button type="button" (click)="abrir(peca)" [attr.draggable]="podeEditar() ? 'true' : null" (dragstart)="iniciarArraste($event, peca)" (dragend)="arrastando.set(null)"
+                    class="w-full text-left px-1.5 py-0.5 rounded bg-primary text-white text-[11px] leading-tight" [class]="modo() === 'semana' ? 'break-words' : 'truncate'" [title]="peca.resumo">
+                    {{ peca.planejadaPara | date:'HH:mm' }} · {{ peca.rede }}@if (!peca.possuiArteAprovada) { · sem imagem }@if (modo() === 'semana') { <span class="block opacity-90">{{ peca.resumo }}</span> }
                   </button>
                 }
               </div>

@@ -1,4 +1,7 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, computed, effect, inject, signal } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Subject, Subscription, takeUntil } from 'rxjs';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../../core/auth/auth.service';
@@ -16,7 +19,7 @@ type ModoDrawer = 'criar' | 'editar';
 @Component({
   selector: 'app-briefings-lista',
   standalone: true,
-  imports: [FormsModule, DatePipe, ListagemPaginadaComponent, DrawerComponent, PageHeaderComponent, ThOrdenavelComponent, BreadcrumbComponent],
+  imports: [RouterLink, FormsModule, DatePipe, ListagemPaginadaComponent, DrawerComponent, PageHeaderComponent, ThOrdenavelComponent, BreadcrumbComponent],
   templateUrl: './briefings-lista.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
@@ -24,6 +27,15 @@ export class BriefingsListaComponent implements OnInit {
   private readonly service = inject(MarketingService);
   private readonly toast = inject(ToastService);
   private readonly auth = inject(AuthService);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly router = inject(Router);
+  private readonly usuarioInicial = this.auth.usuario()?.id;
+  private readonly empresaInicial = this.auth.empresaIdAtual();
+  private readonly contextoEncerrado = new Subject<void>();
+  private consulta?: Subscription;
+  private escrita?: Subscription;
+  readonly contextoValido = computed(() => this.auth.usuario()?.id === this.usuarioInicial && this.auth.empresaIdAtual() === this.empresaInicial && this.auth.temPermissao('marketing:ler'));
+
 
   readonly statusOpcoes = STATUS_BRIEFING;
 
@@ -58,17 +70,34 @@ export class BriefingsListaComponent implements OnInit {
   prazo = '';
   status = 1;
 
+  constructor() {
+    effect(() => {
+      if (!this.contextoValido()) {
+        this.contextoEncerrado.next();
+        this.consulta?.unsubscribe(); this.escrita?.unsubscribe();
+        this.itens.set([]); this.drawerAberto.set(false); this.briefingEmEdicao.set(null);
+        this.linhasSugeridas.set([]); this.redesSugeridas.set([]);
+        this.objetivo = ''; this.publico = ''; this.linha = ''; this.assunto = ''; this.produtoServico = ''; this.oferta = ''; this.formato = ''; this.rede = ''; this.referencias = ''; this.prazo = '';
+        this.carregando.set(false); this.salvando.set(false);
+        queueMicrotask(() => { if (!this.destroyRef.destroyed) void this.router.navigate(['/dashboard'], { replaceUrl: true }); });
+      }
+      if ((this.modoDrawer() === 'criar' && !this.podeCriar()) || (this.modoDrawer() === 'editar' && !this.podeEditar())) {
+        this.escrita?.unsubscribe(); this.salvando.set(false);
+      }
+    });
+  }
+
   ngOnInit() {
     this.carregar();
     this.carregarSugestoes();
   }
 
   podeCriar(): boolean {
-    return this.auth.temPermissao('marketing:criar');
+    return this.contextoValido() && this.auth.temPermissao('marketing:criar');
   }
 
   podeEditar(): boolean {
-    return this.auth.temPermissao('marketing:editar');
+    return this.contextoValido() && this.auth.temPermissao('marketing:editar');
   }
 
   rotuloStatus(valor: number): string {
@@ -82,14 +111,16 @@ export class BriefingsListaComponent implements OnInit {
   }
 
   carregar(pagina = 1) {
+    if (!this.contextoValido()) return;
+    this.consulta?.unsubscribe();
     this.carregando.set(true);
-    this.service.listarBriefings(pagina, this.tamanhoPagina(), {
+    this.consulta = this.service.listarBriefings(pagina, this.tamanhoPagina(), {
       texto: this.filtroTexto.trim() || undefined,
       rede: this.filtroRede.trim() || undefined,
       status: this.filtroStatus === '' ? undefined : Number(this.filtroStatus),
       ordenarPor: this.ordenacaoAtual()?.campo,
       direcao: this.ordenacaoAtual()?.direcao
-    }).subscribe({
+    }).pipe(takeUntil(this.contextoEncerrado), takeUntilDestroyed(this.destroyRef)).subscribe({
       next: res => {
         this.itens.set(res.dados?.dados ?? []);
         this.totalRegistros.set(res.dados?.totalRegistros ?? 0);
@@ -105,7 +136,7 @@ export class BriefingsListaComponent implements OnInit {
   }
 
   private carregarSugestoes() {
-    this.service.obterEstrategia().subscribe({
+    this.service.obterEstrategia().pipe(takeUntil(this.contextoEncerrado), takeUntilDestroyed(this.destroyRef)).subscribe({
       next: res => {
         const estrategia = res.dados;
         if (!estrategia?.habilitado) return;
@@ -143,6 +174,7 @@ export class BriefingsListaComponent implements OnInit {
   }
 
   abrirCriar() {
+    if (!this.podeCriar()) return;
     this.modoDrawer.set('criar');
     this.briefingEmEdicao.set(null);
     this.preencher({ objetivo: '', publico: '', linha: '', assunto: '', produtoServico: '', oferta: '', formato: '', rede: '', referencias: '', prazo: null }, 1);
@@ -150,6 +182,7 @@ export class BriefingsListaComponent implements OnInit {
   }
 
   abrirEditar(briefing: Briefing) {
+    if (!this.contextoValido()) return;
     this.modoDrawer.set('editar');
     this.briefingEmEdicao.set(briefing);
     this.preencher(briefing, briefing.status);
@@ -166,6 +199,7 @@ export class BriefingsListaComponent implements OnInit {
   }
 
   salvar() {
+    if (!this.contextoValido() || this.salvando() || this.somenteLeitura() || (this.modoDrawer() === 'criar' ? !this.podeCriar() : !this.podeEditar())) return;
     const dados = this.montar();
     if (!dados.objetivo || !dados.assunto || !dados.formato || !dados.rede) {
       this.toast.erro('Informe objetivo, assunto, formato e rede.');
@@ -176,7 +210,7 @@ export class BriefingsListaComponent implements OnInit {
     const chamada = this.modoDrawer() === 'criar' || !emEdicao
       ? this.service.criarBriefing(dados)
       : this.service.atualizarBriefing(emEdicao.id, { ...dados, status: this.status, versaoEsperada: emEdicao.versao });
-    chamada.subscribe({
+    this.escrita = chamada.pipe(takeUntil(this.contextoEncerrado), takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.salvando.set(false);
         this.toast.sucesso(emEdicao ? 'Briefing atualizado.' : 'Briefing criado.');

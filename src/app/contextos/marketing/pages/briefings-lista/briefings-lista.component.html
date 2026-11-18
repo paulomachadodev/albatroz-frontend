@@ -72,6 +72,7 @@
           <th class="px-6 py-4">
             <app-th-ordenavel campo="prazo" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Prazo</app-th-ordenavel>
           </th>
+          <th class="px-6 py-4">Gerações</th>
           <th class="px-6 py-4 text-center">
             <app-th-ordenavel campo="status" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Situação</app-th-ordenavel>
           </th>
@@ -84,12 +85,14 @@
           <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{{ item.rede }}</td>
           <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{{ item.formato }}</td>
           <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{{ item.prazo ? (item.prazo | date:'dd/MM/yyyy') : '-' }}</td>
+          <td class="px-6 py-4"><a [routerLink]="['/marketing/briefings',item.id,'geracoes']" (click)="$event.stopPropagation()" class="text-primary text-xs font-bold hover:underline">{{ item.status === 2 && podeCriar() ? 'Gerar texto / histórico' : 'Ver gerações' }}</a></td>
           <td class="px-6 py-4 text-center">
             <span class="px-2 py-0.5 rounded-full text-xs font-bold" [class]="classeStatus(item.status)">{{ rotuloStatus(item.status) }}</span>
           </td>
         </tr>
       </ng-template>
 
+      <ng-template #linhaMobile let-item><div class="p-4 space-y-2 text-sm"><p class="font-semibold break-words">{{ item.assunto }}</p><p>{{ item.rede }} · {{ item.formato }} · {{ rotuloStatus(item.status) }}</p><p>{{ item.prazo ? (item.prazo | date:'dd/MM/yyyy') : 'Sem prazo' }}</p><div class="flex flex-wrap gap-4"><button type="button" (click)="abrirEditar(item)" class="text-primary text-xs font-bold">Ver briefing</button><a [routerLink]="['/marketing/briefings',item.id,'geracoes']" class="text-primary text-xs font-bold">{{ item.status === 2 && podeCriar() ? 'Gerar texto / histórico' : 'Ver gerações' }}</a></div></div></ng-template>
     </app-listagem-paginada>
 
   </div>

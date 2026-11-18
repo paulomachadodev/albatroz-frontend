@@ -1,0 +1,46 @@
+<div class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark px-4 sm:px-6 lg:px-8 xl:px-10 py-6 lg:py-8">
+  <div class="w-full space-y-8">
+    <app-breadcrumb [itens]="[{label:'Início',rota:'/dashboard'},{label:'Marketing'},{label:'Briefings',rota:'/marketing/briefings'},{label:'Gerações de texto'}]" />
+    <app-page-header titulo="Gerações de texto" [subtitulo]="briefing()?.assunto || 'Acompanhe os rascunhos deste briefing.'">
+      <button acoes type="button" (click)="carregar()" [disabled]="carregando() || processando() || !contextoValido()" class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 font-bold text-sm disabled:opacity-50">Atualizar</button>
+    </app-page-header>
+    @if (carregando()) {
+      <div class="h-48 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 animate-pulse" aria-label="Carregando gerações"></div>
+    } @else if (!habilitado()) {
+      <p role="status" class="text-sm text-slate-500">Geração de texto indisponível.</p>
+    } @else {
+      <section class="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 space-y-4" aria-label="Solicitar rascunho">
+        <p class="text-sm text-slate-500">A geração usa a chave Google da empresa atual, com controle de limites ativo, e pode gerar cobrança. O resultado é um rascunho para revisão humana.</p>
+        <p class="text-xs text-slate-500">{{ briefing()?.rede }} · {{ briefing()?.formato }}. Marca, estratégia editorial e briefing são registrados na versão usada em cada geração.</p>
+        @if (briefing()?.status !== 2 && !retomavel()) { <p role="status" class="text-sm text-slate-500">Confirme o briefing antes de solicitar uma geração.</p> }
+        @if (retomavel()) { <p role="status" class="text-sm text-amber-700 dark:text-amber-300">A solicitação anterior ainda não foi confirmada. Retome o mesmo pedido para evitar duplicação. Caso ainda não tenha sido registrado, será criado e poderá gerar cobrança.</p> }
+        @if (podeCriar()) { <div class="flex justify-end"><button type="button" (click)="gerar()" [disabled]="!podeGerar()" class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm disabled:opacity-50">{{ processando() ? 'Processando...' : (retomavel() ? 'Retomar solicitação' : 'Gerar novo rascunho') }}</button></div> }
+      </section>
+      <section class="space-y-4" aria-labelledby="geracoes-historico">
+        <h2 id="geracoes-historico" class="font-bold">Gerações recentes</h2>
+        <p class="text-xs text-slate-500">Até 20 execuções recentes. Gerações pendentes e em execução são atualizadas automaticamente enquanto esta tela estiver aberta.</p>
+        <app-listagem-paginada [itens]="itens()" [exibirFiltros]="false" [exibirPaginacao]="false" [totalRegistros]="itens().length" [totalPaginas]="1" tituloVazio="Nenhuma geração registrada para este briefing.">
+          <ng-template #cabecalho><tr><th class="px-4 py-4">Solicitada em</th><th class="px-4 py-4">Situação</th><th class="px-4 py-4">Ação</th></tr></ng-template>
+          <ng-template #linha let-item><tr><td class="px-4 py-4 text-sm">{{ item.criadoEmUtc | date:'dd/MM/yyyy HH:mm:ss' }} local</td><td class="px-4 py-4 text-sm">{{ status(item.status) }}</td><td class="px-4 py-4"><button type="button" (click)="selecionar(item)" class="text-xs font-bold text-primary hover:underline">Ver rascunho</button></td></tr></ng-template>
+          <ng-template #linhaMobile let-item><div class="p-4 space-y-2 text-sm"><p class="font-semibold">{{ status(item.status) }}</p><p>{{ item.criadoEmUtc | date:'dd/MM/yyyy HH:mm:ss' }} local</p><button type="button" (click)="selecionar(item)" class="text-xs font-bold text-primary hover:underline">Ver rascunho</button></div></ng-template>
+        </app-listagem-paginada>
+      </section>
+      @if (selecionada(); as geracao) {
+        <section class="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 space-y-5" aria-labelledby="geracao-resultado">
+          <div class="flex flex-col sm:flex-row justify-between gap-3"><div><h2 id="geracao-resultado" class="font-bold">Rascunho para revisão humana</h2><p role="status" class="text-sm text-slate-500">{{ status(geracao.status) }} · atualizado em {{ geracao.atualizadoEmUtc | date:'dd/MM/yyyy HH:mm:ss' }} local</p></div>@if (geracao.status === 1 && podeEditar()) { <button type="button" (click)="cancelar()" [disabled]="processando()" class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 font-bold text-sm disabled:opacity-50">Cancelar geração</button> }</div>
+          @if (geracao.erro) { <p role="alert" class="text-sm text-red-700 dark:text-red-300 whitespace-pre-wrap break-words">{{ geracao.erro }}</p> }
+          @if (geracao.status === 6) { <p class="text-sm text-slate-500">O resultado ou custo não pôde ser confirmado. Não houve repetição automática da chamada.</p> }
+          @if (geracao.status === 1 || geracao.status === 2) { <p class="text-sm text-slate-500">O processamento ocorre no servidor. Você pode sair e consultar o resultado depois.</p> }
+          @if (geracao.resultado; as resultado) {
+            <div><h3 class="text-xs font-semibold text-slate-500">Legenda</h3><p class="mt-2 text-sm whitespace-pre-wrap break-words">{{ resultado.legenda }}</p></div>
+            <div><h3 class="text-xs font-semibold text-slate-500">Chamada para ação</h3><p class="mt-2 text-sm whitespace-pre-wrap break-words">{{ resultado.cta }}</p></div>
+            <div><h3 class="text-xs font-semibold text-slate-500">Hashtags</h3><p class="mt-2 text-sm break-words">{{ resultado.hashtags.join(' ') }}</p></div>
+            <div><h3 class="text-xs font-semibold text-slate-500">Ideia visual</h3><p class="mt-2 text-sm whitespace-pre-wrap break-words">{{ resultado.ideiaVisual }}</p></div>
+            @if (resultado.roteiro.length) { <div><h3 class="text-xs font-semibold text-slate-500">Roteiro</h3><ol class="mt-2 space-y-2 list-decimal pl-5 text-sm">@for (etapa of resultado.roteiro; track $index) { <li class="whitespace-pre-wrap break-words">{{ etapa }}</li> }</ol></div> }
+          }
+          <details class="text-xs text-slate-500"><summary class="cursor-pointer">Versões utilizadas</summary><div class="mt-2 space-y-1 break-all"><p>Marca: {{ geracao.marcaVersao }}</p><p>Estratégia: {{ geracao.estrategiaVersao }}</p><p>Briefing: {{ geracao.briefingVersao }}</p></div></details>
+        </section>
+      }
+    }
+  </div>
+</div>

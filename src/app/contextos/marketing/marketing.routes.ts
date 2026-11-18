@@ -3,6 +3,7 @@ import { permissaoGuard } from '../../core/auth/permissao.guard';
 import { configuracaoAlteradaGuard } from '../administracao/configuracoes/pages/configuracoes-pagina/configuracao-formulario.base';
 
 export const MARKETING_ROUTES: Routes = [
+  { path: 'briefings/:id/geracoes', canActivate: [permissaoGuard], data: { permissao: 'marketing:ler' }, title: 'Gerações de texto', loadComponent: () => import('./pages/geracoes-briefing/geracoes-briefing.component').then(m => m.GeracoesBriefingComponent) },
   { path: '', pathMatch: 'full', redirectTo: 'estrategia' },
   {
     path: 'estrategia',

@@ -10,7 +10,7 @@
       @if (!limites.habilitado) {
         <p role="status" class="text-sm text-slate-500">Configuração de limites indisponível.</p>
       } @else {
-        <p class="text-sm text-slate-500">Cobertura: somente validações Google. Reservas são estimativas de proteção; o custo real pode excedê-las. Os valores em USD não representam a fatura do provedor.</p>
+        <p class="text-sm text-slate-500">Cobertura: validações Google e geração de textos de marketing. Reservas são estimativas de proteção; o custo real pode excedê-las. Os valores em USD não representam a fatura do provedor.</p>
         <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4" aria-label="Saldo da competência">
           <div class="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5"><p class="text-sm text-slate-500">Comprometido conhecido</p><p class="text-lg font-bold break-words">{{ moeda(limites.saldo.comprometidoUsd) }}</p><p class="text-xs text-slate-500">Competência {{ limites.saldo.competencia }} · {{ limites.configuracao.fusoHorario }}</p></div>
           <div class="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5"><p class="text-sm text-slate-500">Apurado conhecido</p><p class="text-lg font-bold break-words">{{ moeda(limites.saldo.custoApuradoUsd) }}</p></div>

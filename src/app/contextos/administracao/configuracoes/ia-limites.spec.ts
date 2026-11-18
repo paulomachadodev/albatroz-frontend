@@ -16,7 +16,7 @@ import { ConfiguracoesPaginaComponent } from './pages/configuracoes-pagina/confi
 import { IaLimites } from './models/ia-limites.model';
 
 const limiteFixture = (): Resultado<IaLimites> => ({ sucesso: true, dados: {
-  habilitado: true, cobertura: 'validacao_google',
+  habilitado: true, cobertura: 'validacao_google,marketing_conteudo',
   configuracao: { versao: 'versao-original', ativo: false, orcamentoMensalUsd: null, limiteExecucaoUsd: null, reservaTentativaUsd: 0.01, concorrenciaMaxima: null, alertaPercentual: 80, fusoHorario: 'America/Sao_Paulo', destinatarios: [] },
   saldo: { competencia: '2026-11', inicioUtc: '2026-11-01T03:00:00Z', fimUtc: '2026-12-01T03:00:00Z', custoApuradoUsd: 0.00000001, reservadoUsd: 0.01, incertoUsd: 0.02, comprometidoUsd: 0.03000001, disponivelUsd: null, emExecucao: 1, incertas: 1 },
   reservas: [{ tentativaId: 'tentativa-incerta', execucaoId: 'execucao', competencia: '2026-11', status: 3, valorReservadoUsd: 0.02, valorComprometidoUsd: 0.02, iniciadoEmUtc: '2026-11-17T15:00:00Z', concluidoEmUtc: null }], alertas: []
@@ -52,7 +52,7 @@ describe('Limites de IA', () => {
     expect(pagina.moeda(null)).toContain('Sem limite');
     expect(pagina.moeda(0.00000001)).toContain('0,00000001');
     const texto = harness.routeNativeElement?.textContent ?? '';
-    expect(texto).toContain('somente validações Google');
+    expect(texto).toContain('validações Google e geração de textos de marketing');
     expect(texto).toContain('Incerta');
     expect(texto).toContain('tempo decorrido não libera');
     expect([...harness.routeNativeElement!.querySelectorAll('button')].some(botao => botao.textContent?.trim() === 'Filtros')).toBeFalse();

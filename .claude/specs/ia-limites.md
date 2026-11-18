@@ -11,3 +11,5 @@ Reservas incertas podem ser conciliadas mediante valor explícito não negativo 
 Limpar e cancelar consultas, ações, modais e confirmações pendentes ao trocar empresa/usuário, perder permissão ou destruir a página. Somente leitura desabilita formulário e não expõe ações de conciliação. Reaproveitar formulário base e guard de alterações não salvas, listagem paginada e modal compartilhados.
 
 Validação: 71 testes ChromeHeadless aprovados, sendo 10 cenários próprios de IA-03B: cobertura/custo conhecido, PBAC, null/zero e versão, validação, conciliação comprovada, cancelamento por tenant/permissão/confirmação, indisponibilidade/conflito, consumo sem reserva e limites de destinatários/justificativa. Sem erros NG0101 no gate final.
+
+MKT-03A: a capacidade da política cobre validacao_google e marketing_conteudo (somente texto homologado). Isso não representa ativação da flag de geração nem proteção dos consumidores legados. Cobertura exibida: validações Google e geração de textos de marketing.

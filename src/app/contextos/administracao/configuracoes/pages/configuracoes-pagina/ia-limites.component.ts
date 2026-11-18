@@ -115,7 +115,7 @@ export class IaLimitesComponent extends ConfiguracaoFormularioBase {
     const destinatarios = valores.destinatarios.split(/[;,\n]/).map(email => email.trim()).filter(Boolean);
     if (destinatarios.length > 10 || destinatarios.some(email => email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))) { this.toast.aviso('Informe até 10 e-mails válidos, com até 254 caracteres cada.'); return; }
     const id = ++this.acaoId;
-    const confirmado = await this.confirm.confirmar('Salvar limites de IA?', 'A política protege somente as validações Google. Reservas são estimativas e a cobrança externa pode excedê-las.', { textoConfirmar: 'Salvar' });
+    const confirmado = await this.confirm.confirmar('Salvar limites de IA?', 'A política protege validações Google e geração de textos de marketing. Reservas são estimativas e a cobrança externa pode excedê-las.', { textoConfirmar: 'Salvar' });
     if (!confirmado || id !== this.acaoId || this.destroyRef.destroyed || !this.podeEditar() || !this.disponivel()) return;
     this.processando.set(true);
     this.acao = this.service.salvar({ ...valores, versao, fusoHorario: valores.fusoHorario.trim(), destinatarios }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({

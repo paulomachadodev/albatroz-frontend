@@ -50,6 +50,8 @@ export class IaConsumoComponent {
     switch (this.dados()?.cobertura) {
       case 'validacao_google': return 'Cobertura: somente validações da chave Google.';
       case 'fluxos_google': return 'Cobertura: validações da chave e fluxos Google instrumentados.';
+      case 'validacao_google,marketing_conteudo': return 'Cobertura: validações da chave Google e geração de textos de marketing.';
+      case 'fluxos_google,marketing_conteudo': return 'Cobertura: validações da chave, fluxos Google instrumentados e geração de textos de marketing.';
       default: return 'Cobertura não informada.';
     }
   });
@@ -63,7 +65,7 @@ export class IaConsumoComponent {
     { rotulo: 'Todas', valor: '' }, { rotulo: 'Validação Google', valor: 'validacao_google' },
     { rotulo: 'Lista escolar', valor: 'lista_escolar' }, { rotulo: 'Fatura', valor: 'fatura' },
     { rotulo: 'Classificação de produto', valor: 'classificacao_produto' }, { rotulo: 'Descrição de produto', valor: 'descricao_produto' },
-    { rotulo: 'Tendência de volta às aulas', valor: 'tendencia_volta_aulas' }, { rotulo: 'Embedding', valor: 'embedding' }
+    { rotulo: 'Tendência de volta às aulas', valor: 'tendencia_volta_aulas' }, { rotulo: 'Embedding', valor: 'embedding' }, { rotulo: 'Conteúdo de marketing', valor: 'marketing_conteudo' }
   ];
   readonly resultados = [{ rotulo: 'Todos', valor: 0 }, { rotulo: 'Pendente', valor: 1 }, { rotulo: 'Sucesso', valor: 2 }, { rotulo: 'Falha', valor: 3 }, { rotulo: 'Indeterminada', valor: 4 }];
   readonly selectPt = {

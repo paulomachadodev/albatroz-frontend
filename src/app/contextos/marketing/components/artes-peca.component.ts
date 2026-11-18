@@ -54,6 +54,7 @@ export class ArtesPecaComponent {
   readonly destinos = signal<{ id: number; rotulo: string }[]>([]);
   readonly destinoId = signal<number | null>(null);
   readonly statusPublicacao = STATUS_PUBLICACAO;
+  readonly rascunhos = computed(() => this.itens().filter(a => a.status === 1 && a.arquivoDisponivel).length);
   readonly aprovadas = computed(() => this.itens().filter(a => a.status === 2 && a.arquivoDisponivel).slice(0, 10));
   readonly produto = signal<OpcaoSelectBusca | null>(null);
   readonly formatos = FORMATOS_ARTE;

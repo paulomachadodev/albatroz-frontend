@@ -1,5 +1,6 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { TooltipModule } from 'primeng/tooltip';
 import { exportarPlanilha } from '../../../../shared/utils/exportar-planilha';
 import { VendasService } from '../../services/vendas.service';
 import { RelatorioVendaProduto, RelatorioVendaProdutosFiltro } from '../../models/relatorio-venda-produto.model';
@@ -16,7 +17,7 @@ import { ContatosService } from '../../../cadastros/contatos/services/contatos.s
 @Component({
   selector: 'app-relatorio-vendas-produtos',
   standalone: true,
-  imports: [FormsModule, ListagemPaginadaComponent, PageHeaderComponent, ThOrdenavelComponent, SelectBuscaComponent, SelectBuscaMultiComponent, BreadcrumbComponent],
+  imports: [FormsModule, TooltipModule, ListagemPaginadaComponent, PageHeaderComponent, ThOrdenavelComponent, SelectBuscaComponent, SelectBuscaMultiComponent, BreadcrumbComponent],
   templateUrl: './relatorio-vendas-produtos.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })

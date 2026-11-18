@@ -1,6 +1,7 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { TooltipModule } from 'primeng/tooltip';
+import { PrimeNG } from 'primeng/config';
+import { DatePickerModule } from 'primeng/datepicker';
 import { exportarPlanilha } from '../../../../shared/utils/exportar-planilha';
 import { VendasService } from '../../services/vendas.service';
 import { RelatorioVendaProduto, RelatorioVendaProdutosFiltro } from '../../models/relatorio-venda-produto.model';
@@ -17,7 +18,8 @@ import { ContatosService } from '../../../cadastros/contatos/services/contatos.s
 @Component({
   selector: 'app-relatorio-vendas-produtos',
   standalone: true,
-  imports: [FormsModule, TooltipModule, ListagemPaginadaComponent, PageHeaderComponent, ThOrdenavelComponent, SelectBuscaComponent, SelectBuscaMultiComponent, BreadcrumbComponent],
+  imports: [FormsModule, DatePickerModule, ListagemPaginadaComponent, PageHeaderComponent, ThOrdenavelComponent, SelectBuscaComponent, SelectBuscaMultiComponent, BreadcrumbComponent],
+  providers: [PrimeNG],
   templateUrl: './relatorio-vendas-produtos.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
@@ -40,6 +42,20 @@ export class RelatorioVendasProdutosComponent implements OnInit {
   marcasSelecionadas: OpcaoSelectBusca[] = [];
   fornecedorSelecionado: OpcaoSelectBusca | null = null;
   periodoPreset: '' | 'jan_mar' | 'ult90' | 'mes_atual' | 'personalizado' = 'ult90';
+  intervaloDatas: Date[] | null = null;
+  readonly calendarioPt = {
+    root: { class: 'relative inline-flex w-full items-center' },
+    pcInputText: { root: { class: 'w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 pr-10 text-sm text-slate-900 dark:text-slate-100 outline-none focus:ring-2 focus:ring-primary/20' } },
+    inputIconContainer: { class: 'absolute right-3 flex items-center text-slate-500' },
+    panel: { class: 'z-50 rounded-xl border border-slate-200 bg-white p-4 text-slate-900 shadow-xl dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100' },
+    header: { class: 'flex items-center justify-between gap-3 pb-3 font-semibold' },
+    pcPrevButton: { root: { class: 'rounded p-2 hover:bg-slate-100 dark:hover:bg-slate-800' } },
+    pcNextButton: { root: { class: 'rounded p-2 hover:bg-slate-100 dark:hover:bg-slate-800' } },
+    title: { class: 'flex items-center gap-2' },
+    table: { class: 'w-full border-collapse text-center text-sm' },
+    weekDay: { class: 'inline-flex h-9 w-9 items-center justify-center text-xs font-semibold text-slate-500' },
+    day: { class: 'inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-full hover:bg-primary/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary [&.p-datepicker-day-selected]:bg-primary [&.p-datepicker-day-selected]:text-white [&.p-datepicker-day-selected-range]:bg-primary/20' }
+  };
 
   buscarMarcas = (termo: string) => this.marcasService.buscar(termo);
   buscarFornecedores = (termo: string) => this.contatosService.buscar(termo, 'Fornecedor');
@@ -48,8 +64,19 @@ export class RelatorioVendasProdutosComponent implements OnInit {
     private vendasService: VendasService,
     private marcasService: MarcasService,
     private contatosService: ContatosService,
-    private toast: ToastService
-  ) {}
+    private toast: ToastService,
+    primeNg: PrimeNG
+  ) {
+    primeNg.setConfig({ theme: 'none', translation: {
+      firstDayOfWeek: 0,
+      dayNames: ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'],
+      dayNamesShort: ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'],
+      dayNamesMin: ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'],
+      monthNames: ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'],
+      monthNamesShort: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
+      today: 'Hoje', clear: 'Limpar', prevMonth: 'Mês anterior', nextMonth: 'Próximo mês', chooseDate: 'Escolher data'
+    } });
+  }
 
   ngOnInit() {
     this.carregando.set(false);
@@ -79,12 +106,37 @@ export class RelatorioVendasProdutosComponent implements OnInit {
 
   aoMudarPreset(preset: '' | 'jan_mar' | 'ult90' | 'mes_atual' | 'personalizado') {
     this.periodoPreset = preset;
-    if (preset !== 'personalizado') {
+    if (preset === 'personalizado') {
+      const inicio = this.dataLocal(this.filtro.dataInicio);
+      const fim = this.dataLocal(this.filtro.dataFim);
+      this.intervaloDatas = inicio && fim ? [inicio, fim] : null;
+    } else {
+      this.intervaloDatas = null;
       this.aplicarPresetDatas(preset);
     }
   }
 
+  private dataLocal(valor?: string): Date | null {
+    if (!valor) return null;
+    const [ano, mes, dia] = valor.split('-').map(Number);
+    const data = new Date(ano, mes - 1, dia);
+    return Number.isNaN(data.getTime()) ? null : data;
+  }
+
+  aoMudarIntervalo(datas: (Date | null)[] | null): void {
+    this.intervaloDatas = datas?.filter((data): data is Date => data instanceof Date && !Number.isNaN(data.getTime())) ?? null;
+    this.filtro.dataInicio = this.intervaloDatas?.[0] ? this.formatarDataIso(this.intervaloDatas[0]) : undefined;
+    this.filtro.dataFim = this.intervaloDatas?.[1] ? this.formatarDataIso(this.intervaloDatas[1]) : undefined;
+  }
+
+  private periodoValido(): boolean {
+    if (this.periodoPreset !== 'personalizado' || (this.filtro.dataInicio && this.filtro.dataFim)) return true;
+    this.toast.erro('Selecione as datas inicial e final do período.');
+    return false;
+  }
+
   carregar(pagina = 1) {
+    if (!this.periodoValido()) return;
     this.carregando.set(true);
     this.aindaNaoFiltrado.set(false);
     this.vendasService.listarRelatorioProdutos({ pagina, tamanho: this.tamanhoPagina() }, this.filtro).subscribe({
@@ -117,6 +169,7 @@ export class RelatorioVendasProdutosComponent implements OnInit {
     this.marcasSelecionadas = [];
     this.fornecedorSelecionado = null;
     this.periodoPreset = 'ult90';
+    this.intervaloDatas = null;
     this.ordenacaoAtual.set(null);
     this.itens.set([]);
     this.totalRegistros.set(0);
@@ -147,6 +200,7 @@ export class RelatorioVendasProdutosComponent implements OnInit {
   }
 
   exportarRelatorio(formato: 'xlsx' | 'csv') {
+    if (!this.periodoValido()) return;
     this.exportando.set(true);
     this.vendasService.exportarRelatorioProdutos(this.filtro).subscribe({
       next: res => {

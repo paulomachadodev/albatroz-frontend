@@ -34,10 +34,14 @@ describe('Intervalo do relatório de vendas', () => {
   it('não filtra nem exporta quando falta a data final', () => {
     componente.aoMudarPreset('personalizado');
     componente.aoMudarIntervalo([new Date(2026, 10, 5), null]);
+    componente.totalQuantidade.set(20);
+    componente.totaisDisponiveis.set(true);
     componente.aplicarFiltros();
     componente.exportarRelatorio('xlsx');
     expect(vendas.listarRelatorioProdutos).not.toHaveBeenCalled();
     expect(vendas.exportarRelatorioProdutos).not.toHaveBeenCalled();
+    expect(componente.totalQuantidade()).toBe(0);
+    expect(componente.totaisDisponiveis()).toBeFalse();
     expect(toast.erro).toHaveBeenCalledWith('Selecione as datas inicial e final do período.');
   });
 

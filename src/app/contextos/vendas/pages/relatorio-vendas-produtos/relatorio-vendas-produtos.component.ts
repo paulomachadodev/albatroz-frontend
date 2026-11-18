@@ -139,13 +139,16 @@ export class RelatorioVendasProdutosComponent implements OnInit, OnDestroy {
   }
 
   carregar(pagina = 1) {
-    if (!this.periodoValido()) return;
     this.consultaAtual?.unsubscribe();
-    this.carregando.set(true);
     this.totaisDisponiveis.set(false);
     this.totalQuantidade.set(0);
     this.totalValor.set(0);
     this.totalEstoque.set(0);
+    if (!this.periodoValido()) {
+      this.carregando.set(false);
+      return;
+    }
+    this.carregando.set(true);
     this.aindaNaoFiltrado.set(false);
     this.consultaAtual = this.vendasService.listarRelatorioProdutos({ pagina, tamanho: this.tamanhoPagina() }, this.filtro).subscribe({
       next: res => {

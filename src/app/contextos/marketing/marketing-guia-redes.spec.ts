@@ -73,20 +73,11 @@ describe('Guia e perfis sociais', () => {
     const h = await RouterTestingHarness.create(); const pagina = await h.navigateByUrl('/marketing/estrategia', EstrategiaEditorialComponent);
     expect(pagina.form.controls.redes.value).toEqual(['Canal antigo']); expect(pagina.redesOpcoes().find(o => o.valor === 'Canal antigo')?.desabilitada).toBeTrue(); expect(pagina.redesOpcoes().find(o => o.valor === 'Instagram')?.desabilitada).toBeFalse(); expect(pagina.totalAtivas()).toBe(100);
   });
-  it('estratégia alterna redes e formatos por botões sem truncar e sem aceitar legado novo', async () => {
-    const h = await RouterTestingHarness.create(); const pagina = await h.navigateByUrl('/marketing/estrategia', EstrategiaEditorialComponent);
-    h.detectChanges();
-    const botoes = Array.from<HTMLButtonElement>(h.routeNativeElement!.querySelectorAll('[aria-labelledby=estrategia-redes-rotulo] button, [aria-labelledby=estrategia-formatos-rotulo] button'));
-    expect(botoes.map(b => b.textContent?.trim())).toContain('Instagram');
-    expect(botoes.map(b => b.textContent?.trim())).toContain('Post');
-    pagina.alternarOpcao('redes', { valor: 'Instagram', desabilitada: false });
-    expect(pagina.form.controls.redes.value).toEqual(['Canal antigo', 'Instagram']);
-    pagina.alternarOpcao('redes', { valor: 'Instagram', desabilitada: false });
-    pagina.alternarOpcao('redes', { valor: 'Canal antigo', desabilitada: true });
-    expect(pagina.form.controls.redes.value).toEqual([]);
-    pagina.alternarOpcao('redes', { valor: 'Canal antigo', desabilitada: true });
-    expect(pagina.form.controls.redes.value).toEqual([]);
-    expect(pagina.alterado()).toBeTrue();
+  it('estratégia usa o seletor múltiplo padrão do sistema nos dois campos', async () => {
+    const h = await RouterTestingHarness.create(); await h.navigateByUrl('/marketing/estrategia', EstrategiaEditorialComponent); h.detectChanges();
+    const seletores = h.routeNativeElement!.querySelectorAll('p-multiselect');
+    expect(seletores.length).toBe(2);
+    expect(h.routeNativeElement!.textContent).not.toContain('empty');
   });
   it('guia começa fechado e navegar etapas não preenche os campos', async () => {
     const h = await RouterTestingHarness.create(); const pagina = await h.navigateByUrl('/marketing/estrategia', EstrategiaEditorialComponent); const antes = pagina.form.getRawValue();

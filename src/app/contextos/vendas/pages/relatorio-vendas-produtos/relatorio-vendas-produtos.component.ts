@@ -1,5 +1,6 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Subscription } from 'rxjs';
 import { PrimeNG } from 'primeng/config';
 import { DatePickerModule } from 'primeng/datepicker';
 import { exportarPlanilha } from '../../../../shared/utils/exportar-planilha';
@@ -23,7 +24,7 @@ import { ContatosService } from '../../../cadastros/contatos/services/contatos.s
   templateUrl: './relatorio-vendas-produtos.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
-export class RelatorioVendasProdutosComponent implements OnInit {
+export class RelatorioVendasProdutosComponent implements OnInit, OnDestroy {
   carregando = signal(true);
   itens = signal<RelatorioVendaProduto[]>([]);
   totalRegistros = signal(0);
@@ -37,6 +38,8 @@ export class RelatorioVendasProdutosComponent implements OnInit {
   totalQuantidade = signal(0);
   totalValor = signal(0);
   totalEstoque = signal(0);
+  totaisDisponiveis = signal(false);
+  private consultaAtual?: Subscription;
 
   filtro: RelatorioVendaProdutosFiltro = {};
   marcasSelecionadas: OpcaoSelectBusca[] = [];
@@ -137,9 +140,14 @@ export class RelatorioVendasProdutosComponent implements OnInit {
 
   carregar(pagina = 1) {
     if (!this.periodoValido()) return;
+    this.consultaAtual?.unsubscribe();
     this.carregando.set(true);
+    this.totaisDisponiveis.set(false);
+    this.totalQuantidade.set(0);
+    this.totalValor.set(0);
+    this.totalEstoque.set(0);
     this.aindaNaoFiltrado.set(false);
-    this.vendasService.listarRelatorioProdutos({ pagina, tamanho: this.tamanhoPagina() }, this.filtro).subscribe({
+    this.consultaAtual = this.vendasService.listarRelatorioProdutos({ pagina, tamanho: this.tamanhoPagina() }, this.filtro).subscribe({
       next: res => {
         const dados = res.dados?.dados ?? [];
         this.itens.set(dados);
@@ -149,6 +157,7 @@ export class RelatorioVendasProdutosComponent implements OnInit {
         this.totalQuantidade.set(dados[0]?.totalQuantidadeGeral ?? 0);
         this.totalValor.set(dados[0]?.totalValorGeral ?? 0);
         this.totalEstoque.set(dados[0]?.totalEstoqueGeral ?? 0);
+        this.totaisDisponiveis.set(dados.length > 0);
         this.carregando.set(false);
       },
       error: err => {
@@ -165,6 +174,9 @@ export class RelatorioVendasProdutosComponent implements OnInit {
   }
 
   limparFiltros() {
+    this.consultaAtual?.unsubscribe();
+    this.carregando.set(false);
+    this.totaisDisponiveis.set(false);
     this.filtro = {};
     this.marcasSelecionadas = [];
     this.fornecedorSelecionado = null;
@@ -180,6 +192,10 @@ export class RelatorioVendasProdutosComponent implements OnInit {
     this.totalPaginas.set(1);
     this.aindaNaoFiltrado.set(true);
     this.aplicarPresetDatas('ult90');
+  }
+
+  ngOnDestroy(): void {
+    this.consultaAtual?.unsubscribe();
   }
 
   aoOrdenar(ordenacao: Ordenacao) {

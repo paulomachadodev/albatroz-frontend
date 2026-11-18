@@ -1,9 +1,12 @@
-import { of } from 'rxjs';
+import { of, Subject } from 'rxjs';
 import { PrimeNG } from 'primeng/config';
 import { ToastService } from '../../../../core/feedback/toast.service';
 import { MarcasService } from '../../../produtos/services/marcas.service';
 import { ContatosService } from '../../../cadastros/contatos/services/contatos.service';
 import { VendasService } from '../../services/vendas.service';
+import { RelatorioVendaProduto } from '../../models/relatorio-venda-produto.model';
+import { Resultado } from '../../../../core/models/resultado.model';
+import { Paginacao } from '../../../../core/models/paginacao.model';
 import { RelatorioVendasProdutosComponent } from './relatorio-vendas-produtos.component';
 
 describe('Intervalo do relatório de vendas', () => {
@@ -48,5 +51,40 @@ describe('Intervalo do relatório de vendas', () => {
     componente.limparFiltros();
     expect(componente.periodoPreset).toBe('ult90');
     expect(componente.intervaloDatas).toBeNull();
+  });
+
+  it('limpa os totais durante a busca e ignora respostas anteriores', () => {
+    const anterior = new Subject<Resultado<Paginacao<RelatorioVendaProduto>>>();
+    const atual = new Subject<Resultado<Paginacao<RelatorioVendaProduto>>>();
+    vendas.listarRelatorioProdutos.and.returnValues(anterior, atual);
+    componente.totalQuantidade.set(25);
+    componente.totalValor.set(100);
+    componente.totalEstoque.set(30);
+    componente.totaisDisponiveis.set(true);
+    componente.aplicarFiltros();
+    expect(componente.totaisDisponiveis()).toBeFalse();
+    expect([componente.totalQuantidade(), componente.totalValor(), componente.totalEstoque()]).toEqual([0, 0, 0]);
+    componente.aplicarFiltros();
+    const resposta = (quantidade: number): Resultado<Paginacao<RelatorioVendaProduto>> => ({
+      sucesso: true, dados: { dados: [{ totalQuantidadeGeral: quantidade, totalValorGeral: 45, totalEstoqueGeral: 60 } as RelatorioVendaProduto], totalRegistros: 1, paginaAtual: 1, totalPaginas: 1, registrosPorPagina: 10 }
+    });
+    anterior.next(resposta(99));
+    expect(componente.totaisDisponiveis()).toBeFalse();
+    atual.next(resposta(12));
+    expect(componente.totaisDisponiveis()).toBeTrue();
+    expect([componente.totalQuantidade(), componente.totalValor(), componente.totalEstoque()]).toEqual([12, 45, 60]);
+  });
+
+  it('mantém os totais ocultos quando a busca falha ou retorna vazia', () => {
+    const consulta = new Subject<Resultado<Paginacao<RelatorioVendaProduto>>>();
+    vendas.listarRelatorioProdutos.and.returnValue(consulta);
+    componente.totaisDisponiveis.set(true);
+    componente.aplicarFiltros();
+    consulta.error(new Error('falha'));
+    expect(componente.totaisDisponiveis()).toBeFalse();
+    expect(componente.carregando()).toBeFalse();
+    vendas.listarRelatorioProdutos.and.returnValue(of({ sucesso: true, dados: { dados: [], totalRegistros: 0, paginaAtual: 1, totalPaginas: 1, registrosPorPagina: 10 } }));
+    componente.aplicarFiltros();
+    expect(componente.totaisDisponiveis()).toBeFalse();
   });
 });

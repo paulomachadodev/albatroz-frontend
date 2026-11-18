@@ -419,8 +419,10 @@ Rollout: aplicado em `balanco-dashboard` (2026-09-17). Resto do sistema (~33 com
 
 ## Densidade de filtros — nunca campo isolado ocupando linha própria (regra 2026-09-04)
 
-Toda grid de filtro dimensiona `grid-cols-N` pelo **número real de campos**, não por um valor fixo copiado de outra tela. Um select booleano/status (`Sim/Não/Todos`, 1 palavra) cabe em 1 coluna estreita; texto livre (`Buscar...`) precisa de 2; nenhum campo deve ficar sozinho numa linha que sobra vazia ao lado — isso é sintoma de `grid-cols` baixo demais pro tanto de filtro que a tela tem.
+**Atualização de 2026-11-18:** ao diagramar filtros no desktop, usar uma grade de 12 colunas e distribuir os campos para completar a linha. Dar mais espaço à descrição e o necessário aos demais campos, sem cortar datas ou valores. Ajustar a distribuição conforme campos condicionais; em telas menores, reorganizar as colunas para preservar a legibilidade.
 
-Regra prática: contar os campos de filtro (Buscar conta como 2), somar, e escolher `lg:grid-cols-N` igual ou próximo da soma — prefere **mais colunas, menos linhas** a manter um valor padrão tipo `grid-cols-4` que sobrou de outra tela com menos filtros. Referência: `compras-lista` usa `lg:grid-cols-6` pra 7 campos (Buscar ocupa 2 de 8 posições efetivas); `produtos-lista` foi de `lg:grid-cols-4` (7 campos, 2-3 linhas) pra `lg:grid-cols-8` (8 campos, 1 linha) ao ganhar o filtro de Curva ABC.
+Em uma grade de 12 colunas, dimensione o espaço de cada campo conforme seu conteúdo. Um select booleano/status (`Sim/Não/Todos`, 1 palavra) precisa de menos espaço que texto livre; evite deixar um campo sozinho em uma linha com espaço vazio.
+
+Regra prática: distribua os `col-span` de acordo com o número e o conteúdo dos filtros, somando 12 em cada linha no desktop quando os campos couberem legivelmente. Redimensione os spans quando um campo condicional aparecer.
 
 Isso vale só pra grid de **filtro** (topo da listagem) — não se aplica a formulário de cadastro/drawer, onde 1 campo por linha pode ser certo pra legibilidade dependendo do campo.

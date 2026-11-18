@@ -27,6 +27,10 @@ Decidida pelo usuário em 2026-11-18, depois de dois erros seguidos na tela Estr
 | Escolha única com busca no servidor | `app-select-busca` |
 | Escolha múltipla com busca no servidor | `app-select-busca-multi` |
 | Escolha múltipla de categorias | `app-select-categoria-multi` |
+| **Valor em dinheiro (digitar)** | `app-campo-moeda` com `moeda="BRL"` (`R$ 12,00`) ou `moeda="USD"` (`$5.00`); `[casas]` para mais decimais (custo de IA usa 4) |
+| **CPF, CNPJ, CEP, telefone (digitar)** | `app-campo-mascara` com `tipo="cpf"`, `"cnpj"`, `"cpfCnpj"` (decide pelo tamanho), `"cep"` ou `"telefone"` |
+| Valor ou documento só para mostrar | pipes `moeda` e `mascara` (`shared/pipes/formatacao.pipes.ts`) |
+| Validar CPF, CNPJ, CEP | `cpfValidator`, `cnpjValidator`, `cpfCnpjValidator`, `cepValidator` (`shared/utils/validadores-documento.ts`) |
 | Texto de ajuda de campo | `app-ajuda-campo`, `app-campo-hint` |
 | Menu suspenso | `app-menu-dropdown` |
 | Gráfico de barras | `app-grafico-barras` |
@@ -47,3 +51,26 @@ Pendência de organização: mover `PERFIL_SELECT_PT`, `PT_TOGGLE_SELECIONAR` e 
 - Botões em linha criados do zero no lugar do seletor múltiplo padrão.
 - Seletor de toggle com variante CSS `has-[:checked]` que não pega no elemento do PrimeNG: o toggle não ficava azul.
 - Modal escrito à mão em vez de `app-modal` (2026-08-21).
+
+## Campos de valor e de documento (REGRA DURA, decidida em 2026-11-18)
+
+Todo campo de **dinheiro**, **CPF, CNPJ, CEP e telefone** usa os modelos prontos abaixo. Proibido `<input type="number">` ou `<input type="text">` solto para esses dados.
+
+| Dado | Como digitar | Como mostrar | Exemplo |
+|------|--------------|--------------|---------|
+| Reais | `<app-campo-moeda moeda="BRL" formControlName="...">` | `{{ v \| moeda:'BRL' }}` | `R$ 12,00`, `R$ 1.234,50` |
+| Dólares | `<app-campo-moeda moeda="USD">` (`[casas]="4"` para custos pequenos) | `{{ v \| moeda:'USD' }}` | `$5.00`, `$0.0500` |
+| CPF | `<app-campo-mascara tipo="cpf">` | `{{ v \| mascara:'cpf' }}` | `093.878.857-47` |
+| CNPJ | `tipo="cnpj"` | `mascara:'cnpj'` | `11.222.333/0001-81` |
+| CPF ou CNPJ | `tipo="cpfCnpj"` | `mascara:'cpfCnpj'` | decide pelo número de dígitos |
+| CEP | `tipo="cep"` | `mascara:'cep'` | `28970-000` |
+| Telefone | `tipo="telefone"` | `mascara:'telefone'` | `(22) 99999-8888` |
+
+Comportamento padrão:
+1. **Dinheiro:** o valor do formulário é `number | null`. Os dígitos entram pelos centavos (digitar `1200` mostra `R$ 12,00`). Apagar tudo devolve `null` (útil para "Sem limite"). Não há valor negativo.
+2. **Máscaras:** o valor do formulário são **só os dígitos** (`09387885747`), e a tela mostra formatado. Para guardar o texto formatado use `emitir="formatado"`. Dados antigos já formatados são aceitos na leitura.
+3. **Validação:** documentos usam os validadores do inventário (dígitos verificadores de CPF e CNPJ, 8 dígitos de CEP). Campo vazio é válido; para obrigar, some `Validators.required`.
+4. **Tamanho do campo:** os dois componentes já trazem o estilo padrão de input, mas aceitam `class` do host para margem.
+5. Em tabelas e textos, nunca montar `R$` à mão nem usar `currency` com formato próprio: usar o pipe `moeda`.
+
+Telas que ainda usam os campos antigos (migrar quando forem tocadas, ou em lote a pedido): configurações de busca de imagens, condições comerciais, metas, fiscal, dados da empresa, contatos (lista e detalhe), empresas, CT-e manual, contas a pagar. Telas já migradas: Limites de IA.

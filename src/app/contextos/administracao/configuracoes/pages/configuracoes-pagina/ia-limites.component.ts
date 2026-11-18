@@ -14,6 +14,7 @@ import { BreadcrumbComponent } from '../../../../../shared/components/breadcrumb
 import { PageHeaderComponent } from '../../../../../shared/components/page-header/page-header.component';
 import { ListagemPaginadaComponent } from '../../../../../shared/components/listagem-paginada/listagem-paginada.component';
 import { ModalComponent } from '../../../../../shared/components/modal/modal.component';
+import { CampoMoedaComponent } from '../../../../../shared/components/campo-moeda/campo-moeda.component';
 import { IaLimites, IaLimiteReserva } from '../../models/ia-limites.model';
 import { IaLimitesService } from '../../services/ia-limites.service';
 import { ConfiguracaoFormularioBase } from './configuracao-formulario.base';
@@ -28,7 +29,7 @@ function inteiroOpcional(controle: AbstractControl): { inteiro: true } | null {
 
 @Component({
   selector: 'app-ia-limites', standalone: true,
-  imports: [DatePipe, DecimalPipe, ReactiveFormsModule, InputTextModule, ToggleSwitchModule, BreadcrumbComponent, PageHeaderComponent, ListagemPaginadaComponent, ModalComponent],
+  imports: [DatePipe, DecimalPipe, ReactiveFormsModule, InputTextModule, ToggleSwitchModule, CampoMoedaComponent, BreadcrumbComponent, PageHeaderComponent, ListagemPaginadaComponent, ModalComponent],
   templateUrl: './ia-limites.component.html', host: { class: 'flex-1 flex flex-col min-h-0' }
 })
 export class IaLimitesComponent extends ConfiguracaoFormularioBase {

@@ -51,7 +51,7 @@
                 }
                 @for (peca of dia.pecas; track peca.id) {
                   <button type="button" (click)="abrir(peca)" class="w-full text-left px-1.5 py-0.5 rounded bg-primary text-white text-[11px] leading-tight truncate" [title]="peca.resumo">
-                    {{ peca.planejadaPara | date:'HH:mm' }} · {{ peca.rede }}
+                    {{ peca.planejadaPara | date:'HH:mm' }} · {{ peca.rede }}@if (!peca.possuiArteAprovada) { · sem imagem }
                   </button>
                 }
               </div>
@@ -67,7 +67,7 @@
                 <p class="px-2 py-1 rounded text-xs" [class]="classeCategoria[data.categoria]">{{ data.nome }}</p>
               }
               @for (peca of dia.pecas; track peca.id) {
-                <button type="button" (click)="abrir(peca)" class="w-full text-left px-2 py-1.5 rounded bg-primary text-white text-xs">{{ peca.planejadaPara | date:'HH:mm' }} · {{ peca.rede }} · {{ peca.resumo }}</button>
+                <button type="button" (click)="abrir(peca)" class="w-full text-left px-2 py-1.5 rounded bg-primary text-white text-xs">{{ peca.planejadaPara | date:'HH:mm' }} · {{ peca.rede }}@if (!peca.possuiArteAprovada) { · sem imagem } · {{ peca.resumo }}</button>
               }
             </div>
           } @empty {
@@ -80,7 +80,7 @@
         <h2 id="calendario-sem-data" class="font-bold">Peças sem data prevista</h2>
         @for (peca of semData(); track peca.id) {
           <div class="flex flex-wrap items-center justify-between gap-2 text-sm">
-            <span class="min-w-0 break-words"><span class="font-semibold">{{ peca.rede }} · {{ peca.formato }}</span> · {{ peca.resumo }}</span>
+            <span class="min-w-0 break-words"><span class="font-semibold">{{ peca.rede }} · {{ peca.formato }}</span> · {{ peca.resumo }}@if (!peca.possuiArteAprovada) { <span class="ml-1 text-xs text-amber-700 dark:text-amber-300">sem imagem</span> }</span>
             <span class="flex gap-3">
               @if (podeEditar()) { <button type="button" (click)="abrir(peca)" class="text-xs font-bold text-primary">Definir data</button> }
               <a [routerLink]="['/marketing/pecas', peca.id]" class="text-xs font-bold text-primary">Abrir</a>

@@ -9,6 +9,7 @@ import { ToastService } from '../../../../core/feedback/toast.service';
 import { ConfirmService } from '../../../../core/feedback/confirm.service';
 import { BreadcrumbComponent } from '../../../../shared/components/breadcrumb/breadcrumb.component';
 import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
+import { ArtesPecaComponent } from '../../components/artes-peca.component';
 import { ConfiguracaoFormularioBase } from '../../../administracao/configuracoes/pages/configuracoes-pagina/configuracao-formulario.base';
 import { ORIGEM_VERSAO_PECA, Peca, PecaConteudo, STATUS_PECA } from '../../models/peca.model';
 import { PecasService } from '../../services/pecas.service';
@@ -24,7 +25,7 @@ function paraCampoLocal(iso: string | null): string {
 @Component({
   selector: 'app-peca-editor',
   standalone: true,
-  imports: [DatePipe, RouterLink, ReactiveFormsModule, BreadcrumbComponent, PageHeaderComponent],
+  imports: [DatePipe, RouterLink, ReactiveFormsModule, BreadcrumbComponent, PageHeaderComponent, ArtesPecaComponent],
   templateUrl: './peca-editor.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
@@ -47,6 +48,7 @@ export class PecaEditorComponent extends ConfiguracaoFormularioBase {
   readonly acessoValido = computed(() => this.contextoValido() && this.auth.temPermissao('marketing:ler'));
   readonly podeAprovar = computed(() => this.acessoValido() && this.auth.temPermissao('marketing:aprovar'));
   readonly editavel = computed(() => this.acessoValido() && this.podeEditar() && this.peca()?.status !== 3);
+  readonly tituloSugerido = computed(() => (this.peca()?.conteudo.legenda ?? '').split(/[.!?\n]/)[0].trim());
   readonly dataPrevista = new FormControl('', { nonNullable: true });
 
   readonly form = this.fb.nonNullable.group({

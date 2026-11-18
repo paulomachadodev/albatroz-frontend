@@ -77,6 +77,8 @@
         }
       </form>
 
+      <app-artes-peca [pecaId]="peca.id" [versaoConteudo]="peca.versaoAtual" [tituloSugerido]="tituloSugerido()" [arquivada]="peca.status === 3" />
+
       <section class="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 space-y-4" aria-labelledby="peca-data">
         <h2 id="peca-data" class="font-bold">Data prevista para postar</h2>
         <p class="text-xs text-slate-500">Serve para organizar o calendário. Ainda não publica sozinha. Alterar a data não cria uma nova versão do texto.</p>

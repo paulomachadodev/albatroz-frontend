@@ -1,5 +1,5 @@
 export interface PecaConteudo { legenda: string; cta: string; hashtags: string[]; ideiaVisual: string; roteiro: string[]; }
-export interface PecaResumo { id: number; versao: string; briefingId: number; rede: string; formato: string; status: number; versaoAtual: number; versaoAprovada: number | null; aprovadaEm: string | null; planejadaPara: string | null; atualizadoEm: string; resumo: string; }
+export interface PecaResumo { possuiArteAprovada?: boolean; id: number; versao: string; briefingId: number; rede: string; formato: string; status: number; versaoAtual: number; versaoAprovada: number | null; aprovadaEm: string | null; planejadaPara: string | null; atualizadoEm: string; resumo: string; }
 export interface VersaoPeca { numero: number; origem: number; usuarioId: number; criadoEm: string; }
 export interface Peca {
   id: number; versao: string; briefingId: number; codigoGeracao: string | null; rede: string; formato: string; status: number;

@@ -107,6 +107,7 @@ describe('Artes da peça', () => {
   it('criar arte com foto exige produto, aceita título vazio e envia a requisição', () => {
     const { artes } = montar();
     artes.abrirCriacao();
+    expect(artes.form.controls.formato.value).toBe(2);
     expect(artes.form.controls.titulo.value).toBe('');
     artes.gerar();
     expect(api.gerar).not.toHaveBeenCalled();
@@ -114,7 +115,7 @@ describe('Artes da peça', () => {
     artes.produto.set({ id: 99, nome: 'Caderno (C1)' });
     artes.form.patchValue({ formato: 3, subtitulo: ' Tudo para o ano ' });
     artes.gerar();
-    expect(api.gerar).toHaveBeenCalledWith(5, { formato: 2, modelo: 1, produtoId: 99, titulo: '', subtitulo: 'Tudo para o ano' });
+    expect(api.gerar).toHaveBeenCalledWith(5, { formato: 3, modelo: 1, produtoId: 99, titulo: '', subtitulo: 'Tudo para o ano' });
     expect(artes.modal()).toBeFalse();
   });
 

@@ -67,7 +67,6 @@ export class ArtesPecaComponent {
     this.destroyRef.onDestroy(() => this.consulta?.unsubscribe());
     this.form.controls.modelo.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(valor => {
       this.modeloAtual.set(valor);
-      if (this.usaFoto()) this.form.controls.formato.setValue(2);
       if (!this.usaFoto()) {
         this.produto.set(null);
         if (!this.form.controls.titulo.value.trim()) this.form.controls.titulo.setValue(this.tituloSugerido().slice(0, 70));
@@ -122,7 +121,7 @@ export class ArtesPecaComponent {
     const valores = this.form.getRawValue();
     this.processando.set(true);
     this.service.gerar(this.pecaId(), {
-      formato: this.usaFoto() ? 2 : valores.formato, modelo: valores.modelo, produtoId: this.usaFoto() ? this.produto()!.id : null,
+      formato: valores.formato, modelo: valores.modelo, produtoId: this.usaFoto() ? this.produto()!.id : null,
       titulo: valores.titulo.trim(), subtitulo: valores.subtitulo.trim()
     }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: res => {

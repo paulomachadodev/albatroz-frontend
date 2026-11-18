@@ -2,7 +2,9 @@ import { Component, DestroyRef, computed, effect, inject, input, output, signal,
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { SelectModule } from 'primeng/select';
-import { Subscription } from 'rxjs';
+import { MultiSelectModule } from 'primeng/multiselect';
+import { PT_MULTISELECT } from '../../../shared/utils/pt-multiselect';
+import { Subscription, firstValueFrom } from 'rxjs';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ToastService } from '../../../core/feedback/toast.service';
 import { ConfirmService } from '../../../core/feedback/confirm.service';
@@ -18,7 +20,7 @@ import { Publicacao, STATUS_PUBLICACAO } from '../models/publicacao.model';
 @Component({
   selector: 'app-artes-peca',
   standalone: true,
-  imports: [ReactiveFormsModule, FormsModule, SelectModule, ModalComponent, SelectBuscaComponent],
+  imports: [ReactiveFormsModule, FormsModule, SelectModule, MultiSelectModule, ModalComponent, SelectBuscaComponent],
   templateUrl: './artes-peca.component.html',
   host: { '(input)': '$event.stopPropagation()', '(change)': '$event.stopPropagation()' }
 })
@@ -52,7 +54,8 @@ export class ArtesPecaComponent {
   readonly publicacoes = signal<Publicacao[]>([]);
   readonly publicacaoHabilitada = signal(false);
   readonly destinos = signal<{ id: number; rotulo: string }[]>([]);
-  readonly destinoId = signal<number | null>(null);
+  readonly destinoIds = signal<number[]>([]);
+  readonly multiselectPt = PT_MULTISELECT;
   readonly statusPublicacao = STATUS_PUBLICACAO;
   readonly rascunhos = computed(() => this.itens().filter(a => a.status === 1 && a.arquivoDisponivel).length);
   readonly aprovadas = computed(() => this.itens().filter(a => a.status === 2 && a.arquivoDisponivel).slice(0, 10));
@@ -135,26 +138,32 @@ export class ArtesPecaComponent {
           .filter(a => a.selecionado && (a.tipo === 1 ? conexao.podePublicarFacebook : conexao.podePublicarInstagram))
           .map(a => ({ id: a.id, rotulo: (a.tipo === 1 ? 'Facebook: ' : 'Instagram: ') + a.nome + (a.usuario ? ' (@' + a.usuario + ')' : '') }));
         this.destinos.set(lista);
-        this.destinoId.set(lista[0]?.id ?? null);
+        this.destinoIds.set(lista.length === 1 ? [lista[0].id] : []);
       },
       error: () => this.destinos.set([])
     });
   }
 
   async publicar(): Promise<void> {
-    const destino = this.destinos().find(d => d.id === this.destinoId());
-    if (!this.podeAprovar() || this.processando() || !destino || this.aprovadas().length === 0) return;
-    const confirmado = await this.confirm.confirmar('Publicar agora?', 'Será publicado em ' + destino.rotulo + ' com ' + this.aprovadas().length + ' arte(s) e o texto aprovado. Isso não pode ser desfeito por aqui.', { textoConfirmar: 'Publicar', textoCancelar: 'Voltar' });
+    const escolhidos = this.destinos().filter(d => this.destinoIds().includes(d.id));
+    if (!this.podeAprovar() || this.processando() || escolhidos.length === 0 || this.aprovadas().length === 0) return;
+    const nomes = escolhidos.map(d => d.rotulo).join(' e ');
+    const confirmado = await this.confirm.confirmar('Publicar agora?', 'Será publicado em ' + nomes + ' com ' + this.aprovadas().length + ' arte(s) e o texto aprovado. Isso não pode ser desfeito por aqui.', { textoConfirmar: 'Publicar', textoCancelar: 'Voltar' });
     if (!confirmado) return;
     this.processando.set(true);
-    this.publicacoesService.publicar(this.pecaId(), { ativoId: destino.id, arteIds: this.aprovadas().map(a => a.id) }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: res => {
-        this.processando.set(false);
-        if (res.sucesso) this.toast.sucesso('Publicado.'); else this.toast.erro('Não foi possível publicar.');
-        this.carregarPublicacoes();
-      },
-      error: erro => { this.processando.set(false); this.toast.erroServidor(erro, 'Não foi possível publicar.'); this.carregarPublicacoes(); }
-    });
+    const artes = this.aprovadas().map(a => a.id);
+    let falhas = 0;
+    for (const destino of escolhidos) {
+      try {
+        const res = await firstValueFrom(this.publicacoesService.publicar(this.pecaId(), { ativoId: destino.id, arteIds: artes }));
+        if (res.sucesso) this.toast.sucesso('Publicado em ' + destino.rotulo + '.'); else { falhas++; this.toast.erro('Não foi possível publicar em ' + destino.rotulo + '.'); }
+      } catch (erro) {
+        falhas++;
+        this.toast.erroServidor(erro, 'Não foi possível publicar em ' + destino.rotulo + '.');
+      }
+    }
+    this.processando.set(false);
+    this.carregarPublicacoes();
   }
 
   abrirCriacao(): void {

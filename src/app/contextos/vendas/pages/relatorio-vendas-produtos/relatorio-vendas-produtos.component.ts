@@ -33,6 +33,7 @@ export class RelatorioVendasProdutosComponent implements OnInit {
 
   totalQuantidade = signal(0);
   totalValor = signal(0);
+  totalEstoque = signal(0);
 
   filtro: RelatorioVendaProdutosFiltro = {};
   marcasSelecionadas: OpcaoSelectBusca[] = [];
@@ -94,6 +95,7 @@ export class RelatorioVendasProdutosComponent implements OnInit {
         this.totalPaginas.set(res.dados?.totalPaginas ?? 1);
         this.totalQuantidade.set(dados[0]?.totalQuantidadeGeral ?? 0);
         this.totalValor.set(dados[0]?.totalValorGeral ?? 0);
+        this.totalEstoque.set(dados[0]?.totalEstoqueGeral ?? 0);
         this.carregando.set(false);
       },
       error: err => {
@@ -119,6 +121,7 @@ export class RelatorioVendasProdutosComponent implements OnInit {
     this.totalRegistros.set(0);
     this.totalQuantidade.set(0);
     this.totalValor.set(0);
+    this.totalEstoque.set(0);
     this.paginaAtual.set(1);
     this.totalPaginas.set(1);
     this.aindaNaoFiltrado.set(true);
@@ -157,6 +160,7 @@ export class RelatorioVendasProdutosComponent implements OnInit {
           'Produto': item.descricao,
           'Marca': item.marca ?? '',
           'Fornecedor': item.fornecedor ?? '',
+          'Estoque Atual': item.estoqueAtual,
           'Qtd Vendida': item.quantidadeVendida,
           'Valor Médio': item.valorMedioVenda,
           'Valor Total': item.valorTotalVenda

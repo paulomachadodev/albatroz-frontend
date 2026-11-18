@@ -12,6 +12,7 @@ export interface RelatorioVendaProduto {
   totalGeral: number;
   totalQuantidadeGeral: number;
   totalValorGeral: number;
+  totalEstoqueGeral: number;
 }
 
 export interface RelatorioVendaProdutosFiltro {

@@ -1,5 +1,5 @@
 import { Component, DestroyRef, computed, effect, inject, input, output, signal, untracked } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { SelectModule } from 'primeng/select';
 import { Subscription } from 'rxjs';
@@ -11,16 +11,21 @@ import { OpcaoSelectBusca, SelectBuscaComponent } from '../../../shared/componen
 import { PERFIL_SELECT_PT } from '../../administracao/configuracoes/models/perfil-social.model';
 import { Arte, FORMATOS_ARTE, MODELOS_ARTE, STATUS_ARTE } from '../models/arte.model';
 import { ArtesService } from '../services/artes.service';
+import { PublicacoesService } from '../services/publicacoes.service';
+import { ConexaoMetaService } from '../../administracao/configuracoes/services/conexao-meta.service';
+import { Publicacao, STATUS_PUBLICACAO } from '../models/publicacao.model';
 
 @Component({
   selector: 'app-artes-peca',
   standalone: true,
-  imports: [ReactiveFormsModule, SelectModule, ModalComponent, SelectBuscaComponent],
+  imports: [ReactiveFormsModule, FormsModule, SelectModule, ModalComponent, SelectBuscaComponent],
   templateUrl: './artes-peca.component.html',
   host: { '(input)': '$event.stopPropagation()', '(change)': '$event.stopPropagation()' }
 })
 export class ArtesPecaComponent {
   private readonly service = inject(ArtesService);
+  private readonly publicacoesService = inject(PublicacoesService);
+  private readonly conexaoService = inject(ConexaoMetaService);
   private readonly auth = inject(AuthService);
   private readonly toast = inject(ToastService);
   private readonly confirm = inject(ConfirmService);
@@ -44,6 +49,12 @@ export class ArtesPecaComponent {
   readonly habilitado = signal(false);
   readonly itens = signal<Arte[]>([]);
   readonly modal = signal(false);
+  readonly publicacoes = signal<Publicacao[]>([]);
+  readonly publicacaoHabilitada = signal(false);
+  readonly destinos = signal<{ id: number; rotulo: string }[]>([]);
+  readonly destinoId = signal<number | null>(null);
+  readonly statusPublicacao = STATUS_PUBLICACAO;
+  readonly aprovadas = computed(() => this.itens().filter(a => a.status === 2 && a.arquivoDisponivel).slice(0, 10));
   readonly produto = signal<OpcaoSelectBusca | null>(null);
   readonly formatos = FORMATOS_ARTE;
   readonly modelos = MODELOS_ARTE;
@@ -82,7 +93,7 @@ export class ArtesPecaComponent {
     effect(() => { this.possuiAprovadaAlterada.emit(this.possuiAprovada()); });
     effect(() => {
       this.pecaId();
-      untracked(() => this.carregar());
+      untracked(() => { this.carregar(); this.carregarPublicacoes(); });
     });
   }
 
@@ -98,6 +109,50 @@ export class ArtesPecaComponent {
         else this.toast.erro('Não foi possível carregar as artes.');
       },
       error: erro => { this.carregando.set(false); this.toast.erroServidor(erro, 'Não foi possível carregar as artes.'); }
+    });
+  }
+
+  carregarPublicacoes(): void {
+    if (!this.contextoValido()) return;
+    this.publicacoesService.listar(this.pecaId()).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: res => {
+        if (!this.contextoValido() || !res.sucesso || !res.dados) return;
+        this.publicacaoHabilitada.set(res.dados.habilitado);
+        this.publicacoes.set(res.dados.itens);
+        if (res.dados.habilitado && this.podeAprovar() && this.destinos().length === 0) this.carregarDestinos();
+      },
+      error: () => this.publicacaoHabilitada.set(false)
+    });
+  }
+
+  private carregarDestinos(): void {
+    this.conexaoService.obterConexao().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: res => {
+        const conexao = res.sucesso ? res.dados?.conexao : null;
+        if (!conexao) return;
+        const lista = conexao.ativos
+          .filter(a => a.selecionado && (a.tipo === 1 ? conexao.podePublicarFacebook : conexao.podePublicarInstagram))
+          .map(a => ({ id: a.id, rotulo: (a.tipo === 1 ? 'Facebook: ' : 'Instagram: ') + a.nome + (a.usuario ? ' (@' + a.usuario + ')' : '') }));
+        this.destinos.set(lista);
+        this.destinoId.set(lista[0]?.id ?? null);
+      },
+      error: () => this.destinos.set([])
+    });
+  }
+
+  async publicar(): Promise<void> {
+    const destino = this.destinos().find(d => d.id === this.destinoId());
+    if (!this.podeAprovar() || this.processando() || !destino || this.aprovadas().length === 0) return;
+    const confirmado = await this.confirm.confirmar('Publicar agora?', 'Será publicado em ' + destino.rotulo + ' com ' + this.aprovadas().length + ' arte(s) e o texto aprovado. Isso não pode ser desfeito por aqui.', { textoConfirmar: 'Publicar', textoCancelar: 'Voltar' });
+    if (!confirmado) return;
+    this.processando.set(true);
+    this.publicacoesService.publicar(this.pecaId(), { ativoId: destino.id, arteIds: this.aprovadas().map(a => a.id) }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: res => {
+        this.processando.set(false);
+        if (res.sucesso) this.toast.sucesso('Publicado.'); else this.toast.erro('Não foi possível publicar.');
+        this.carregarPublicacoes();
+      },
+      error: erro => { this.processando.set(false); this.toast.erroServidor(erro, 'Não foi possível publicar.'); this.carregarPublicacoes(); }
     });
   }
 

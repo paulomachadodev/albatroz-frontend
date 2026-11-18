@@ -1,0 +1,120 @@
+<div class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark px-4 sm:px-6 lg:px-8 xl:px-10 py-6 lg:py-8">
+  <div class="w-full space-y-6">
+    <app-breadcrumb [itens]="[{label:'Início',rota:'/dashboard'},{label:'Marketing'},{label:'Calendário'}]"></app-breadcrumb>
+    <app-page-header titulo="Calendário de marketing" subtitulo="Postagens previstas e datas importantes para o comércio. Abra uma peça para mudar data e hora.">
+      <button acoes type="button" (click)="carregar()" [disabled]="carregando()" class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-sm font-bold">Atualizar</button>
+    </app-page-header>
+
+    @if (!carregando() && !habilitado()) {
+      <p role="status" class="text-sm text-slate-500">O calendário de marketing está indisponível no momento.</p>
+    } @else {
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-2">
+          <button type="button" (click)="mudarMes(-1)" aria-label="Mês anterior" class="size-9 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center"><span class="material-symbols-outlined text-base">chevron_left</span></button>
+          <h2 class="min-w-44 text-center font-bold" aria-live="polite">{{ titulo() }}</h2>
+          <button type="button" (click)="mudarMes(1)" aria-label="Próximo mês" class="size-9 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center"><span class="material-symbols-outlined text-base">chevron_right</span></button>
+          <button type="button" (click)="irParaHoje()" class="ml-2 px-3 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-sm font-bold">Hoje</button>
+        </div>
+        <ul class="flex flex-wrap gap-2 text-xs" aria-label="Legenda">
+          @for (categoria of legenda; track categoria) { <li class="px-2 py-1 rounded-full" [class]="classeCategoria[categoria]">{{ categorias[categoria] }}</li> }
+          <li class="px-2 py-1 rounded-full bg-primary text-white">Peça prevista</li>
+        </ul>
+      </div>
+
+      @if (periodos().length) {
+        <div class="flex flex-wrap gap-2 text-xs" aria-label="Períodos do mês">
+          @for (periodo of periodos(); track periodo.chave) {
+            <span class="px-3 py-1.5 rounded-lg" [class]="classeCategoria[periodo.categoria]" [title]="periodo.dica">
+              <span class="font-bold">{{ periodo.nome }}</span>
+              · {{ intervaloDoPeriodo(periodo).inicio | date:'dd/MM' }} a {{ intervaloDoPeriodo(periodo).fim | date:'dd/MM' }}
+            </span>
+          }
+        </div>
+      }
+
+      @if (carregando() && !calendario()) {
+        <div class="h-96 animate-pulse bg-white dark:bg-slate-900 rounded-xl"></div>
+      } @else {
+        <div class="hidden md:block rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-hidden" role="grid" [attr.aria-label]="titulo()">
+          <div class="grid grid-cols-7 border-b border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-500" role="row">
+            @for (nome of nomesDias; track nome) { <div class="px-3 py-2" role="columnheader">{{ nome }}</div> }
+          </div>
+          <div class="grid grid-cols-7">
+            @for (dia of dias(); track dia.chave) {
+              <div class="min-h-28 border-b border-r border-slate-100 dark:border-slate-800 p-1.5 space-y-1" role="gridcell"
+                   [class]="dia.foraDoMes ? 'bg-slate-50 dark:bg-slate-950/40 text-slate-400' : ''">
+                <div class="flex justify-end">
+                  <span class="text-xs px-1.5 py-0.5 rounded-full" [class]="dia.hoje ? 'bg-primary text-white font-bold' : ''">{{ dia.numero }}</span>
+                </div>
+                @for (data of dia.datas; track data.chave) {
+                  <p class="px-1.5 py-0.5 rounded text-[11px] leading-tight break-words" [class]="classeCategoria[data.categoria] + (data.relevancia === 3 ? ' font-bold' : '')" [title]="data.dica">{{ data.nome }}</p>
+                }
+                @for (peca of dia.pecas; track peca.id) {
+                  <button type="button" (click)="abrir(peca)" class="w-full text-left px-1.5 py-0.5 rounded bg-primary text-white text-[11px] leading-tight truncate" [title]="peca.resumo">
+                    {{ peca.planejadaPara | date:'HH:mm' }} · {{ peca.rede }}
+                  </button>
+                }
+              </div>
+            }
+          </div>
+        </div>
+
+        <div class="md:hidden space-y-3" aria-label="Agenda do mês">
+          @for (dia of agenda(); track dia.chave) {
+            <div class="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 space-y-2">
+              <p class="text-sm font-bold">{{ dataDoDia(dia) | date:'EEEE, dd/MM' }}</p>
+              @for (data of dia.datas; track data.chave) {
+                <p class="px-2 py-1 rounded text-xs" [class]="classeCategoria[data.categoria]">{{ data.nome }}</p>
+              }
+              @for (peca of dia.pecas; track peca.id) {
+                <button type="button" (click)="abrir(peca)" class="w-full text-left px-2 py-1.5 rounded bg-primary text-white text-xs">{{ peca.planejadaPara | date:'HH:mm' }} · {{ peca.rede }} · {{ peca.resumo }}</button>
+              }
+            </div>
+          } @empty {
+            <p class="text-sm text-slate-500">Nada previsto neste mês.</p>
+          }
+        </div>
+      }
+
+      <section class="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 space-y-3" aria-labelledby="calendario-sem-data">
+        <h2 id="calendario-sem-data" class="font-bold">Peças sem data prevista</h2>
+        @for (peca of semData(); track peca.id) {
+          <div class="flex flex-wrap items-center justify-between gap-2 text-sm">
+            <span class="min-w-0 break-words"><span class="font-semibold">{{ peca.rede }} · {{ peca.formato }}</span> · {{ peca.resumo }}</span>
+            <span class="flex gap-3">
+              @if (podeEditar()) { <button type="button" (click)="abrir(peca)" class="text-xs font-bold text-primary">Definir data</button> }
+              <a [routerLink]="['/marketing/pecas', peca.id]" class="text-xs font-bold text-primary">Abrir</a>
+            </span>
+          </div>
+        } @empty {
+          <p class="text-sm text-slate-500">Todas as peças têm data prevista.</p>
+        }
+      </section>
+    }
+  </div>
+</div>
+
+<app-modal [aberto]="!!selecionada()" titulo="Data e hora da postagem" tamanho="md" (fechar)="fechar()">
+  @if (selecionada(); as peca) {
+    <div class="space-y-4">
+      <div class="text-sm">
+        <p class="font-semibold">{{ peca.rede }} · {{ peca.formato }} · {{ statusPeca[peca.status] }}</p>
+        <p class="mt-1 text-slate-600 dark:text-slate-300 break-words">{{ peca.resumo }}</p>
+      </div>
+      <div>
+        <label for="calendario-nova-data" class="text-xs font-semibold text-slate-500">Data e hora (horário local)</label>
+        <input id="calendario-nova-data" type="datetime-local" [formControl]="novaData" [attr.disabled]="podeEditar() ? null : ''" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm" />
+        <p class="mt-1 text-xs text-slate-500">A data organiza o calendário. Ainda não publica sozinha.</p>
+      </div>
+      <div class="flex flex-wrap justify-between gap-2">
+        <a [routerLink]="['/marketing/pecas', peca.id]" (click)="fechar()" class="px-3 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-sm font-bold">Abrir peça</a>
+        <div class="flex gap-2">
+          @if (podeEditar()) {
+            @if (peca.planejadaPara) { <button type="button" (click)="salvarData(true)" [disabled]="salvando()" class="px-3 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-sm font-bold text-red-600">Remover data</button> }
+            <button type="button" (click)="salvarData()" [disabled]="salvando()" class="px-3 py-2 rounded-lg bg-primary text-white text-sm font-bold">Salvar data</button>
+          }
+        </div>
+      </div>
+    </div>
+  }
+</app-modal>

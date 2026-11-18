@@ -92,6 +92,14 @@ export const routes: Routes = [
           import('./contextos/cadastros/series/series.routes').then(m => m.SERIES_ROUTES)
       },
       {
+        path: 'marketing/redes-sociais/retorno',
+        canActivate: [permissaoGuard],
+        data: { permissao: 'integracoes_sociais:criar' },
+        title: 'Conexão com redes sociais',
+        loadComponent: () =>
+          import('./contextos/administracao/configuracoes/pages/configuracoes-pagina/retorno-redes-sociais.component').then(m => m.RetornoRedesSociaisComponent)
+      },
+      {
         path: 'marketing',
         canActivate: [permissaoGuard],
         data: { permissao: 'marketing:ler' },

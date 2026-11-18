@@ -12,9 +12,10 @@ import { BreadcrumbComponent } from '../../../../../shared/components/breadcrumb
 import { PageHeaderComponent } from '../../../../../shared/components/page-header/page-header.component';
 import { ModalComponent } from '../../../../../shared/components/modal/modal.component';
 import { ListagemPaginadaComponent } from '../../../../../shared/components/listagem-paginada/listagem-paginada.component';
+import { ConexaoMetaComponent } from './conexao-meta.component';
 import { PerfilSocial, PLATAFORMAS_SOCIAIS, PERFIL_SELECT_PT } from '../../models/perfil-social.model';
 import { PerfisSociaisService } from '../../services/perfis-sociais.service';
-@Component({ selector: 'app-perfis-sociais', standalone: true, imports: [ToggleSwitchModule, DatePipe, ReactiveFormsModule, SelectModule, BreadcrumbComponent, PageHeaderComponent, ModalComponent, ListagemPaginadaComponent], templateUrl: './perfis-sociais.component.html', host: { class: 'flex-1 flex flex-col min-h-0' } })
+@Component({ selector: 'app-perfis-sociais', standalone: true, imports: [ToggleSwitchModule, DatePipe, ReactiveFormsModule, SelectModule, BreadcrumbComponent, PageHeaderComponent, ModalComponent, ListagemPaginadaComponent, ConexaoMetaComponent], templateUrl: './perfis-sociais.component.html', host: { class: 'flex-1 flex flex-col min-h-0' } })
 export class PerfisSociaisComponent {
   readonly selectPt = PERFIL_SELECT_PT;
   private readonly service = inject(PerfisSociaisService);

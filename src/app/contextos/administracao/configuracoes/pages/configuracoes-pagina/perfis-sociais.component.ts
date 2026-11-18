@@ -13,12 +13,13 @@ import { PageHeaderComponent } from '../../../../../shared/components/page-heade
 import { ModalComponent } from '../../../../../shared/components/modal/modal.component';
 import { ListagemPaginadaComponent } from '../../../../../shared/components/listagem-paginada/listagem-paginada.component';
 import { ConexaoMetaComponent } from './conexao-meta.component';
-import { PerfilSocial, PLATAFORMAS_SOCIAIS, PERFIL_SELECT_PT, PERFIL_TOGGLE_PT } from '../../models/perfil-social.model';
+import { PerfilSocial, PLATAFORMAS_SOCIAIS, PERFIL_SELECT_PT } from '../../models/perfil-social.model';
+import { PT_TOGGLE } from '../../../../../shared/utils/pt-toggle';
 import { PerfisSociaisService } from '../../services/perfis-sociais.service';
 @Component({ selector: 'app-perfis-sociais', standalone: true, imports: [ToggleSwitchModule, DatePipe, ReactiveFormsModule, SelectModule, BreadcrumbComponent, PageHeaderComponent, ModalComponent, ListagemPaginadaComponent, ConexaoMetaComponent], templateUrl: './perfis-sociais.component.html', host: { class: 'flex-1 flex flex-col min-h-0' } })
 export class PerfisSociaisComponent {
   readonly selectPt = PERFIL_SELECT_PT;
-  readonly togglePt = PERFIL_TOGGLE_PT;
+  readonly togglePt = PT_TOGGLE;
   private readonly service = inject(PerfisSociaisService);
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);

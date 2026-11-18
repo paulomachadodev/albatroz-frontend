@@ -23,7 +23,7 @@ Decidida pelo usuário em 2026-11-18, depois de dois erros seguidos na tela Estr
 | Cabeçalho de página e trilha | `app-page-header`, `app-breadcrumb` |
 | Botão de ícone / ação de linha | `app-btn-icone` |
 | Carregando | `app-spinner`, `app-overlay-progresso` |
-| Ligar/desligar | `app-toggle` (ou `p-toggleSwitch` com `PERFIL_TOGGLE_PT`/`PT_TOGGLE_SELECIONAR`) |
+| Ligar/desligar | `app-toggle` (ou `p-toggleSwitch` com `PT_TOGGLE`/`PT_TOGGLE_SELECIONAR`) |
 | Escolha única com busca no servidor | `app-select-busca` |
 | Escolha múltipla com busca no servidor | `app-select-busca-multi` |
 | Escolha múltipla de categorias | `app-select-categoria-multi` |
@@ -37,10 +37,10 @@ Decidida pelo usuário em 2026-11-18, depois de dois erros seguidos na tela Estr
 |--------------------|-----------|-----------|
 | `p-multiSelect` (lista fixa) | `PT_MULTISELECT` | `shared/utils/pt-multiselect.ts`. Usar com `[showToggleAll]="false"`, `[maxSelectedLabels]`, `selectedItemsLabel`, `placeholder`, `appendTo="body"` |
 | `p-select` (lista fixa) | `PERFIL_SELECT_PT` | `contextos/administracao/configuracoes/models/perfil-social.model.ts` |
-| `p-toggleSwitch` | `PERFIL_TOGGLE_PT` e `PT_TOGGLE_SELECIONAR` | `perfil-social.model.ts` e `contextos/balanco/utils/pt-toggle-selecionar.util.ts` |
+| `p-toggleSwitch` | `PT_TOGGLE` (e `PT_TOGGLE_SELECIONAR`, menor, para seleção em tabela) | `shared/utils/pt-toggle.ts` e `contextos/balanco/utils/pt-toggle-selecionar.util.ts` |
 | `p-select` de categoria | `PT_SELECT_CATEGORIA` | `contextos/balanco/utils/categoria-select.util.ts` |
 
-Pendência de organização: mover `PERFIL_SELECT_PT`, `PERFIL_TOGGLE_PT`, `PT_TOGGLE_SELECIONAR` e `PT_SELECT_CATEGORIA` para `shared/utils/` na próxima vez que alguém mexer neles.
+Pendência de organização: mover `PERFIL_SELECT_PT`, `PT_TOGGLE_SELECIONAR` e `PT_SELECT_CATEGORIA` para `shared/utils/` na próxima vez que alguém mexer neles.
 
 ## Anti-padrões que já aconteceram
 - `p-multiSelect` com o `[pt]` do `p-select`: campo truncado e "empty" na tela.

@@ -5,7 +5,8 @@ import { Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Subscription, finalize, takeUntil } from 'rxjs';
 import { InputTextModule } from 'primeng/inputtext';
-import { SelectModule } from 'primeng/select';
+import { ToggleSwitchModule } from 'primeng/toggleswitch';
+import { PT_TOGGLE } from '../../../../../shared/utils/pt-toggle';
 import { AuthService } from '../../../../../core/auth/auth.service';
 import { ToastService } from '../../../../../core/feedback/toast.service';
 import { ConfirmService } from '../../../../../core/feedback/confirm.service';
@@ -27,7 +28,7 @@ function inteiroOpcional(controle: AbstractControl): { inteiro: true } | null {
 
 @Component({
   selector: 'app-ia-limites', standalone: true,
-  imports: [DatePipe, DecimalPipe, ReactiveFormsModule, InputTextModule, SelectModule, BreadcrumbComponent, PageHeaderComponent, ListagemPaginadaComponent, ModalComponent],
+  imports: [DatePipe, DecimalPipe, ReactiveFormsModule, InputTextModule, ToggleSwitchModule, BreadcrumbComponent, PageHeaderComponent, ListagemPaginadaComponent, ModalComponent],
   templateUrl: './ia-limites.component.html', host: { class: 'flex-1 flex flex-col min-h-0' }
 })
 export class IaLimitesComponent extends ConfiguracaoFormularioBase {
@@ -48,8 +49,7 @@ export class IaLimitesComponent extends ConfiguracaoFormularioBase {
   readonly disponivel = computed(() => this.acessoValido() && this.dados()?.habilitado === true);
   readonly temValorDesconhecido = computed(() => this.dados()?.reservas.some(reserva => reserva.semReserva === true) ?? false);
   readonly reservaSelecionada = signal<IaLimiteReserva | null>(null);
-  readonly estadosPolitica = [{ rotulo: 'Desligada', valor: false }, { rotulo: 'Ativa', valor: true }];
-  readonly selectPt = { root: 'relative block w-full', label: 'block w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-sm', dropdown: 'absolute right-3 top-1/2 -translate-y-1/2', overlay: 'bg-white dark:bg-slate-800 border border-slate-200 rounded-lg shadow-lg z-50', list: 'py-1', option: 'px-3 py-2 text-sm cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700' };
+  readonly togglePt = PT_TOGGLE;
   readonly form = this.fb.group({
     ativo: this.fb.nonNullable.control(false),
     orcamentoMensalUsd: this.fb.control<number | null>(null, Validators.min(0)),

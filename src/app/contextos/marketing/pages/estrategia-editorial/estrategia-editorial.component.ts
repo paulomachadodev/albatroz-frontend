@@ -1,9 +1,8 @@
 import { Component, computed, effect, inject, signal, untracked } from '@angular/core';
-import { MultiSelectModule } from 'primeng/multiselect';
 import { AjudaCampoComponent } from '../../../../shared/components/ajuda-campo/ajuda-campo.component';
 import { MarketingGuiaComponent } from '../../components/marketing-guia.component';
 import { PerfisSociaisService } from '../../../administracao/configuracoes/services/perfis-sociais.service';
-import { FORMATOS_EDITORIAIS, PERFIL_SELECT_PT } from '../../../administracao/configuracoes/models/perfil-social.model';
+import { FORMATOS_EDITORIAIS } from '../../../administracao/configuracoes/models/perfil-social.model';
 import { RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { FormArray, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -32,12 +31,11 @@ function criarLinha(fb: FormBuilder, linha?: Partial<LinhaEditorial>) {
 @Component({
   selector: 'app-estrategia-editorial',
   standalone: true,
-  imports: [MultiSelectModule, AjudaCampoComponent, MarketingGuiaComponent, RouterLink, DatePipe, ReactiveFormsModule, BreadcrumbComponent, PageHeaderComponent],
+  imports: [AjudaCampoComponent, MarketingGuiaComponent, RouterLink, DatePipe, ReactiveFormsModule, BreadcrumbComponent, PageHeaderComponent],
   templateUrl: './estrategia-editorial.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
 export class EstrategiaEditorialComponent extends ConfiguracaoFormularioBase {
-  readonly selectPt = PERFIL_SELECT_PT;
   private readonly service = inject(MarketingService);
   private readonly perfisService = inject(PerfisSociaisService);
   readonly redesCadastradas = signal<string[]>([]);
@@ -96,6 +94,21 @@ export class EstrategiaEditorialComponent extends ConfiguracaoFormularioBase {
 
   formatosOpcoes(): { rotulo: string; valor: string; desabilitada: boolean }[] {
     return [...this.formatosSugeridos.map(valor => ({ rotulo: valor, valor, desabilitada: false })), ...this.form.controls.formatos.value.filter(valor => !this.formatosSugeridos.includes(valor)).map(valor => ({ rotulo: valor + ' (legado)', valor, desabilitada: true }))];
+  }
+
+  opcaoSelecionada(campo: 'redes' | 'formatos', valor: string): boolean {
+    return this.form.controls[campo].value.includes(valor);
+  }
+
+  alternarOpcao(campo: 'redes' | 'formatos', opcao: { valor: string; desabilitada: boolean }): void {
+    const controle = this.form.controls[campo];
+    if (!this.podeEditar() || controle.disabled) return;
+    const atuais = controle.value;
+    const marcada = atuais.includes(opcao.valor);
+    if (!marcada && opcao.desabilitada) return;
+    controle.setValue(marcada ? atuais.filter(v => v !== opcao.valor) : [...atuais, opcao.valor]);
+    controle.markAsDirty();
+    this.registrarAlteracao();
   }
 
   carregar(): void {

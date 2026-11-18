@@ -41,6 +41,7 @@ export const CONFIGURACOES_GRUPOS: GrupoConfiguracao[] = [
     { id: 'ia-configuracao', titulo: 'Inteligência artificial', descricao: 'Chave Google e modelo da empresa atual.', rota: '/configuracoes/ia', permissao: 'ia_configuracoes:ler', termos: 'google gemini chave credencial modelo ia' }
   ] },
   { id: 'integracoes', titulo: 'Integrações e canais', destinos: [
+    { id: 'redes-sociais', titulo: 'Redes sociais', descricao: 'Perfis editoriais e autorização pendente.', rota: '/configuracoes/redes-sociais', permissao: 'integracoes_sociais:ler', termos: 'facebook instagram tiktok whatsapp perfil conta' },
     { id: 'email', titulo: 'E-mail e SMTP', descricao: 'Servidor de envio e remetente.', rota: '/configuracoes/email', permissao: 'configuracoes:ler', termos: 'smtp comunicação email' },
     { id: 'integracoes', titulo: 'Catálogos e site', descricao: 'Google Merchant, catálogo Meta e endereço do site.', rota: '/configuracoes/catalogos', permissao: 'configuracoes:ler', termos: 'feed facebook instagram integração' },
     { id: 'busca-imagens', titulo: 'Busca de imagens', descricao: 'Google Search e limite diário de consultas.', rota: '/configuracoes/busca-imagens', permissao: 'configuracoes:ler', termos: 'google pesquisa search chave' },

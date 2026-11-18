@@ -13,6 +13,7 @@
       }
     </app-page-header>
 
+    <app-marketing-guia />
     <app-listagem-paginada
       [itens]="itens()"
       [carregando]="carregando()"
@@ -37,7 +38,7 @@
                    class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
           </div>
           <div>
-            <label class="text-xs font-semibold text-slate-500">Situação</label>
+            <label class="text-xs font-semibold text-slate-500">Situação</label><app-ajuda-campo titulo="Situação" descricao="Confirmado libera solicitar um rascunho; não gera nem publica sozinho. Arquivado impede edição." exemplo="Revise os campos e então confirme o briefing." />
             <select [(ngModel)]="filtroStatus"
                     class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none">
               <option value="">Todas</option>
@@ -106,68 +107,66 @@
     @if (somenteLeitura()) {
       <p role="status" class="text-xs text-slate-500">Briefing somente para consulta.</p>
     }
+    @if (!perfisHabilitados()) { <p class="text-xs text-slate-500">Canais planejados da estratégia — autorização pendente. Cadastro de perfis indisponível.</p> } @else if (!redesCadastradas().length) { <p class="text-xs text-slate-500">Nenhum perfil social ativo. @if (podeGerenciarPerfis()) { <a routerLink="/configuracoes/redes-sociais" class="text-primary">Cadastrar perfil social</a> }</p> }
     <fieldset [disabled]="somenteLeitura()" class="space-y-4 min-w-0">
       <div>
-        <label class="text-xs font-semibold text-slate-500">Objetivo *</label>
+        <label class="text-xs font-semibold text-slate-500">Objetivo *</label><app-ajuda-campo titulo="Objetivo" descricao="Resultado esperado deste conteúdo específico." exemplo="Explicar um cuidado e convidar o público a comentar." />
         <textarea [(ngModel)]="objetivo" rows="2" maxlength="500" placeholder="O que esta peça deve alcançar"
                   class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"></textarea>
       </div>
       <div>
-        <label class="text-xs font-semibold text-slate-500">Assunto *</label>
+        <label class="text-xs font-semibold text-slate-500">Assunto *</label><app-ajuda-campo titulo="Assunto" descricao="Tema concreto do pedido." exemplo="Como organizar uma rotina de atendimento." />
         <input type="text" [(ngModel)]="assunto" maxlength="300"
                class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
       </div>
       <div>
-        <label class="text-xs font-semibold text-slate-500">Público</label>
+        <label class="text-xs font-semibold text-slate-500">Público</label><app-ajuda-campo titulo="Público" descricao="Para quem esta peça deve ser escrita." exemplo="Pessoas que estão começando a usar um serviço." />
         <input type="text" [(ngModel)]="publico" maxlength="300"
                class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label class="text-xs font-semibold text-slate-500">Rede *</label>
-          <input type="text" [(ngModel)]="rede" maxlength="60" list="briefing-redes" placeholder="Ex: Instagram"
-                 class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+          <label class="text-xs font-semibold text-slate-500">Rede *</label><app-ajuda-campo titulo="Rede" descricao="Plataforma escolhida entre os perfis ativos da empresa. Não comprova autorização de publicação." exemplo="Instagram de um perfil cadastrado." />
+          <p-select [unstyled]="true" [pt]="selectPt" [(ngModel)]="rede" [options]="redesOpcoes()" optionLabel="rotulo" optionValue="valor" optionDisabled="desabilitada" [filter]="true" appendTo="body" placeholder="Escolha a rede" class="block mt-1" />
           <datalist id="briefing-redes">
             @for (opcao of redesSugeridas(); track opcao) { <option [value]="opcao"></option> }
           </datalist>
         </div>
         <div>
-          <label class="text-xs font-semibold text-slate-500">Formato *</label>
-          <input type="text" [(ngModel)]="formato" maxlength="60" placeholder="Ex: Post, carrossel"
-                 class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+          <label class="text-xs font-semibold text-slate-500">Formato *</label><app-ajuda-campo titulo="Formato" descricao="Estrutura da peça; gerar um roteiro não cria um vídeo." exemplo="Post para uma legenda; roteiro para sequência de cenas." />
+          <p-select [unstyled]="true" [pt]="selectPt" [(ngModel)]="formato" [options]="formatosOpcoes()" optionLabel="rotulo" optionValue="valor" optionDisabled="desabilitada" appendTo="body" placeholder="Escolha o formato" class="block mt-1" />
         </div>
         <div>
-          <label class="text-xs font-semibold text-slate-500">Linha editorial</label>
-          <input type="text" [(ngModel)]="linha" maxlength="120" list="briefing-linhas"
-                 class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
+          <label class="text-xs font-semibold text-slate-500">Linha editorial</label><app-ajuda-campo titulo="Linha editorial" descricao="Categoria configurada na estratégia, quando disponível." exemplo="Dicas e educação." />
+          <p-select [unstyled]="true" [pt]="selectPt" [(ngModel)]="linha" [options]="linhasOpcoes()" optionLabel="rotulo" optionValue="valor" optionDisabled="desabilitada" appendTo="body" [editable]="linhasSugeridas().length === 0" placeholder="Linha editorial" class="block mt-1" />
           <datalist id="briefing-linhas">
             @for (opcao of linhasSugeridas(); track opcao) { <option [value]="opcao"></option> }
           </datalist>
         </div>
         <div>
-          <label class="text-xs font-semibold text-slate-500">Prazo</label>
+          <label class="text-xs font-semibold text-slate-500">Prazo</label><app-ajuda-campo titulo="Prazo" descricao="Data editorial desejada. Não agenda nem publica automaticamente." exemplo="Uma data adequada para revisão humana." />
           <input type="date" [(ngModel)]="prazo"
                  class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
         </div>
       </div>
       <div>
-        <label class="text-xs font-semibold text-slate-500">Produto ou serviço (opcional)</label>
+        <label class="text-xs font-semibold text-slate-500">Produto ou serviço (opcional)</label><app-ajuda-campo titulo="Produto ou serviço (opcional)" descricao="Descrição editorial não verificada; não autoriza inventar fatos comerciais." exemplo="Nome e descrição real de um serviço." />
         <input type="text" [(ngModel)]="produtoServico" maxlength="300"
                class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"/>
       </div>
       <div>
-        <label class="text-xs font-semibold text-slate-500">Oferta</label>
+        <label class="text-xs font-semibold text-slate-500">Oferta</label><app-ajuda-campo titulo="Oferta" descricao="Oferta preenchida impede esta geração enquanto não houver validação comercial." exemplo="Deixe vazio para um conteúdo educativo sem promoção." /><p class="text-xs text-slate-500">Oferta comercial preenchida impede a geração de texto sem validação comercial.</p>
         <textarea [(ngModel)]="oferta" rows="2" maxlength="1000"
                   class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"></textarea>
       </div>
       <div>
-        <label class="text-xs font-semibold text-slate-500">Referências e observações</label>
+        <label class="text-xs font-semibold text-slate-500">Referências e observações</label><app-ajuda-campo titulo="Referências e observações" descricao="Contexto autorizado para orientar o pedido, sem dados privados ou segredos." exemplo="Uma orientação factual já confirmada pela empresa." />
         <textarea [(ngModel)]="referencias" rows="3" maxlength="2000"
                   class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"></textarea>
       </div>
       @if (modoDrawer() === 'editar') {
         <div>
-          <label class="text-xs font-semibold text-slate-500">Situação</label>
+          <label class="text-xs font-semibold text-slate-500">Situação</label><app-ajuda-campo titulo="Situação" descricao="Confirmado libera solicitar um rascunho; não gera nem publica sozinho. Arquivado impede edição." exemplo="Revise os campos e então confirme o briefing." />
           <select [(ngModel)]="status"
                   class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none">
             @for (opcao of statusOpcoes; track opcao.valor) {

@@ -6,6 +6,7 @@
               class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-sm font-bold disabled:opacity-50">Atualizar</button>
     </app-page-header>
 
+    <app-marketing-guia />
     @if (carregando()) {
       <div class="h-64 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 animate-pulse" aria-label="Carregando estratégia"></div>
     } @else if (dados(); as estrategia) {
@@ -28,7 +29,7 @@
               <h2 id="estrategia-geral-titulo" class="font-bold">Objetivo e produção</h2>
               <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 <div>
-                  <label for="estrategia-objetivo" class="text-xs font-semibold text-slate-500">Objetivo principal *</label>
+                  <label for="estrategia-objetivo" class="text-xs font-semibold text-slate-500">Objetivo principal *</label><app-ajuda-campo titulo="Objetivo principal" descricao="Escolha o resultado prioritário da comunicação." exemplo="Reconhecimento para apresentar a marca; engajamento para estimular conversa." />
                   <select id="estrategia-objetivo" formControlName="objetivo" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm">
                     @for (objetivo of objetivos; track objetivo.valor) {
                       <option [ngValue]="objetivo.valor">{{ objetivo.rotulo }}</option>
@@ -36,26 +37,27 @@
                   </select>
                 </div>
                 <div>
-                  <label for="estrategia-pecas" class="text-xs font-semibold text-slate-500">Peças por semana (limite) *</label>
+                  <label for="estrategia-pecas" class="text-xs font-semibold text-slate-500">Peças por semana (limite) *</label><app-ajuda-campo titulo="Peças por semana (limite)" descricao="Teto semanal de produção, não obrigação de criar essa quantidade." exemplo="3 permite planejar até três peças na semana." />
                   <input id="estrategia-pecas" type="number" min="1" max="100" formControlName="pecasPorSemana" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm" />
                 </div>
                 <div>
-                  <label for="estrategia-limite" class="text-xs font-semibold text-slate-500">Limite de texto (caracteres, 0 = sem limite)</label>
+                  <label for="estrategia-limite" class="text-xs font-semibold text-slate-500">Limite de texto (caracteres, 0 = sem limite)</label><app-ajuda-campo titulo="Limite de texto (caracteres, 0 = sem limite)" descricao="Limite editorial do texto. Zero retira este limite de caracteres, mas não o limite financeiro de IA." exemplo="1000 para um texto curto." />
                   <input id="estrategia-limite" type="number" min="0" max="5000" formControlName="limiteTexto" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm" />
                 </div>
                 <div>
-                  <label for="estrategia-redes" class="text-xs font-semibold text-slate-500">Redes desejadas</label>
-                  <textarea id="estrategia-redes" formControlName="redes" rows="3" placeholder="Uma por linha" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm"></textarea>
+                  <label for="estrategia-redes" class="text-xs font-semibold text-slate-500">Redes desejadas</label><app-ajuda-campo titulo="Redes desejadas" descricao="Plataformas dos perfis ativos da empresa. Cadastro manual não significa conexão autorizada." exemplo="Selecionar Instagram de um perfil cadastrado." />
+                  <p-multiSelect [unstyled]="true" [pt]="selectPt" inputId="estrategia-redes" formControlName="redes" [options]="redesOpcoes()" optionLabel="rotulo" optionValue="valor" optionDisabled="desabilitada" [filter]="true" appendTo="body" class="block mt-1" />
                 </div>
                 <div>
-                  <label for="estrategia-formatos" class="text-xs font-semibold text-slate-500">Formatos aceitos</label>
-                  <textarea id="estrategia-formatos" formControlName="formatos" rows="3" placeholder="Um por linha (post, carrossel, vídeo curto...)" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm"></textarea>
+                  <label for="estrategia-formatos" class="text-xs font-semibold text-slate-500">Formatos aceitos</label><app-ajuda-campo titulo="Formatos aceitos" descricao="Escolha como o conteúdo será apresentado." exemplo="Post, carrossel ou roteiro." />
+                  <p-multiSelect [unstyled]="true" [pt]="selectPt" inputId="estrategia-formatos" formControlName="formatos" [options]="formatosOpcoes()" optionLabel="rotulo" optionValue="valor" optionDisabled="desabilitada" appendTo="body" class="block mt-1" />
                 </div>
                 <div>
-                  <label for="estrategia-proibidos" class="text-xs font-semibold text-slate-500">Assuntos proibidos</label>
+                  <label for="estrategia-proibidos" class="text-xs font-semibold text-slate-500">Assuntos proibidos</label><app-ajuda-campo titulo="Assuntos proibidos" descricao="Temas que devem ser evitados em qualquer linha editorial." exemplo="Informações pessoais de clientes." />
                   <textarea id="estrategia-proibidos" formControlName="assuntosProibidos" rows="3" placeholder="Um por linha" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm"></textarea>
                 </div>
               </div>
+              @if (!perfisHabilitados()) { <p class="text-xs text-slate-500">Canais planejados da estratégia — autorização pendente. O vínculo com o cadastro de perfis está indisponível.</p> } @else if (!redesCadastradas().length) { <p class="text-xs text-slate-500">Nenhum perfil social ativo cadastrado. @if (podeGerenciarPerfis()) { <a routerLink="/configuracoes/redes-sociais" class="text-primary font-semibold">Cadastrar perfil social</a> }</p> }
               <p class="text-xs text-slate-500">As peças por semana são um teto: a pauta nunca cria mais conteúdo que isso para cumprir percentuais.</p>
             </section>
 
@@ -86,11 +88,11 @@
                   <div [formGroupName]="$index" class="rounded-lg border border-slate-200 dark:border-slate-700 p-4 space-y-3">
                     <div class="grid grid-cols-1 lg:grid-cols-4 gap-3">
                       <div class="lg:col-span-2">
-                        <label [for]="'linha-nome-' + $index" class="text-xs font-semibold text-slate-500">Nome *</label>
+                        <label [for]="'linha-nome-' + $index" class="text-xs font-semibold text-slate-500">Nome *</label><app-ajuda-campo titulo="Nome" descricao="Nome curto para identificar esta linha editorial." exemplo="Dicas e educação." />
                         <input [id]="'linha-nome-' + $index" formControlName="nome" maxlength="120" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm" />
                       </div>
                       <div>
-                        <label [for]="'linha-part-' + $index" class="text-xs font-semibold text-slate-500">Participação (%)</label>
+                        <label [for]="'linha-part-' + $index" class="text-xs font-semibold text-slate-500">Participação (%)</label><app-ajuda-campo titulo="Participação (%)" descricao="Peso da linha na distribuição; somente linhas ativas devem somar 100%." exemplo="50% dicas, 30% serviços e 20% bastidores." />
                         <input [id]="'linha-part-' + $index" type="number" min="0" max="100" formControlName="participacao" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm" />
                       </div>
                       <label class="flex items-center gap-2 text-sm font-semibold mt-6">
@@ -99,19 +101,19 @@
                     </div>
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
                       <div>
-                        <label [for]="'linha-obj-' + $index" class="text-xs font-semibold text-slate-500">Objetivo da linha</label>
+                        <label [for]="'linha-obj-' + $index" class="text-xs font-semibold text-slate-500">Objetivo da linha</label><app-ajuda-campo titulo="Objetivo da linha" descricao="Explique o papel desta categoria na estratégia." exemplo="Ensinar um cuidado prático ao público." />
                         <textarea [id]="'linha-obj-' + $index" formControlName="objetivo" rows="2" maxlength="500" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm"></textarea>
                       </div>
                       <div>
-                        <label [for]="'linha-ex-' + $index" class="text-xs font-semibold text-slate-500">Exemplos</label>
+                        <label [for]="'linha-ex-' + $index" class="text-xs font-semibold text-slate-500">Exemplos</label><app-ajuda-campo titulo="Exemplos" descricao="Referências de ideias, sem copiar conteúdo de terceiros." exemplo="Três cuidados para conservar um objeto." />
                         <textarea [id]="'linha-ex-' + $index" formControlName="exemplos" rows="2" maxlength="1000" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm"></textarea>
                       </div>
                       <div>
-                        <label [for]="'linha-res-' + $index" class="text-xs font-semibold text-slate-500">Restrições</label>
+                        <label [for]="'linha-res-' + $index" class="text-xs font-semibold text-slate-500">Restrições</label><app-ajuda-campo titulo="Restrições" descricao="Regras específicas desta linha." exemplo="Não citar preços sem validação." />
                         <textarea [id]="'linha-res-' + $index" formControlName="restricoes" rows="2" maxlength="1000" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm"></textarea>
                       </div>
                       <div>
-                        <label [for]="'linha-fmt-' + $index" class="text-xs font-semibold text-slate-500">Formatos da linha</label>
+                        <label [for]="'linha-fmt-' + $index" class="text-xs font-semibold text-slate-500">Formatos da linha</label><app-ajuda-campo titulo="Formatos da linha" descricao="Formatos adequados para as ideias desta linha." exemplo="Post ou carrossel." />
                         <textarea [id]="'linha-fmt-' + $index" formControlName="formatos" rows="2" placeholder="Um por linha" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm"></textarea>
                       </div>
                     </div>

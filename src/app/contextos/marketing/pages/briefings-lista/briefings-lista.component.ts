@@ -2,6 +2,11 @@ import { Component, DestroyRef, OnInit, computed, effect, inject, signal } from 
 import { Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Subject, Subscription, takeUntil } from 'rxjs';
+import { SelectModule } from 'primeng/select';
+import { AjudaCampoComponent } from '../../../../shared/components/ajuda-campo/ajuda-campo.component';
+import { MarketingGuiaComponent } from '../../components/marketing-guia.component';
+import { PerfisSociaisService } from '../../../administracao/configuracoes/services/perfis-sociais.service';
+import { FORMATOS_EDITORIAIS, PERFIL_SELECT_PT } from '../../../administracao/configuracoes/models/perfil-social.model';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../../core/auth/auth.service';
@@ -19,12 +24,24 @@ type ModoDrawer = 'criar' | 'editar';
 @Component({
   selector: 'app-briefings-lista',
   standalone: true,
-  imports: [RouterLink, FormsModule, DatePipe, ListagemPaginadaComponent, DrawerComponent, PageHeaderComponent, ThOrdenavelComponent, BreadcrumbComponent],
+  imports: [SelectModule, AjudaCampoComponent, MarketingGuiaComponent, RouterLink, FormsModule, DatePipe, ListagemPaginadaComponent, DrawerComponent, PageHeaderComponent, ThOrdenavelComponent, BreadcrumbComponent],
   templateUrl: './briefings-lista.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
 export class BriefingsListaComponent implements OnInit {
+  readonly selectPt = PERFIL_SELECT_PT;
   private readonly service = inject(MarketingService);
+  private readonly perfisService = inject(PerfisSociaisService);
+  readonly perfisHabilitados = signal(false);
+  readonly redesCadastradas = signal<string[]>([]);
+  readonly formatosDisponiveis = FORMATOS_EDITORIAIS;
+  redeOriginal = ''; formatoOriginal = ''; linhaOriginal = '';
+  podeGerenciarPerfis() { return this.auth.temPermissao('integracoes_sociais:ler'); }
+  redesOpcoes() { const valores = this.perfisHabilitados() ? this.redesCadastradas() : this.redesSugeridas(); return this.opcoes(valores, this.redeOriginal); }
+  formatosOpcoes() { return this.opcoes(this.formatosDisponiveis, this.formatoOriginal); }
+  linhasOpcoes() { return this.opcoes(this.linhasSugeridas(), this.linhaOriginal); }
+  private opcoes(valores: string[], original: string) { return [...valores.map(valor => ({ rotulo: valor, valor, desabilitada: false })), ...(original && !valores.includes(original) ? [{ rotulo: original + ' (fora da lista ativa)', valor: original, desabilitada: true }] : [])]; }
+
   private readonly toast = inject(ToastService);
   private readonly auth = inject(AuthService);
   private readonly destroyRef = inject(DestroyRef);
@@ -76,7 +93,7 @@ export class BriefingsListaComponent implements OnInit {
         this.contextoEncerrado.next();
         this.consulta?.unsubscribe(); this.escrita?.unsubscribe();
         this.itens.set([]); this.drawerAberto.set(false); this.briefingEmEdicao.set(null);
-        this.linhasSugeridas.set([]); this.redesSugeridas.set([]);
+        this.linhasSugeridas.set([]); this.redesSugeridas.set([]); this.redesCadastradas.set([]);
         this.objetivo = ''; this.publico = ''; this.linha = ''; this.assunto = ''; this.produtoServico = ''; this.oferta = ''; this.formato = ''; this.rede = ''; this.referencias = ''; this.prazo = '';
         this.carregando.set(false); this.salvando.set(false);
         queueMicrotask(() => { if (!this.destroyRef.destroyed) void this.router.navigate(['/dashboard'], { replaceUrl: true }); });
@@ -90,6 +107,7 @@ export class BriefingsListaComponent implements OnInit {
   ngOnInit() {
     this.carregar();
     this.carregarSugestoes();
+    this.perfisService.filtros().pipe(takeUntil(this.contextoEncerrado), takeUntilDestroyed(this.destroyRef)).subscribe({ next: res => { if (!this.contextoValido()) return; this.perfisHabilitados.set(res.dados?.redesSociaisHabilitado === true); this.redesCadastradas.set(res.dados?.redes ?? []); }, error: () => undefined });
   }
 
   podeCriar(): boolean {
@@ -240,6 +258,7 @@ export class BriefingsListaComponent implements OnInit {
   }
 
   private preencher(dados: BriefingEdicao, status: number) {
+    this.redeOriginal = dados.rede; this.formatoOriginal = dados.formato; this.linhaOriginal = dados.linha;
     this.objetivo = dados.objetivo;
     this.publico = dados.publico;
     this.linha = dados.linha;

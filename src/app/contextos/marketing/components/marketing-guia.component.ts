@@ -1,0 +1,20 @@
+import { Component, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { AuthService } from '../../../core/auth/auth.service';
+
+@Component({
+  selector: 'app-marketing-guia', standalone: true, imports: [RouterLink], host: { class: 'block' },
+  template: `<details class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5"><summary class="cursor-pointer font-semibold text-primary">Como preencher e criar conteúdo</summary><div class="mt-4 space-y-4"><nav class="flex flex-wrap gap-2" aria-label="Etapas do guia">@for (item of etapas; track item.titulo; let indice = $index) { <button type="button" (click)="etapa.set(indice)" [attr.aria-current]="etapa() === indice ? 'step' : null" class="px-3 py-2 rounded-lg text-xs font-semibold" [class]="etapa() === indice ? 'bg-primary text-white' : 'bg-slate-100 dark:bg-slate-800'">{{ indice + 1 }}. {{ item.titulo }}</button> }</nav><h2 class="font-bold">{{ atual().titulo }}</h2><p class="text-sm text-slate-600 dark:text-slate-300">{{ atual().texto }}</p><p class="text-xs text-slate-500">Exemplo: {{ atual().exemplo }}</p>@if (auth.temPermissao(atual().permissao)) { <a [routerLink]="atual().rota" class="inline-block text-sm font-semibold text-primary hover:underline">{{ atual().acao }}</a> } @else { <p class="text-xs text-slate-500">Peça ao administrador da empresa para configurar esta etapa.</p> }<div class="flex justify-between gap-3"><button type="button" (click)="etapa.set(etapa()-1)" [disabled]="etapa() === 0" class="text-sm text-primary disabled:opacity-40">Anterior</button><button type="button" (click)="etapa.set(etapa()+1)" [disabled]="etapa() === etapas.length-1" class="text-sm text-primary disabled:opacity-40">Próxima etapa</button></div></div></details>`
+})
+export class MarketingGuiaComponent {
+  readonly auth = inject(AuthService);
+  readonly etapa = signal(0);
+  readonly etapas = [
+    { titulo: 'Identidade', texto: 'Registre quem é a empresa, público, proposta de valor, tom e cores reais. A identidade vale para a empresa atual e não é preenchida automaticamente pelo guia.', exemplo: 'Público: pessoas que buscam orientação para escolher um serviço.', rota: '/configuracoes/identidade-marca', permissao: 'identidade_marca:ler', acao: 'Abrir identidade da marca' },
+    { titulo: 'Perfis sociais', texto: 'Cadastre os perfis públicos que a empresa utiliza. Cadastro editorial permite escolher a rede para planejar textos; autorização da rede permanece pendente até consentimento oficial.', exemplo: 'Instagram, nome da empresa e identificador público @perfil.', rota: '/configuracoes/redes-sociais', permissao: 'integracoes_sociais:ler', acao: 'Abrir redes sociais' },
+    { titulo: 'Estratégia', texto: 'Escolha o objetivo, redes, limite semanal e linhas editoriais. A participação das linhas ativas deve somar 100%. O limite semanal não obriga a produzir mais posts para completar percentuais.', exemplo: 'Dicas 50%, serviços 30% e bastidores 20%.', rota: '/marketing/estrategia', permissao: 'marketing:ler', acao: 'Abrir estratégia editorial' },
+    { titulo: 'Briefing', texto: 'Descreva um pedido específico: objetivo, assunto, público, formato e rede. Confirmar um briefing libera a solicitação de rascunho; não publica conteúdo. Oferta comercial preenchida impede esta geração de texto até existir validação comercial.', exemplo: 'Um post educativo que explique três cuidados simples, sem preço ou promoção.', rota: '/marketing/briefings', permissao: 'marketing:ler', acao: 'Abrir briefings' },
+    { titulo: 'Geração', texto: 'No briefing confirmado, abra Gerar texto / histórico. A confirmação usa sua chave Google e pode gerar cobrança; a política de limites deve estar ativa. Revise fatos, tom e direitos de uso. O resultado é rascunho e não é publicado.', exemplo: 'Confira legenda, chamada para ação e hashtags antes de usar o texto.', rota: '/marketing/briefings', permissao: 'marketing:ler', acao: 'Escolher briefing confirmado' }
+  ];
+  atual() { return this.etapas[this.etapa()]; }
+}

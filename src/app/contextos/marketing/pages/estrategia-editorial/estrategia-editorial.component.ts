@@ -1,4 +1,10 @@
 import { Component, computed, effect, inject, signal, untracked } from '@angular/core';
+import { MultiSelectModule } from 'primeng/multiselect';
+import { AjudaCampoComponent } from '../../../../shared/components/ajuda-campo/ajuda-campo.component';
+import { MarketingGuiaComponent } from '../../components/marketing-guia.component';
+import { PerfisSociaisService } from '../../../administracao/configuracoes/services/perfis-sociais.service';
+import { FORMATOS_EDITORIAIS, PERFIL_SELECT_PT } from '../../../administracao/configuracoes/models/perfil-social.model';
+import { RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { FormArray, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -26,12 +32,18 @@ function criarLinha(fb: FormBuilder, linha?: Partial<LinhaEditorial>) {
 @Component({
   selector: 'app-estrategia-editorial',
   standalone: true,
-  imports: [DatePipe, ReactiveFormsModule, BreadcrumbComponent, PageHeaderComponent],
+  imports: [MultiSelectModule, AjudaCampoComponent, MarketingGuiaComponent, RouterLink, DatePipe, ReactiveFormsModule, BreadcrumbComponent, PageHeaderComponent],
   templateUrl: './estrategia-editorial.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
 export class EstrategiaEditorialComponent extends ConfiguracaoFormularioBase {
+  readonly selectPt = PERFIL_SELECT_PT;
   private readonly service = inject(MarketingService);
+  private readonly perfisService = inject(PerfisSociaisService);
+  readonly redesCadastradas = signal<string[]>([]);
+  readonly perfisHabilitados = signal(false);
+  readonly formatosSugeridos = FORMATOS_EDITORIAIS;
+  readonly podeGerenciarPerfis = computed(() => this.auth.temPermissao('integracoes_sociais:ler'));
   private readonly auth = inject(AuthService);
   private readonly toast = inject(ToastService);
   private readonly fb = inject(FormBuilder);
@@ -51,8 +63,8 @@ export class EstrategiaEditorialComponent extends ConfiguracaoFormularioBase {
     objetivo: [1, Validators.required],
     pecasPorSemana: [3, [Validators.required, Validators.min(1), Validators.max(100)]],
     limiteTexto: [0, [Validators.required, Validators.min(0), Validators.max(5000)]],
-    redes: [''],
-    formatos: [''],
+    redes: [[] as string[]],
+    formatos: [[] as string[]],
     assuntosProibidos: [''],
     linhas: this.fb.array<ReturnType<typeof criarLinha>>([])
   });
@@ -72,7 +84,18 @@ export class EstrategiaEditorialComponent extends ConfiguracaoFormularioBase {
         else this.form.enable({ emitEvent: false });
       });
     });
+    this.perfisService.filtros().pipe(takeUntil(this.contextoEncerrado), takeUntilDestroyed(this.destroyRef)).subscribe({ next: res => { if (!this.acessoValido()) return; this.perfisHabilitados.set(res.dados?.redesSociaisHabilitado === true); this.redesCadastradas.set(res.dados?.redes ?? []); }, error: () => undefined });
     this.carregar();
+  }
+
+  redesOpcoes(): { rotulo: string; valor: string; desabilitada: boolean }[] {
+    const ativas = this.perfisHabilitados() ? this.redesCadastradas() : (this.dados()?.redes ?? []);
+    const legadas = this.form.controls.redes.value.filter(rede => !ativas.includes(rede));
+    return [...ativas.map(valor => ({ rotulo: valor, valor, desabilitada: false })), ...legadas.map(valor => ({ rotulo: valor + ' (fora dos perfis ativos)', valor, desabilitada: true }))];
+  }
+
+  formatosOpcoes(): { rotulo: string; valor: string; desabilitada: boolean }[] {
+    return [...this.formatosSugeridos.map(valor => ({ rotulo: valor, valor, desabilitada: false })), ...this.form.controls.formatos.value.filter(valor => !this.formatosSugeridos.includes(valor)).map(valor => ({ rotulo: valor + ' (legado)', valor, desabilitada: true }))];
   }
 
   carregar(): void {
@@ -169,7 +192,8 @@ export class EstrategiaEditorialComponent extends ConfiguracaoFormularioBase {
     });
   }
 
-  private itens(texto: string): string[] {
+  private itens(texto: string | string[]): string[] {
+    if (Array.isArray(texto)) return texto.map(item => item.trim()).filter(Boolean);
     return texto.split(/[;\n]/).map(item => item.trim()).filter(Boolean);
   }
 
@@ -189,8 +213,8 @@ export class EstrategiaEditorialComponent extends ConfiguracaoFormularioBase {
       objetivo: dados.objetivo || 1,
       pecasPorSemana: dados.pecasPorSemana || 3,
       limiteTexto: dados.limiteTexto ?? 0,
-      redes: dados.redes.join('\n'),
-      formatos: dados.formatos.join('\n'),
+      redes: dados.redes,
+      formatos: dados.formatos,
       assuntosProibidos: dados.assuntosProibidos.join('\n')
     });
     this.precisaAtualizar.set(false);

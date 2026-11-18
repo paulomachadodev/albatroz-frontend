@@ -58,6 +58,6 @@ describe('Navegação autorizada', () => {
   it('não inclui formulários futuros nem IDs repetidos', () => {
     const destinos = CONFIGURACOES_GRUPOS.flatMap(g => g.destinos);
     expect(new Set(destinos.map(d => d.id)).size).toBe(destinos.length);
-    expect(destinos.some(d => /gemini|redes sociais/i.test(d.titulo))).toBeFalse();
+    expect(destinos.some(d => /gemini/i.test(d.titulo))).toBeFalse();
   });
 });

@@ -1,4 +1,5 @@
 import { Component, computed, effect, inject, signal, untracked } from '@angular/core';
+import { AjudaCampoComponent } from '../../../../../shared/components/ajuda-campo/ajuda-campo.component';
 import { DatePipe } from '@angular/common';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -23,7 +24,7 @@ function validarIdiomaMarca(controle: AbstractControl): { idioma: true } | null 
 
 @Component({
   selector: 'app-identidade-marca', standalone: true,
-  imports: [DatePipe, ReactiveFormsModule, RouterLink, InputTextModule, BreadcrumbComponent, PageHeaderComponent],
+  imports: [AjudaCampoComponent, DatePipe, ReactiveFormsModule, RouterLink, InputTextModule, BreadcrumbComponent, PageHeaderComponent],
   templateUrl: './identidade-marca.component.html', host: { class: 'flex-1 flex flex-col min-h-0' }
 })
 export class IdentidadeMarcaComponent extends ConfiguracaoFormularioBase {

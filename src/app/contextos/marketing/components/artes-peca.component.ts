@@ -4,7 +4,8 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { SelectModule } from 'primeng/select';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { PT_MULTISELECT } from '../../../shared/utils/pt-multiselect';
-import { Subscription, firstValueFrom } from 'rxjs';
+import { Observable, Subscription, firstValueFrom } from 'rxjs';
+import { Resultado } from '../../../core/models';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ToastService } from '../../../core/feedback/toast.service';
 import { ConfirmService } from '../../../core/feedback/confirm.service';
@@ -70,7 +71,8 @@ export class ArtesPecaComponent {
     formato: [2, Validators.required],
     modelo: [1, Validators.required],
     titulo: ['', Validators.maxLength(70)],
-    subtitulo: ['', Validators.maxLength(120)]
+    subtitulo: ['', Validators.maxLength(120)],
+    todasFotos: [false]
   });
 
   readonly usaFoto = computed(() => this.modelos.find(m => m.valor === this.modeloAtual())?.usaFoto ?? false);
@@ -168,7 +170,7 @@ export class ArtesPecaComponent {
 
   abrirCriacao(): void {
     if (!this.podeEditar()) return;
-    this.form.reset({ formato: 2, modelo: 1, titulo: '', subtitulo: '' });
+    this.form.reset({ formato: 2, modelo: 1, titulo: '', subtitulo: '', todasFotos: false });
     this.modeloAtual.set(1);
     this.produto.set(null);
     this.modal.set(true);
@@ -185,13 +187,15 @@ export class ArtesPecaComponent {
     if (!this.usaFoto() && !this.form.controls.titulo.value.trim()) { this.toast.aviso('Informe o título.', 'O modelo Texto em destaque precisa de um título.'); return; }
     const valores = this.form.getRawValue();
     this.processando.set(true);
-    this.service.gerar(this.pecaId(), {
-      formato: valores.formato, modelo: valores.modelo, produtoId: this.usaFoto() ? this.produto()!.id : null,
-      titulo: valores.titulo.trim(), subtitulo: valores.subtitulo.trim()
-    }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+    const base = { formato: valores.formato, modelo: valores.modelo, titulo: valores.titulo.trim(), subtitulo: valores.subtitulo.trim() };
+    const carrossel = this.usaFoto() && valores.todasFotos;
+    const chamada: Observable<Resultado<unknown>> = carrossel
+      ? this.service.gerarCarrossel(this.pecaId(), { ...base, produtoId: this.produto()!.id })
+      : this.service.gerar(this.pecaId(), { ...base, produtoId: this.usaFoto() ? this.produto()!.id : null });
+    chamada.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: res => {
         this.processando.set(false);
-        if (res.sucesso) { this.modal.set(false); this.toast.sucesso('Arte criada em rascunho.'); this.carregar(); }
+        if (res.sucesso) { this.modal.set(false); this.toast.sucesso(carrossel ? 'Artes do carrossel criadas em rascunho.' : 'Arte criada em rascunho.'); this.carregar(); }
         else this.toast.erro('Não foi possível criar a arte.');
       },
       error: erro => { this.processando.set(false); this.toast.erroServidor(erro, 'Não foi possível criar a arte.'); }
@@ -203,6 +207,27 @@ export class ArtesPecaComponent {
     const confirmado = await this.confirm.confirmar('Aprovar esta arte?', 'A arte aprovada fica guardada para a publicação. Nada é publicado agora.', { textoConfirmar: 'Aprovar', textoCancelar: 'Voltar' });
     if (!confirmado) return;
     this.executar(this.service.aprovar(this.pecaId(), arte.id, arte.versao), 'Arte aprovada.', 'Não foi possível aprovar a arte.');
+  }
+
+  readonly aprovaveis = computed(() => this.itens().filter(a => a.status === 1 && a.arquivoDisponivel));
+
+  async aprovarTodas(): Promise<void> {
+    const lista = this.aprovaveis();
+    if (!this.podeAprovar() || this.processando() || lista.length < 2) return;
+    const confirmado = await this.confirm.confirmar('Aprovar todas as artes em rascunho?', 'São ' + lista.length + ' artes, na ordem em que aparecem. Nada é publicado agora.', { textoConfirmar: 'Aprovar todas', textoCancelar: 'Voltar' });
+    if (!confirmado) return;
+    this.processando.set(true);
+    for (const arte of lista) {
+      try {
+        const res = await firstValueFrom(this.service.aprovar(this.pecaId(), arte.id, arte.versao));
+        if (!res.sucesso) { this.toast.erro('Não foi possível aprovar uma das artes.'); break; }
+      } catch (erro) {
+        this.toast.erroServidor(erro, 'Não foi possível aprovar uma das artes.');
+        break;
+      }
+    }
+    this.processando.set(false);
+    this.carregar();
   }
 
   async descartar(arte: Arte): Promise<void> {

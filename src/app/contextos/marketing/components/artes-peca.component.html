@@ -4,6 +4,9 @@
       <h2 id="artes-titulo" class="font-bold">Artes (imagens)</h2>
       <p class="text-xs text-slate-500">Rascunhos de arte são apagados depois de 2 dias. Aprove para guardar. Uma arte descartada ou apagada pode ser refeita.</p>
     </div>
+    @if (podeAprovar() && aprovaveis().length > 1) {
+      <button type="button" (click)="aprovarTodas()" [disabled]="processando()" class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-sm font-bold">Aprovar todas ({{ aprovaveis().length }})</button>
+    }
     @if (podeEditar() && habilitado()) {
       <button type="button" (click)="abrirCriacao()" class="px-4 py-2 rounded-lg bg-primary text-white text-sm font-bold">Criar arte</button>
     }
@@ -79,6 +82,12 @@
           <span class="text-xs font-semibold text-slate-500">Produto (usa a foto cadastrada)</span>
           <app-select-busca [valorSelecionado]="produto()" placeholder="Digite o nome ou o código do produto" [buscar]="buscarProdutos" (selecionado)="produto.set($event)" />
         </div>
+      }
+      @if (usaFoto()) {
+        <label class="flex items-start gap-2 text-sm">
+          <input type="checkbox" formControlName="todasFotos" class="mt-1" />
+          <span>Carrossel com todas as fotos do produto (até 10, uma arte por foto)</span>
+        </label>
       }
       <div>
         <label for="arte-titulo" class="text-xs font-semibold text-slate-500">Título da arte@if (!usaFoto()) { * } @else { (opcional) }</label>

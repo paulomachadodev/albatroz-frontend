@@ -18,6 +18,7 @@ Branch: `master` | Prod: `http://192.168.0.190:80` (Angular via Docker/nginx)
 11. **Feature back+front** — só entregue com as duas pontas prontas.
 12. **Spec antes de código** — feature sem spec aprovada = não implementar.
 13. **Após tarefa** — `npm test` primeiro; se passar → commit + push em `master` via subagente Haiku.
+14. **Reutilizar componentes conhecidos** — antes de criar ou estilizar qualquer elemento de UI, usar o componente e o `[pt]` já existentes (inventário em `.claude/standards/angular/reutilizar-componentes.md`). `p-*` com `[unstyled]` sempre leva o `[pt]` do sistema, do componente certo. Dizer o que foi procurado quando algo novo for criado.
 
 ## Stack
 

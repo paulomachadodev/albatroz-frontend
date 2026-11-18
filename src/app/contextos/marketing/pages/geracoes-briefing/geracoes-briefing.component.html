@@ -38,6 +38,7 @@
             <div><h3 class="text-xs font-semibold text-slate-500">Ideia visual</h3><p class="mt-2 text-sm whitespace-pre-wrap break-words">{{ resultado.ideiaVisual }}</p></div>
             @if (resultado.roteiro.length) { <div><h3 class="text-xs font-semibold text-slate-500">Roteiro</h3><ol class="mt-2 space-y-2 list-decimal pl-5 text-sm">@for (etapa of resultado.roteiro; track $index) { <li class="whitespace-pre-wrap break-words">{{ etapa }}</li> }</ol></div> }
           }
+          @if (geracao.status === 3 && geracao.resultado && podeCriar()) { <div><button type="button" (click)="criarPeca(geracao)" [disabled]="criandoPeca()" class="px-4 py-2 rounded-lg bg-primary text-white text-sm font-bold">Criar peça para revisão</button><p class="mt-1 text-xs text-slate-500">Leva este texto para edição, aprovação e exportação.</p></div> }
           <details class="text-xs text-slate-500"><summary class="cursor-pointer">Versões utilizadas</summary><div class="mt-2 space-y-1 break-all"><p>Marca: {{ geracao.marcaVersao }}</p><p>Estratégia: {{ geracao.estrategiaVersao }}</p><p>Briefing: {{ geracao.briefingVersao }}</p></div></details>
         </section>
       }

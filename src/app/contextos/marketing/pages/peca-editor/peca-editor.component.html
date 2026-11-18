@@ -1,0 +1,109 @@
+<div class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark px-4 sm:px-6 lg:px-8 xl:px-10 py-6 lg:py-8">
+  <div class="w-full space-y-8">
+    <app-breadcrumb [itens]="[{label:'Início',rota:'/dashboard'},{label:'Marketing'},{label:'Peças',rota:'/marketing/pecas'},{label:'Peça ' + id}]"></app-breadcrumb>
+
+    @if (carregando() && !peca()) {
+      <div class="h-40 animate-pulse bg-white dark:bg-slate-900 rounded-xl"></div>
+    } @else if (peca(); as peca) {
+      <app-page-header [titulo]="'Peça ' + peca.id" [subtitulo]="peca.rede + ' · ' + peca.formato + ' · ' + status[peca.status] + ' · versão ' + peca.versaoAtual">
+        <div acoes class="flex flex-wrap gap-2">
+          @if (peca.status === 2) {
+            <button type="button" (click)="exportar()" [disabled]="processando()" class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-sm font-bold">Exportar texto</button>
+          }
+          @if (podeAprovar() && peca.status === 1) {
+            <button type="button" (click)="aprovar()" [disabled]="processando() || alterado()" class="px-4 py-2 rounded-lg bg-primary text-white text-sm font-bold">Aprovar versão {{ peca.versaoAtual }}</button>
+          }
+          @if (editavel()) {
+            <button type="button" (click)="arquivar()" [disabled]="processando()" class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-sm font-bold text-red-600">Arquivar</button>
+          }
+        </div>
+      </app-page-header>
+
+      @if (peca.status === 2) {
+        <p role="status" class="text-sm text-emerald-700 dark:text-emerald-300">Versão {{ peca.versaoAprovada }} aprovada em {{ peca.aprovadaEm | date:'dd/MM/yyyy HH:mm' }}. Editar o texto cancela a aprovação.</p>
+      }
+      @if (peca.status === 3) {
+        <p role="status" class="text-sm text-slate-500">Peça arquivada. Não pode mais ser editada.</p>
+      }
+      @if (peca.alertaValor) {
+        <p role="alert" class="text-sm text-amber-700 dark:text-amber-300">O texto menciona valor em dinheiro ou porcentagem. Confira preço e oferta antes de aprovar.</p>
+      }
+      @if (alterado()) {
+        <p role="status" class="text-sm text-amber-700 dark:text-amber-300">Há alterações não salvas. Salve a nova versão antes de aprovar.</p>
+      }
+
+      <form [formGroup]="form" (ngSubmit)="salvar()" class="space-y-6">
+        <section class="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 space-y-4" aria-labelledby="peca-texto">
+          <h2 id="peca-texto" class="font-bold">Texto</h2>
+          <div>
+            <label for="peca-legenda" class="text-xs font-semibold text-slate-500">Legenda *</label>
+            <textarea id="peca-legenda" formControlName="legenda" rows="8" maxlength="6000" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm"></textarea>
+            <p class="mt-1 text-xs text-slate-500">{{ form.controls.legenda.value.length }} de 6000 caracteres</p>
+          </div>
+          <div>
+            <label for="peca-cta" class="text-xs font-semibold text-slate-500">Chamada para ação</label>
+            <input id="peca-cta" formControlName="cta" maxlength="500" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm" />
+          </div>
+          <div>
+            <label for="peca-hashtags" class="text-xs font-semibold text-slate-500">Hashtags (separe por espaço)</label>
+            <textarea id="peca-hashtags" formControlName="hashtags" rows="2" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm"></textarea>
+          </div>
+          <div>
+            <label for="peca-ideia" class="text-xs font-semibold text-slate-500">Ideia visual</label>
+            <textarea id="peca-ideia" formControlName="ideiaVisual" rows="3" maxlength="2000" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm"></textarea>
+          </div>
+        </section>
+
+        <section class="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 space-y-4" aria-labelledby="peca-roteiro">
+          <div class="flex items-center justify-between gap-3">
+            <h2 id="peca-roteiro" class="font-bold">Roteiro (um item por slide ou cena)</h2>
+            @if (editavel()) { <button type="button" (click)="adicionarEtapa()" [disabled]="roteiro.length >= 20" class="px-3 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-xs font-bold">Adicionar item</button> }
+          </div>
+          @for (etapa of roteiro.controls; track $index) {
+            <div class="flex gap-2 items-start">
+              <span class="mt-2 text-sm text-slate-500 w-6 shrink-0">{{ $index + 1 }}.</span>
+              <textarea [formControl]="etapa" rows="2" maxlength="1000" [attr.aria-label]="'Item ' + ($index + 1) + ' do roteiro'" class="flex-1 rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm"></textarea>
+              @if (editavel()) { <button type="button" (click)="removerEtapa($index)" class="mt-1 text-xs font-bold text-red-600">Remover</button> }
+            </div>
+          } @empty {
+            <p class="text-sm text-slate-500">Sem roteiro.</p>
+          }
+        </section>
+
+        @if (editavel()) {
+          <div class="flex justify-end">
+            <button type="submit" [disabled]="processando() || !alterado() || form.invalid" class="px-5 py-2.5 rounded-lg bg-primary text-white text-sm font-bold">Salvar nova versão</button>
+          </div>
+        }
+      </form>
+
+      <section class="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 space-y-4" aria-labelledby="peca-data">
+        <h2 id="peca-data" class="font-bold">Data prevista para postar</h2>
+        <p class="text-xs text-slate-500">Serve para organizar o calendário. Ainda não publica sozinha. Alterar a data não cria uma nova versão do texto.</p>
+        <div class="flex flex-wrap items-end gap-3">
+          <div>
+            <label for="peca-data-prevista" class="text-xs font-semibold text-slate-500">Data e hora (horário local)</label>
+            <input id="peca-data-prevista" type="datetime-local" [formControl]="dataPrevista" class="mt-1 rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm" />
+          </div>
+          @if (editavel()) { <button type="button" (click)="salvarData()" [disabled]="processando()" class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-sm font-bold">Salvar data</button> }
+        </div>
+      </section>
+
+      <section class="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 space-y-3" aria-labelledby="peca-historico">
+        <h2 id="peca-historico" class="font-bold">Histórico de versões</h2>
+        <ul class="space-y-2 text-sm">
+          @for (versao of peca.versoes; track versao.numero) {
+            <li class="flex flex-wrap gap-x-3">
+              <span class="font-semibold">Versão {{ versao.numero }}</span>
+              <span>{{ origem[versao.origem] }}</span>
+              <span class="text-slate-500">{{ versao.criadoEm | date:'dd/MM/yyyy HH:mm' }}</span>
+              @if (versao.numero === peca.versaoAprovada) { <span class="text-emerald-700 dark:text-emerald-300">aprovada</span> }
+            </li>
+          }
+        </ul>
+      </section>
+
+      <a routerLink="/marketing/pecas" class="inline-block text-sm font-semibold text-primary">Voltar para Peças</a>
+    }
+  </div>
+</div>

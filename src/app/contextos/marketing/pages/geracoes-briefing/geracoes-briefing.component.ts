@@ -12,6 +12,7 @@ import { ListagemPaginadaComponent } from '../../../../shared/components/listage
 import { Briefing } from '../../models/marketing.model';
 import { GeracaoMarketing } from '../../models/geracao-marketing.model';
 import { GeracoesMarketingService } from '../../services/geracoes-marketing.service';
+import { PecasService } from '../../services/pecas.service';
 
 @Component({
   selector: 'app-geracoes-briefing', standalone: true,
@@ -20,6 +21,8 @@ import { GeracoesMarketingService } from '../../services/geracoes-marketing.serv
 })
 export class GeracoesBriefingComponent {
   private readonly service = inject(GeracoesMarketingService);
+  private readonly pecas = inject(PecasService);
+  readonly criandoPeca = signal(false);
   private readonly auth = inject(AuthService);
   private readonly toast = inject(ToastService);
   private readonly confirm = inject(ConfirmService);
@@ -139,6 +142,19 @@ export class GeracoesBriefingComponent {
       error: erro => { if (this.valido(ciclo)) this.toast.erroServidor(erro, 'Não foi possível atualizar o rascunho.'); }
     });
     this.iniciarPolling();
+  }
+
+  criarPeca(geracao: GeracaoMarketing): void {
+    if (!this.podeCriar() || geracao.status !== 3 || !geracao.resultado || this.criandoPeca()) return;
+    this.criandoPeca.set(true);
+    this.pecas.criar(geracao.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: res => {
+        this.criandoPeca.set(false);
+        if (res.sucesso && res.dados) void this.router.navigate(['/marketing/pecas', res.dados.id]);
+        else this.toast.erro('Não foi possível criar a peça.');
+      },
+      error: erro => { this.criandoPeca.set(false); this.toast.erroServidor(erro, 'Não foi possível criar a peça.'); }
+    });
   }
 
   async cancelar(): Promise<void> {

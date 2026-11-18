@@ -58,7 +58,8 @@ export const MENU_CATALOGO: ItemMenu[] = [
   ] },
   { id: 'marketing', label: 'Marketing', icone: 'campaign', filhos: [
     { id: 'marketing-estrategia', label: 'Estratégia editorial', rota: '/marketing/estrategia', permissao: 'marketing:ler' },
-    { id: 'marketing-briefings', label: 'Briefings', rota: '/marketing/briefings', permissao: 'marketing:ler' }
+    { id: 'marketing-briefings', label: 'Briefings', rota: '/marketing/briefings', permissao: 'marketing:ler' },
+    { id: 'marketing-pecas', label: 'Peças', rota: '/marketing/pecas', permissao: 'marketing:ler' }
   ] },
   { id: 'albia', label: 'Albia IA', icone: 'auto_awesome', rota: '/albia' },
   { id: 'configuracoes', label: 'Configurações', icone: 'settings', rota: '/configuracoes', filhos: CONFIGURACOES_GRUPOS.map(grupo => ({

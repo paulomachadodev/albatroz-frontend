@@ -1,5 +1,5 @@
 export interface PerfilSocialEdicao { plataforma: number; nome: string; identificador: string; ativo: boolean; }
-export interface PerfilSocial extends PerfilSocialEdicao { id: number; versao: string; criadoEm: string; atualizadoEm: string; autorizacaoPendente: boolean; }
+export interface PerfilSocial extends PerfilSocialEdicao { id: number; versao: string; criadoEm: string; atualizadoEm: string; autorizacaoPendente: boolean; contaConectada?: string | null; }
 export interface PerfisSociaisLista { habilitado: boolean; itens: PerfilSocial[]; }
 export interface MarketingFiltros { redesSociaisHabilitado: boolean; perfis: PerfilSocial[]; redes: string[]; }
 export const PLATAFORMAS_SOCIAIS = [{ valor: 1, rotulo: 'Facebook' }, { valor: 2, rotulo: 'Instagram' }, { valor: 3, rotulo: 'TikTok' }, { valor: 4, rotulo: 'WhatsApp' }];

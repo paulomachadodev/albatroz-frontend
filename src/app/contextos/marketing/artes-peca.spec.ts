@@ -19,12 +19,13 @@ function arte(extra: Partial<Arte> = {}): Arte {
 
 @Component({
   standalone: true, imports: [ArtesPecaComponent],
-  template: `<app-artes-peca [pecaId]="5" [versaoConteudo]="versaoTexto()" tituloSugerido="Volta às aulas com estilo" [arquivada]="arquivada()" (possuiAprovadaAlterada)="aprovada = $event" />`
+  template: `<div (input)="eventosRecebidos = eventosRecebidos + 1" (change)="eventosRecebidos = eventosRecebidos + 1"><app-artes-peca [pecaId]="5" [versaoConteudo]="versaoTexto()" tituloSugerido="Volta às aulas com estilo" [arquivada]="arquivada()" (possuiAprovadaAlterada)="aprovada = $event" /></div>`
 })
 class HospedeiroComponent {
   readonly versaoTexto = signal(1);
   readonly arquivada = signal(false);
   aprovada: boolean | null = null;
+  eventosRecebidos = 0;
 }
 
 describe('Artes da peça', () => {
@@ -59,7 +60,7 @@ describe('Artes da peça', () => {
   function montar() {
     const fixture = TestBed.createComponent(HospedeiroComponent);
     fixture.detectChanges();
-    const artes = fixture.debugElement.children[0].componentInstance as ArtesPecaComponent;
+    const artes = fixture.debugElement.children[0].children[0].componentInstance as ArtesPecaComponent;
     return { fixture, artes, texto: () => (fixture.nativeElement as HTMLElement).textContent ?? '' };
   }
 
@@ -103,18 +104,39 @@ describe('Artes da peça', () => {
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('O texto mudou depois desta arte');
   });
 
-  it('criar arte com foto exige produto e envia a requisição com o título sugerido', () => {
+  it('criar arte com foto exige produto, aceita título vazio e envia a requisição', () => {
     const { artes } = montar();
     artes.abrirCriacao();
-    expect(artes.form.controls.titulo.value).toBe('Volta às aulas com estilo');
+    expect(artes.form.controls.titulo.value).toBe('');
     artes.gerar();
     expect(api.gerar).not.toHaveBeenCalled();
     expect(toast.aviso).toHaveBeenCalled();
     artes.produto.set({ id: 99, nome: 'Caderno (C1)' });
     artes.form.patchValue({ formato: 3, subtitulo: ' Tudo para o ano ' });
     artes.gerar();
-    expect(api.gerar).toHaveBeenCalledWith(5, { formato: 3, modelo: 1, produtoId: 99, titulo: 'Volta às aulas com estilo', subtitulo: 'Tudo para o ano' });
+    expect(api.gerar).toHaveBeenCalledWith(5, { formato: 3, modelo: 1, produtoId: 99, titulo: '', subtitulo: 'Tudo para o ano' });
     expect(artes.modal()).toBeFalse();
+  });
+
+  it('modelo de texto sugere o título a partir da peça e o exige', () => {
+    const { artes } = montar();
+    artes.abrirCriacao();
+    artes.form.controls.modelo.setValue(3);
+    expect(artes.form.controls.titulo.value).toBe('Volta às aulas com estilo');
+    artes.form.patchValue({ titulo: '  ' });
+    artes.gerar();
+    expect(api.gerar).not.toHaveBeenCalled();
+    expect(toast.aviso).toHaveBeenCalled();
+  });
+
+  it('eventos dos campos do diálogo não chegam ao formulário da peça', () => {
+    const { fixture, artes } = montar();
+    artes.abrirCriacao();
+    fixture.detectChanges();
+    const campo: HTMLInputElement = document.querySelector('#arte-titulo')!;
+    campo.dispatchEvent(new Event('input', { bubbles: true }));
+    campo.dispatchEvent(new Event('change', { bubbles: true }));
+    expect(fixture.componentInstance.eventosRecebidos).toBe(0);
   });
 
   it('modelo de texto não pede produto e não o envia', () => {

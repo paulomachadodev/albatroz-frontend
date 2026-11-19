@@ -169,7 +169,8 @@
           @case (6) {
             <div class="space-y-4">
               @if (sugestaoHorario()) {
-                <p class="text-sm text-slate-600 dark:text-slate-300">Sugerido pelos insights: <strong>{{ sugestaoHorario() }}</strong>. Já deixei o horário preenchido; é só aprovar.</p>
+                <p class="text-sm text-slate-600 dark:text-slate-300">Sugerido pelos insights: <strong>{{ sugestaoHorario() }}</strong>.
+                  @if (sugestaoConfiavel()) { Já deixei o horário preenchido; é só aprovar. } @else { Poucos dados ainda, então é só um teste. Se quiser usar, escolha "Escolher data e hora". }</p>
               }
               <div class="flex gap-2">
                 <button type="button" (click)="quando.set('agora')" [class]="quando() === 'agora' ? 'px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-sm font-bold' : 'px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-sm font-bold'">Publicar agora</button>

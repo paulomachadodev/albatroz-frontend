@@ -35,7 +35,7 @@ export class InsightsMarketingComponent {
   }
 
   classeConfianca(confianca: string): string {
-    return confianca === 'Boa' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200' : confianca === 'Media' ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200' : 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200';
+    return confianca === 'Boa' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200' : confianca === 'Média' ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200' : 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200';
   }
 
   trocarPeriodo(dias: number): void {

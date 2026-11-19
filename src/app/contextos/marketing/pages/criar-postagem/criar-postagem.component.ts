@@ -57,6 +57,7 @@ export class CriarPostagemComponent {
   private readonly produtosService = inject(ProdutosService);
   private readonly insights = inject(InsightsService);
   readonly sugestaoHorario = signal('');
+  readonly sugestaoConfiavel = signal(false);
 
   readonly selectPt = PERFIL_SELECT_PT;
   readonly multiselectPt = PT_MULTISELECT;
@@ -314,8 +315,10 @@ export class CriarPostagemComponent {
       const melhor = res.sucesso ? res.dados?.horarios?.[0] : undefined;
       if (!melhor) return;
       this.dataHora.set(this.paraCampoData(proximaOcorrencia(melhor)));
-      this.quando.set('agendar');
+      const confiavel = melhor.amostra >= 2;
+      if (confiavel) this.quando.set('agendar');
       this.sugestaoHorario.set(`${DIAS_SEMANA[melhor.diaSemana]}, ${melhor.horaInicio}h às ${melhor.horaFim}h (confiança ${melhor.confianca.toLowerCase()}, ${melhor.amostra} post(s))`);
+      this.sugestaoConfiavel.set(confiavel);
     } catch {
       this.sugestaoHorario.set('');
     }

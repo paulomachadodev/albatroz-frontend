@@ -14,4 +14,11 @@
   appendTo="body"
   scrollHeight="14rem"
   emptyMessage="Nenhum resultado."
-  [pt]="ptBusca" />
+  [pt]="ptBusca">
+  <ng-template #item let-opcao>
+    <span class="flex items-center gap-2">
+      @if (opcao.imagem) { <img [src]="opcao.imagem" alt="" loading="lazy" class="h-10 w-10 shrink-0 rounded-md object-cover bg-slate-100 dark:bg-slate-700" /> }
+      <span>{{ opcao.nome }}</span>
+    </span>
+  </ng-template>
+</p-autocomplete>

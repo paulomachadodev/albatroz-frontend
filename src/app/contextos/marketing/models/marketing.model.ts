@@ -58,7 +58,7 @@ export interface BriefingEdicao {
   prazo: string | null;
 }
 
-export interface ProdutoBriefing { id: number; codigo: string; nome: string; }
+export interface ProdutoBriefing { id: number; codigo: string; nome: string; imagem?: string | null; }
 
 export interface BriefingAtualizacao extends BriefingEdicao {
   status: number;

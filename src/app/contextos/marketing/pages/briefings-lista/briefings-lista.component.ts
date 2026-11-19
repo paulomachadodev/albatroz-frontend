@@ -209,7 +209,7 @@ export class BriefingsListaComponent implements OnInit {
     this.modoDrawer.set('editar');
     this.briefingEmEdicao.set(briefing);
     this.preencher(briefing, briefing.status);
-    this.produtosSelecionados = (briefing.produtos ?? []).map(p => ({ id: p.id, nome: `${p.nome} (${p.codigo})` }));
+    this.produtosSelecionados = (briefing.produtos ?? []).map(p => ({ id: p.id, nome: `${p.nome} (${p.codigo})`, imagem: p.imagem ?? null }));
     this.drawerAberto.set(true);
   }
 

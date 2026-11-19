@@ -7,6 +7,7 @@ import { Observable, Subscription } from 'rxjs';
 export interface OpcaoSelectBusca {
   id: number;
   nome: string;
+  imagem?: string | null;
 }
 
 @Component({

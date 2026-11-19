@@ -22,7 +22,7 @@ export class ArtesService {
     const texto = termo.trim();
     if (texto.length < 2) return of([]);
     return this.produtos.listar({ pagina: 1, tamanho: 15 }, { texto, temImagem: true })
-      .pipe(map(res => (res.sucesso && res.dados ? res.dados.dados.map(p => ({ id: p.id, nome: `${p.nome} (${p.codigo})` })) : [])));
+      .pipe(map(res => (res.sucesso && res.dados ? res.dados.dados.map(p => ({ id: p.id, nome: `${p.nome} (${p.codigo})`, imagem: p.urlImagemPrincipal ?? null })) : [])));
   };
 
   private base(pecaId: number): string { return `/v1/marketing/pecas/${pecaId}/artes`; }

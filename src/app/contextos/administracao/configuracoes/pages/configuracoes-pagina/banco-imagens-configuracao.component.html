@@ -1,0 +1,51 @@
+<div class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark px-4 sm:px-6 lg:px-8 xl:px-10 py-6 lg:py-8">
+  <div class="w-full space-y-8">
+    <app-breadcrumb [itens]="[{label:'Início',rota:'/dashboard'},{label:'Configurações',rota:'/configuracoes'},{label:'Banco de imagens'}]" />
+    <app-page-header titulo="Banco de imagens" subtitulo="Chave do Unsplash para os fundos das artes de marketing." />
+    <div class="flex flex-wrap gap-4">
+      <a routerLink="/configuracoes" class="inline-block text-sm font-semibold text-primary hover:underline">Voltar às configurações</a>
+    </div>
+    @if (carregando()) {
+      <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 h-96 animate-pulse" aria-label="Carregando configuração do banco de imagens"></div>
+    } @else {
+      <section class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-6">
+        <div class="space-y-2 text-sm text-slate-600 dark:text-slate-300">
+          <h2 class="font-bold text-slate-900 dark:text-white">Unsplash · chave própria</h2>
+          @if (!disponivel()) {
+            <p class="font-semibold">Cadastro temporariamente indisponível.</p>
+          }
+          <p>Estado: <strong>{{ configuracao()?.configurado ? 'Chave configurada' : 'Sem chave cadastrada' }}</strong></p>
+          @if (configuracao()?.chaveFinal) { <p>Identificação: ••••{{ configuracao()?.chaveFinal }}</p> }
+          @if (configuracao()?.validadaEm) { <p>Última validação: {{ configuracao()?.validadaEm | date:'dd/MM/yyyy HH:mm' }}</p> }
+        </div>
+        <form [formGroup]="form" (ngSubmit)="salvar()" class="space-y-4">
+          <fieldset [disabled]="!podeEditar() || !disponivel() || processando()" class="grid grid-cols-1 lg:grid-cols-2 gap-4 min-w-0">
+            <div class="min-w-0">
+              <label for="img-chave" class="text-xs font-semibold text-slate-500">{{ configuracao()?.configurado ? 'Nova Access Key' : 'Access Key' }}</label>
+              <input pInputText id="img-chave" type="password" formControlName="chaveAcesso" [placeholder]="configuracao()?.configurado ? '••••••••' : ''" autocomplete="new-password" spellcheck="false" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none" />
+              @if (form.controls.chaveAcesso.touched && form.controls.chaveAcesso.invalid) { <p class="text-xs text-red-600">Informe a Access Key do Unsplash, sem espaços.</p> }
+            </div>
+            <div class="min-w-0">
+              <label for="img-segredo" class="text-xs font-semibold text-slate-500">Secret Key (opcional)</label>
+              <input pInputText id="img-segredo" type="password" formControlName="segredo" [placeholder]="configuracao()?.segredoConfigurado ? '••••••••' : ''" autocomplete="new-password" spellcheck="false" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none" />
+              @if (form.controls.segredo.touched && form.controls.segredo.invalid) { <p class="text-xs text-red-600">A Secret Key deve ter de 20 a 128 caracteres, sem espaços.</p> }
+            </div>
+          </fieldset>
+          <p class="text-xs text-slate-500">As chaves existentes nunca são exibidas. Informe uma chave apenas para cadastrar ou substituir. Ao salvar, a Access Key é testada no Unsplash.</p>
+          <div class="flex flex-wrap gap-3">
+            @if (podeEditar()) {
+              <button type="submit" [disabled]="!disponivel() || processando() || form.invalid" class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all">{{ processando() ? 'Validando...' : 'Validar e salvar' }}</button>
+            }
+            @if (podeRemover()) {
+              <button type="button" (click)="remover()" [disabled]="processando()" class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-red-600 font-bold text-sm disabled:opacity-50">Remover chave</button>
+            }
+          </div>
+        </form>
+        <details class="text-sm text-slate-600 dark:text-slate-300">
+          <summary class="font-semibold text-primary cursor-pointer">Onde encontro as chaves?</summary>
+          <p class="mt-3">Em unsplash.com/oauth/applications, abra o seu aplicativo e copie a Access Key e a Secret Key da seção Keys. O Unsplash exige que as fotos usadas citem o autor; o sistema guarda essa informação.</p>
+        </details>
+      </section>
+    }
+  </div>
+</div>

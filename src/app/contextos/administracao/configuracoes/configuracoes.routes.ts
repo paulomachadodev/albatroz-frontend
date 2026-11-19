@@ -5,6 +5,7 @@ import { configuracaoAlteradaGuard } from './pages/configuracoes-pagina/configur
 const editarConfiguracao = { canActivate: [permissaoGuard], canDeactivate: [configuracaoAlteradaGuard], data: { permissao: 'configuracoes:ler' } };
 
 export const CONFIGURACOES_ROUTES: Routes = [
+  { path: 'banco-imagens', canActivate: [permissaoGuard], canDeactivate: [configuracaoAlteradaGuard], data: { permissao: 'integracoes_sociais:ler' }, title: 'Banco de imagens', loadComponent: () => import('./pages/configuracoes-pagina/banco-imagens-configuracao.component').then(m => m.BancoImagensConfiguracaoComponent) },
   { path: 'redes-sociais', canActivate: [permissaoGuard], data: { permissao: 'integracoes_sociais:ler' }, title: 'Redes sociais', loadComponent: () => import('./pages/configuracoes-pagina/perfis-sociais.component').then(m => m.PerfisSociaisComponent) },
   { path: 'identidade-marca', canActivate: [permissaoGuard], canDeactivate: [configuracaoAlteradaGuard], data: { permissao: 'identidade_marca:ler' }, title: 'Identidade da marca', loadComponent: () => import('./pages/configuracoes-pagina/identidade-marca.component').then(m => m.IdentidadeMarcaComponent) },
   { path: 'ia/limites', canActivate: [permissaoGuard], canDeactivate: [configuracaoAlteradaGuard], data: { permissao: 'ia_configuracoes:ler' }, title: 'Limites de IA', loadComponent: () => import('./pages/configuracoes-pagina/ia-limites.component').then(m => m.IaLimitesComponent) },

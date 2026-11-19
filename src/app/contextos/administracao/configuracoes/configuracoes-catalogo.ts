@@ -42,6 +42,7 @@ export const CONFIGURACOES_GRUPOS: GrupoConfiguracao[] = [
   ] },
   { id: 'integracoes', titulo: 'Integrações e canais', destinos: [
     { id: 'redes-sociais', titulo: 'Redes sociais', descricao: 'Perfis editoriais e conexão com Facebook e Instagram.', rota: '/configuracoes/redes-sociais', permissao: 'integracoes_sociais:ler', termos: 'facebook instagram tiktok whatsapp perfil conta' },
+    { id: 'banco-imagens', titulo: 'Banco de imagens', descricao: 'Chave do Unsplash para os fundos das artes de marketing.', rota: '/configuracoes/banco-imagens', permissao: 'integracoes_sociais:ler', termos: 'unsplash fotos fundo imagem chave marketing' },
     { id: 'email', titulo: 'E-mail e SMTP', descricao: 'Servidor de envio e remetente.', rota: '/configuracoes/email', permissao: 'configuracoes:ler', termos: 'smtp comunicação email' },
     { id: 'integracoes', titulo: 'Catálogos e site', descricao: 'Google Merchant, catálogo Meta e endereço do site.', rota: '/configuracoes/catalogos', permissao: 'configuracoes:ler', termos: 'feed facebook instagram integração' },
     { id: 'busca-imagens', titulo: 'Busca de imagens', descricao: 'Google Search e limite diário de consultas.', rota: '/configuracoes/busca-imagens', permissao: 'configuracoes:ler', termos: 'google pesquisa search chave' },

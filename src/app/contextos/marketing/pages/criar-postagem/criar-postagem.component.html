@@ -27,7 +27,7 @@
     } @else {
       <section class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-6">
         <div>
-          <p class="text-xs font-semibold text-slate-500">Passo {{ passo() }} de 6</p>
+          <p class="text-xs font-semibold text-slate-500">Passo {{ numeroPasso() }} de {{ totalPassos() }}</p>
           <h2 class="font-bold text-slate-900 dark:text-white">{{ titulosPasso[passo() - 1] }}</h2>
           <div class="mt-3 h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden"><div class="h-full bg-primary transition-all" [style.width.%]="progresso()"></div></div>
         </div>
@@ -43,13 +43,20 @@
                 <p-select [unstyled]="true" [pt]="selectPt" inputId="cp-tipo" [ngModel]="linhaNome()" (ngModelChange)="linhaNome.set($event)" [options]="opcoesLinha()" optionLabel="rotulo" optionValue="valor" placeholder="Escolha o tipo" appendTo="body" class="block mt-1" />
                 @if (linhas().length === 0) { <p class="mt-1 text-xs text-slate-500">Cadastre as linhas editoriais em <a routerLink="/marketing/estrategia" class="text-primary hover:underline">Estratégia editorial</a>.</p> }
               </div>
-              <details class="text-sm">
-                <summary class="cursor-pointer font-semibold text-primary">Opções avançadas</summary>
-                <div class="mt-3">
-                  <label for="cp-assunto" class="text-xs font-semibold text-slate-500">Assunto</label>
-                  <input id="cp-assunto" type="text" [ngModel]="assunto()" (ngModelChange)="assunto.set($event)" maxlength="300" placeholder="Ex.: Volta às aulas" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none" />
+              @if (linhaNome() && !usaProdutos()) {
+                <div>
+                  <label for="cp-assunto" class="text-xs font-semibold text-slate-500">Sobre o quê?</label>
+                  <input id="cp-assunto" type="text" [ngModel]="assunto()" (ngModelChange)="assunto.set($event)" maxlength="300" placeholder="Ex.: Como organizar a mesa de estudos" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none" />
                 </div>
-              </details>
+              } @else if (linhaNome()) {
+                <details class="text-sm">
+                  <summary class="cursor-pointer font-semibold text-primary">Opções avançadas</summary>
+                  <div class="mt-3">
+                    <label for="cp-assunto" class="text-xs font-semibold text-slate-500">Assunto</label>
+                    <input id="cp-assunto" type="text" [ngModel]="assunto()" (ngModelChange)="assunto.set($event)" maxlength="300" placeholder="Ex.: Volta às aulas" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none" />
+                  </div>
+                </details>
+              }
             </div>
             <div class="flex justify-end"><button type="button" (click)="continuarTipo()" class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all">Continuar</button></div>
           }
@@ -61,7 +68,7 @@
             </div>
             <div class="flex items-center justify-between">
               <button type="button" (click)="voltar()" class="text-sm font-semibold text-slate-500 hover:underline">Voltar</button>
-              <button type="button" (click)="continuarOnde()" class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all">Continuar</button>
+              <button type="button" (click)="continuarOnde()" class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all">{{ usaProdutos() ? 'Continuar' : 'Escrever o texto' }}</button>
             </div>
           }
           @case (3) {

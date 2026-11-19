@@ -26,7 +26,8 @@ function criarLinha(fb: FormBuilder, linha?: Partial<LinhaEditorial>) {
     restricoes: [linha?.restricoes ?? '', Validators.maxLength(1000)],
     formatos: [(linha?.formatos ?? []).join('\n')],
     participacao: [linha?.participacao ?? 0, [Validators.required, Validators.min(0), Validators.max(100)]],
-    ativa: [linha?.ativa ?? true]
+    ativa: [linha?.ativa ?? true],
+    usaProdutos: [linha?.usaProdutos ?? /produto/i.test(linha?.nome ?? "")]
   });
 }
 
@@ -162,7 +163,8 @@ export class EstrategiaEditorialComponent extends ConfiguracaoFormularioBase {
       restricoes: String(l.restricoes).trim(),
       formatos: this.itens(String(l.formatos)),
       participacao: Number(l.participacao),
-      ativa: !!l.ativa
+      ativa: !!l.ativa,
+      usaProdutos: !!l.usaProdutos
     }));
     if (!this.listasValidas([redes, formatos, assuntosProibidos, ...linhas.map(l => l.formatos)]) || this.nomesRepetidos(linhas)) {
       this.toast.aviso('Revise as listas e os nomes das linhas.', 'Não repita itens e use no máximo 120 caracteres por item.');

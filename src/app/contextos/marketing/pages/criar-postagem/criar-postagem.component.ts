@@ -113,7 +113,13 @@ export class CriarPostagemComponent {
   readonly artesAtivas = computed(() => this.artes().filter(a => a.status !== 3));
   readonly artesAprovadas = computed(() => this.artes().filter(a => a.status === 2 && a.arquivoDisponivel));
   readonly minimoAgendamento = computed(() => this.paraCampoData(new Date(Date.now() + 5 * 60000)));
-  readonly progresso = computed(() => Math.round((Math.min(this.passo(), 6) / 6) * 100));
+  readonly usaProdutos = computed(() => {
+    const linha = this.linhas().find(l => l.nome === this.linhaNome());
+    return !!linha && (linha.usaProdutos === true || /produto/i.test(linha.nome));
+  });
+  readonly totalPassos = computed(() => (this.usaProdutos() ? 6 : 5));
+  readonly numeroPasso = computed(() => (!this.usaProdutos() && this.passo() > 3 ? this.passo() - 1 : this.passo()));
+  readonly progresso = computed(() => Math.round((Math.min(this.numeroPasso(), this.totalPassos()) / this.totalPassos()) * 100));
 
   constructor() {
     this.carregarLinhas();
@@ -130,17 +136,21 @@ export class CriarPostagemComponent {
   voltar(): void {
     if (this.trabalhando() || this.passo() <= 1) return;
     this.erro.set('');
-    this.passo.update(p => p - 1);
+    this.passo.update(p => (p === 4 && !this.usaProdutos() ? 2 : p - 1));
   }
 
   continuarTipo(): void {
     if (!this.linhaNome()) { this.toast.aviso('Escolha o tipo de postagem.'); return; }
+    if (!this.usaProdutos() && !this.assunto().trim()) { this.toast.aviso('Informe o assunto da postagem.'); return; }
     this.passo.set(2);
   }
 
-  continuarOnde(): void {
+  async continuarOnde(): Promise<void> {
     if (this.destinoIds().length === 0) { this.toast.aviso('Escolha onde publicar.'); return; }
-    this.passo.set(3);
+    if (this.usaProdutos()) { this.passo.set(3); return; }
+    this.produtos.set([]);
+    this.passo.set(4);
+    await this.prepararTexto();
   }
 
   async sortear(): Promise<void> {

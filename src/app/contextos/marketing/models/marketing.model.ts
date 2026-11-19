@@ -6,6 +6,7 @@ export interface LinhaEditorial {
   formatos: string[];
   participacao: number;
   ativa: boolean;
+  usaProdutos?: boolean;
 }
 
 export interface EstrategiaEditorialEdicao {
@@ -37,7 +38,7 @@ export const OBJETIVOS_MARKETING = [
 ] as const;
 
 export const SUGESTOES_LINHAS: LinhaEditorial[] = [
-  { nome: 'Produtos e serviços', objetivo: 'Apresentar o que a empresa oferece.', exemplos: '', restricoes: '', formatos: [], participacao: 30, ativa: true },
+  { nome: 'Produtos e serviços', objetivo: 'Apresentar o que a empresa oferece.', exemplos: '', restricoes: '', formatos: [], participacao: 30, ativa: true, usaProdutos: true },
   { nome: 'Dicas e educação', objetivo: 'Ensinar algo útil ao público.', exemplos: '', restricoes: '', formatos: [], participacao: 25, ativa: true },
   { nome: 'Inspiração e motivação', objetivo: 'Conectar a marca ao público com conteúdo leve.', exemplos: '', restricoes: '', formatos: [], participacao: 15, ativa: true },
   { nome: 'Bastidores e comunidade', objetivo: 'Mostrar a equipe, o dia a dia e os clientes.', exemplos: '', restricoes: '', formatos: [], participacao: 15, ativa: true },

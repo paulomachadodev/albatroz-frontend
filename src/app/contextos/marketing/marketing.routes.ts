@@ -4,6 +4,7 @@ import { configuracaoAlteradaGuard } from '../administracao/configuracoes/pages/
 
 export const MARKETING_ROUTES: Routes = [
   { path: 'criar', canActivate: [permissaoGuard], data: { permissao: 'marketing:criar' }, title: 'Criar postagem', loadComponent: () => import('./pages/criar-postagem/criar-postagem.component').then(m => m.CriarPostagemComponent) },
+  { path: 'insights', canActivate: [permissaoGuard], data: { permissao: 'marketing:ler' }, title: 'Insights do Instagram', loadComponent: () => import('./pages/insights/insights.component').then(m => m.InsightsMarketingComponent) },
   { path: 'briefings/:id/geracoes', canActivate: [permissaoGuard], data: { permissao: 'marketing:ler' }, title: 'Gerações de texto', loadComponent: () => import('./pages/geracoes-briefing/geracoes-briefing.component').then(m => m.GeracoesBriefingComponent) },
   { path: 'calendario', canActivate: [permissaoGuard], data: { permissao: 'marketing:ler' }, title: 'Calendário de marketing', loadComponent: () => import('./pages/calendario/calendario.component').then(m => m.CalendarioMarketingComponent) },
   { path: 'pecas/:id', canActivate: [permissaoGuard], canDeactivate: [configuracaoAlteradaGuard], data: { permissao: 'marketing:ler' }, title: 'Peça de conteúdo', loadComponent: () => import('./pages/peca-editor/peca-editor.component').then(m => m.PecaEditorComponent) },

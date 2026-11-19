@@ -18,6 +18,8 @@ import { PERFIL_SELECT_PT } from '../../../administracao/configuracoes/models/pe
 import { ConexaoMetaService } from '../../../administracao/configuracoes/services/conexao-meta.service';
 import { ProdutosService } from '../../../produtos/services/produtos.service';
 import { Agendamento } from '../../models/agendamento.model';
+import { DIAS_SEMANA, proximaOcorrencia } from '../../models/insights.model';
+import { InsightsService } from '../../services/insights.service';
 import { Arte } from '../../models/arte.model';
 import { LinhaEditorial } from '../../models/marketing.model';
 import { Peca } from '../../models/peca.model';
@@ -53,6 +55,8 @@ export class CriarPostagemComponent {
   private readonly conexao = inject(ConexaoMetaService);
   private readonly categoriasService = inject(CategoriaService);
   private readonly produtosService = inject(ProdutosService);
+  private readonly insights = inject(InsightsService);
+  readonly sugestaoHorario = signal('');
 
   readonly selectPt = PERFIL_SELECT_PT;
   readonly multiselectPt = PT_MULTISELECT;
@@ -248,6 +252,7 @@ export class CriarPostagemComponent {
       await this.recarregarArtes();
       if (this.artesAprovadas().length === 0) throw new Error('Nenhuma arte aprovada.');
       this.passo.set(6);
+      await this.carregarSugestaoHorario();
     } catch (falha) {
       this.erro.set(falha instanceof Error ? falha.message : 'Não foi possível aprovar as artes.');
     } finally {
@@ -301,6 +306,19 @@ export class CriarPostagemComponent {
 
   recomecar(): void {
     window.location.reload();
+  }
+
+  private async carregarSugestaoHorario(): Promise<void> {
+    try {
+      const res = await firstValueFrom(this.insights.obterInstagram(30));
+      const melhor = res.sucesso ? res.dados?.horarios?.[0] : undefined;
+      if (!melhor) return;
+      this.dataHora.set(this.paraCampoData(proximaOcorrencia(melhor)));
+      this.quando.set('agendar');
+      this.sugestaoHorario.set(`${DIAS_SEMANA[melhor.diaSemana]}, ${melhor.horaInicio}h às ${melhor.horaFim}h (confiança ${melhor.confianca.toLowerCase()}, ${melhor.amostra} post(s))`);
+    } catch {
+      this.sugestaoHorario.set('');
+    }
   }
 
   private async criarBriefing(): Promise<void> {

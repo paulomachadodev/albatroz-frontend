@@ -1,0 +1,152 @@
+<div class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark px-4 sm:px-6 lg:px-8 xl:px-10 py-6 lg:py-8">
+  <div class="w-full space-y-8">
+
+    <app-breadcrumb [itens]="[{label:'Início',rota:'/dashboard'},{label:'Marketing'},{label:'Insights'}]"></app-breadcrumb>
+
+    <app-page-header titulo="Insights do Instagram" subtitulo="O que está funcionando e o que fazer para crescer.">
+      <a acoes routerLink="/marketing/criar"
+         class="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all">
+        <span class="material-symbols-outlined text-sm">add</span>
+        Criar postagem
+      </a>
+    </app-page-header>
+
+    <div class="flex flex-wrap items-end gap-4">
+      <div class="w-48">
+        <label for="ins-periodo" class="text-xs font-semibold text-slate-500">Período</label>
+        <p-select [unstyled]="true" [pt]="selectPt" inputId="ins-periodo" [ngModel]="dias()" (ngModelChange)="trocarPeriodo($event)" [options]="periodos" optionLabel="rotulo" optionValue="valor" appendTo="body" class="block mt-1" />
+      </div>
+      @if (dados(); as d) {
+        <p class="text-xs text-slate-500 pb-2">Atualizado em {{ d.atualizadoEm | date:'dd/MM/yyyy HH:mm' }}</p>
+      }
+    </div>
+
+    @if (carregando()) {
+      <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 h-96 animate-pulse" aria-label="Carregando insights"></div>
+    } @else if (erro()) {
+      <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-4">
+        <p role="alert" class="text-sm text-red-600">{{ erro() }}</p>
+        <div class="flex items-center gap-4">
+          <a routerLink="/configuracoes/redes-sociais" class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all">Abrir Redes sociais</a>
+          <button type="button" (click)="carregar()" class="text-sm font-semibold text-primary hover:underline">Tentar de novo</button>
+        </div>
+      </div>
+    } @else if (dados(); as d) {
+      @if (!d.habilitado) {
+        <p role="status" class="text-sm text-slate-500">Marketing indisponível para esta empresa.</p>
+      } @else {
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-5">
+            <p class="text-xs font-semibold text-slate-500">Seguidores</p>
+            <p class="mt-1 text-2xl font-bold text-slate-900 dark:text-white">{{ d.conta?.seguidores != null ? (d.conta?.seguidores | number:'1.0-0':'pt-BR') : 'Indisponível' }}</p>
+          </div>
+          <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-5">
+            <p class="text-xs font-semibold text-slate-500">Novos seguidores</p>
+            <p class="mt-1 text-2xl font-bold text-slate-900 dark:text-white">{{ d.seguidoresGanhosNoPeriodo !== null ? (d.seguidoresGanhosNoPeriodo | number:'1.0-0':'pt-BR') : 'Indisponível' }}</p>
+          </div>
+          <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-5">
+            <p class="text-xs font-semibold text-slate-500">Alcance no período</p>
+            <p class="mt-1 text-2xl font-bold text-slate-900 dark:text-white">{{ d.alcanceNoPeriodo !== null ? (d.alcanceNoPeriodo | number:'1.0-0':'pt-BR') : 'Indisponível' }}</p>
+          </div>
+          <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-5">
+            <p class="text-xs font-semibold text-slate-500">Posts por semana</p>
+            <p class="mt-1 text-2xl font-bold text-slate-900 dark:text-white">{{ d.postsPorSemana | number:'1.0-1':'pt-BR' }}</p>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-4">
+          <h2 class="font-bold text-slate-900 dark:text-white">O que fazer agora</h2>
+          <ul class="space-y-4">
+            @for (p of d.palpites; track p.titulo) {
+              <li>
+                <p class="text-sm font-bold text-slate-900 dark:text-white">{{ p.titulo }}@if (p.hipotese) { <span class="ml-2 px-2 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200">hipótese</span> }</p>
+                <p class="text-sm text-slate-600 dark:text-slate-300">{{ p.detalhe }}</p>
+                <p class="text-xs text-slate-500">{{ p.evidencia }}</p>
+              </li>
+            } @empty {
+              <li class="text-sm text-slate-500">Sem sugestões por enquanto.</li>
+            }
+          </ul>
+        </div>
+
+        <app-listagem-paginada [itens]="d.horarios" [totalRegistros]="d.horarios.length" [totalPaginas]="1" [exibirFiltros]="false" [exibirPaginacao]="false" tituloVazio="Sem posts suficientes para sugerir horário">
+          <ng-template #cabecalho>
+            <tr>
+              <th class="px-6 py-4">Melhores horários</th>
+              <th class="px-6 py-4">Interações por post</th>
+              <th class="px-6 py-4">Posts</th>
+              <th class="px-6 py-4 text-center">Confiança</th>
+            </tr>
+          </ng-template>
+          <ng-template #linha let-item>
+            <tr>
+              <td class="px-6 py-4 text-sm font-bold text-slate-900 dark:text-slate-100">{{ diasSemana[item.diaSemana] }}, {{ item.horaInicio }}h às {{ item.horaFim }}h</td>
+              <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{{ item.interacaoMedia | number:'1.0-1':'pt-BR' }}</td>
+              <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{{ item.amostra }}</td>
+              <td class="px-6 py-4 text-center"><span class="px-2 py-0.5 rounded-full text-xs font-bold" [class]="classeConfianca(item.confianca)">{{ item.confianca }}</span></td>
+            </tr>
+          </ng-template>
+          <ng-template #linhaMobile let-item>
+            <div class="p-4 space-y-1 text-sm"><p class="font-bold">{{ diasSemana[item.diaSemana] }}, {{ item.horaInicio }}h às {{ item.horaFim }}h</p><p>{{ item.interacaoMedia | number:'1.0-1':'pt-BR' }} interações por post · {{ item.amostra }} post(s) · {{ item.confianca }}</p></div>
+          </ng-template>
+        </app-listagem-paginada>
+
+        <app-listagem-paginada [itens]="d.formatos" [totalRegistros]="d.formatos.length" [totalPaginas]="1" [exibirFiltros]="false" [exibirPaginacao]="false" tituloVazio="Sem formatos para comparar">
+          <ng-template #cabecalho>
+            <tr>
+              <th class="px-6 py-4">Formato</th>
+              <th class="px-6 py-4">Interações por post</th>
+              <th class="px-6 py-4">Posts</th>
+            </tr>
+          </ng-template>
+          <ng-template #linha let-item>
+            <tr>
+              <td class="px-6 py-4 text-sm font-bold text-slate-900 dark:text-slate-100">{{ item.formato }}</td>
+              <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{{ item.interacaoMedia | number:'1.0-1':'pt-BR' }}</td>
+              <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{{ item.posts }}</td>
+            </tr>
+          </ng-template>
+          <ng-template #linhaMobile let-item>
+            <div class="p-4 space-y-1 text-sm"><p class="font-bold">{{ item.formato }}</p><p>{{ item.interacaoMedia | number:'1.0-1':'pt-BR' }} interações por post · {{ item.posts }} post(s)</p></div>
+          </ng-template>
+        </app-listagem-paginada>
+
+        <app-listagem-paginada [itens]="d.melhoresPosts" [totalRegistros]="d.melhoresPosts.length" [totalPaginas]="1" [exibirFiltros]="false" [exibirPaginacao]="false" tituloVazio="Nenhum post encontrado">
+          <ng-template #cabecalho>
+            <tr>
+              <th class="px-6 py-4">Posts que mais funcionaram</th>
+              <th class="px-6 py-4">Publicado em</th>
+              <th class="px-6 py-4">Interações</th>
+              <th class="px-6 py-4">Curtidas</th>
+              <th class="px-6 py-4">Comentários</th>
+            </tr>
+          </ng-template>
+          <ng-template #linha let-item>
+            <tr>
+              <td class="px-6 py-4 text-sm font-bold text-slate-900 dark:text-slate-100 max-w-md">
+                @if (item.link) { <a [href]="item.link" target="_blank" rel="noopener noreferrer" class="line-clamp-2 hover:text-primary">{{ item.legenda || 'Sem legenda' }}</a> } @else { <span class="line-clamp-2">{{ item.legenda || 'Sem legenda' }}</span> }
+              </td>
+              <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{{ item.publicadoEm | date:'dd/MM/yyyy HH:mm' }}</td>
+              <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{{ item.interacoes }}</td>
+              <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{{ item.curtidas }}</td>
+              <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{{ item.comentarios }}</td>
+            </tr>
+          </ng-template>
+          <ng-template #linhaMobile let-item>
+            <div class="p-4 space-y-1 text-sm"><p class="font-bold line-clamp-2">{{ item.legenda || 'Sem legenda' }}</p><p>{{ item.publicadoEm | date:'dd/MM/yyyy HH:mm' }} · {{ item.interacoes }} interações</p></div>
+          </ng-template>
+        </app-listagem-paginada>
+
+        @if (d.limitacoes.length) {
+          <details class="text-sm text-slate-500">
+            <summary class="cursor-pointer font-semibold">Limitações dos dados</summary>
+            <ul class="mt-2 space-y-1 list-disc pl-5">
+              @for (l of d.limitacoes; track l) { <li>{{ l }}</li> }
+            </ul>
+          </details>
+        }
+        <p class="text-xs text-slate-500">Interações somam curtidas, comentários, salvamentos e compartilhamentos.</p>
+      }
+    }
+  </div>
+</div>

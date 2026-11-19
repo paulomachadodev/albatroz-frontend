@@ -1,13 +1,13 @@
 <div class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark px-4 sm:px-6 lg:px-8 xl:px-10 py-6 lg:py-8">
-  <div class="w-full max-w-3xl mx-auto space-y-6">
+  <div class="w-full space-y-8">
     <app-breadcrumb [itens]="[{label:'Início',rota:'/dashboard'},{label:'Marketing'},{label:'Criar postagem'}]"></app-breadcrumb>
     <app-page-header titulo="Criar postagem" subtitulo="Do texto à publicação, passo a passo."></app-page-header>
 
     @if (!podeCriar()) {
       <p role="status" class="text-sm text-slate-500">Você não tem permissão para criar postagens.</p>
     } @else if (concluido()) {
-      <section class="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 space-y-6">
-        <h2 class="text-lg font-bold">{{ quando() === 'agendar' ? 'Postagem agendada' : 'Postagem publicada' }}</h2>
+      <section class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-6">
+        <h2 class="font-bold text-slate-900 dark:text-white">{{ quando() === 'agendar' ? 'Postagem agendada' : 'Postagem publicada' }}</h2>
         <ul class="space-y-2 text-sm">
           @for (a of agendadas(); track a.id) {
             <li>{{ nomeDestino(a.ativoId) }} · <span class="font-semibold">Agendado para {{ a.agendadaPara | date:'dd/MM/yyyy HH:mm' }}</span></li>
@@ -20,17 +20,20 @@
           }
         </ul>
         <div class="flex flex-wrap items-center gap-4">
-          <button type="button" (click)="recomecar()" class="px-5 py-2.5 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all">Criar outra postagem</button>
+          <button type="button" (click)="recomecar()" class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all">Criar outra postagem</button>
           @if (peca(); as atual) { <a [routerLink]="['/marketing/pecas', atual.id]" class="text-sm font-semibold text-primary hover:underline">Ver a peça</a> }
         </div>
       </section>
     } @else {
-      <section class="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 space-y-6">
+      <section class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-6">
         <div>
           <p class="text-xs font-semibold text-slate-500">Passo {{ passo() }} de 6</p>
-          <h2 class="text-lg font-bold">{{ titulosPasso[passo() - 1] }}</h2>
+          <h2 class="font-bold text-slate-900 dark:text-white">{{ titulosPasso[passo() - 1] }}</h2>
           <div class="mt-3 h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden"><div class="h-full bg-primary transition-all" [style.width.%]="progresso()"></div></div>
         </div>
+        @if (passo() === 1) {
+          <p class="text-sm text-slate-600 dark:text-slate-300">Estado: <strong>{{ destinos().length ? destinos().length + ' destino(s) conectado(s)' : 'Meta não conectada' }}</strong></p>
+        }
 
         @switch (passo()) {
           @case (1) {
@@ -44,11 +47,11 @@
                 <summary class="cursor-pointer font-semibold text-primary">Opções avançadas</summary>
                 <div class="mt-3">
                   <label for="cp-assunto" class="text-xs font-semibold text-slate-500">Assunto</label>
-                  <input id="cp-assunto" type="text" [ngModel]="assunto()" (ngModelChange)="assunto.set($event)" maxlength="300" placeholder="Ex.: Volta às aulas" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none" />
+                  <input id="cp-assunto" type="text" [ngModel]="assunto()" (ngModelChange)="assunto.set($event)" maxlength="300" placeholder="Ex.: Volta às aulas" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none" />
                 </div>
               </details>
             </div>
-            <div class="flex justify-end"><button type="button" (click)="continuarTipo()" class="px-5 py-2.5 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all">Continuar</button></div>
+            <div class="flex justify-end"><button type="button" (click)="continuarTipo()" class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all">Continuar</button></div>
           }
           @case (2) {
             <div>
@@ -58,7 +61,7 @@
             </div>
             <div class="flex items-center justify-between">
               <button type="button" (click)="voltar()" class="text-sm font-semibold text-slate-500 hover:underline">Voltar</button>
-              <button type="button" (click)="continuarOnde()" class="px-5 py-2.5 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all">Continuar</button>
+              <button type="button" (click)="continuarOnde()" class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all">Continuar</button>
             </div>
           }
           @case (3) {
@@ -96,7 +99,7 @@
             </div>
             <div class="flex items-center justify-between">
               <button type="button" (click)="voltar()" class="text-sm font-semibold text-slate-500 hover:underline">Voltar</button>
-              <button type="button" (click)="continuarProdutos()" class="px-5 py-2.5 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all">Escrever o texto</button>
+              <button type="button" (click)="continuarProdutos()" class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all">Escrever o texto</button>
             </div>
           }
           @case (4) {
@@ -109,24 +112,24 @@
               <div class="space-y-4">
                 <div>
                   <label for="cp-legenda" class="text-xs font-semibold text-slate-500">Texto da postagem</label>
-                  <textarea id="cp-legenda" rows="7" [ngModel]="legenda()" (ngModelChange)="legenda.set($event)" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none"></textarea>
+                  <textarea id="cp-legenda" rows="7" [ngModel]="legenda()" (ngModelChange)="legenda.set($event)" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"></textarea>
                 </div>
                 <details class="text-sm">
                   <summary class="cursor-pointer font-semibold text-primary">Chamada e hashtags</summary>
                   <div class="mt-3 space-y-3">
                     <div>
                       <label for="cp-cta" class="text-xs font-semibold text-slate-500">Chamada para ação</label>
-                      <input id="cp-cta" type="text" [ngModel]="cta()" (ngModelChange)="cta.set($event)" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none" />
+                      <input id="cp-cta" type="text" [ngModel]="cta()" (ngModelChange)="cta.set($event)" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none" />
                     </div>
                     <div>
                       <label for="cp-hashtags" class="text-xs font-semibold text-slate-500">Hashtags</label>
-                      <input id="cp-hashtags" type="text" [ngModel]="hashtags()" (ngModelChange)="hashtags.set($event)" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none" />
+                      <input id="cp-hashtags" type="text" [ngModel]="hashtags()" (ngModelChange)="hashtags.set($event)" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none" />
                     </div>
                   </div>
                 </details>
               </div>
               <div class="flex items-center justify-end">
-                <button type="button" (click)="aprovarTexto()" [disabled]="trabalhando()" class="px-5 py-2.5 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all">{{ trabalhando() ? 'Aprovando...' : 'Aprovar texto' }}</button>
+                <button type="button" (click)="aprovarTexto()" [disabled]="trabalhando()" class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all">{{ trabalhando() ? 'Aprovando...' : 'Aprovar texto' }}</button>
               </div>
             }
             @if (erro()) {
@@ -160,11 +163,14 @@
               </div>
             }
             <div class="flex justify-end">
-              <button type="button" (click)="aprovarArtes()" [disabled]="trabalhando() || artesAtivas().length === 0" class="px-5 py-2.5 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all">{{ trabalhando() && artes().length ? 'Aprovando...' : 'Aprovar artes' }}</button>
+              <button type="button" (click)="aprovarArtes()" [disabled]="trabalhando() || artesAtivas().length === 0" class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all">{{ trabalhando() && artes().length ? 'Aprovando...' : 'Aprovar artes' }}</button>
             </div>
           }
           @case (6) {
             <div class="space-y-4">
+              @if (sugestaoHorario()) {
+                <p class="text-sm text-slate-600 dark:text-slate-300">Sugerido pelos insights: <strong>{{ sugestaoHorario() }}</strong>. Já deixei o horário preenchido; é só aprovar.</p>
+              }
               <div class="flex gap-2">
                 <button type="button" (click)="quando.set('agora')" [class]="quando() === 'agora' ? 'px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-sm font-bold' : 'px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-sm font-bold'">Publicar agora</button>
                 <button type="button" (click)="quando.set('agendar')" [class]="quando() === 'agendar' ? 'px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-sm font-bold' : 'px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-sm font-bold'">Escolher data e hora</button>
@@ -172,7 +178,7 @@
               @if (quando() === 'agendar') {
                 <div>
                   <label for="cp-data" class="text-xs font-semibold text-slate-500">Data e hora</label>
-                  <input id="cp-data" type="datetime-local" [ngModel]="dataHora()" (ngModelChange)="dataHora.set($event)" [min]="minimoAgendamento()" class="mt-1 w-full sm:w-64 px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none" />
+                  <input id="cp-data" type="datetime-local" [ngModel]="dataHora()" (ngModelChange)="dataHora.set($event)" [min]="minimoAgendamento()" class="mt-1 w-full sm:w-64 px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none" />
                 </div>
               }
               @if (oferecerMarcacao()) {
@@ -183,7 +189,7 @@
             @if (erro()) { <p role="alert" class="text-sm text-red-600">{{ erro() }}</p> }
             <div class="flex items-center justify-between">
               <button type="button" (click)="voltar()" [disabled]="trabalhando()" class="text-sm font-semibold text-slate-500 hover:underline">Voltar</button>
-              <button type="button" (click)="finalizar()" [disabled]="trabalhando()" class="px-5 py-2.5 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all">{{ trabalhando() ? mensagemTrabalho() : (quando() === 'agendar' ? 'Agendar' : 'Publicar') }}</button>
+              <button type="button" (click)="finalizar()" [disabled]="trabalhando()" class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all">{{ trabalhando() ? mensagemTrabalho() : (quando() === 'agendar' ? 'Agendar' : 'Publicar') }}</button>
             </div>
           }
         }

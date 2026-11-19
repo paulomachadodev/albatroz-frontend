@@ -4,6 +4,12 @@
     <app-breadcrumb [itens]="[{label:'Início',rota:'/dashboard'},{label:'Marketing'},{label:'Gerente'}]"></app-breadcrumb>
 
     <app-page-header titulo="Gerente de marketing" subtitulo="O plano da semana, feito com os seus números.">
+      @if (analiseDisponivel()) {
+        <button acoes type="button" (click)="pedirAnalise()" [disabled]="!podePedirAnalise()" class="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-white font-bold text-sm disabled:opacity-50 transition-all">
+          <span class="material-symbols-outlined text-sm">auto_awesome</span>
+          {{ emAndamento() || pedindo() ? 'Analisando...' : 'Analisar com IA' }}
+        </button>
+      }
       <a acoes routerLink="/marketing/insights" class="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
         <span class="material-symbols-outlined text-sm">insights</span>
         Insights
@@ -30,6 +36,33 @@
           <div role="status" class="rounded-xl border border-amber-200 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-900/20 p-4 space-y-1 text-sm text-amber-800 dark:text-amber-200">
             @for (a of p.avisos; track a) { <p>{{ a }}</p> }
           </div>
+        }
+
+        @if (analise(); as g) {
+          <section class="bg-white dark:bg-slate-900 rounded-xl border border-primary/30 p-6 space-y-4" aria-labelledby="analise-ia">
+            <h2 id="analise-ia" class="font-bold text-slate-900 dark:text-white">Análise do gerente (IA) <span class="text-xs font-normal text-slate-500">· {{ g.criadoEmUtc | date:'dd/MM HH:mm' }}</span></h2>
+            @if (g.status === 1 || g.status === 2) {
+              <p role="status" class="text-sm text-slate-500">A IA está analisando os seus números. Isso leva alguns segundos.</p>
+            } @else if (g.status === 3 && g.analise; as a) {
+              <p class="text-sm text-slate-700 dark:text-slate-200">{{ a.resumo }}</p>
+              <div class="space-y-1">
+                <h3 class="text-xs font-semibold text-slate-500">O que os números mostram</h3>
+                <ul class="list-disc pl-5 space-y-1 text-sm text-slate-700 dark:text-slate-200">@for (t of a.destaques; track t) { <li>{{ t }}</li> }</ul>
+              </div>
+              <div class="space-y-1">
+                <h3 class="text-xs font-semibold text-slate-500">O que fazer nesta semana</h3>
+                <ul class="list-disc pl-5 space-y-1 text-sm text-slate-700 dark:text-slate-200">@for (t of a.recomendacoes; track t) { <li>{{ t }}</li> }</ul>
+              </div>
+              @if (a.hipoteses.length) {
+                <div class="space-y-1">
+                  <h3 class="text-xs font-semibold text-slate-500">Ainda é hipótese</h3>
+                  <ul class="list-disc pl-5 space-y-1 text-sm text-amber-800 dark:text-amber-200">@for (t of a.hipoteses; track t) { <li>{{ t }}</li> }</ul>
+                </div>
+              }
+            } @else {
+              <p role="alert" class="text-sm text-red-600">{{ g.erro || 'A análise não foi concluída. Confira a configuração de IA da empresa e tente de novo.' }}</p>
+            }
+          </section>
         }
 
         <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-4">

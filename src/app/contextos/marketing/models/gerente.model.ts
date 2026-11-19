@@ -5,6 +5,9 @@ export interface PostagemSugerida {
   produtos: ProdutoSugerido[]; manchete: string | null; fonte: string | null; motivo: string;
 }
 export interface ExperimentoSugerido { hipotese: string; variavel: string; indicador: string; janelaDias: number; decisao: string; }
+export interface AnaliseGerente { resumo: string; destaques: string[]; recomendacoes: string[]; hipoteses: string[]; }
+export interface AnaliseGerenteGeracao { id: string; status: number; criadoEmUtc: string; erro: string | null; analise: AnaliseGerente | null; }
+export interface AnaliseGerenteResposta { habilitado: boolean; analise: AnaliseGerenteGeracao | null; }
 export interface PlanoSemanal {
   habilitado: boolean; inicio: string; fim: string; diagnostico: ItemDiagnostico[]; postagens: PostagemSugerida[];
   experimento: ExperimentoSugerido | null; avisos: string[]; geradoEm: string;

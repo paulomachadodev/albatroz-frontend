@@ -83,7 +83,7 @@
       <ng-template #linha let-item>
         <tr (click)="abrirEditar(item)" class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors cursor-pointer">
           <td class="px-6 py-4 text-sm font-bold text-slate-900 dark:text-slate-100">{{ item.assunto }}</td>
-          <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{{ item.rede }}</td>
+          <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{{ item.rede.split(',').join(', ') }}</td>
           <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{{ item.formato }}</td>
           <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{{ item.prazo ? (item.prazo | date:'dd/MM/yyyy') : '-' }}</td>
           <td class="px-6 py-4"><a [routerLink]="['/marketing/briefings',item.id,'geracoes']" (click)="$event.stopPropagation()" class="text-primary text-xs font-bold hover:underline">{{ item.status === 2 && podeCriar() ? 'Gerar texto / histórico' : 'Ver gerações' }}</a></td>
@@ -93,7 +93,7 @@
         </tr>
       </ng-template>
 
-      <ng-template #linhaMobile let-item><div class="p-4 space-y-2 text-sm"><p class="font-semibold break-words">{{ item.assunto }}</p><p>{{ item.rede }} · {{ item.formato }} · {{ rotuloStatus(item.status) }}</p><p>{{ item.prazo ? (item.prazo | date:'dd/MM/yyyy') : 'Sem prazo' }}</p><div class="flex flex-wrap gap-4"><button type="button" (click)="abrirEditar(item)" class="text-primary text-xs font-bold">Ver briefing</button><a [routerLink]="['/marketing/briefings',item.id,'geracoes']" class="text-primary text-xs font-bold">{{ item.status === 2 && podeCriar() ? 'Gerar texto / histórico' : 'Ver gerações' }}</a></div></div></ng-template>
+      <ng-template #linhaMobile let-item><div class="p-4 space-y-2 text-sm"><p class="font-semibold break-words">{{ item.assunto }}</p><p>{{ item.rede.split(',').join(', ') }} · {{ item.formato }} · {{ rotuloStatus(item.status) }}</p><p>{{ item.prazo ? (item.prazo | date:'dd/MM/yyyy') : 'Sem prazo' }}</p><div class="flex flex-wrap gap-4"><button type="button" (click)="abrirEditar(item)" class="text-primary text-xs font-bold">Ver briefing</button><a [routerLink]="['/marketing/briefings',item.id,'geracoes']" class="text-primary text-xs font-bold">{{ item.status === 2 && podeCriar() ? 'Gerar texto / histórico' : 'Ver gerações' }}</a></div></div></ng-template>
     </app-listagem-paginada>
 
   </div>
@@ -126,11 +126,8 @@
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label class="text-xs font-semibold text-slate-500">Rede *</label><app-ajuda-campo titulo="Rede" descricao="Plataforma escolhida entre os perfis ativos da empresa. Não comprova autorização de publicação." exemplo="Instagram de um perfil cadastrado." />
-          <p-select [unstyled]="true" [pt]="selectPt" [(ngModel)]="rede" [options]="redesOpcoes()" optionLabel="rotulo" optionValue="valor" optionDisabled="desabilitada" [filter]="true" appendTo="body" placeholder="Escolha a rede" class="block mt-1" />
-          <datalist id="briefing-redes">
-            @for (opcao of redesSugeridas(); track opcao) { <option [value]="opcao"></option> }
-          </datalist>
+          <label class="text-xs font-semibold text-slate-500">Redes *</label><app-ajuda-campo titulo="Redes" descricao="Uma ou mais plataformas com perfil ativo da empresa. Com mais de uma, só aparecem os formatos comuns a todas." exemplo="Facebook e Instagram." />
+          <p-multiSelect [unstyled]="true" [pt]="multiselectPt" [ngModel]="redesEscolhidas" (ngModelChange)="aoMudarRedes($event)" [options]="redesOpcoes()" optionLabel="rotulo" optionValue="valor" placeholder="Escolha as redes" [showToggleAll]="false" [maxSelectedLabels]="3" selectedItemsLabel="{0} redes" appendTo="body" class="block mt-1" />
         </div>
         <div>
           <label class="text-xs font-semibold text-slate-500">Formato *</label><app-ajuda-campo titulo="Formato" descricao="Estrutura da peça; gerar um roteiro não cria um vídeo." exemplo="Post para uma legenda; roteiro para sequência de cenas." />

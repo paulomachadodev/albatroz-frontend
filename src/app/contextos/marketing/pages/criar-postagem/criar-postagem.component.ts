@@ -64,6 +64,7 @@ export class CriarPostagemComponent {
   readonly manchetePrincipal = signal<AssuntoEmAlta | null>(null);
   readonly tempoDesde = horasDesde;
   private assuntosCarregados = false;
+  readonly fundoFoto = signal(true);
   readonly sugestaoHorario = signal('');
   readonly sugestaoConfiavel = signal(false);
 
@@ -269,14 +270,49 @@ export class CriarPostagemComponent {
     try {
       if (this.artes().length === 0) {
         const titulo = (this.assunto().trim() || this.linhaNome()).slice(0, 70);
-        const criacao = this.produtos().length > 0
-          ? await firstValueFrom(this.artesService.gerarCarrosselProdutos(atual.id, { formato: 2, modelo: 1, titulo, subtitulo: '' }))
-          : await firstValueFrom(this.artesService.gerar(atual.id, { formato: 2, modelo: 3, produtoId: null, titulo, subtitulo: '' }));
-        if (!criacao.sucesso) throw new Error('Não foi possível criar as artes.');
+        if (this.produtos().length > 0) {
+          const criacao = await firstValueFrom(this.artesService.gerarCarrosselProdutos(atual.id, { formato: 2, modelo: 1, titulo, subtitulo: '' }));
+          if (!criacao.sucesso) throw new Error('Não foi possível criar as artes.');
+        } else {
+          await this.criarArteDeFrase(atual.id, titulo);
+        }
       }
       await this.recarregarArtes();
     } catch (falha) {
       this.erro.set(falha instanceof Error ? falha.message : 'Não foi possível criar as artes.');
+    } finally {
+      this.trabalhando.set(false);
+      this.mensagemTrabalho.set('');
+    }
+  }
+
+  private async criarArteDeFrase(pecaId: number, titulo: string): Promise<void> {
+    const base = { formato: 2, modelo: 3, produtoId: null, titulo, subtitulo: '' };
+    if (this.fundoFoto()) {
+      try {
+        const comFoto = await firstValueFrom(this.artesService.gerar(pecaId, { ...base, fundoBancoImagens: true, consultaFundo: titulo }));
+        if (comFoto.sucesso) return;
+      } catch {
+        this.fundoFoto.set(false);
+        this.toast.aviso('Usei o fundo da marca.', 'Cadastre a chave do Unsplash em Configurações, Banco de imagens, para usar fotos.');
+      }
+    }
+    const semFoto = await firstValueFrom(this.artesService.gerar(pecaId, base));
+    if (!semFoto.sucesso) throw new Error('Não foi possível criar as artes.');
+  }
+
+  async trocarFundo(comFoto: boolean): Promise<void> {
+    const atual = this.peca();
+    if (!atual || this.trabalhando()) return;
+    this.fundoFoto.set(comFoto);
+    this.trabalhando.set(true);
+    this.mensagemTrabalho.set('Criando o novo fundo...');
+    try {
+      for (const arte of this.artesAtivas()) await firstValueFrom(this.artesService.descartar(atual.id, arte.id, arte.versao));
+      await this.criarArteDeFrase(atual.id, (this.assunto().trim() || this.linhaNome()).slice(0, 70));
+      await this.recarregarArtes();
+    } catch (falha) {
+      this.erro.set(falha instanceof Error ? falha.message : 'Não foi possível trocar o fundo.');
     } finally {
       this.trabalhando.set(false);
       this.mensagemTrabalho.set('');

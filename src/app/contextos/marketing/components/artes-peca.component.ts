@@ -17,11 +17,12 @@ import { ArtesService } from '../services/artes.service';
 import { PublicacoesService } from '../services/publicacoes.service';
 import { ConexaoMetaService } from '../../administracao/configuracoes/services/conexao-meta.service';
 import { Publicacao, STATUS_PUBLICACAO } from '../models/publicacao.model';
+import { AgendarPublicacaoComponent } from './agendar-publicacao.component';
 
 @Component({
   selector: 'app-artes-peca',
   standalone: true,
-  imports: [ReactiveFormsModule, FormsModule, SelectModule, MultiSelectModule, ModalComponent, SelectBuscaComponent],
+  imports: [ReactiveFormsModule, FormsModule, SelectModule, MultiSelectModule, ModalComponent, SelectBuscaComponent, AgendarPublicacaoComponent],
   templateUrl: './artes-peca.component.html',
   host: { '(input)': '$event.stopPropagation()', '(change)': '$event.stopPropagation()' }
 })

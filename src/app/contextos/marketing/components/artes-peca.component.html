@@ -57,6 +57,7 @@
             </div>
             <button type="button" (click)="publicar()" [disabled]="processando() || destinoIds().length === 0" class="px-4 py-2 rounded-lg bg-primary text-white text-sm font-bold">{{ processando() ? 'Publicando...' : 'Publicar' }}</button>
           </div>
+          <app-agendar-publicacao [pecaId]="pecaId()" [destinos]="destinos()" [escolhidos]="destinoIds()" [marcarProdutos]="podeOferecerMarcacao() && marcarProdutos()" />
         }
         @if (podeOferecerMarcacao()) {
           <label class="flex items-center gap-2 text-sm">

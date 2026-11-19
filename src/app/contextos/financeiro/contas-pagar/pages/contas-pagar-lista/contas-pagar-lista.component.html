@@ -70,7 +70,7 @@
           <th class="px-6 py-4 text-right">Saldo</th>
           <th class="px-3 py-4 text-center">Atraso</th>
           <th class="px-6 py-4 text-center">Status</th>
-          <th class="px-6 py-4"></th>
+          <th class="px-6 py-4 text-right">Ações</th>
         </tr>
       </ng-template>
 
@@ -108,12 +108,11 @@
             </span>
           </td>
           <td class="px-6 py-4 text-right">
-            @if (item.situacao === 1) {
-              <button (click)="abrirModalBaixa(item, $event)"
-                      class="px-2 py-1 rounded-lg bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400 font-bold text-xs hover:bg-emerald-200 dark:hover:bg-emerald-900/60 transition-all whitespace-nowrap">
-                Dar baixa
-              </button>
-            }
+            <div class="flex items-center justify-end gap-2" (click)="$event.stopPropagation()">
+              @if (item.situacao === 1) {
+                <app-btn-icone icone="payments" titulo="Dar baixa" variante="sucesso" (clicar)="abrirModalBaixa(item)"></app-btn-icone>
+              }
+            </div>
           </td>
         </tr>
       </ng-template>

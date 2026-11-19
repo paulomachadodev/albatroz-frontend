@@ -100,7 +100,9 @@
                 }
               </td>
               <td class="px-6 py-4 text-right">
-                <button (click)="excluirDoLote(item)" class="text-xs font-bold text-primary hover:underline">Excluir</button>
+                <div class="flex justify-end gap-2">
+                  <app-btn-icone icone="delete" titulo="Excluir do lote" variante="perigo" (clicar)="excluirDoLote(item)"></app-btn-icone>
+                </div>
               </td>
             </tr>
           </ng-template>

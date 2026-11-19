@@ -75,3 +75,22 @@ Comportamento padrão:
 5. Em tabelas e textos, nunca montar `R$` à mão nem usar `currency` com formato próprio: usar o pipe `moeda`.
 
 Telas que ainda usam os campos antigos (migrar quando forem tocadas, ou em lote a pedido): configurações de busca de imagens, condições comerciais, metas, fiscal, dados da empresa, contatos (lista e detalhe), empresas, CT-e manual, contas a pagar. Telas já migradas: Limites de IA.
+
+## Ações de linha em listagens (REGRA DURA, decidida em 2026-11-19)
+
+Toda ação por linha de tabela (abrir, editar, excluir, aprovar, baixar, vincular...) usa **`<app-btn-icone>`**, igual à lista de Produtos, Séries e Peças. Proibido botão de texto, link de texto, "pílula" colorida ou ícone feito à mão dentro de `#linha` / `#linhaMobile`.
+
+Como fazer:
+1. Última coluna com cabeçalho **`Ações`** (`<th class="px-6 py-4 text-right">Ações</th>`) e célula `<td class="px-6 py-4 text-right" (click)="$event.stopPropagation()">` com `<div class="flex justify-end gap-2">` dentro.
+2. Um `<app-btn-icone>` por ação, sempre com `titulo` (vira dica e `aria-label`) e ícone Material Symbols.
+3. Variantes: `neutro` (padrão), `perigo` (excluir, cancelar, desfazer, rejeitar), `sucesso` (aprovar, confirmar, dar baixa), `primario` (ação principal, abrir, gerar).
+4. Navegação: `[link]="['/rota', item.id]"` (renderiza `<a routerLink>` com o mesmo visual). Ação: `(clicar)="metodo(item)"`. Desabilitar: `[desabilitado]="..."`.
+5. O handler não pode depender do evento do clique: a célula já impede a propagação. Se precisar de `event`, torne-o opcional.
+6. Ícones de uso comum: abrir `visibility`, editar `edit`, excluir `delete`, aprovar `check_circle`, rejeitar `close`, cancelar `cancel`, baixar `download`, vincular `link`.
+
+Exceção única: **dado clicável da própria célula** (link do número do pedido, contador "3 variações", botões de + e − de quantidade). Esses levam o atributo `data-acao-informativa` no elemento, e só valem para dado, nunca para ação.
+
+Trava automática: `npm run verificar:acoes` (roda no CI antes do build) reprova a build se achar `<button>` ou `<a>` dentro de linha de listagem sem esse padrão. Rode antes de commitar qualquer tela com `app-listagem-paginada`.
+
+### Inventário de ícones de ação (atualizar ao criar padrão novo)
+Telas já padronizadas em 2026-11-19: Produtos, Séries, Listas escolares, Peças, Briefings, Rotinas, Gerações, Pedidos de compra, Detalhe do pedido de compra, Notas de entrada, Fornecedores, Manifestação de NF-e, Contas a pagar, Sessões de contagem, Importar e revisar imagens, Atendimentos WhatsApp, Limites de IA e Redes sociais.

@@ -9,11 +9,12 @@ import { BreadcrumbComponent } from '../../../../shared/components/breadcrumb/br
 import { ListagemPaginadaComponent } from '../../../../shared/components/listagem-paginada/listagem-paginada.component';
 import { formatarDataHora } from '../../../../shared/utils/formatar-data-hora.util';
 import { AuthService } from '../../../../core/auth/auth.service';
+import { BtnIconeComponent } from '../../../../shared/components/btn-icone/btn-icone.component';
 
 @Component({
   selector: 'app-contagem-sessoes-lista',
   standalone: true,
-  imports: [FormsModule, PageHeaderComponent, BreadcrumbComponent, ListagemPaginadaComponent],
+  imports: [BtnIconeComponent, FormsModule, PageHeaderComponent, BreadcrumbComponent, ListagemPaginadaComponent],
   templateUrl: './contagem-sessoes-lista.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })

@@ -87,36 +87,21 @@
                   </div>
                 }
 
-                <div class="flex gap-2" (click)="$event.stopPropagation()">
+                <div class="flex justify-end gap-2" (click)="$event.stopPropagation()">
                   @if (sessao.status === 'emRevisao' && podeEfetivar()) {
-                    <button type="button" (click)="efetivar(sessao)" [disabled]="processando()"
-                            class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-xs disabled:opacity-50">
-                      Efetivar no estoque
-                    </button>
+                    <app-btn-icone icone="check_circle" titulo="Efetivar no estoque" variante="sucesso" [desabilitado]="processando()" (clicar)="efetivar(sessao)"></app-btn-icone>
                   }
                   @if (sessao.status === 'efetivada' && podeEfetivar()) {
-                    <button type="button" (click)="desfazer(sessao)" [disabled]="processando()"
-                            class="px-4 py-2 rounded-lg bg-white dark:bg-slate-800 border border-rose-200 dark:border-rose-900 text-rose-600 font-bold text-xs disabled:opacity-50">
-                      Desfazer efetivação
-                    </button>
+                    <app-btn-icone icone="undo" titulo="Desfazer efetivação" variante="perigo" [desabilitado]="processando()" (clicar)="desfazer(sessao)"></app-btn-icone>
                   }
                   @if (sessao.status === 'aberta' && podeEfetivar()) {
-                    <button type="button" (click)="forcarFinalizar(sessao)" [disabled]="processando()"
-                            class="px-4 py-2 rounded-lg bg-amber-50 dark:bg-amber-950 border border-amber-300 dark:border-amber-800 text-amber-700 dark:text-amber-400 font-bold text-xs disabled:opacity-50">
-                      Forçar encerramento
-                    </button>
+                    <app-btn-icone icone="stop_circle" titulo="Forçar encerramento" [desabilitado]="processando()" (clicar)="forcarFinalizar(sessao)"></app-btn-icone>
                   }
                   @if ((sessao.status === 'aberta' || sessao.status === 'emRevisao') && podeEfetivar()) {
-                    <button type="button" (click)="cancelar(sessao)" [disabled]="processando()"
-                            class="px-4 py-2 rounded-lg bg-white dark:bg-slate-800 border border-rose-200 dark:border-rose-900 text-rose-600 font-bold text-xs disabled:opacity-50">
-                      Cancelar contagem
-                    </button>
+                    <app-btn-icone icone="cancel" titulo="Cancelar contagem" variante="perigo" [desabilitado]="processando()" (clicar)="cancelar(sessao)"></app-btn-icone>
                   }
                   @if (sessao.status !== 'efetivada' && sessao.status !== 'desfeita' && podeEfetivar()) {
-                    <button type="button" (click)="excluir(sessao)" [disabled]="processando()"
-                            class="px-4 py-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 text-slate-500 font-bold text-xs disabled:opacity-50">
-                      Excluir
-                    </button>
+                    <app-btn-icone icone="delete" titulo="Excluir sessão" variante="perigo" [desabilitado]="processando()" (clicar)="excluir(sessao)"></app-btn-icone>
                   }
                 </div>
               </div>

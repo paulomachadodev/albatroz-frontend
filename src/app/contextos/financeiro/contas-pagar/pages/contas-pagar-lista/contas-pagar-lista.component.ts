@@ -9,11 +9,12 @@ import { PageHeaderComponent } from '../../../../../shared/components/page-heade
 import { BreadcrumbComponent } from '../../../../../shared/components/breadcrumb/breadcrumb.component';
 import { ListagemPaginadaComponent } from '../../../../../shared/components/listagem-paginada/listagem-paginada.component';
 import { ModalComponent } from '../../../../../shared/components/modal/modal.component';
+import { BtnIconeComponent } from '../../../../../shared/components/btn-icone/btn-icone.component';
 
 @Component({
   selector: 'app-contas-pagar-lista',
   standalone: true,
-  imports: [FormsModule, PageHeaderComponent, BreadcrumbComponent, ListagemPaginadaComponent, ModalComponent],
+  imports: [BtnIconeComponent, FormsModule, PageHeaderComponent, BreadcrumbComponent, ListagemPaginadaComponent, ModalComponent],
   templateUrl: './contas-pagar-lista.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
@@ -84,8 +85,8 @@ export class ContasPagarListaComponent implements OnInit {
   aoMudarPagina(pagina: number) { this.carregar(pagina); }
   aoMudarTamanhoPagina(tamanho: number) { this.tamanhoPagina.set(tamanho); this.carregar(1); }
 
-  abrirModalBaixa(conta: ContaPagar, event: Event) {
-    event.stopPropagation();
+  abrirModalBaixa(conta: ContaPagar, event?: Event) {
+    event?.stopPropagation();
     this.contaBaixando.set(conta);
     this.dataPagamentoBaixa = this.hoje();
     this.valorBaixa = conta.saldo;

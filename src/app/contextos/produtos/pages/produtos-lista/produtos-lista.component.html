@@ -220,13 +220,13 @@
             <p class="text-sm font-bold text-slate-900 dark:text-slate-100">
               {{ item.nome }}
               @if (item.quantidadeVariacoes > 0) {
-                <button type="button" (click)="$event.stopPropagation(); abrirDetalheAba(item, 'variacoes')"
+                <button data-acao-informativa type="button" (click)="$event.stopPropagation(); abrirDetalheAba(item, 'variacoes')"
                         class="ml-1 text-xs font-bold text-primary hover:underline align-middle">
                   {{ item.quantidadeVariacoes }} variaç{{ item.quantidadeVariacoes === 1 ? 'ão' : 'ões' }}
                 </button>
               }
               @if (item.quantidadeItensKit > 0) {
-                <button type="button" (click)="$event.stopPropagation(); abrirDetalheAba(item, 'variacoes')"
+                <button data-acao-informativa type="button" (click)="$event.stopPropagation(); abrirDetalheAba(item, 'variacoes')"
                         class="ml-1 text-xs font-bold text-primary hover:underline align-middle">
                   {{ item.quantidadeItensKit }} {{ item.quantidadeItensKit === 1 ? 'item' : 'itens' }}
                 </button>

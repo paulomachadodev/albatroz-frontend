@@ -11,11 +11,12 @@ import { PageHeaderComponent } from '../../../../shared/components/page-header/p
 import { Ordenacao, ThOrdenavelComponent } from '../../../../shared/components/th-ordenavel/th-ordenavel.component';
 import { BreadcrumbComponent } from '../../../../shared/components/breadcrumb/breadcrumb.component';
 import { exportarPlanilha } from '../../../../shared/utils/exportar-planilha';
+import { BtnIconeComponent } from '../../../../shared/components/btn-icone/btn-icone.component';
 
 @Component({
   selector: 'app-pedidos-compra-lista',
   standalone: true,
-  imports: [RouterLink, FormsModule, DatePipe, ListagemPaginadaComponent, PageHeaderComponent, ThOrdenavelComponent, BreadcrumbComponent],
+  imports: [BtnIconeComponent, RouterLink, FormsModule, DatePipe, ListagemPaginadaComponent, PageHeaderComponent, ThOrdenavelComponent, BreadcrumbComponent],
   templateUrl: './pedidos-compra-lista.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })

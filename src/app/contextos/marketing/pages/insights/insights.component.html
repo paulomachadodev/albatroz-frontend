@@ -124,7 +124,7 @@
           <ng-template #linha let-item>
             <tr>
               <td class="px-6 py-4 text-sm font-bold text-slate-900 dark:text-slate-100 max-w-md">
-                @if (item.link) { <a [href]="item.link" target="_blank" rel="noopener noreferrer" class="line-clamp-2 hover:text-primary">{{ item.legenda || 'Sem legenda' }}</a> } @else { <span class="line-clamp-2">{{ item.legenda || 'Sem legenda' }}</span> }
+                @if (item.link) { <a data-acao-informativa [href]="item.link" target="_blank" rel="noopener noreferrer" class="line-clamp-2 hover:text-primary">{{ item.legenda || 'Sem legenda' }}</a> } @else { <span class="line-clamp-2">{{ item.legenda || 'Sem legenda' }}</span> }
               </td>
               <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{{ item.publicadoEm | date:'dd/MM/yyyy HH:mm' }}</td>
               <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{{ item.interacoes }}</td>

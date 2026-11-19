@@ -155,7 +155,7 @@
           <th class="px-6 py-4">
             <app-th-ordenavel campo="fim" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Fim</app-th-ordenavel>
           </th>
-          <th class="px-6 py-4 text-center">Vínculo</th>
+          <th class="px-6 py-4 text-right">Ações</th>
         </tr>
       </ng-template>
 
@@ -192,14 +192,14 @@
               <span class="px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400">em andamento</span>
             }
           </td>
-          <td class="px-6 py-4 text-center">
-            @if (item.idContato) {
-              <button (click)="abrirVinculoManual(item, $event)" class="text-xs text-emerald-600 hover:underline flex items-center gap-1 justify-center">
-                <span class="material-symbols-outlined text-sm">check_circle</span> vinculado
-              </button>
-            } @else {
-              <button (click)="abrirVinculoManual(item, $event)" class="text-xs text-primary hover:underline">vincular</button>
-            }
+          <td class="px-6 py-4 text-right" (click)="$event.stopPropagation()">
+            <div class="flex justify-end gap-2">
+              @if (item.idContato) {
+                <app-btn-icone icone="link" titulo="Contato vinculado. Alterar vínculo" variante="sucesso" (clicar)="abrirVinculoManual(item)"></app-btn-icone>
+              } @else {
+                <app-btn-icone icone="link" titulo="Vincular a um contato" variante="primario" (clicar)="abrirVinculoManual(item)"></app-btn-icone>
+              }
+            </div>
           </td>
         </tr>
       </ng-template>

@@ -28,6 +28,7 @@
             <th class="px-6 py-4">Próxima postagem</th>
             <th class="px-6 py-4">Destinos</th>
             <th class="px-6 py-4 text-center">Situação</th>
+            <th class="px-6 py-4 text-right">Ações</th>
           </tr>
         </ng-template>
         <ng-template #linha let-item>
@@ -38,8 +39,18 @@
             <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">@if (item.ativa && item.proximaPostagem) { {{ item.proximaPostagem | date:'EEE dd/MM HH:mm' }}<span class="block text-xs text-slate-500">rascunho a partir de {{ item.proximoRascunho | date:'EEE dd/MM HH:mm' }}</span> } @else { - }</td>
             <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{{ item.ativoIds.length }}</td>
             <td class="px-6 py-4 text-center">
-              <button type="button" (click)="$event.stopPropagation(); alternarAtiva(item)" [disabled]="!podeEditar()"
-                      [class]="item.ativa ? 'px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200' : 'px-2 py-0.5 rounded-full text-xs font-bold bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200'">{{ item.ativa ? 'Ativa' : 'Pausada' }}</button>
+              <span [class]="item.ativa ? 'px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200' : 'px-2 py-0.5 rounded-full text-xs font-bold bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200'">{{ item.ativa ? 'Ativa' : 'Pausada' }}</span>
+            </td>
+            <td class="px-6 py-4 text-right" (click)="$event.stopPropagation()">
+              <div class="flex justify-end gap-2">
+                <app-btn-icone icone="edit" titulo="Editar rotina" (clicar)="abrirEdicao(item)"></app-btn-icone>
+                @if (podeEditar()) {
+                  <app-btn-icone [icone]="item.ativa ? 'pause_circle' : 'play_circle'" [titulo]="item.ativa ? 'Pausar rotina' : 'Ativar rotina'" [variante]="item.ativa ? 'neutro' : 'sucesso'" (clicar)="alternarAtiva(item)"></app-btn-icone>
+                }
+                @if (podeExcluir()) {
+                  <app-btn-icone icone="delete" titulo="Remover rotina" variante="perigo" (clicar)="remover(item)"></app-btn-icone>
+                }
+              </div>
             </td>
           </tr>
         </ng-template>

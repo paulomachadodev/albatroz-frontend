@@ -33,7 +33,7 @@
           <th class="px-6 py-4 text-right">Valor</th>
           <th class="px-6 py-4 text-center">Manifestação</th>
           <th class="px-6 py-4 text-center">XML</th>
-          <th class="px-6 py-4 text-center">Ações</th>
+          <th class="px-6 py-4 text-right">Ações</th>
         </tr>
       </ng-template>
 
@@ -61,21 +61,12 @@
               <span class="text-slate-300 dark:text-slate-600 text-xs">—</span>
             }
           </td>
-          <td class="px-6 py-4 text-center" (click)="$event.stopPropagation()">
+          <td class="px-6 py-4 text-right" (click)="$event.stopPropagation()">
             @if (!nota.manifestacaoStatus && nota.chaveAcesso) {
-              <div class="flex items-center justify-center gap-1">
-                <button (click)="registrarCiencia(nota.chaveAcesso)" [disabled]="chaveEmAcao() === nota.chaveAcesso"
-                        class="px-2 py-1 rounded-lg bg-primary/10 text-primary font-bold text-xs hover:bg-primary/20 disabled:opacity-50 transition-all">
-                  Ciência
-                </button>
-                <button (click)="registrarConfirmacao(nota.chaveAcesso)" [disabled]="chaveEmAcao() === nota.chaveAcesso"
-                        class="px-2 py-1 rounded-lg bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400 font-bold text-xs hover:bg-emerald-200 dark:hover:bg-emerald-900/60 disabled:opacity-50 transition-all">
-                  Confirmar
-                </button>
-                <button (click)="abrirModalNaoRealizada(nota.chaveAcesso)" [disabled]="chaveEmAcao() === nota.chaveAcesso"
-                        class="px-2 py-1 rounded-lg bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400 font-bold text-xs hover:bg-amber-200 dark:hover:bg-amber-900/60 disabled:opacity-50 transition-all">
-                  Não realizada
-                </button>
+              <div class="flex items-center justify-end gap-2">
+                <app-btn-icone icone="mark_email_read" titulo="Registrar ciência da operação" variante="primario" [desabilitado]="chaveEmAcao() === nota.chaveAcesso" (clicar)="registrarCiencia(nota.chaveAcesso)"></app-btn-icone>
+                <app-btn-icone icone="check_circle" titulo="Confirmar a operação" variante="sucesso" [desabilitado]="chaveEmAcao() === nota.chaveAcesso" (clicar)="registrarConfirmacao(nota.chaveAcesso)"></app-btn-icone>
+                <app-btn-icone icone="cancel" titulo="Operação não realizada" variante="perigo" [desabilitado]="chaveEmAcao() === nota.chaveAcesso" (clicar)="abrirModalNaoRealizada(nota.chaveAcesso)"></app-btn-icone>
               </div>
             } @else {
               <span class="text-slate-300 dark:text-slate-600 text-xs">—</span>

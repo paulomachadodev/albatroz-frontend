@@ -67,14 +67,14 @@
           <th class="px-6 py-4">
             <app-th-ordenavel campo="criadoEm" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Criado em</app-th-ordenavel>
           </th>
-          <th class="px-6 py-4 w-10"></th>
+          <th class="px-6 py-4 text-right">Ações</th>
         </tr>
       </ng-template>
 
       <ng-template #linha let-item>
         <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
           <td class="px-6 py-4 text-sm font-bold">
-            <a [routerLink]="['/compras/pedidos', item.id]" class="text-primary hover:underline">#{{ item.id }}</a>
+            <a data-acao-informativa [routerLink]="['/compras/pedidos', item.id]" class="text-primary hover:underline">#{{ item.id }}</a>
           </td>
           <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{{ item.fornecedor }}</td>
           <td class="px-6 py-4 text-center text-sm">{{ item.quantidadeItens }}</td>
@@ -89,18 +89,11 @@
             </select>
           </td>
           <td class="px-6 py-4 text-sm text-slate-500">{{ item.criadoEm | date: 'dd/MM/yy HH:mm' }}</td>
-          <td class="px-6 py-4 text-right">
-            <div class="flex items-center justify-end gap-1">
-              <a [routerLink]="['/compras/pedidos', item.id]" class="text-slate-400 hover:text-primary" title="Abrir pedido">
-                <span class="material-symbols-outlined text-base">visibility</span>
-              </a>
-              <button (click)="exportarItem(item, 'xlsx')" [disabled]="exportandoId() === item.id"
-                      class="text-slate-400 hover:text-primary disabled:opacity-50" title="Exportar Excel">
-                <span class="material-symbols-outlined text-base">download</span>
-              </button>
-              <button (click)="excluir(item)" class="text-red-500 hover:text-red-700" title="Excluir">
-                <span class="material-symbols-outlined text-base">delete</span>
-              </button>
+          <td class="px-6 py-4 text-right" (click)="$event.stopPropagation()">
+            <div class="flex items-center justify-end gap-2">
+              <app-btn-icone icone="visibility" titulo="Abrir pedido" [link]="['/compras/pedidos', item.id]"></app-btn-icone>
+              <app-btn-icone icone="download" titulo="Exportar Excel" [desabilitado]="exportandoId() === item.id" (clicar)="exportarItem(item, 'xlsx')"></app-btn-icone>
+              <app-btn-icone icone="delete" titulo="Excluir pedido" variante="perigo" (clicar)="excluir(item)"></app-btn-icone>
             </div>
           </td>
         </tr>

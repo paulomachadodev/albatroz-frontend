@@ -31,6 +31,9 @@ jobs:
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
 
+      - name: Verificar padrão das ações de linha
+        run: npm run verificar:acoes
+
       - name: Build production
         run: npm run build -- --configuration production
 

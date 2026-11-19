@@ -72,7 +72,7 @@
           <td class="px-4 py-4">{{ item.iniciadoEmUtc | date:'dd/MM/yyyy HH:mm:ss' }} local<span class="block text-xs text-slate-500">{{ nomeFinalidade(item.finalidade) }} · tentativa {{ item.numeroTentativa }}</span></td>
           <td class="px-4 py-4 break-all">{{ item.modeloEfetivo ?? item.modeloSolicitado }}<span class="block text-xs text-slate-500">{{ status(item.status) }} · HTTP {{ item.httpStatus ?? 'não informado' }}</span></td>
           <td class="px-4 py-4">Entrada: {{ item.tokensEntrada === null ? 'Não informado' : (item.tokensEntrada | number) }}<br />Saída: {{ item.tokensSaida === null ? 'Não informado' : (item.tokensSaida | number) }}<span class="block text-xs text-slate-500">Raciocínio: {{ item.tokensThinking === null ? 'Não informado' : (item.tokensThinking | number) }} · Cache: {{ item.tokensCache === null ? 'Não informado' : (item.tokensCache | number) }}</span></td>
-          <td class="px-4 py-4 break-all">{{ custo(item.custoUsd) }}<span class="block text-xs text-slate-500">{{ item.tarifaVersao ?? 'Sem tarifa aplicada' }}</span>@if (fonte(item.tarifaFonte); as url) { <a [href]="url" target="_blank" rel="noopener noreferrer" class="text-xs text-primary hover:underline">Fonte da tarifa</a> }</td>
+          <td class="px-4 py-4 break-all">{{ custo(item.custoUsd) }}<span class="block text-xs text-slate-500">{{ item.tarifaVersao ?? 'Sem tarifa aplicada' }}</span>@if (fonte(item.tarifaFonte); as url) { <a data-acao-informativa [href]="url" target="_blank" rel="noopener noreferrer" class="text-xs text-primary hover:underline">Fonte da tarifa</a> }</td>
         </tr>
       </ng-template>
       <ng-template #linhaMobile let-item>
@@ -83,7 +83,7 @@
           <p>Entrada: {{ item.tokensEntrada === null ? 'Não informado' : (item.tokensEntrada | number) }} · Saída: {{ item.tokensSaida === null ? 'Não informado' : (item.tokensSaida | number) }}</p>
           <p>Raciocínio: {{ item.tokensThinking === null ? 'Não informado' : (item.tokensThinking | number) }} · Cache: {{ item.tokensCache === null ? 'Não informado' : (item.tokensCache | number) }}</p>
           <p class="font-semibold break-all">{{ custo(item.custoUsd) }}</p><p class="text-xs text-slate-500 break-all">{{ item.tarifaVersao ?? 'Sem tarifa aplicada' }}</p>
-          @if (fonte(item.tarifaFonte); as url) { <a [href]="url" target="_blank" rel="noopener noreferrer" class="text-xs text-primary hover:underline">Fonte da tarifa</a> }
+          @if (fonte(item.tarifaFonte); as url) { <a data-acao-informativa [href]="url" target="_blank" rel="noopener noreferrer" class="text-xs text-primary hover:underline">Fonte da tarifa</a> }
         </div>
       </ng-template>
     </app-listagem-paginada>

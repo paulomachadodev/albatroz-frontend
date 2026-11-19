@@ -18,6 +18,7 @@ import { CampoMoedaComponent } from '../../../../../shared/components/campo-moed
 import { IaLimites, IaLimiteReserva } from '../../models/ia-limites.model';
 import { IaLimitesService } from '../../services/ia-limites.service';
 import { ConfiguracaoFormularioBase } from './configuracao-formulario.base';
+import { BtnIconeComponent } from '../../../../../shared/components/btn-icone/btn-icone.component';
 
 function fusoValido(controle: AbstractControl): { fuso: true } | null {
   try { new Intl.DateTimeFormat('pt-BR', { timeZone: String(controle.value).trim() }); return null; } catch { return { fuso: true }; }
@@ -29,7 +30,7 @@ function inteiroOpcional(controle: AbstractControl): { inteiro: true } | null {
 
 @Component({
   selector: 'app-ia-limites', standalone: true,
-  imports: [DatePipe, DecimalPipe, ReactiveFormsModule, InputTextModule, ToggleSwitchModule, CampoMoedaComponent, BreadcrumbComponent, PageHeaderComponent, ListagemPaginadaComponent, ModalComponent],
+  imports: [BtnIconeComponent, DatePipe, DecimalPipe, ReactiveFormsModule, InputTextModule, ToggleSwitchModule, CampoMoedaComponent, BreadcrumbComponent, PageHeaderComponent, ListagemPaginadaComponent, ModalComponent],
   templateUrl: './ia-limites.component.html', host: { class: 'flex-1 flex flex-col min-h-0' }
 })
 export class IaLimitesComponent extends ConfiguracaoFormularioBase {

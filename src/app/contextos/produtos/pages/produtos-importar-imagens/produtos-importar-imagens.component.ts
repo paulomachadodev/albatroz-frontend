@@ -12,6 +12,7 @@ import { OverlayProgressoComponent } from '../../../../shared/components/overlay
 import { ToggleComponent } from '../../../../shared/components/toggle/toggle.component';
 import { DrawerComponent } from '../../../../shared/components/drawer/drawer.component';
 import { BreadcrumbComponent } from '../../../../shared/components/breadcrumb/breadcrumb.component';
+import { BtnIconeComponent } from '../../../../shared/components/btn-icone/btn-icone.component';
 
 interface ResumoImportacao {
   sucesso: number;
@@ -22,7 +23,7 @@ interface ResumoImportacao {
 @Component({
   selector: 'app-produtos-importar-imagens',
   standalone: true,
-  imports: [PageHeaderComponent, ListagemPaginadaComponent, OverlayProgressoComponent, ToggleComponent, DrawerComponent, BreadcrumbComponent],
+  imports: [BtnIconeComponent, PageHeaderComponent, ListagemPaginadaComponent, OverlayProgressoComponent, ToggleComponent, DrawerComponent, BreadcrumbComponent],
   templateUrl: './produtos-importar-imagens.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })

@@ -237,15 +237,15 @@
           <td class="px-3 py-4 text-right text-xs text-slate-400 cursor-pointer" (click)="abrirProduto(item)">{{ rotuloCaixa(item) }}</td>
           <td class="px-6 py-4">
             <div class="flex items-center justify-center gap-1">
-              <button (click)="ajustarSugestao(item, -1)" class="w-6 h-6 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-sm font-bold">−</button>
+              <button data-acao-informativa (click)="ajustarSugestao(item, -1)" class="w-6 h-6 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-sm font-bold">−</button>
               <input type="number" min="0" [ngModel]="quantidadeEfetiva(item)" (ngModelChange)="aoDigitarSugestao(item, $event)"
                      class="w-16 text-center px-1 py-1 bg-slate-100 dark:bg-slate-800 border-none rounded text-sm outline-none"/>
-              <button (click)="ajustarSugestao(item, 1)" class="w-6 h-6 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-sm font-bold">+</button>
+              <button data-acao-informativa (click)="ajustarSugestao(item, 1)" class="w-6 h-6 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-sm font-bold">+</button>
             </div>
             <div class="flex items-center justify-center gap-2 mt-1">
               <span class="text-xs text-slate-400">sugestão: {{ formatarNumero(item.sugestaoCompraQtd90d) }}</span>
               @if (foiAjustado(item)) {
-                <button (click)="restaurarSugestao(item)" class="text-xs text-primary hover:underline">restaurar</button>
+                <button data-acao-informativa (click)="restaurarSugestao(item)" class="text-xs text-primary hover:underline">restaurar</button>
               }
             </div>
           </td>
@@ -258,7 +258,7 @@
           @if (colunaVisivel('semelhantes')) {
             <td class="px-3 py-4">
               @if (semelhantesQtd(item) > 0) {
-                <button type="button" (click)="abrirSemelhantes(item)" title="Ver produtos semelhantes com estoque"
+                <button data-acao-informativa type="button" (click)="abrirSemelhantes(item)" title="Ver produtos semelhantes com estoque"
                         class="inline-flex items-center gap-1 whitespace-nowrap px-2 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700 hover:bg-amber-200 dark:bg-amber-900/40 dark:text-amber-400 dark:hover:bg-amber-900/60 transition-colors">
                   <span class="material-symbols-outlined text-[14px]">content_copy</span>
                   {{ rotuloSemelhantes(item) }}

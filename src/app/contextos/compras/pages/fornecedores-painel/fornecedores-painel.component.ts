@@ -9,11 +9,12 @@ import { ListagemPaginadaComponent } from '../../../../shared/components/listage
 import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 import { Ordenacao, ThOrdenavelComponent } from '../../../../shared/components/th-ordenavel/th-ordenavel.component';
 import { BreadcrumbComponent } from '../../../../shared/components/breadcrumb/breadcrumb.component';
+import { BtnIconeComponent } from '../../../../shared/components/btn-icone/btn-icone.component';
 
 @Component({
   selector: 'app-fornecedores-painel',
   standalone: true,
-  imports: [FormsModule, LowerCasePipe, TitleCasePipe, ListagemPaginadaComponent, PageHeaderComponent, ThOrdenavelComponent, BreadcrumbComponent],
+  imports: [BtnIconeComponent, FormsModule, LowerCasePipe, TitleCasePipe, ListagemPaginadaComponent, PageHeaderComponent, ThOrdenavelComponent, BreadcrumbComponent],
   templateUrl: './fornecedores-painel.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })

@@ -64,7 +64,7 @@
           <th class="px-3 py-4 text-center">Itens</th>
           <th class="px-3 py-4 text-center">Pendentes</th>
           <th class="px-6 py-4 text-center">Status</th>
-          <th class="px-6 py-4"></th>
+          <th class="px-6 py-4 text-right">Ações</th>
         </tr>
       </ng-template>
 
@@ -97,23 +97,12 @@
             </span>
           </td>
           <td class="px-6 py-4 text-right">
-            <div class="flex items-center justify-end gap-1" (click)="$event.stopPropagation()">
+            <div class="flex items-center justify-end gap-2" (click)="$event.stopPropagation()">
               @if (nota.status === 1) {
-                <button (click)="registrarChegada(nota.id, $event)"
-                        [disabled]="registrandoChegada() === nota.id"
-                        class="px-2 py-1 rounded-lg bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400 font-bold text-xs hover:bg-amber-200 dark:hover:bg-amber-900/60 disabled:opacity-50 transition-all whitespace-nowrap">
-                  @if (registrandoChegada() === nota.id) {
-                    <span class="material-symbols-outlined text-xs animate-spin">progress_activity</span>
-                  } @else {
-                    Chegou
-                  }
-                </button>
+                <app-btn-icone icone="local_shipping" titulo="Registrar chegada da mercadoria" variante="primario" [desabilitado]="registrandoChegada() === nota.id" (clicar)="registrarChegada(nota.id)"></app-btn-icone>
               }
               @if (nota.status === 1 || nota.status === 2) {
-                <button (click)="abrirConferencia(nota.id, $event)"
-                        class="px-2 py-1 rounded-lg bg-primary/10 text-primary font-bold text-xs hover:bg-primary/20 transition-all whitespace-nowrap">
-                  Conferir
-                </button>
+                <app-btn-icone icone="fact_check" titulo="Conferir nota" (clicar)="abrirConferencia(nota.id)"></app-btn-icone>
               }
             </div>
           </td>

@@ -17,7 +17,7 @@
             <th class="px-4 py-4">Situação</th>
             <th class="px-4 py-4">Data prevista</th>
             <th class="px-4 py-4">Atualizada</th>
-            <th class="px-4 py-4">Ação</th>
+            <th class="px-4 py-4 text-right">Ações</th>
           </tr>
         </ng-template>
         <ng-template #linha let-item>
@@ -27,7 +27,14 @@
             <td class="px-4 py-4 text-sm">{{ status[item.status] }}<span class="block text-xs text-slate-500">versão {{ item.versaoAtual }}@if (item.versaoAprovada) { · aprovada: {{ item.versaoAprovada }} }</span>@if (!item.possuiArteAprovada) { <span class="block text-xs text-amber-700 dark:text-amber-300">sem imagem</span> }</td>
             <td class="px-4 py-4 text-sm">{{ item.planejadaPara ? (item.planejadaPara | date:'dd/MM/yyyy HH:mm') : 'Sem data' }}</td>
             <td class="px-4 py-4 text-xs">{{ item.atualizadoEm | date:'dd/MM/yyyy HH:mm' }}</td>
-            <td class="px-4 py-4"><a [routerLink]="['/marketing/pecas', item.id]" class="text-xs font-bold text-primary">Abrir</a></td>
+            <td class="px-4 py-4 text-right" (click)="$event.stopPropagation()">
+              <div class="flex justify-end gap-2">
+                <app-btn-icone icone="edit_note" titulo="Abrir peça" [link]="['/marketing/pecas', item.id]"></app-btn-icone>
+                @if (podeExcluir()) {
+                  <app-btn-icone icone="delete" titulo="Excluir peça" variante="perigo" (clicar)="excluir(item)"></app-btn-icone>
+                }
+              </div>
+            </td>
           </tr>
         </ng-template>
         <ng-template #linhaMobile let-item>
@@ -35,7 +42,12 @@
             <p class="font-bold">{{ item.rede }} · {{ item.formato }} · {{ status[item.status] }}</p>
             <p class="break-words">{{ item.resumo }}</p>
             <p class="text-xs text-slate-500">{{ item.planejadaPara ? (item.planejadaPara | date:'dd/MM/yyyy HH:mm') : 'Sem data prevista' }}</p>
-            <a [routerLink]="['/marketing/pecas', item.id]" class="text-xs font-bold text-primary">Abrir</a>
+            <div class="flex gap-2">
+              <app-btn-icone icone="edit_note" titulo="Abrir peça" [link]="['/marketing/pecas', item.id]"></app-btn-icone>
+              @if (podeExcluir()) {
+                <app-btn-icone icone="delete" titulo="Excluir peça" variante="perigo" (clicar)="excluir(item)"></app-btn-icone>
+              }
+            </div>
           </div>
         </ng-template>
       </app-listagem-paginada>

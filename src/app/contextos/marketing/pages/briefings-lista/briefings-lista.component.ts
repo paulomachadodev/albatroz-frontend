@@ -15,6 +15,7 @@ import { AuthService } from '../../../../core/auth/auth.service';
 import { ToastService } from '../../../../core/feedback/toast.service';
 import { ConfirmService } from '../../../../core/feedback/confirm.service';
 import { BreadcrumbComponent } from '../../../../shared/components/breadcrumb/breadcrumb.component';
+import { BtnIconeComponent } from '../../../../shared/components/btn-icone/btn-icone.component';
 import { DrawerComponent } from '../../../../shared/components/drawer/drawer.component';
 import { ListagemPaginadaComponent } from '../../../../shared/components/listagem-paginada/listagem-paginada.component';
 import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
@@ -29,7 +30,7 @@ type ModoDrawer = 'criar' | 'editar';
 @Component({
   selector: 'app-briefings-lista',
   standalone: true,
-  imports: [SelectModule, MultiSelectModule, SelectBuscaMultiComponent, AjudaCampoComponent, MarketingGuiaComponent, RouterLink, FormsModule, DatePipe, ListagemPaginadaComponent, DrawerComponent, PageHeaderComponent, ThOrdenavelComponent, BreadcrumbComponent],
+  imports: [SelectModule, MultiSelectModule, SelectBuscaMultiComponent, AjudaCampoComponent, MarketingGuiaComponent, RouterLink, BtnIconeComponent, FormsModule, DatePipe, ListagemPaginadaComponent, DrawerComponent, PageHeaderComponent, ThOrdenavelComponent, BreadcrumbComponent],
   templateUrl: './briefings-lista.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })

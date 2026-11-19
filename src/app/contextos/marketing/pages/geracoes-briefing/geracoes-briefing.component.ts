@@ -13,10 +13,11 @@ import { Briefing } from '../../models/marketing.model';
 import { GeracaoMarketing } from '../../models/geracao-marketing.model';
 import { GeracoesMarketingService } from '../../services/geracoes-marketing.service';
 import { PecasService } from '../../services/pecas.service';
+import { BtnIconeComponent } from '../../../../shared/components/btn-icone/btn-icone.component';
 
 @Component({
   selector: 'app-geracoes-briefing', standalone: true,
-  imports: [DatePipe, BreadcrumbComponent, PageHeaderComponent, ListagemPaginadaComponent],
+  imports: [BtnIconeComponent, DatePipe, BreadcrumbComponent, PageHeaderComponent, ListagemPaginadaComponent],
   templateUrl: './geracoes-briefing.component.html', host: { class: 'flex-1 flex flex-col min-h-0' }
 })
 export class GeracoesBriefingComponent {

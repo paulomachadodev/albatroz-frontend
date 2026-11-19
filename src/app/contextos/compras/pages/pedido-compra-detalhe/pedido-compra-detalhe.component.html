@@ -78,7 +78,7 @@
             <th class="px-6 py-3 text-center w-32">Quantidade</th>
             <th class="px-6 py-3 text-right">Preço Custo Unit.</th>
             <th class="px-6 py-3 text-right">Total</th>
-            @if (editavel()) { <th class="px-6 py-3 w-24"></th> }
+            @if (editavel()) { <th class="px-6 py-3 w-24 text-right">Ações</th> }
           </tr>
         </ng-template>
 
@@ -98,7 +98,9 @@
             <td class="px-6 py-3 text-right text-sm font-bold">{{ formatarReais(item.valorTotal ?? item.quantidade * (item.precoCustoUnitario ?? 0)) }}</td>
             @if (editavel()) {
               <td class="px-6 py-3 text-right">
-                <button (click)="removerItem(item)" class="text-xs font-bold text-red-600 hover:underline">Remover</button>
+                <div class="flex justify-end gap-2">
+                  <app-btn-icone icone="delete" titulo="Remover item" variante="perigo" (clicar)="removerItem(item)"></app-btn-icone>
+                </div>
               </td>
             }
           </tr>

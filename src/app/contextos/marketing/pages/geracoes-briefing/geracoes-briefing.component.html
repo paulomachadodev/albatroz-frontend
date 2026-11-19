@@ -20,9 +20,9 @@
         <h2 id="geracoes-historico" class="font-bold">Gerações recentes</h2>
         <p class="text-xs text-slate-500">Até 20 execuções recentes. Gerações pendentes e em execução são atualizadas automaticamente enquanto esta tela estiver aberta.</p>
         <app-listagem-paginada [itens]="itens()" [exibirFiltros]="false" [exibirPaginacao]="false" [totalRegistros]="itens().length" [totalPaginas]="1" tituloVazio="Nenhuma geração registrada para este briefing.">
-          <ng-template #cabecalho><tr><th class="px-4 py-4">Solicitada em</th><th class="px-4 py-4">Situação</th><th class="px-4 py-4">Ação</th></tr></ng-template>
-          <ng-template #linha let-item><tr><td class="px-4 py-4 text-sm">{{ item.criadoEmUtc | date:'dd/MM/yyyy HH:mm:ss' }} local</td><td class="px-4 py-4 text-sm">{{ status(item.status) }}</td><td class="px-4 py-4"><button type="button" (click)="selecionar(item)" class="text-xs font-bold text-primary hover:underline">Ver rascunho</button></td></tr></ng-template>
-          <ng-template #linhaMobile let-item><div class="p-4 space-y-2 text-sm"><p class="font-semibold">{{ status(item.status) }}</p><p>{{ item.criadoEmUtc | date:'dd/MM/yyyy HH:mm:ss' }} local</p><button type="button" (click)="selecionar(item)" class="text-xs font-bold text-primary hover:underline">Ver rascunho</button></div></ng-template>
+          <ng-template #cabecalho><tr><th class="px-4 py-4">Solicitada em</th><th class="px-4 py-4">Situação</th><th class="px-4 py-4 text-right">Ações</th></tr></ng-template>
+          <ng-template #linha let-item><tr><td class="px-4 py-4 text-sm">{{ item.criadoEmUtc | date:'dd/MM/yyyy HH:mm:ss' }} local</td><td class="px-4 py-4 text-sm">{{ status(item.status) }}</td><td class="px-4 py-4"><div class="flex justify-end gap-2"><app-btn-icone icone="visibility" titulo="Ver rascunho" (clicar)="selecionar(item)"></app-btn-icone></div></td></tr></ng-template>
+          <ng-template #linhaMobile let-item><div class="p-4 space-y-2 text-sm"><p class="font-semibold">{{ status(item.status) }}</p><p>{{ item.criadoEmUtc | date:'dd/MM/yyyy HH:mm:ss' }} local</p><div class="flex justify-end gap-2"><app-btn-icone icone="visibility" titulo="Ver rascunho" (clicar)="selecionar(item)"></app-btn-icone></div></div></ng-template>
         </app-listagem-paginada>
       </section>
       @if (selecionada(); as geracao) {

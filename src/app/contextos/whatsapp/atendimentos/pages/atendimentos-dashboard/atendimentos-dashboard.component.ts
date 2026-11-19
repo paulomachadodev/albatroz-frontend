@@ -20,6 +20,7 @@ import { ListagemPaginadaComponent } from '../../../../../shared/components/list
 import { DrawerComponent } from '../../../../../shared/components/drawer/drawer.component';
 import { ThOrdenavelComponent, Ordenacao } from '../../../../../shared/components/th-ordenavel/th-ordenavel.component';
 import { BreadcrumbComponent } from '../../../../../shared/components/breadcrumb/breadcrumb.component';
+import { BtnIconeComponent } from '../../../../../shared/components/btn-icone/btn-icone.component';
 
 const MESES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 
@@ -47,7 +48,7 @@ const REMETENTE_BOLHA_CLASSES: Record<string, string> = {
 @Component({
   selector: 'app-atendimentos-dashboard',
   standalone: true,
-  imports: [
+  imports: [BtnIconeComponent, 
     CommonModule,
     FormsModule,
     ModalComponent,

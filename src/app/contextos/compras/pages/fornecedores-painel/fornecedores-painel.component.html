@@ -60,7 +60,7 @@
           <th class="px-6 py-4 text-right">
             <app-th-ordenavel campo="saldo" [ordenacaoAtual]="ordenacaoAtual()" (ordenar)="aoOrdenar($event)">Saldo em aberto</app-th-ordenavel>
           </th>
-          <th class="px-6 py-4 w-10"></th>
+          <th class="px-6 py-4 text-right">Ações</th>
         </tr>
       </ng-template>
 
@@ -86,7 +86,9 @@
             {{ formatarReais(item.saldoEmAberto) }}
           </td>
           <td class="px-6 py-4 text-right">
-            <button (click)="fecharPedido(item)" class="text-xs font-bold text-primary hover:underline">Fechar pedido</button>
+            <div class="flex items-center justify-end gap-2" (click)="$event.stopPropagation()">
+              <app-btn-icone icone="shopping_cart_checkout" titulo="Fechar pedido" variante="primario" (clicar)="fecharPedido(item)"></app-btn-icone>
+            </div>
           </td>
         </tr>
       </ng-template>

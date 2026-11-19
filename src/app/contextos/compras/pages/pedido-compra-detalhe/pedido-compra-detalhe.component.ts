@@ -18,6 +18,7 @@ import { SelectBuscaComponent, OpcaoSelectBusca } from '../../../../shared/compo
 import { BreadcrumbComponent } from '../../../../shared/components/breadcrumb/breadcrumb.component';
 import { ListagemPaginadaComponent } from '../../../../shared/components/listagem-paginada/listagem-paginada.component';
 import { exportarPlanilha } from '../../../../shared/utils/exportar-planilha';
+import { BtnIconeComponent } from '../../../../shared/components/btn-icone/btn-icone.component';
 
 interface ItemPedidoEdicao {
   idProduto: number;
@@ -31,7 +32,7 @@ interface ItemPedidoEdicao {
 @Component({
   selector: 'app-pedido-compra-detalhe',
   standalone: true,
-  imports: [FormsModule, SelectBuscaComponent, BreadcrumbComponent, ListagemPaginadaComponent],
+  imports: [BtnIconeComponent, FormsModule, SelectBuscaComponent, BreadcrumbComponent, ListagemPaginadaComponent],
   templateUrl: './pedido-compra-detalhe.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })

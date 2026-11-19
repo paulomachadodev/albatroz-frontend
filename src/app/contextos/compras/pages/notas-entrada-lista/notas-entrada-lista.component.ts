@@ -8,11 +8,12 @@ import { ToastService } from '../../../../core/feedback/toast.service';
 import { PageHeaderComponent } from '../../../../shared/components/page-header/page-header.component';
 import { BreadcrumbComponent } from '../../../../shared/components/breadcrumb/breadcrumb.component';
 import { ListagemPaginadaComponent } from '../../../../shared/components/listagem-paginada/listagem-paginada.component';
+import { BtnIconeComponent } from '../../../../shared/components/btn-icone/btn-icone.component';
 
 @Component({
   selector: 'app-notas-entrada-lista',
   standalone: true,
-  imports: [FormsModule, PageHeaderComponent, BreadcrumbComponent, ListagemPaginadaComponent],
+  imports: [BtnIconeComponent, FormsModule, PageHeaderComponent, BreadcrumbComponent, ListagemPaginadaComponent],
   templateUrl: './notas-entrada-lista.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
@@ -107,15 +108,15 @@ export class NotasEntradaListaComponent implements OnInit {
     this.router.navigate(['/compras/notas-entrada', id]);
   }
 
-  abrirConferencia(id: number, event: Event) {
-    event.stopPropagation();
+  abrirConferencia(id: number, event?: Event) {
+    event?.stopPropagation();
     this.router.navigate(['/compras/notas-entrada', id, 'conferencia']);
   }
 
   registrandoChegada = signal<number | null>(null);
 
-  registrarChegada(id: number, event: Event) {
-    event.stopPropagation();
+  registrarChegada(id: number, event?: Event) {
+    event?.stopPropagation();
     this.registrandoChegada.set(id);
     this.service.registrarChegada(id).subscribe({
       next: () => {

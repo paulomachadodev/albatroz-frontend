@@ -20,6 +20,8 @@ import { ProdutosService } from '../../../produtos/services/produtos.service';
 import { Agendamento } from '../../models/agendamento.model';
 import { DIAS_SEMANA, proximaOcorrencia } from '../../models/insights.model';
 import { InsightsService } from '../../services/insights.service';
+import { AssuntoEmAlta, horasDesde } from '../../models/assunto-em-alta.model';
+import { AssuntosEmAltaService } from '../../services/assuntos-em-alta.service';
 import { Arte } from '../../models/arte.model';
 import { LinhaEditorial } from '../../models/marketing.model';
 import { Peca } from '../../models/peca.model';
@@ -56,6 +58,12 @@ export class CriarPostagemComponent {
   private readonly categoriasService = inject(CategoriaService);
   private readonly produtosService = inject(ProdutosService);
   private readonly insights = inject(InsightsService);
+  private readonly assuntosService = inject(AssuntosEmAltaService);
+  readonly assuntosEmAlta = signal<AssuntoEmAlta[]>([]);
+  readonly carregandoAssuntos = signal(false);
+  readonly manchetePrincipal = signal<AssuntoEmAlta | null>(null);
+  readonly tempoDesde = horasDesde;
+  private assuntosCarregados = false;
   readonly sugestaoHorario = signal('');
   readonly sugestaoConfiavel = signal(false);
 
@@ -126,6 +134,41 @@ export class CriarPostagemComponent {
     this.carregarDestinos();
     this.carregarCategorias();
     this.dataHora.set(this.paraCampoData(new Date(Date.now() + 60 * 60000)));
+  }
+
+  aoEscolherTipo(nome: string): void {
+    this.linhaNome.set(nome);
+    this.manchetePrincipal.set(null);
+    if (!this.usaProdutos()) this.carregarAssuntos();
+  }
+
+  escolherManchete(manchete: AssuntoEmAlta | null): void {
+    this.manchetePrincipal.set(manchete);
+    if (manchete) this.assunto.set(manchete.titulo.slice(0, 300));
+  }
+
+  aoDigitarAssunto(texto: string): void {
+    this.assunto.set(texto);
+    const escolhida = this.manchetePrincipal();
+    if (escolhida && escolhida.titulo.slice(0, 300) !== texto) this.manchetePrincipal.set(null);
+  }
+
+  private carregarAssuntos(): void {
+    if (this.assuntosCarregados) return;
+    this.assuntosCarregados = true;
+    this.carregandoAssuntos.set(true);
+    this.assuntosService.listar().subscribe({
+      next: res => {
+        this.carregandoAssuntos.set(false);
+        this.assuntosEmAlta.set(res.sucesso && res.dados ? res.dados.itens : []);
+      },
+      error: () => { this.carregandoAssuntos.set(false); this.assuntosCarregados = false; }
+    });
+  }
+
+  private referenciaDaManchete(): string {
+    const m = this.manchetePrincipal();
+    return m ? `Manchete: ${m.titulo}. Fonte: ${m.veiculo || 'veículo não informado'}. Publicada em ${new Date(m.publicadoEm).toLocaleDateString('pt-BR')}.`.slice(0, 1900) : '';
   }
 
   trocarModo(modo: 'escolher' | 'sortear'): void {
@@ -350,7 +393,7 @@ export class CriarPostagemComponent {
       objetivo: linha?.objetivo?.trim() || 'Divulgar ' + this.linhaNome(),
       publico: '', linha: this.linhaNome(), assunto, produtoServico: '', oferta: '',
       formato: this.produtos().length > 1 ? 'Carrossel' : 'Post',
-      rede: redes.join(','), referencias: '', prazo: null
+      rede: redes.join(','), referencias: this.referenciaDaManchete(), prazo: null
     };
     this.mensagemTrabalho.set('Preparando o pedido...');
     const criado = await firstValueFrom(this.marketing.criarBriefing(dados));

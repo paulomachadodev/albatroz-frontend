@@ -40,13 +40,33 @@
             <div class="space-y-4">
               <div>
                 <label for="cp-tipo" class="text-xs font-semibold text-slate-500">O que você quer postar?</label>
-                <p-select [unstyled]="true" [pt]="selectPt" inputId="cp-tipo" [ngModel]="linhaNome()" (ngModelChange)="linhaNome.set($event)" [options]="opcoesLinha()" optionLabel="rotulo" optionValue="valor" placeholder="Escolha o tipo" appendTo="body" class="block mt-1" />
+                <p-select [unstyled]="true" [pt]="selectPt" inputId="cp-tipo" [ngModel]="linhaNome()" (ngModelChange)="aoEscolherTipo($event)" [options]="opcoesLinha()" optionLabel="rotulo" optionValue="valor" placeholder="Escolha o tipo" appendTo="body" class="block mt-1" />
                 @if (linhas().length === 0) { <p class="mt-1 text-xs text-slate-500">Cadastre as linhas editoriais em <a routerLink="/marketing/estrategia" class="text-primary hover:underline">Estratégia editorial</a>.</p> }
               </div>
               @if (linhaNome() && !usaProdutos()) {
+                <div class="space-y-2">
+                  <p class="text-xs font-semibold text-slate-500">Em alta no seu segmento agora</p>
+                  @if (carregandoAssuntos()) {
+                    <div class="h-24 animate-pulse bg-slate-100 dark:bg-slate-800 rounded-lg" aria-label="Buscando assuntos em alta"></div>
+                  } @else {
+                    <ul class="space-y-2">
+                      @for (a of assuntosEmAlta(); track a.link) {
+                        <li>
+                          <button type="button" (click)="escolherManchete(manchetePrincipal() === a ? null : a)" [attr.aria-pressed]="manchetePrincipal() === a"
+                                  [class]="manchetePrincipal() === a ? 'w-full text-left px-3 py-2 rounded-lg border border-primary bg-primary/10' : 'w-full text-left px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800'">
+                            <span class="block text-sm font-semibold text-slate-900 dark:text-slate-100">{{ a.titulo }}</span>
+                            <span class="block text-xs text-slate-500">{{ a.veiculo || 'Veículo não informado' }} · {{ tempoDesde(a.publicadoEm) }}@if (a.repeticoes > 1) { · {{ a.repeticoes }} veículos }</span>
+                          </button>
+                        </li>
+                      } @empty {
+                        <li class="text-sm text-slate-500">Nenhum assunto encontrado agora. Escreva o seu abaixo.</li>
+                      }
+                    </ul>
+                  }
+                </div>
                 <div>
-                  <label for="cp-assunto" class="text-xs font-semibold text-slate-500">Sobre o quê?</label>
-                  <input id="cp-assunto" type="text" [ngModel]="assunto()" (ngModelChange)="assunto.set($event)" maxlength="300" placeholder="Ex.: Como organizar a mesa de estudos" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none" />
+                  <label for="cp-assunto" class="text-xs font-semibold text-slate-500">Ou escreva o assunto</label>
+                  <input id="cp-assunto" type="text" [ngModel]="assunto()" (ngModelChange)="aoDigitarAssunto($event)" maxlength="300" placeholder="Ex.: Como organizar a mesa de estudos" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none" />
                 </div>
               } @else if (linhaNome()) {
                 <details class="text-sm">

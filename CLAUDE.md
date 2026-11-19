@@ -35,6 +35,8 @@ Carregar os standards abaixo antes de criar qualquer HTML novo:
 
 0. **`.claude/standards/angular/reutilizar-componentes.md`** — REGRA DURA: antes de criar ou estilizar qualquer elemento (seletor, toggle, modal, botão), usar o componente e o `[pt]` que o sistema já tem. Já gerou dois erros seguidos (2026-11-18). Inclui os campos de valor e documento: dinheiro com `app-campo-moeda`, CPF/CNPJ/CEP/telefone com `app-campo-mascara`, nunca `input type="number"` solto.
 
+0b. **`.claude/standards/angular/design-limpo.md`** — REGRA DURA (2026-11-19): telas limpas, uma tarefa por tela, um botão primário, até 6 campos visíveis, texto curto, sem cartão dentro de cartão. Referência: tela Inteligência artificial das configurações.
+
 1. **`.claude/standards/angular/template-estrutura.md`** — estrutura obrigatória do wrapper de página, token `bg-primary` (nunca `bg-blue-*` hardcoded), botões, abas, cards, inputs, badges. Violações frequentes: usar `bg-blue-600` em vez de `bg-primary`, tab com `border-blue-600` em vez de `[class.border-primary]`, modal hand-rolled em vez de `<app-modal>`, wrapper sem `bg-background-light dark:bg-background-dark`.
 
 2. **`.claude/standards/angular/listagem-padrao.md`** — `app-listagem-paginada`, `app-modal`, `app-page-header`, `app-btn-icone`, `app-spinner`, `app-drawer`, `app-overlay-progresso`, autosave proibido, PrimeNG first. Criar qualquer desses do zero sem checar aqui é bug — já aconteceu (2026-08-21).

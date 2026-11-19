@@ -58,6 +58,7 @@ export const MENU_CATALOGO: ItemMenu[] = [
   ] },
   { id: 'marketing', label: 'Marketing', icone: 'campaign', filhos: [
     { id: 'marketing-criar', label: 'Criar postagem', rota: '/marketing/criar', permissao: 'marketing:criar' },
+    { id: 'marketing-gerente', label: 'Gerente', rota: '/marketing/gerente', permissao: 'marketing:ler' },
     { id: 'marketing-aprovacoes', label: 'Aprovações', rota: '/marketing/aprovacoes', permissao: 'marketing:ler' },
     { id: 'marketing-rotinas', label: 'Rotinas', rota: '/marketing/rotinas', permissao: 'marketing:ler' },
     { id: 'marketing-insights', label: 'Insights', rota: '/marketing/insights', permissao: 'marketing:ler' },

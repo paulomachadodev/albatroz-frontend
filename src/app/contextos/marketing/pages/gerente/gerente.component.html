@@ -1,0 +1,94 @@
+<div class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark px-4 sm:px-6 lg:px-8 xl:px-10 py-6 lg:py-8">
+  <div class="w-full space-y-8">
+
+    <app-breadcrumb [itens]="[{label:'Início',rota:'/dashboard'},{label:'Marketing'},{label:'Gerente'}]"></app-breadcrumb>
+
+    <app-page-header titulo="Gerente de marketing" subtitulo="O plano da semana, feito com os seus números.">
+      <a acoes routerLink="/marketing/insights" class="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
+        <span class="material-symbols-outlined text-sm">insights</span>
+        Insights
+      </a>
+    </app-page-header>
+
+    @if (carregando()) {
+      <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 h-96 animate-pulse" aria-label="Montando o plano"></div>
+    } @else if (erro()) {
+      <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-3">
+        <p role="alert" class="text-sm text-red-600">{{ erro() }}</p>
+        <div class="flex items-center gap-4">
+          <a routerLink="/marketing/estrategia" class="text-sm font-semibold text-primary hover:underline">Abrir Estratégia editorial</a>
+          <button type="button" (click)="carregar()" class="text-sm font-semibold text-primary hover:underline">Tentar de novo</button>
+        </div>
+      </div>
+    } @else if (plano(); as p) {
+      @if (!p.habilitado) {
+        <p role="status" class="text-sm text-slate-500">Marketing indisponível para esta empresa.</p>
+      } @else {
+        <p class="text-sm text-slate-600 dark:text-slate-300">Plano de <strong>{{ p.inicio | date:'dd/MM' }}</strong> a <strong>{{ p.fim | date:'dd/MM' }}</strong> · {{ p.postagens.length }} postagens sugeridas</p>
+
+        @if (p.avisos.length) {
+          <div role="status" class="rounded-xl border border-amber-200 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-900/20 p-4 space-y-1 text-sm text-amber-800 dark:text-amber-200">
+            @for (a of p.avisos; track a) { <p>{{ a }}</p> }
+          </div>
+        }
+
+        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-4">
+          <h2 class="font-bold text-slate-900 dark:text-white">O que os seus números dizem</h2>
+          <ul class="space-y-4">
+            @for (d of p.diagnostico; track d.titulo) {
+              <li>
+                <p class="text-sm font-bold text-slate-900 dark:text-white">{{ d.titulo }}@if (d.hipotese) { <span class="ml-2 px-2 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200">hipótese</span> }</p>
+                <p class="text-sm text-slate-600 dark:text-slate-300">{{ d.detalhe }}</p>
+                <p class="text-xs text-slate-500">{{ d.evidencia }}</p>
+              </li>
+            } @empty {
+              <li class="text-sm text-slate-500">Ainda não há dados suficientes para um diagnóstico.</li>
+            }
+          </ul>
+        </div>
+
+        @for (postagem of p.postagens; track postagem.data + postagem.hora + postagem.linha) {
+          <section class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-4">
+            <div class="space-y-1">
+              <h2 class="font-bold text-slate-900 dark:text-white">{{ diasSemana[postagem.diaSemana] }}, {{ postagem.data | date:'dd/MM' }} às {{ postagem.hora }}h · {{ postagem.linha }}</h2>
+              <p class="text-xs text-slate-500">{{ postagem.motivo }}</p>
+            </div>
+            <p class="text-sm text-slate-700 dark:text-slate-200">{{ postagem.ideia }}</p>
+            @if (postagem.manchete) {
+              <p class="text-sm text-slate-600 dark:text-slate-300">Assunto em alta: <strong>{{ postagem.manchete }}</strong>@if (postagem.fonte) { <span class="text-xs text-slate-500"> ({{ postagem.fonte }})</span> }</p>
+            }
+            @if (postagem.produtos.length) {
+              <ul class="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-3">
+                @for (produto of postagem.produtos; track produto.id) {
+                  <li class="space-y-1">
+                    @if (produto.imagemUrl) { <img [src]="produto.imagemUrl" [alt]="produto.nome" class="w-full aspect-square object-cover rounded-lg bg-slate-100 dark:bg-slate-800" /> }
+                    <p class="text-xs text-slate-600 dark:text-slate-300 line-clamp-2">{{ produto.nome }}</p>
+                  </li>
+                }
+              </ul>
+            }
+            <a routerLink="/marketing/criar" [queryParams]="parametros(postagem)" class="inline-block text-sm font-semibold text-primary hover:underline">Criar esta postagem</a>
+          </section>
+        } @empty {
+          <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6">
+            <p class="text-sm text-slate-500">Nenhuma postagem sugerida. Confira as linhas ativas e a participação em Estratégia editorial.</p>
+          </div>
+        }
+
+        @if (p.experimento; as e) {
+          <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-3">
+            <h2 class="font-bold text-slate-900 dark:text-white">Experimento da semana</h2>
+            <p class="text-sm text-slate-700 dark:text-slate-200">{{ e.hipotese }}</p>
+            <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
+              <div><dt class="text-xs font-semibold text-slate-500">O que muda</dt><dd>{{ e.variavel }}</dd></div>
+              <div><dt class="text-xs font-semibold text-slate-500">Como medir</dt><dd>{{ e.indicador }}</dd></div>
+              <div><dt class="text-xs font-semibold text-slate-500">Janela</dt><dd>{{ e.janelaDias }} dias</dd></div>
+              <div><dt class="text-xs font-semibold text-slate-500">Decisão</dt><dd>{{ e.decisao }}</dd></div>
+            </dl>
+          </div>
+        }
+        <p class="text-xs text-slate-500">Plano montado em {{ p.geradoEm | date:'dd/MM/yyyy HH:mm' }} com insights, catálogo, calendário e estratégia. As sugestões são ponto de partida: nada é criado sem você.</p>
+      }
+    }
+  </div>
+</div>

@@ -1,7 +1,7 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { SelectModule } from 'primeng/select';
 import { MultiSelectModule } from 'primeng/multiselect';
@@ -59,6 +59,7 @@ export class CriarPostagemComponent {
   private readonly categoriasService = inject(CategoriaService);
   private readonly produtosService = inject(ProdutosService);
   private readonly insights = inject(InsightsService);
+  private readonly rota = inject(ActivatedRoute);
   private readonly assuntosService = inject(AssuntosEmAltaService);
   readonly assuntosEmAlta = signal<AssuntoEmAlta[]>([]);
   readonly carregandoAssuntos = signal(false);
@@ -488,9 +489,19 @@ export class CriarPostagemComponent {
       next: res => {
         const estrategia = res.dados;
         if (estrategia?.habilitado) this.linhas.set(estrategia.linhas.filter(l => l.ativa));
+        this.aplicarSugestaoDoGerente();
       },
       error: () => this.linhas.set([])
     });
+  }
+
+  private aplicarSugestaoDoGerente(): void {
+    const parametros = this.rota.snapshot.queryParamMap;
+    const linha = parametros.get('linha');
+    if (!linha || !this.linhas().some(l => l.nome === linha)) return;
+    this.aoEscolherTipo(linha);
+    const assunto = parametros.get('assunto');
+    if (assunto) this.assunto.set(assunto.slice(0, 300));
   }
 
   private carregarDestinos(): void {

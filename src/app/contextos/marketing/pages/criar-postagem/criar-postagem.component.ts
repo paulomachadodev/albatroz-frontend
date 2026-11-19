@@ -12,6 +12,7 @@ import { PageHeaderComponent } from '../../../../shared/components/page-header/p
 import { SelectBuscaMultiComponent } from '../../../../shared/components/select-busca-multi/select-busca-multi.component';
 import { OpcaoSelectBusca } from '../../../../shared/components/select-busca/select-busca.component';
 import { PT_MULTISELECT } from '../../../../shared/utils/pt-multiselect';
+import { PT_SELECT_FILTRO } from '../../../../shared/utils/pt-select-filtro';
 import { CategoriaService } from '../../../../shared/services/categoria.service';
 import { CategoriaArvoreNo } from '../../../../shared/models/categoria-arvore.model';
 import { PERFIL_SELECT_PT } from '../../../administracao/configuracoes/models/perfil-social.model';
@@ -70,13 +71,7 @@ export class CriarPostagemComponent {
 
   readonly selectPt = PERFIL_SELECT_PT;
   readonly multiselectPt = PT_MULTISELECT;
-  readonly selectCategoriaPt = {
-    ...PERFIL_SELECT_PT,
-    overlay: 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg mt-1 z-50 overflow-hidden',
-    header: 'p-2 border-b border-slate-100 dark:border-slate-700',
-    pcFilter: { root: 'w-full px-3 py-2 bg-slate-100 dark:bg-slate-900 border-none rounded-lg text-sm outline-none' },
-    list: 'py-1 max-h-64 overflow-y-auto'
-  };
+  readonly selectCategoriaPt = PT_SELECT_FILTRO;
   readonly titulosPasso = TITULOS_PASSO;
   readonly statusPublicacao = STATUS_PUBLICACAO;
   readonly buscarProdutos = this.marketing.buscarProdutos;

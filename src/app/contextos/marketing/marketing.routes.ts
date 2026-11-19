@@ -3,6 +3,8 @@ import { permissaoGuard } from '../../core/auth/permissao.guard';
 import { configuracaoAlteradaGuard } from '../administracao/configuracoes/pages/configuracoes-pagina/configuracao-formulario.base';
 
 export const MARKETING_ROUTES: Routes = [
+  { path: 'rotinas', canActivate: [permissaoGuard], data: { permissao: 'marketing:ler' }, title: 'Rotinas de marketing', loadComponent: () => import('./pages/rotinas/rotinas.component').then(m => m.RotinasMarketingComponent) },
+  { path: 'aprovacoes', canActivate: [permissaoGuard], data: { permissao: 'marketing:ler' }, title: 'Aprovações de marketing', loadComponent: () => import('./pages/aprovacoes/aprovacoes.component').then(m => m.AprovacoesMarketingComponent) },
   { path: 'criar', canActivate: [permissaoGuard], data: { permissao: 'marketing:criar' }, title: 'Criar postagem', loadComponent: () => import('./pages/criar-postagem/criar-postagem.component').then(m => m.CriarPostagemComponent) },
   { path: 'insights', canActivate: [permissaoGuard], data: { permissao: 'marketing:ler' }, title: 'Insights do Instagram', loadComponent: () => import('./pages/insights/insights.component').then(m => m.InsightsMarketingComponent) },
   { path: 'briefings/:id/geracoes', canActivate: [permissaoGuard], data: { permissao: 'marketing:ler' }, title: 'Gerações de texto', loadComponent: () => import('./pages/geracoes-briefing/geracoes-briefing.component').then(m => m.GeracoesBriefingComponent) },

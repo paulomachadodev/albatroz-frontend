@@ -43,6 +43,7 @@ Decidida pelo usuário em 2026-11-18, depois de dois erros seguidos na tela Estr
 | `p-select` (lista fixa) | `PERFIL_SELECT_PT` | `contextos/administracao/configuracoes/models/perfil-social.model.ts` |
 | `p-toggleSwitch` | `PT_TOGGLE` (e `PT_TOGGLE_SELECIONAR`, menor, para seleção em tabela) | `shared/utils/pt-toggle.ts` e `contextos/balanco/utils/pt-toggle-selecionar.util.ts` |
 | `p-select` de categoria | `PT_SELECT_CATEGORIA` | `contextos/balanco/utils/categoria-select.util.ts` |
+| `p-select` com busca (lista longa) | `PT_SELECT_FILTRO` | `shared/utils/pt-select-filtro.ts`. Usar com `[filter]="true"` |
 
 Pendência de organização: mover `PERFIL_SELECT_PT`, `PT_TOGGLE_SELECIONAR` e `PT_SELECT_CATEGORIA` para `shared/utils/` na próxima vez que alguém mexer neles.
 

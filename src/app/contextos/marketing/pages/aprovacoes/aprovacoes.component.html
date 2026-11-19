@@ -1,0 +1,77 @@
+<div class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark px-4 sm:px-6 lg:px-8 xl:px-10 py-6 lg:py-8">
+  <div class="w-full space-y-8">
+
+    <app-breadcrumb [itens]="[{label:'Início',rota:'/dashboard'},{label:'Marketing'},{label:'Aprovações'}]"></app-breadcrumb>
+
+    <app-page-header titulo="Aprovações" subtitulo="Postagens preparadas pelas rotinas. Aprovou, já fica agendado.">
+      <a acoes routerLink="/marketing/rotinas" class="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
+        <span class="material-symbols-outlined text-sm">event_repeat</span>
+        Rotinas
+      </a>
+    </app-page-header>
+
+    @if (carregando()) {
+      <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 h-96 animate-pulse" aria-label="Carregando aprovações"></div>
+    } @else if (erro()) {
+      <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-3">
+        <p role="alert" class="text-sm text-red-600">{{ erro() }}</p>
+        <button type="button" (click)="carregar()" class="text-sm font-semibold text-primary hover:underline">Tentar de novo</button>
+      </div>
+    } @else if (!habilitado()) {
+      <p role="status" class="text-sm text-slate-500">Marketing indisponível para esta empresa.</p>
+    } @else {
+      <p class="text-sm text-slate-600 dark:text-slate-300">Estado: <strong>{{ aguardando().length }} aguardando aprovação</strong>@if (emPreparo() > 0) { · {{ emPreparo() }} em preparo }</p>
+
+      @for (item of aguardando(); track item.execucaoId) {
+        <section class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-6">
+          <div class="space-y-1">
+            <h2 class="font-bold text-slate-900 dark:text-white">{{ item.rotina }}</h2>
+            <p class="text-sm text-slate-600 dark:text-slate-300">Sai em <strong>{{ item.previstoPara | date:'dd/MM/yyyy HH:mm' }}</strong> · {{ item.destinos.join(' e ') }}</p>
+          </div>
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            @if (item.artes.length) {
+              <ul class="grid grid-cols-2 lg:grid-cols-1 gap-3 lg:col-span-1">
+                @for (a of item.artes; track a.id) {
+                  <li><img [src]="a.url" alt="Arte da postagem" class="w-full rounded-lg bg-slate-100 dark:bg-slate-800" /></li>
+                }
+              </ul>
+            }
+            <div class="space-y-3 lg:col-span-2 text-sm">
+              <p class="whitespace-pre-line text-slate-800 dark:text-slate-100">{{ item.conteudo?.legenda }}</p>
+              @if (item.conteudo?.cta) { <p class="text-slate-600 dark:text-slate-300">{{ item.conteudo?.cta }}</p> }
+              @if (item.conteudo?.hashtags?.length) { <p class="text-xs text-primary break-words">{{ item.conteudo?.hashtags?.join(' ') }}</p> }
+              @if (item.pecaId) { <a [routerLink]="['/marketing/pecas', item.pecaId]" class="inline-block text-xs font-semibold text-primary hover:underline">Editar o texto na peça</a> }
+            </div>
+          </div>
+          @if (podeAprovar()) {
+            <div class="flex flex-wrap items-center gap-4">
+              <button type="button" (click)="aprovar(item)" [disabled]="processando() !== null" class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all">{{ processando() === item.execucaoId ? 'Aprovando...' : 'Aprovar e agendar' }}</button>
+              <button type="button" (click)="descartar(item)" [disabled]="processando() !== null" class="text-sm font-semibold text-red-600 hover:underline disabled:opacity-50">Descartar</button>
+            </div>
+          }
+        </section>
+      } @empty {
+        <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-2">
+          <p class="font-bold text-slate-900 dark:text-white">Nada para aprovar agora</p>
+          <p class="text-sm text-slate-600 dark:text-slate-300">As rotinas preparam o rascunho com antecedência. Quando ele ficar pronto, aparece aqui.</p>
+          <a routerLink="/marketing/rotinas" class="inline-block text-sm font-semibold text-primary hover:underline">Ver rotinas</a>
+        </div>
+      }
+
+      @if (falhas().length) {
+        <section class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-4">
+          <h2 class="font-bold text-slate-900 dark:text-white">Não foi possível preparar</h2>
+          <ul class="space-y-3">
+            @for (item of falhas(); track item.execucaoId) {
+              <li class="text-sm">
+                <p class="font-semibold text-slate-900 dark:text-slate-100">{{ item.rotina }} · {{ item.previstoPara | date:'dd/MM/yyyy HH:mm' }}</p>
+                <p role="alert" class="text-red-600">{{ item.mensagemErro }}</p>
+                @if (podeAprovar()) { <button type="button" (click)="descartar(item)" [disabled]="processando() !== null" class="text-xs font-semibold text-slate-500 hover:underline">Dispensar aviso</button> }
+              </li>
+            }
+          </ul>
+        </section>
+      }
+    }
+  </div>
+</div>

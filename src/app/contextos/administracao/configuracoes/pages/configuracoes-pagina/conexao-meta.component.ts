@@ -35,6 +35,8 @@ export class ConexaoMetaComponent {
   readonly selecao = signal<Set<number>>(new Set());
   readonly confirmarDesconexao = signal(false);
   readonly uriCopiada = signal(false);
+  readonly editandoApp = signal(false);
+  readonly mostrarFormulario = computed(() => !this.aplicativo()?.configurado || this.editandoApp());
   readonly situacoes = SITUACOES_CONEXAO;
   readonly tipos = TIPOS_ATIVO;
   readonly form = inject(FormBuilder).nonNullable.group({
@@ -98,7 +100,7 @@ export class ConexaoMetaComponent {
     }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: res => {
         this.ocupado.set(false);
-        if (res.sucesso && res.dados) { this.receberAplicativo(res.dados); this.toast.sucesso('Aplicativo Meta salvo.'); }
+        if (res.sucesso && res.dados) { this.receberAplicativo(res.dados); this.editandoApp.set(false); this.toast.sucesso('Aplicativo Meta salvo.'); }
         else this.toast.erro('Não foi possível salvar o aplicativo.');
       },
       error: erro => { this.ocupado.set(false); this.toast.erroServidor(erro, 'Não foi possível salvar o aplicativo.'); }

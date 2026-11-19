@@ -1,96 +1,98 @@
-<section class="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 space-y-6" aria-labelledby="meta-titulo">
-  <div>
-    <h2 id="meta-titulo" class="text-lg font-bold">Facebook e Instagram (Meta)</h2>
-    <p class="text-sm text-slate-500">Conecte a Página e o Instagram profissional da empresa. Nada é publicado nesta etapa: a conexão só identifica as contas e as permissões concedidas.</p>
+<section class="rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 space-y-6" aria-labelledby="meta-titulo">
+  <div class="flex flex-wrap items-center justify-between gap-2">
+    <h2 id="meta-titulo" class="text-lg font-bold">Facebook e Instagram</h2>
+    @if (!carregando() && habilitado()) {
+      <span class="text-xs font-bold px-2 py-1 rounded-full" [class]="conexao() ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' : 'bg-slate-100 text-slate-500 dark:bg-slate-800'">{{ conexao() ? situacoes[conexao()!.situacao] : 'Não conectado' }}</span>
+    }
   </div>
   @if (carregando()) {
     <div class="h-32 animate-pulse bg-slate-100 dark:bg-slate-800 rounded-xl"></div>
   } @else if (!habilitado()) {
     <p role="status" class="text-sm text-slate-500">Conexão com a Meta indisponível no momento.</p>
-  } @else {
+  } @else if (mostrarFormulario()) {
     <form [formGroup]="form" (ngSubmit)="salvarAplicativo()" class="space-y-4">
-      <h3 class="font-semibold">1. Aplicativo Meta da empresa</h3>
-      <p class="text-sm text-slate-500">Cada empresa usa o próprio aplicativo, criado em developers.facebook.com. O App Secret é guardado cifrado e nunca é exibido de volta.</p>
-      <div class="grid gap-4 md:grid-cols-3">
+      <p class="text-sm text-slate-500">Informe o aplicativo Meta da empresa. O App Secret fica cifrado e nunca é exibido.</p>
+      <div class="grid gap-4 md:grid-cols-2">
         <div>
           <label for="meta-app-id" class="text-xs font-semibold text-slate-500">App ID</label>
           <input id="meta-app-id" formControlName="appId" inputmode="numeric" maxlength="30" autocomplete="off" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm" />
         </div>
         <div>
           <label for="meta-app-secret" class="text-xs font-semibold text-slate-500">App Secret</label>
-          <input id="meta-app-secret" formControlName="appSecret" type="password" maxlength="128" autocomplete="new-password" spellcheck="false" [placeholder]="aplicativo()?.segredoConfigurado ? 'Configurado. Deixe em branco para manter' : 'Cole o segredo do aplicativo'" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm" />
-        </div>
-        <div>
-          <label for="meta-config-id" class="text-xs font-semibold text-slate-500">ID da configuração (opcional)</label>
-          <input id="meta-config-id" formControlName="configId" inputmode="numeric" maxlength="40" autocomplete="off" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm" />
+          <input id="meta-app-secret" formControlName="appSecret" type="password" maxlength="128" autocomplete="new-password" spellcheck="false" [placeholder]="aplicativo()?.segredoConfigurado ? 'Deixe em branco para manter' : ''" class="mt-1 w-full rounded-lg bg-slate-100 dark:bg-slate-800 px-3 py-2 text-sm" />
         </div>
       </div>
       @if (form.invalid && form.touched) {
-        <p role="alert" class="text-sm text-red-600">Confira o App ID (só números), o App Secret (sem espaços) e o ID da configuração (só números).</p>
+        <p role="alert" class="text-sm text-red-600">Confira o App ID (só números) e o App Secret (sem espaços).</p>
       }
-      @if (podeEditar()) {
-        <button type="submit" [disabled]="ocupado() || form.invalid" class="px-4 py-2 rounded-lg bg-primary text-white text-sm font-bold">Salvar aplicativo</button>
-      }
+      <div class="flex flex-wrap items-center gap-4">
+        @if (podeEditar()) {
+          <button type="submit" [disabled]="ocupado() || form.invalid" class="px-4 py-2 rounded-lg bg-primary text-white text-sm font-bold">Salvar</button>
+        }
+        @if (aplicativo()?.configurado) {
+          <button type="button" (click)="editandoApp.set(false)" class="text-sm font-semibold text-slate-500 hover:underline">Cancelar</button>
+        }
+      </div>
       <details class="text-sm text-slate-600 dark:text-slate-300">
-        <summary class="font-semibold text-primary cursor-pointer">Como preencher no painel da Meta</summary>
+        <summary class="font-semibold text-primary cursor-pointer">Onde encontro isso?</summary>
         <ol class="mt-3 list-decimal pl-5 space-y-2">
-          <li>Crie um aplicativo do tipo Empresa em developers.facebook.com, no portfólio empresarial da empresa, com os casos de uso "Gerenciar tudo na sua Página" e "Gerenciar mensagens e conteúdo no Instagram".</li>
-          <li>Em Login do Facebook para Empresas, Configurações, cadastre este endereço em "URIs de redirecionamento do OAuth válidos":
+          <li>Em developers.facebook.com, crie um aplicativo do tipo Empresa com os casos de uso de Página e de Instagram.</li>
+          <li>Em Login do Facebook para Empresas, cadastre este endereço como URI de redirecionamento:
             <span class="mt-1 flex flex-wrap items-center gap-2">
               <code class="break-all rounded bg-slate-100 dark:bg-slate-800 px-2 py-1 text-xs">{{ aplicativo()?.uriRetorno }}</code>
               <button type="button" (click)="copiarUri()" class="text-xs font-bold text-primary">{{ uriCopiada() ? 'Copiado' : 'Copiar' }}</button>
             </span>
           </li>
-          <li>Em Configurações do app, Básico, copie o App ID e o App Secret para os campos acima.</li>
-          <li>Permissões solicitadas na conexão:
-            @for (escopo of aplicativo()?.escoposSolicitados ?? []; track escopo) { <code class="text-xs">{{ escopo }}</code>{{ $last ? '.' : ', ' }} }
-          </li>
-          <li>Em modo de desenvolvimento, só quem tem função no aplicativo (administrador, desenvolvedor ou testador) consegue conectar.</li>
+          <li>Em Configurações do app, Básico, copie o App ID e o App Secret.</li>
         </ol>
       </details>
     </form>
-
+  } @else if (!conexao()) {
     <div class="space-y-4">
-      <h3 class="font-semibold">2. Conexão</h3>
-      @if (!conexao()) {
-        <p class="text-sm text-slate-500">Nenhuma conta conectada.</p>
+      <p class="text-sm text-slate-500">Conecte a Página e o Instagram profissional da empresa para publicar.</p>
+      <div class="flex flex-wrap items-center gap-4">
         @if (podeCriar()) {
-          <button type="button" (click)="conectar()" [disabled]="ocupado() || !aplicativo()?.configurado" class="px-4 py-2 rounded-lg bg-primary text-white text-sm font-bold">Conectar com a Meta</button>
+          <button type="button" (click)="conectar()" [disabled]="ocupado()" class="px-4 py-2 rounded-lg bg-primary text-white text-sm font-bold">Conectar com a Meta</button>
         }
-        @if (!aplicativo()?.configurado) {
-          <p class="text-xs text-amber-700 dark:text-amber-300">Salve o aplicativo antes de conectar.</p>
+        @if (podeEditar()) {
+          <button type="button" (click)="editandoApp.set(true)" class="text-sm font-semibold text-slate-500 hover:underline">Alterar aplicativo</button>
         }
-      } @else {
-        <div class="text-sm space-y-1">
-          <p><span class="font-semibold">{{ conexao()!.nome }}</span> · {{ situacoes[conexao()!.situacao] }}</p>
-          <p class="text-xs text-slate-500">Validada em {{ conexao()!.validadaEm | date:'dd/MM/yyyy HH:mm' }} local@if (conexao()!.expiraEm) { · expira em {{ conexao()!.expiraEm | date:'dd/MM/yyyy' }} }</p>
-          @if (conexao()!.escoposAusentes.length) {
-            <p role="alert" class="text-amber-700 dark:text-amber-300">Autorização parcial: faltou conceder {{ conexao()!.escoposAusentes.join(', ') }}. Reconecte e aceite todas as permissões.</p>
-          }
-        </div>
-        <fieldset [disabled]="ocupado() || !podeEditar()" class="space-y-2">
-          <legend class="text-xs font-semibold text-slate-500">Ativos da empresa</legend>
-          @for (ativo of conexao()!.ativos; track ativo.id) {
-            <label class="flex items-start gap-2 text-sm">
-              <input type="checkbox" [checked]="selecao().has(ativo.id)" (change)="alternar(ativo.id)" class="mt-1" />
-              <span>{{ tipos[ativo.tipo] }} · {{ ativo.nome }}@if (ativo.usuario) { <span class="text-slate-500"> (&#64;{{ ativo.usuario }})</span> }</span>
-            </label>
-          } @empty {
-            <p class="text-sm text-slate-500">Nenhuma Página ou Instagram profissional encontrado. Confirme que a conta é administradora da Página e que o Instagram é profissional e está vinculado a ela.</p>
-          }
-        </fieldset>
-        <div class="flex flex-wrap gap-2">
-          @if (podeEditar()) {
-            <button type="button" (click)="salvarSelecao()" [disabled]="ocupado() || !selecaoAlterada()" class="px-4 py-2 rounded-lg bg-primary text-white text-sm font-bold">Salvar seleção</button>
-          }
-          @if (podeCriar()) {
-            <button type="button" (click)="conectar()" [disabled]="ocupado()" class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-sm font-bold">Reconectar</button>
-          }
-          @if (podeExcluir()) {
-            <button type="button" (click)="confirmarDesconexao.set(true)" [disabled]="ocupado()" class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-sm font-bold text-red-600">Desconectar</button>
-          }
-        </div>
-      }
+      </div>
+    </div>
+  } @else {
+    <div class="space-y-6">
+      <div class="text-sm">
+        <p class="font-semibold">{{ conexao()!.nome }}</p>
+        <p class="text-xs text-slate-500">Validada em {{ conexao()!.validadaEm | date:'dd/MM/yyyy HH:mm' }}@if (conexao()!.expiraEm) { · expira em {{ conexao()!.expiraEm | date:'dd/MM/yyyy' }} }</p>
+        @if (conexao()!.escoposAusentes.length) {
+          <p role="alert" class="mt-2 text-amber-700 dark:text-amber-300">Faltou conceder algumas permissões. Reconecte e aceite todas.</p>
+        }
+      </div>
+      <fieldset [disabled]="ocupado() || !podeEditar()" class="space-y-2">
+        <legend class="text-xs font-semibold text-slate-500 mb-2">Contas usadas pela empresa</legend>
+        @for (ativo of conexao()!.ativos; track ativo.id) {
+          <label class="flex items-start gap-2 text-sm">
+            <input type="checkbox" [checked]="selecao().has(ativo.id)" (change)="alternar(ativo.id)" class="mt-1" />
+            <span>{{ tipos[ativo.tipo] }} · {{ ativo.nome }}@if (ativo.usuario) { <span class="text-slate-500"> (&#64;{{ ativo.usuario }})</span> }</span>
+          </label>
+        } @empty {
+          <p class="text-sm text-slate-500">Nenhuma Página ou Instagram profissional encontrado. Confirme que a conta administra a Página e que o Instagram é profissional e está vinculado a ela.</p>
+        }
+      </fieldset>
+      <div class="flex flex-wrap items-center gap-4">
+        @if (podeEditar() && selecaoAlterada()) {
+          <button type="button" (click)="salvarSelecao()" [disabled]="ocupado()" class="px-4 py-2 rounded-lg bg-primary text-white text-sm font-bold">Salvar seleção</button>
+        }
+        @if (podeCriar()) {
+          <button type="button" (click)="conectar()" [disabled]="ocupado()" class="text-sm font-semibold text-primary hover:underline">Reconectar</button>
+        }
+        @if (podeEditar()) {
+          <button type="button" (click)="editandoApp.set(true)" class="text-sm font-semibold text-slate-500 hover:underline">Alterar aplicativo</button>
+        }
+        @if (podeExcluir()) {
+          <button type="button" (click)="confirmarDesconexao.set(true)" [disabled]="ocupado()" class="text-sm font-semibold text-red-600 hover:underline">Desconectar</button>
+        }
+      </div>
     </div>
   }
 </section>

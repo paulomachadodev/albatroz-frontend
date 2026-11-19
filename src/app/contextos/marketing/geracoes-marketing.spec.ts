@@ -20,7 +20,7 @@ function geracao(status = 3): GeracaoMarketing {
   return { id: '00000000-0000-0000-0000-000000000001', briefingId: 11, status, criadoEmUtc: '2026-11-18T12:00:00Z', atualizadoEmUtc: '2026-11-18T12:00:00Z', marcaVersao: 'marca-congelada', estrategiaVersao: 'estrategia-congelada', briefingVersao: 'briefing-congelado', erro: null, resultado: status === 3 ? { legenda: '<script>conteúdo literal</script>', cta: 'Conheça a empresa', hashtags: ['#ideias'], ideiaVisual: 'Usar imagem autorizada', roteiro: ['Apresentar a ideia', 'Convidar para conhecer'] } : null };
 }
 
-const briefing: Briefing = { id: 11, status: 2, versao: 'briefing-congelado', assunto: 'Apresentação dos serviços', objetivo: 'Reconhecimento', publico: '', linha: '', produtoServico: '', oferta: '', formato: 'Post', rede: 'Instagram', referencias: '', prazo: null, criadoEm: '2026-11-18T12:00:00Z', atualizadoEm: '2026-11-18T12:00:00Z' };
+const briefing: Briefing = { produtos: [], id: 11, status: 2, versao: 'briefing-congelado', assunto: 'Apresentação dos serviços', objetivo: 'Reconhecimento', publico: '', linha: '', produtoServico: '', oferta: '', formato: 'Post', rede: 'Instagram', referencias: '', prazo: null, criadoEm: '2026-11-18T12:00:00Z', atualizadoEm: '2026-11-18T12:00:00Z' };
 
 describe('Geração de texto Marketing', () => {
   const empresa = signal(1);

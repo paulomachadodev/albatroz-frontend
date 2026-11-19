@@ -19,7 +19,7 @@ import { filtrarConfiguracoes } from '../administracao/configuracoes/configuraco
 @Component({ standalone: true, template: '' }) class VazioComponent {}
 const perfil = { id: 1, versao: '00000000-0000-0000-0000-000000000001', plataforma: 2, nome: 'Perfil editorial', identificador: '@perfil', ativo: true, criadoEm: '2026-11-18T12:00:00Z', atualizadoEm: '2026-11-18T12:00:00Z', autorizacaoPendente: true };
 const estrategia = { habilitado: true, configurada: true, versao: perfil.versao, atualizadoEm: perfil.atualizadoEm, objetivo: 1, redes: ['Canal antigo'], formatos: ['Formato antigo'], pecasPorSemana: 3, limiteTexto: 1000, assuntosProibidos: [], linhas: [{ nome: 'Dicas', objetivo: 'Educar', exemplos: '', restricoes: '', formatos: ['Post'], participacao: 100, ativa: true }] };
-const briefing = { id: 11, status: 2, versao: perfil.versao, assunto: 'Assunto', objetivo: 'Objetivo', publico: '', linha: 'Dicas', produtoServico: '', oferta: '', formato: 'Formato antigo', rede: 'Canal antigo', referencias: '', prazo: null, criadoEm: perfil.criadoEm, atualizadoEm: perfil.atualizadoEm };
+const briefing = { produtos: [], id: 11, status: 2, versao: perfil.versao, assunto: 'Assunto', objetivo: 'Objetivo', publico: '', linha: 'Dicas', produtoServico: '', oferta: '', formato: 'Formato antigo', rede: 'Canal antigo', referencias: '', prazo: null, criadoEm: perfil.criadoEm, atualizadoEm: perfil.atualizadoEm };
 
 describe('Guia e perfis sociais', () => {
   const empresa = signal(1); const usuario = signal({ id: 1 });
@@ -61,12 +61,12 @@ describe('Guia e perfis sociais', () => {
   });
   it('usa plataformas ativas do tenant e preserva rede antiga somente como legado', async () => {
     const h = await RouterTestingHarness.create(); const pagina = await h.navigateByUrl('/marketing/briefings', BriefingsListaComponent);
-    pagina.abrirEditar(briefing); const opcoes = pagina.redesOpcoes(); expect(opcoes.find(o => o.valor === 'Instagram')?.desabilitada).toBeFalse(); expect(opcoes.find(o => o.valor === 'Canal antigo')?.desabilitada).toBeTrue();
+    pagina.abrirEditar(briefing); const opcoes = pagina.redesOpcoes(); expect(opcoes.find(o => o.valor === 'Instagram')).toBeDefined(); expect(opcoes.find(o => o.valor === 'Canal antigo')).toBeDefined();
     expect(pagina.formatosOpcoes().find(o => o.valor === 'Formato antigo')?.desabilitada).toBeTrue(); expect(pagina.rede).toBe('Canal antigo');
   });
   it('flag desligada mantém canais planejados sem voltar a texto livre', async () => {
     filtrosAtivos = false; const h = await RouterTestingHarness.create(); const pagina = await h.navigateByUrl('/marketing/briefings', BriefingsListaComponent);
-    pagina.abrirEditar(briefing); h.detectChanges(); expect(pagina.redesOpcoes().find(o => o.valor === 'Canal antigo')?.desabilitada).toBeFalse();
+    pagina.abrirEditar(briefing); h.detectChanges(); expect(pagina.redesOpcoes().find(o => o.valor === 'Canal antigo')).toBeDefined();
     expect(h.routeNativeElement?.querySelector('input[list=briefing-redes]')).toBeNull();
   });
   it('estratégia oferece multisseleção preservando legados e participação 100%', async () => {

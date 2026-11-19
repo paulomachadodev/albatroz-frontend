@@ -68,7 +68,7 @@ describe('Artes da peça', () => {
     const { fixture, texto } = montar();
     expect(api.listar).toHaveBeenCalledWith(5);
     expect(texto()).toContain('Volta às aulas');
-    expect(texto()).toContain('Sem imagem aprovada');
+    expect(texto()).toContain('Aprove uma arte para poder publicar');
     expect(fixture.componentInstance.aprovada).toBeFalse();
     expect(fixture.nativeElement.querySelector('img')!.getAttribute('src')).toBe('https://cdn.exemplo.com/a.png');
   });

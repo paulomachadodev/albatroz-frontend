@@ -57,6 +57,7 @@ export const MENU_CATALOGO: ItemMenu[] = [
     { id: 'naturezas', label: 'Naturezas de operação', rota: '/fiscal/naturezas-operacao', permissao: 'configuracoes:ler' }
   ] },
   { id: 'marketing', label: 'Marketing', icone: 'campaign', filhos: [
+    { id: 'marketing-criar', label: 'Criar postagem', rota: '/marketing/criar', permissao: 'marketing:criar' },
     { id: 'marketing-estrategia', label: 'Estratégia editorial', rota: '/marketing/estrategia', permissao: 'marketing:ler' },
     { id: 'marketing-briefings', label: 'Briefings', rota: '/marketing/briefings', permissao: 'marketing:ler' },
     { id: 'marketing-pecas', label: 'Peças', rota: '/marketing/pecas', permissao: 'marketing:ler' },

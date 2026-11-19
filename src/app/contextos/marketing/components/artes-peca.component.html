@@ -58,6 +58,12 @@
             <button type="button" (click)="publicar()" [disabled]="processando() || destinoIds().length === 0" class="px-4 py-2 rounded-lg bg-primary text-white text-sm font-bold">{{ processando() ? 'Publicando...' : 'Publicar' }}</button>
           </div>
         }
+        @if (podeOferecerMarcacao()) {
+          <label class="flex items-center gap-2 text-sm">
+            <input type="checkbox" [checked]="marcarProdutos()" (change)="marcarProdutos.set(!marcarProdutos())" />
+            <span>Marcar os produtos no Instagram</span>
+          </label>
+        }
         @for (p of publicacoes(); track p.id) {
           <p class="text-xs text-slate-600 dark:text-slate-300">{{ p.nomeAtivo }} · {{ statusPublicacao[p.status] }}@if (p.permalink) { · <a [href]="p.permalink" target="_blank" rel="noopener noreferrer" class="font-bold text-primary">Abrir</a> }@if (p.mensagemErro) { · {{ p.mensagemErro }} }</p>
         }
@@ -80,10 +86,14 @@
       @if (usaFoto()) {
         <div>
           <span class="text-xs font-semibold text-slate-500">Produto</span>
-          <app-select-busca [valorSelecionado]="produto()" placeholder="Digite o nome ou o código do produto" [buscar]="buscarProdutos" (selecionado)="produto.set($event)" />
+          @if (produtosDaPeca().length > 0) {
+            <p-select [unstyled]="true" [pt]="selectPt" [options]="opcoesProduto()" optionLabel="rotulo" optionValue="id" [ngModel]="escolhaProduto()" (ngModelChange)="escolhaProduto.set($event)" [ngModelOptions]="{ standalone: true }" appendTo="body" class="block mt-1" />
+          } @else {
+            <app-select-busca [valorSelecionado]="produto()" placeholder="Digite o nome ou o código do produto" [buscar]="buscarProdutos" (selecionado)="produto.set($event)" />
+          }
         </div>
       }
-      @if (usaFoto()) {
+      @if (usaFoto() && (produtosDaPeca().length === 0 || escolhaProduto() !== 0)) {
         <label class="flex items-start gap-2 text-sm">
           <input type="checkbox" formControlName="todasFotos" class="mt-1" />
           <span>Uma arte para cada foto do produto (carrossel)</span>

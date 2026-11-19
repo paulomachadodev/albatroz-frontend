@@ -1,5 +1,7 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, map, of } from 'rxjs';
+import { OpcaoSelectBusca } from '../../../shared/components/select-busca/select-busca.component';
+import { ProdutosService } from '../../produtos/services/produtos.service';
 import { ApiService } from '../../../core/http/api.service';
 import { Paginacao, Resultado } from '../../../core/models';
 import {
@@ -11,6 +13,14 @@ import {
 export class MarketingService {
   private readonly api = inject(ApiService);
   private readonly endpoint = '/v1/marketing';
+  private readonly produtos = inject(ProdutosService);
+
+  buscarProdutos = (termo: string): Observable<OpcaoSelectBusca[]> => {
+    const texto = termo.trim();
+    if (texto.length < 2) return of([]);
+    return this.produtos.listar({ pagina: 1, tamanho: 15 }, { texto, temImagem: true })
+      .pipe(map(res => (res.sucesso && res.dados ? res.dados.dados.map(p => ({ id: p.id, nome: `${p.nome} (${p.codigo})` })) : [])));
+  };
 
   obterEstrategia(): Observable<Resultado<EstrategiaEditorial>> {
     return this.api.get(`${this.endpoint}/estrategia-editorial`);

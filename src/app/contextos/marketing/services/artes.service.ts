@@ -4,7 +4,7 @@ import { ApiService } from '../../../core/http/api.service';
 import { Resultado } from '../../../core/models';
 import { OpcaoSelectBusca } from '../../../shared/components/select-busca/select-busca.component';
 import { ProdutosService } from '../../produtos/services/produtos.service';
-import { Arte, ArteRequisicao, ArtesLista } from '../models/arte.model';
+import { Arte, ArteProdutosRequisicao, ArteRequisicao, ArtesLista } from '../models/arte.model';
 
 @Injectable({ providedIn: 'root' })
 export class ArtesService {
@@ -14,6 +14,7 @@ export class ArtesService {
   listar(pecaId: number): Observable<Resultado<ArtesLista>> { return this.api.get(this.base(pecaId)); }
   gerar(pecaId: number, requisicao: ArteRequisicao): Observable<Resultado<Arte>> { return this.api.post(this.base(pecaId), requisicao); }
   gerarCarrossel(pecaId: number, requisicao: ArteRequisicao & { produtoId: number }): Observable<Resultado<Arte[]>> { return this.api.post(this.base(pecaId) + '/carrossel', requisicao); }
+  gerarCarrosselProdutos(pecaId: number, requisicao: ArteProdutosRequisicao): Observable<Resultado<Arte[]>> { return this.api.post(this.base(pecaId) + '/carrossel-produtos', requisicao); }
   aprovar(pecaId: number, id: number, versaoEsperada: string): Observable<Resultado<Arte>> { return this.api.post(`${this.base(pecaId)}/${id}/aprovacao`, { versaoEsperada }); }
   descartar(pecaId: number, id: number, versaoEsperada: string): Observable<Resultado<Arte>> { return this.api.post(`${this.base(pecaId)}/${id}/descarte`, { versaoEsperada }); }
 

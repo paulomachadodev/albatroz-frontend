@@ -18,13 +18,15 @@ import { PageHeaderComponent } from '../../../../shared/components/page-header/p
 import { Ordenacao, ThOrdenavelComponent } from '../../../../shared/components/th-ordenavel/th-ordenavel.component';
 import { Briefing, BriefingEdicao, STATUS_BRIEFING } from '../../models/marketing.model';
 import { MarketingService } from '../../services/marketing.service';
+import { SelectBuscaMultiComponent } from '../../../../shared/components/select-busca-multi/select-busca-multi.component';
+import { OpcaoSelectBusca } from '../../../../shared/components/select-busca/select-busca.component';
 
 type ModoDrawer = 'criar' | 'editar';
 
 @Component({
   selector: 'app-briefings-lista',
   standalone: true,
-  imports: [SelectModule, AjudaCampoComponent, MarketingGuiaComponent, RouterLink, FormsModule, DatePipe, ListagemPaginadaComponent, DrawerComponent, PageHeaderComponent, ThOrdenavelComponent, BreadcrumbComponent],
+  imports: [SelectModule, SelectBuscaMultiComponent, AjudaCampoComponent, MarketingGuiaComponent, RouterLink, FormsModule, DatePipe, ListagemPaginadaComponent, DrawerComponent, PageHeaderComponent, ThOrdenavelComponent, BreadcrumbComponent],
   templateUrl: './briefings-lista.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
@@ -80,6 +82,8 @@ export class BriefingsListaComponent implements OnInit {
   linha = '';
   assunto = '';
   produtoServico = '';
+  produtosSelecionados: OpcaoSelectBusca[] = [];
+  buscarProdutos = this.service.buscarProdutos;
   oferta = '';
   formato = '';
   rede = '';
@@ -94,7 +98,7 @@ export class BriefingsListaComponent implements OnInit {
         this.consulta?.unsubscribe(); this.escrita?.unsubscribe();
         this.itens.set([]); this.drawerAberto.set(false); this.briefingEmEdicao.set(null);
         this.linhasSugeridas.set([]); this.redesSugeridas.set([]); this.redesCadastradas.set([]);
-        this.objetivo = ''; this.publico = ''; this.linha = ''; this.assunto = ''; this.produtoServico = ''; this.oferta = ''; this.formato = ''; this.rede = ''; this.referencias = ''; this.prazo = '';
+        this.objetivo = ''; this.publico = ''; this.linha = ''; this.assunto = ''; this.produtoServico = ''; this.produtosSelecionados = []; this.oferta = ''; this.formato = ''; this.rede = ''; this.referencias = ''; this.prazo = '';
         this.carregando.set(false); this.salvando.set(false);
         queueMicrotask(() => { if (!this.destroyRef.destroyed) void this.router.navigate(['/dashboard'], { replaceUrl: true }); });
       }
@@ -196,6 +200,7 @@ export class BriefingsListaComponent implements OnInit {
     this.modoDrawer.set('criar');
     this.briefingEmEdicao.set(null);
     this.preencher({ objetivo: '', publico: '', linha: '', assunto: '', produtoServico: '', oferta: '', formato: '', rede: '', referencias: '', prazo: null }, 1);
+    this.produtosSelecionados = [];
     this.drawerAberto.set(true);
   }
 
@@ -204,6 +209,7 @@ export class BriefingsListaComponent implements OnInit {
     this.modoDrawer.set('editar');
     this.briefingEmEdicao.set(briefing);
     this.preencher(briefing, briefing.status);
+    this.produtosSelecionados = (briefing.produtos ?? []).map(p => ({ id: p.id, nome: `${p.nome} (${p.codigo})` }));
     this.drawerAberto.set(true);
   }
 
@@ -242,8 +248,9 @@ export class BriefingsListaComponent implements OnInit {
     });
   }
 
-  private montar(): BriefingEdicao {
+  private montar(): BriefingEdicao & { produtoIds: number[] } {
     return {
+      produtoIds: this.produtosSelecionados.map(p => Number(p.id)),
       objetivo: this.objetivo.trim(),
       publico: this.publico.trim(),
       linha: this.linha.trim(),

@@ -3,7 +3,9 @@ export interface Arte {
   titulo: string; subtitulo: string; url: string; largura: number; altura: number; status: number; ordem: number;
   aprovadaEm: string | null; arquivoDisponivel: boolean; arquivoRemovidoEm: string | null; criadoEm: string;
 }
-export interface ArtesLista { habilitado: boolean; versaoConteudoAtual: number; itens: Arte[]; }
+export interface ProdutoDaPeca { id: number; codigo: string; nome: string; }
+export interface ArtesLista { habilitado: boolean; versaoConteudoAtual: number; itens: Arte[]; produtos: ProdutoDaPeca[]; }
+export interface ArteProdutosRequisicao { formato: number; modelo: number; titulo: string; subtitulo: string; }
 export interface ArteRequisicao { formato: number; modelo: number; produtoId: number | null; titulo: string; subtitulo: string; }
 export const FORMATOS_ARTE = [
   { valor: 1, rotulo: 'Feed quadrado (1080 × 1080)' },

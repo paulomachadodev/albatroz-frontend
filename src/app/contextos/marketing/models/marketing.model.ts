@@ -58,12 +58,16 @@ export interface BriefingEdicao {
   prazo: string | null;
 }
 
+export interface ProdutoBriefing { id: number; codigo: string; nome: string; }
+
 export interface BriefingAtualizacao extends BriefingEdicao {
   status: number;
   versaoEsperada: string;
+  produtoIds: number[];
 }
 
 export interface Briefing extends BriefingEdicao {
+  produtos: ProdutoBriefing[];
   id: number;
   status: number;
   versao: string;

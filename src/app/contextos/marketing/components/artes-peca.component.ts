@@ -12,7 +12,7 @@ import { ConfirmService } from '../../../core/feedback/confirm.service';
 import { ModalComponent } from '../../../shared/components/modal/modal.component';
 import { OpcaoSelectBusca, SelectBuscaComponent } from '../../../shared/components/select-busca/select-busca.component';
 import { PERFIL_SELECT_PT } from '../../administracao/configuracoes/models/perfil-social.model';
-import { Arte, FORMATOS_ARTE, MODELOS_ARTE, STATUS_ARTE } from '../models/arte.model';
+import { Arte, FORMATOS_ARTE, MODELOS_ARTE, ProdutoDaPeca, STATUS_ARTE } from '../models/arte.model';
 import { ArtesService } from '../services/artes.service';
 import { PublicacoesService } from '../services/publicacoes.service';
 import { ConexaoMetaService } from '../../administracao/configuracoes/services/conexao-meta.service';
@@ -54,7 +54,17 @@ export class ArtesPecaComponent {
   readonly modal = signal(false);
   readonly publicacoes = signal<Publicacao[]>([]);
   readonly publicacaoHabilitada = signal(false);
-  readonly destinos = signal<{ id: number; rotulo: string }[]>([]);
+  readonly destinos = signal<{ id: number; rotulo: string; tipo: number }[]>([]);
+  readonly podeMarcarProdutos = signal(false);
+  readonly marcarProdutos = signal(true);
+  readonly produtosDaPeca = signal<ProdutoDaPeca[]>([]);
+  readonly escolhaProduto = signal(0);
+  readonly opcoesProduto = computed(() => {
+    const lista = this.produtosDaPeca().map(p => ({ id: p.id, rotulo: p.nome + ' (' + p.codigo + ')' }));
+    return lista.length > 1 ? [{ id: 0, rotulo: 'Todos os produtos (primeira foto de cada)' }, ...lista] : lista;
+  });
+  readonly instagramEscolhido = computed(() => this.destinos().some(d => d.tipo === 2 && this.destinoIds().includes(d.id)));
+  readonly podeOferecerMarcacao = computed(() => this.podeMarcarProdutos() && this.instagramEscolhido() && this.aprovadas().some(a => a.produtoId !== null));
   readonly destinoIds = signal<number[]>([]);
   readonly multiselectPt = PT_MULTISELECT;
   readonly statusPublicacao = STATUS_PUBLICACAO;
@@ -111,7 +121,7 @@ export class ArtesPecaComponent {
       next: res => {
         if (!this.contextoValido()) return;
         this.carregando.set(false);
-        if (res.sucesso && res.dados) { this.habilitado.set(res.dados.habilitado); this.itens.set(res.dados.itens); }
+        if (res.sucesso && res.dados) { this.habilitado.set(res.dados.habilitado); this.itens.set(res.dados.itens); this.produtosDaPeca.set(res.dados.produtos ?? []); }
         else this.toast.erro('Não foi possível carregar as artes.');
       },
       error: erro => { this.carregando.set(false); this.toast.erroServidor(erro, 'Não foi possível carregar as artes.'); }
@@ -136,9 +146,10 @@ export class ArtesPecaComponent {
       next: res => {
         const conexao = res.sucesso ? res.dados?.conexao : null;
         if (!conexao) return;
+        this.podeMarcarProdutos.set(conexao.podeMarcarProdutos === true);
         const lista = conexao.ativos
           .filter(a => a.selecionado && (a.tipo === 1 ? conexao.podePublicarFacebook : conexao.podePublicarInstagram))
-          .map(a => ({ id: a.id, rotulo: (a.tipo === 1 ? 'Facebook: ' : 'Instagram: ') + a.nome + (a.usuario ? ' (@' + a.usuario + ')' : '') }));
+          .map(a => ({ id: a.id, tipo: a.tipo, rotulo: (a.tipo === 1 ? 'Facebook: ' : 'Instagram: ') + a.nome + (a.usuario ? ' (@' + a.usuario + ')' : '') }));
         this.destinos.set(lista);
         this.destinoIds.set(lista.length === 1 ? [lista[0].id] : []);
       },
@@ -157,7 +168,8 @@ export class ArtesPecaComponent {
     let falhas = 0;
     for (const destino of escolhidos) {
       try {
-        const res = await firstValueFrom(this.publicacoesService.publicar(this.pecaId(), { ativoId: destino.id, arteIds: artes }));
+        const res = await firstValueFrom(this.publicacoesService.publicar(this.pecaId(), { ativoId: destino.id, arteIds: artes, marcarProdutos: destino.tipo === 2 && this.podeOferecerMarcacao() && this.marcarProdutos() }));
+        for (const aviso of res.dados?.avisos ?? []) this.toast.aviso(aviso);
         if (res.sucesso) this.toast.sucesso('Publicado em ' + destino.rotulo + '.'); else { falhas++; this.toast.erro('Não foi possível publicar em ' + destino.rotulo + '.'); }
       } catch (erro) {
         falhas++;
@@ -173,6 +185,8 @@ export class ArtesPecaComponent {
     this.form.reset({ formato: 2, modelo: 1, titulo: '', subtitulo: '', todasFotos: false });
     this.modeloAtual.set(1);
     this.produto.set(null);
+    const lista = this.produtosDaPeca();
+    this.escolhaProduto.set(lista.length > 1 ? 0 : (lista[0]?.id ?? 0));
     this.modal.set(true);
   }
 
@@ -183,15 +197,20 @@ export class ArtesPecaComponent {
   gerar(): void {
     this.form.markAllAsTouched();
     if (!this.podeEditar() || this.processando() || this.form.invalid) return;
-    if (this.usaFoto() && !this.produto()) { this.toast.aviso('Escolha o produto.', 'Este modelo usa a foto de um produto.'); return; }
+    const doBriefing = this.produtosDaPeca().length > 0;
+    const todosProdutos = doBriefing && this.escolhaProduto() === 0;
+    const produtoId = doBriefing ? this.escolhaProduto() : (this.produto()?.id ?? 0);
+    if (this.usaFoto() && !todosProdutos && !produtoId) { this.toast.aviso('Escolha o produto.', 'Este modelo usa a foto de um produto.'); return; }
     if (!this.usaFoto() && !this.form.controls.titulo.value.trim()) { this.toast.aviso('Informe o título.', 'O modelo Texto em destaque precisa de um título.'); return; }
     const valores = this.form.getRawValue();
     this.processando.set(true);
     const base = { formato: valores.formato, modelo: valores.modelo, titulo: valores.titulo.trim(), subtitulo: valores.subtitulo.trim() };
-    const carrossel = this.usaFoto() && valores.todasFotos;
-    const chamada: Observable<Resultado<unknown>> = carrossel
-      ? this.service.gerarCarrossel(this.pecaId(), { ...base, produtoId: this.produto()!.id })
-      : this.service.gerar(this.pecaId(), { ...base, produtoId: this.usaFoto() ? this.produto()!.id : null });
+    const carrossel = this.usaFoto() && (todosProdutos || valores.todasFotos);
+    const chamada: Observable<Resultado<unknown>> = this.usaFoto() && todosProdutos
+      ? this.service.gerarCarrosselProdutos(this.pecaId(), base)
+      : carrossel
+        ? this.service.gerarCarrossel(this.pecaId(), { ...base, produtoId })
+        : this.service.gerar(this.pecaId(), { ...base, produtoId: this.usaFoto() ? produtoId : null });
     chamada.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: res => {
         this.processando.set(false);

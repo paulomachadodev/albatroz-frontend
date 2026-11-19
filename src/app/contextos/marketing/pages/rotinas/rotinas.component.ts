@@ -75,6 +75,7 @@ export class RotinasMarketingComponent {
   readonly opcoesLinha = computed(() => this.linhas().map(l => ({ rotulo: l.nome, valor: l.nome })));
   readonly podeCriar = computed(() => this.auth.temPermissao('marketing:criar'));
   readonly podeEditar = computed(() => this.auth.temPermissao('marketing:editar'));
+  readonly podeExcluir = computed(() => this.auth.temPermissao('marketing:excluir'));
 
   constructor() {
     this.carregar();
@@ -208,7 +209,7 @@ export class RotinasMarketingComponent {
   }
 
   async remover(rotina: Rotina): Promise<void> {
-    if (!this.podeEditar()) return;
+    if (!this.podeExcluir()) return;
     const confirmado = await this.confirm.confirmar('Remover esta rotina?', 'As postagens já agendadas continuam. A rotina deixa de preparar novas.', { textoConfirmar: 'Remover', textoCancelar: 'Voltar' });
     if (!confirmado) return;
     try {

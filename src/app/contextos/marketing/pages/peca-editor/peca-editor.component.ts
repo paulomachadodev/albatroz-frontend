@@ -1,6 +1,6 @@
 import { Component, computed, effect, inject, signal, untracked } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormArray, FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Subscription, finalize, takeUntil } from 'rxjs';
@@ -36,6 +36,7 @@ export class PecaEditorComponent extends ConfiguracaoFormularioBase {
   private readonly confirm = inject(ConfirmService);
   private readonly fb = inject(FormBuilder);
   private readonly rota = inject(ActivatedRoute);
+  private readonly roteador = inject(Router);
   private consulta?: Subscription;
   protected override permissaoEdicao = 'marketing:editar';
 
@@ -47,6 +48,7 @@ export class PecaEditorComponent extends ConfiguracaoFormularioBase {
   readonly origem = ORIGEM_VERSAO_PECA;
   readonly acessoValido = computed(() => this.contextoValido() && this.auth.temPermissao('marketing:ler'));
   readonly podeAprovar = computed(() => this.acessoValido() && this.auth.temPermissao('marketing:aprovar'));
+  readonly podeExcluir = computed(() => this.acessoValido() && this.auth.temPermissao('marketing:excluir'));
   readonly editavel = computed(() => this.acessoValido() && this.podeEditar() && this.peca()?.status !== 3);
   readonly tituloSugerido = computed(() => (this.peca()?.conteudo.legenda ?? '').split(/[.!?\n]/)[0].trim());
   readonly dataPrevista = new FormControl('', { nonNullable: true });
@@ -121,6 +123,22 @@ export class PecaEditorComponent extends ConfiguracaoFormularioBase {
     );
     if (!confirmado) return;
     this.executar(this.service.aprovar(peca.id, peca.versao, peca.versaoAtual), 'Peça aprovada.', 'Não foi possível aprovar a peça.', true);
+  }
+
+  async excluir(): Promise<void> {
+    const peca = this.peca();
+    if (!peca || !this.podeExcluir() || this.processando()) return;
+    const confirmado = await this.confirm.confirmar('Excluir esta peça?', 'O texto, as versões e as artes serão apagados de vez. Só é possível enquanto a peça não foi publicada nem agendada.', { textoConfirmar: 'Excluir', textoCancelar: 'Voltar' });
+    if (!confirmado) return;
+    this.processando.set(true);
+    this.service.excluir(peca.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: res => {
+        this.processando.set(false);
+        if (res.sucesso) { this.toast.sucesso('Peça excluída.'); void this.roteador.navigate(['/marketing/pecas']); }
+        else this.toast.erro('Não foi possível excluir a peça.');
+      },
+      error: erro => { this.processando.set(false); this.toast.erroServidor(erro, 'Não foi possível excluir a peça.'); }
+    });
   }
 
   async arquivar(): Promise<void> {

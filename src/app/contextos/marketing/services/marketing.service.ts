@@ -38,6 +38,10 @@ export class MarketingService {
     return this.api.post(`${this.endpoint}/briefings`, requisicao);
   }
 
+  excluirBriefing(id: number): Observable<Resultado<void>> {
+    return this.api.delete(`${this.endpoint}/briefings/${id}`);
+  }
+
   atualizarBriefing(id: number, requisicao: BriefingAtualizacao): Observable<Resultado<Briefing>> {
     return this.api.put(`${this.endpoint}/briefings/${id}`, requisicao);
   }

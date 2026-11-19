@@ -13,6 +13,7 @@ import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { ToastService } from '../../../../core/feedback/toast.service';
+import { ConfirmService } from '../../../../core/feedback/confirm.service';
 import { BreadcrumbComponent } from '../../../../shared/components/breadcrumb/breadcrumb.component';
 import { DrawerComponent } from '../../../../shared/components/drawer/drawer.component';
 import { ListagemPaginadaComponent } from '../../../../shared/components/listagem-paginada/listagem-paginada.component';
@@ -62,6 +63,7 @@ export class BriefingsListaComponent implements OnInit {
   private opcoes(valores: string[], original: string) { return [...valores.map(valor => ({ rotulo: valor, valor, desabilitada: false })), ...(original && !valores.includes(original) ? [{ rotulo: original + ' (fora da lista ativa)', valor: original, desabilitada: true }] : [])]; }
 
   private readonly toast = inject(ToastService);
+  private readonly confirm = inject(ConfirmService);
   private readonly auth = inject(AuthService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly router = inject(Router);
@@ -137,6 +139,28 @@ export class BriefingsListaComponent implements OnInit {
 
   podeEditar(): boolean {
     return this.contextoValido() && this.auth.temPermissao('marketing:editar');
+  }
+
+  podeExcluir(): boolean {
+    return this.contextoValido() && this.auth.temPermissao('marketing:excluir');
+  }
+
+  async excluir(): Promise<void> {
+    const emEdicao = this.briefingEmEdicao();
+    if (!emEdicao || !this.podeExcluir() || this.salvando()) return;
+    const confirmado = await this.confirm.confirmar('Excluir este briefing?', 'O briefing e as peças e artes feitas a partir dele serão apagados de vez. Só é possível enquanto nada tiver sido publicado ou agendado.', { textoConfirmar: 'Excluir', textoCancelar: 'Voltar' });
+    if (!confirmado) return;
+    this.salvando.set(true);
+    this.service.excluirBriefing(emEdicao.id).pipe(takeUntil(this.contextoEncerrado), takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: res => {
+        this.salvando.set(false);
+        if (!res.sucesso) { this.toast.erro('Não foi possível excluir o briefing.'); return; }
+        this.toast.sucesso('Briefing excluído.');
+        this.drawerAberto.set(false);
+        this.carregar(this.paginaAtual());
+      },
+      error: erro => { this.salvando.set(false); this.toast.erroServidor(erro, 'Não foi possível excluir o briefing.'); }
+    });
   }
 
   rotuloStatus(valor: number): string {

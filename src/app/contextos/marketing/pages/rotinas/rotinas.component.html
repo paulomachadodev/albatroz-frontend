@@ -114,7 +114,7 @@
       <button type="button" (click)="fechar()" class="text-sm font-semibold text-slate-500 hover:underline">Cancelar</button>
       @if (editando(); as atual) {
         @if (podeCriar() && atual.ativa) { <button type="button" (click)="prepararAgora(atual)" [disabled]="salvando()" class="text-sm font-semibold text-primary hover:underline">Preparar rascunho agora</button> }
-        @if (podeEditar()) { <button type="button" (click)="remover(atual)" class="ml-auto text-sm font-semibold text-red-600 hover:underline">Remover</button> }
+        @if (podeExcluir()) { <button type="button" (click)="remover(atual)" class="ml-auto text-sm font-semibold text-red-600 hover:underline">Remover</button> }
       }
     </div>
   </div>

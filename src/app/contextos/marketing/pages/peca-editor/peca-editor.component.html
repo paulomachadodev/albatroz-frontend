@@ -13,6 +13,9 @@
           @if (podeAprovar() && peca.status === 1) {
             <button type="button" (click)="aprovar()" [disabled]="processando() || alterado()" class="px-4 py-2 rounded-lg bg-primary text-white text-sm font-bold">Aprovar versão {{ peca.versaoAtual }}</button>
           }
+          @if (podeExcluir()) {
+            <button type="button" (click)="excluir()" [disabled]="processando()" class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-sm font-bold text-red-600">Excluir</button>
+          }
           @if (editavel()) {
             <button type="button" (click)="arquivar()" [disabled]="processando()" class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-sm font-bold text-red-600">Arquivar</button>
           }

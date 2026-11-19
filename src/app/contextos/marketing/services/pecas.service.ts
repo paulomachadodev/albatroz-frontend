@@ -22,5 +22,6 @@ export class PecasService {
   aprovar(id: number, versaoEsperada: string, numeroVersao: number): Observable<Resultado<Peca>> { return this.api.post(`${this.endpoint}/${id}/aprovacao`, { versaoEsperada, numeroVersao }); }
   arquivar(id: number, versaoEsperada: string): Observable<Resultado<Peca>> { return this.api.post(`${this.endpoint}/${id}/arquivamento`, { versaoEsperada }); }
   planejar(id: number, planejadaPara: string | null, versaoEsperada: string): Observable<Resultado<Peca>> { return this.api.put(`${this.endpoint}/${id}/planejamento`, { planejadaPara, versaoEsperada }); }
+  excluir(id: number): Observable<Resultado<void>> { return this.api.delete(`${this.endpoint}/${id}`); }
   exportar(id: number): Observable<Resultado<ExportacaoPeca>> { return this.api.get(`${this.endpoint}/${id}/exportacao`); }
 }

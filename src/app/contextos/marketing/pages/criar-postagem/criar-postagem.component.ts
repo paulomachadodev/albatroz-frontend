@@ -23,6 +23,8 @@ import { DIAS_SEMANA, proximaOcorrencia } from '../../models/insights.model';
 import { InsightsService } from '../../services/insights.service';
 import { AssuntoEmAlta, horasDesde } from '../../models/assunto-em-alta.model';
 import { AssuntosEmAltaService } from '../../services/assuntos-em-alta.service';
+import { CATEGORIAS_DATA, DataMarketing } from '../../models/calendario.model';
+import { CalendarioService } from '../../services/calendario.service';
 import { Arte } from '../../models/arte.model';
 import { LinhaEditorial } from '../../models/marketing.model';
 import { Peca } from '../../models/peca.model';
@@ -66,6 +68,12 @@ export class CriarPostagemComponent {
   readonly manchetePrincipal = signal<AssuntoEmAlta | null>(null);
   readonly tempoDesde = horasDesde;
   private assuntosCarregados = false;
+  private readonly calendarioService = inject(CalendarioService);
+  readonly datasRelevantes = signal<DataMarketing[]>([]);
+  readonly carregandoDatas = signal(false);
+  readonly dataEscolhida = signal<DataMarketing | null>(null);
+  readonly categoriasData = CATEGORIAS_DATA;
+  private datasCarregadas = false;
   readonly fundoFoto = signal(true);
   readonly sugestaoHorario = signal('');
   readonly sugestaoConfiavel = signal(false);
@@ -122,6 +130,7 @@ export class CriarPostagemComponent {
     const linha = this.linhas().find(l => l.nome === this.linhaNome());
     return !!linha && (linha.usaProdutos === true || /produto/i.test(linha.nome));
   });
+  readonly usaDatas = computed(() => !this.usaProdutos() && /data|feriad|sazon|comemor/i.test(this.linhaNome()));
   readonly totalPassos = computed(() => (this.usaProdutos() ? 6 : 5));
   readonly numeroPasso = computed(() => (!this.usaProdutos() && this.passo() > 3 ? this.passo() - 1 : this.passo()));
   readonly progresso = computed(() => Math.round((Math.min(this.numeroPasso(), this.totalPassos()) / this.totalPassos()) * 100));
@@ -136,7 +145,49 @@ export class CriarPostagemComponent {
   aoEscolherTipo(nome: string): void {
     this.linhaNome.set(nome);
     this.manchetePrincipal.set(null);
-    if (!this.usaProdutos()) this.carregarAssuntos();
+    this.dataEscolhida.set(null);
+    if (this.usaDatas()) this.carregarDatas();
+    else if (!this.usaProdutos()) this.carregarAssuntos();
+  }
+
+  escolherData(data: DataMarketing | null): void {
+    this.dataEscolhida.set(data);
+    if (data) this.assunto.set(`${data.nome} (${this.diaMes(data.inicio)})`.slice(0, 300));
+  }
+
+  rotuloData(data: DataMarketing): string {
+    const periodo = data.fim ? `${this.diaMes(data.inicio)} a ${this.diaMes(data.fim)}` : this.diaMes(data.inicio);
+    return `${periodo} · ${CATEGORIAS_DATA[data.categoria] ?? ''}`;
+  }
+
+  private diaMes(iso: string): string {
+    const [, mes, dia] = iso.split('-');
+    return `${dia}/${mes}`;
+  }
+
+  private carregarDatas(): void {
+    if (this.datasCarregadas) return;
+    this.datasCarregadas = true;
+    this.carregandoDatas.set(true);
+    const hoje = new Date();
+    const fim = new Date(hoje.getTime() + 60 * 24 * 3600 * 1000);
+    this.calendarioService.obter(this.isoLocal(hoje), this.isoLocal(fim)).subscribe({
+      next: res => {
+        this.carregandoDatas.set(false);
+        const datas = res.sucesso && res.dados ? res.dados.datas : [];
+        this.datasRelevantes.set([...datas].sort((a, b) => a.inicio.localeCompare(b.inicio)).slice(0, 8));
+      },
+      error: () => { this.carregandoDatas.set(false); this.datasCarregadas = false; }
+    });
+  }
+
+  private isoLocal(d: Date): string {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+
+  private referenciaDaData(): string {
+    const d = this.dataEscolhida();
+    return d ? `Data: ${d.nome}, ${this.diaMes(d.inicio)}. Ideia: ${d.dica}`.slice(0, 1900) : '';
   }
 
   escolherManchete(manchete: AssuntoEmAlta | null): void {
@@ -148,6 +199,8 @@ export class CriarPostagemComponent {
     this.assunto.set(texto);
     const escolhida = this.manchetePrincipal();
     if (escolhida && escolhida.titulo.slice(0, 300) !== texto) this.manchetePrincipal.set(null);
+    const data = this.dataEscolhida();
+    if (data && !texto.startsWith(data.nome)) this.dataEscolhida.set(null);
   }
 
   private carregarAssuntos(): void {
@@ -425,7 +478,7 @@ export class CriarPostagemComponent {
       objetivo: linha?.objetivo?.trim() || 'Divulgar ' + this.linhaNome(),
       publico: '', linha: this.linhaNome(), assunto, produtoServico: '', oferta: '',
       formato: this.produtos().length > 1 ? 'Carrossel' : 'Post',
-      rede: redes.join(','), referencias: this.referenciaDaManchete(), prazo: null
+      rede: redes.join(','), referencias: this.referenciaDaData() || this.referenciaDaManchete(), prazo: null
     };
     this.mensagemTrabalho.set('Preparando o pedido...');
     const criado = await firstValueFrom(this.marketing.criarBriefing(dados));

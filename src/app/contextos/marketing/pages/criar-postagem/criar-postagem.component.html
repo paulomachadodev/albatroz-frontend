@@ -44,6 +44,29 @@
                 @if (linhas().length === 0) { <p class="mt-1 text-xs text-slate-500">Cadastre as linhas editoriais em <a routerLink="/marketing/estrategia" class="text-primary hover:underline">Estratégia editorial</a>.</p> }
               </div>
               @if (linhaNome() && !usaProdutos()) {
+                @if (usaDatas()) {
+                <div class="space-y-2">
+                  <p class="text-xs font-semibold text-slate-500">Datas e feriados chegando</p>
+                  @if (carregandoDatas()) {
+                    <div class="h-24 animate-pulse bg-slate-100 dark:bg-slate-800 rounded-lg" aria-label="Buscando datas"></div>
+                  } @else {
+                    <ul class="space-y-2">
+                      @for (d of datasRelevantes(); track d.chave) {
+                        <li>
+                          <button type="button" (click)="escolherData(dataEscolhida() === d ? null : d)" [attr.aria-pressed]="dataEscolhida() === d"
+                                  [class]="dataEscolhida() === d ? 'w-full text-left px-3 py-2 rounded-lg border border-primary bg-primary/10' : 'w-full text-left px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800'">
+                            <span class="block text-sm font-semibold text-slate-900 dark:text-slate-100">{{ d.nome }}</span>
+                            <span class="block text-xs text-slate-500">{{ rotuloData(d) }}</span>
+                            <span class="block text-xs text-slate-600 dark:text-slate-300">{{ d.dica }}</span>
+                          </button>
+                        </li>
+                      } @empty {
+                        <li class="text-sm text-slate-500">Nenhuma data nos próximos 60 dias. Escreva o seu assunto abaixo.</li>
+                      }
+                    </ul>
+                  }
+                </div>
+                } @else {
                 <div class="space-y-2">
                   <p class="text-xs font-semibold text-slate-500">Em alta no seu segmento agora</p>
                   @if (carregandoAssuntos()) {
@@ -64,6 +87,7 @@
                     </ul>
                   }
                 </div>
+                }
                 <div>
                   <label for="cp-assunto" class="text-xs font-semibold text-slate-500">Ou escreva o assunto</label>
                   <input id="cp-assunto" type="text" [ngModel]="assunto()" (ngModelChange)="aoDigitarAssunto($event)" maxlength="300" placeholder="Ex.: Como organizar a mesa de estudos" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none" />

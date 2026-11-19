@@ -212,7 +212,7 @@ export class CalendarioMarketingComponent {
   }
 
   iniciarArraste(evento: DragEvent, peca: PecaResumo): void {
-    if (!this.podeEditar() || this.salvando()) { evento.preventDefault(); return; }
+    if (!this.podeEditar() || this.salvando() || peca.publicada) { evento.preventDefault(); return; }
     this.arrastando.set(peca);
     evento.dataTransfer?.setData('text/plain', String(peca.id));
     if (evento.dataTransfer) evento.dataTransfer.effectAllowed = 'move';

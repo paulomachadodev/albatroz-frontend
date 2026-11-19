@@ -2,7 +2,7 @@ import { PecaConteudo } from './peca.model';
 
 export interface Rotina {
   id: number; versao: string; nome: string; linha: string; usaProdutos: boolean; categoriaId: number | null; quantidadeProdutos: number;
-  marcarProdutos: boolean; diasSemana: number; hora: number; minuto: number; antecedenciaHoras: number; ativa: boolean; ativoIds: number[];
+  marcarProdutos: boolean; diasSemana: number; hora: number; minuto: number; antecedenciaHoras: number; ativa: boolean; ativoIds: number[]; proximaPostagem?: string | null; proximoRascunho?: string | null;
 }
 export interface RotinaRequisicao {
   nome: string; linha: string; usaProdutos: boolean; categoriaId: number | null; quantidadeProdutos: number; marcarProdutos: boolean;

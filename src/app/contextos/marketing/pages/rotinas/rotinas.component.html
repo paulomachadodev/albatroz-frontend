@@ -25,6 +25,7 @@
             <th class="px-6 py-4">Rotina</th>
             <th class="px-6 py-4">Tipo</th>
             <th class="px-6 py-4">Quando sai</th>
+            <th class="px-6 py-4">Próxima postagem</th>
             <th class="px-6 py-4">Destinos</th>
             <th class="px-6 py-4 text-center">Situação</th>
           </tr>
@@ -34,6 +35,7 @@
             <td class="px-6 py-4 text-sm font-bold text-slate-900 dark:text-slate-100">{{ item.nome }}</td>
             <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{{ item.linha }}</td>
             <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{{ resumoDias(item.diasSemana) }} às {{ formatarHorario(item.hora, item.minuto) }}</td>
+            <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">@if (item.ativa && item.proximaPostagem) { {{ item.proximaPostagem | date:'EEE dd/MM HH:mm' }}<span class="block text-xs text-slate-500">rascunho a partir de {{ item.proximoRascunho | date:'EEE dd/MM HH:mm' }}</span> } @else { - }</td>
             <td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{{ item.ativoIds.length }}</td>
             <td class="px-6 py-4 text-center">
               <button type="button" (click)="$event.stopPropagation(); alternarAtiva(item)" [disabled]="!podeEditar()"
@@ -111,6 +113,7 @@
       <button type="button" (click)="salvar()" [disabled]="salvando()" class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all">{{ salvando() ? 'Salvando...' : 'Salvar rotina' }}</button>
       <button type="button" (click)="fechar()" class="text-sm font-semibold text-slate-500 hover:underline">Cancelar</button>
       @if (editando(); as atual) {
+        @if (podeCriar() && atual.ativa) { <button type="button" (click)="prepararAgora(atual)" [disabled]="salvando()" class="text-sm font-semibold text-primary hover:underline">Preparar rascunho agora</button> }
         @if (podeEditar()) { <button type="button" (click)="remover(atual)" class="ml-auto text-sm font-semibold text-red-600 hover:underline">Remover</button> }
       }
     </div>

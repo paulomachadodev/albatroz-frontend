@@ -13,6 +13,7 @@ export class RotinasService {
   criar(requisicao: RotinaRequisicao): Observable<Resultado<Rotina>> { return this.api.post(`${this.base}/rotinas`, requisicao); }
   atualizar(id: number, requisicao: RotinaRequisicao): Observable<Resultado<Rotina>> { return this.api.put(`${this.base}/rotinas/${id}`, requisicao); }
   remover(id: number): Observable<Resultado<void>> { return this.api.delete(`${this.base}/rotinas/${id}`); }
+  prepararAgora(id: number): Observable<Resultado<Rotina>> { return this.api.post(`${this.base}/rotinas/${id}/preparar`, {}); }
   aprovacoes(): Observable<Resultado<Aprovacoes>> { return this.api.get(`${this.base}/aprovacoes`); }
   aprovar(id: number, versaoEsperada: string): Observable<Resultado<unknown>> { return this.api.post(`${this.base}/aprovacoes/${id}/aprovacao`, { versaoEsperada }); }
   descartar(id: number, versaoEsperada: string): Observable<Resultado<void>> { return this.api.post(`${this.base}/aprovacoes/${id}/descarte`, { versaoEsperada }); }

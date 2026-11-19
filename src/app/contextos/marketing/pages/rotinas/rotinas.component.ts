@@ -1,4 +1,5 @@
 import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -28,7 +29,7 @@ interface OpcaoCategoria { id: number; rotulo: string; }
 
 @Component({
   selector: 'app-rotinas-marketing', standalone: true,
-  imports: [FormsModule, RouterLink, SelectModule, MultiSelectModule, BreadcrumbComponent, PageHeaderComponent, ListagemPaginadaComponent, DrawerComponent],
+  imports: [FormsModule, RouterLink, DatePipe, SelectModule, MultiSelectModule, BreadcrumbComponent, PageHeaderComponent, ListagemPaginadaComponent, DrawerComponent],
   templateUrl: './rotinas.component.html', host: { class: 'flex-1 flex flex-col min-h-0' }
 })
 export class RotinasMarketingComponent {
@@ -190,6 +191,20 @@ export class RotinasMarketingComponent {
       this.toast.erroServidor(erro, 'Não foi possível alterar a rotina.');
     }
     this.carregar();
+  }
+
+  async prepararAgora(rotina: Rotina): Promise<void> {
+    if (!this.podeCriar() || this.salvando()) return;
+    this.salvando.set(true);
+    try {
+      const res = await firstValueFrom(this.service.prepararAgora(rotina.id));
+      if (res.sucesso) { this.toast.sucesso('Rascunho em preparo.', 'Em até 5 minutos ele aparece em Aprovações.'); this.drawerAberto.set(false); }
+      else this.toast.erro('Não foi possível preparar o rascunho.');
+    } catch (erro) {
+      this.toast.erroServidor(erro, 'Não foi possível preparar o rascunho.');
+    } finally {
+      this.salvando.set(false);
+    }
   }
 
   async remover(rotina: Rotina): Promise<void> {

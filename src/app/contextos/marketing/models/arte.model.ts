@@ -5,6 +5,7 @@ export interface Arte {
 }
 export interface ProdutoDaPeca { id: number; codigo: string; nome: string; }
 export interface ArtesLista { habilitado: boolean; versaoConteudoAtual: number; itens: Arte[]; produtos: ProdutoDaPeca[]; }
+export const MODELO_ARTE_ENVIADA = 4;
 export interface ArteProdutosRequisicao { formato: number; modelo: number; titulo: string; subtitulo: string; }
 export interface ArteRequisicao { formato: number; modelo: number; produtoId: number | null; titulo: string; subtitulo: string; fundoBancoImagens?: boolean; consultaFundo?: string; }
 export const FORMATOS_ARTE = [

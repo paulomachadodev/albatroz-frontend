@@ -15,6 +15,11 @@ export class ArtesService {
   gerar(pecaId: number, requisicao: ArteRequisicao): Observable<Resultado<Arte>> { return this.api.post(this.base(pecaId), requisicao); }
   gerarCarrossel(pecaId: number, requisicao: ArteRequisicao & { produtoId: number }): Observable<Resultado<Arte[]>> { return this.api.post(this.base(pecaId) + '/carrossel', requisicao); }
   gerarCarrosselProdutos(pecaId: number, requisicao: ArteProdutosRequisicao): Observable<Resultado<Arte[]>> { return this.api.post(this.base(pecaId) + '/carrossel-produtos', requisicao); }
+  enviar(pecaId: number, arquivos: File[]): Observable<Resultado<Arte[]>> {
+    const formulario = new FormData();
+    for (const arquivo of arquivos) formulario.append('arquivos', arquivo);
+    return this.api.post(this.base(pecaId) + '/enviadas', formulario);
+  }
   aprovar(pecaId: number, id: number, versaoEsperada: string): Observable<Resultado<Arte>> { return this.api.post(`${this.base(pecaId)}/${id}/aprovacao`, { versaoEsperada }); }
   descartar(pecaId: number, id: number, versaoEsperada: string): Observable<Resultado<Arte>> { return this.api.post(`${this.base(pecaId)}/${id}/descarte`, { versaoEsperada }); }
 

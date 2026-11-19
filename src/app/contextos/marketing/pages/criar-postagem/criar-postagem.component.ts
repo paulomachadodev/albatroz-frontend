@@ -24,6 +24,7 @@ import { InsightsService } from '../../services/insights.service';
 import { AssuntoEmAlta, horasDesde } from '../../models/assunto-em-alta.model';
 import { AssuntosEmAltaService } from '../../services/assuntos-em-alta.service';
 import { CATEGORIAS_DATA, DataMarketing } from '../../models/calendario.model';
+import { MODELO_ARTE_ENVIADA } from '../../models/arte.model';
 import { CalendarioService } from '../../services/calendario.service';
 import { Arte } from '../../models/arte.model';
 import { LinhaEditorial } from '../../models/marketing.model';
@@ -146,7 +147,7 @@ export class CriarPostagemComponent {
     this.linhaNome.set(nome);
     this.manchetePrincipal.set(null);
     this.dataEscolhida.set(null);
-    if (this.usaDatas()) this.carregarDatas();
+    if (this.usaDatas()) { this.fundoFoto.set(false); this.carregarDatas(); }
     else if (!this.usaProdutos()) this.carregarAssuntos();
   }
 
@@ -318,7 +319,7 @@ export class CriarPostagemComponent {
     this.mensagemTrabalho.set('Criando as artes...');
     try {
       if (this.artes().length === 0) {
-        const titulo = (this.assunto().trim() || this.linhaNome()).slice(0, 70);
+        const titulo = this.tituloDaArte();
         if (this.produtos().length > 0) {
           const criacao = await firstValueFrom(this.artesService.gerarCarrosselProdutos(atual.id, { formato: 2, modelo: 1, titulo, subtitulo: '' }));
           if (!criacao.sucesso) throw new Error('Não foi possível criar as artes.');
@@ -329,6 +330,34 @@ export class CriarPostagemComponent {
       await this.recarregarArtes();
     } catch (falha) {
       this.erro.set(falha instanceof Error ? falha.message : 'Não foi possível criar as artes.');
+    } finally {
+      this.trabalhando.set(false);
+      this.mensagemTrabalho.set('');
+    }
+  }
+
+  private tituloDaArte(): string {
+    return (this.dataEscolhida()?.nome ?? (this.assunto().trim() || this.linhaNome())).slice(0, 70);
+  }
+
+  async enviarArtes(evento: Event): Promise<void> {
+    const campo = evento.target as HTMLInputElement;
+    const arquivos = Array.from(campo.files ?? []);
+    campo.value = '';
+    const atual = this.peca();
+    if (!atual || arquivos.length === 0 || this.trabalhando()) return;
+    if (arquivos.length > 10) { this.toast.aviso('Envie até 10 imagens por vez.'); return; }
+    this.erro.set('');
+    this.trabalhando.set(true);
+    this.mensagemTrabalho.set('Enviando a sua arte...');
+    try {
+      const envio = await firstValueFrom(this.artesService.enviar(atual.id, arquivos));
+      if (!envio.sucesso) throw new Error('Não foi possível enviar a arte.');
+      for (const arte of this.artesAtivas().filter(a => a.modelo !== MODELO_ARTE_ENVIADA)) await firstValueFrom(this.artesService.descartar(atual.id, arte.id, arte.versao));
+      await this.recarregarArtes();
+    } catch (falha) {
+      const mensagem = (falha as { error?: { erro?: { mensagem?: string } } })?.error?.erro?.mensagem;
+      this.erro.set(mensagem || (falha instanceof Error ? falha.message : 'Não foi possível enviar a arte.'));
     } finally {
       this.trabalhando.set(false);
       this.mensagemTrabalho.set('');
@@ -358,7 +387,7 @@ export class CriarPostagemComponent {
     this.mensagemTrabalho.set('Criando o novo fundo...');
     try {
       for (const arte of this.artesAtivas()) await firstValueFrom(this.artesService.descartar(atual.id, arte.id, arte.versao));
-      await this.criarArteDeFrase(atual.id, (this.assunto().trim() || this.linhaNome()).slice(0, 70));
+      await this.criarArteDeFrase(atual.id, this.tituloDaArte());
       await this.recarregarArtes();
     } catch (falha) {
       this.erro.set(falha instanceof Error ? falha.message : 'Não foi possível trocar o fundo.');

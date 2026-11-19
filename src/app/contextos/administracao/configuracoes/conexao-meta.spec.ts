@@ -53,9 +53,11 @@ describe('Conexão Meta', () => {
 
   it('nunca preenche o segredo e salva sem enviá-lo quando em branco', () => {
     const fixture = montar();
+    fixture.componentInstance.editandoApp.set(true);
+    fixture.detectChanges();
     const campo: HTMLInputElement = fixture.nativeElement.querySelector('#meta-app-secret');
     expect(campo.value).toBe('');
-    expect(campo.placeholder).toContain('Configurado');
+    expect(campo.placeholder).toContain('Deixe em branco');
     fixture.componentInstance.salvarAplicativo();
     expect(api.put).toHaveBeenCalledWith('/v1/integracoes-sociais/meta/aplicativo', { appId: '12345678', appSecret: null, configId: null, versaoEsperada: versao });
   });
@@ -89,7 +91,7 @@ describe('Conexão Meta', () => {
 
   it('avisa autorização parcial e salva a seleção de ativos com a versão vigente', () => {
     const fixture = montar();
-    expect(fixture.nativeElement.textContent).toContain('instagram_basic');
+    expect(fixture.nativeElement.textContent).toContain('Faltou conceder algumas permissões');
     expect(fixture.componentInstance.selecaoAlterada()).toBeFalse();
     fixture.componentInstance.alternar(11);
     expect(fixture.componentInstance.selecaoAlterada()).toBeTrue();

@@ -319,3 +319,4 @@ export class ProdutoCadastroComponent {
 - [ ] Estado com signals
 - [ ] `ngOnInit()` para carregar dados
 - [ ] Registrar rota em `modulo.routes.ts` com `loadComponent`
+- [ ] REGRA DURA (2026-11-20): a tela abre completa. Dados iniciais no `ngOnInit`, em paralelo, sem `setTimeout`; o shell segura o loader de página até acabar. Ver `.claude/standards/angular/carregamento-de-pagina.md`

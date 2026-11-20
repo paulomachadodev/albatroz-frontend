@@ -128,3 +128,7 @@ this.service.buscar().subscribe(dados => {
 - [ ] Serviço HTTP (veja @angular-services)
 - [ ] Models: Request/Response (veja @angular-models)
 - [ ] Grid config se listagem (veja @angular-grids)
+
+## Carregamento de página — regra dura
+
+Toda tela nova ou alterada abre completa, sem card vazio nem número mudando depois. O shell já cobre a tela com `app-carregando-pagina` até as requisições da navegação terminarem; a tela só precisa disparar as cargas iniciais no `ngOnInit`, em paralelo, sem `setTimeout`. Polling e carga em segundo plano usam `SEM_CARREGAMENTO_DE_PAGINA`. Detalhe: `.claude/standards/angular/carregamento-de-pagina.md`.

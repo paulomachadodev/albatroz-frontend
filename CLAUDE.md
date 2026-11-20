@@ -38,6 +38,8 @@ Carregar os standards abaixo antes de criar qualquer HTML novo:
 0b. **`.claude/standards/angular/design-limpo.md`** — REGRA DURA (2026-11-19): telas limpas, uma tarefa por tela, um botão primário, até 6 campos visíveis, texto curto, sem cartão dentro de cartão. Referência: tela Inteligência artificial das configurações.
 0c. **Ações de linha em listagens** (REGRA DURA, 2026-11-19) — toda ação por linha usa `<app-btn-icone>` (ícone com `titulo`), última coluna "Ações", como em Produtos. Proibido botão ou link de texto na linha. O CI roda `npm run verificar:acoes` e reprova. Detalhe em `.claude/standards/angular/reutilizar-componentes.md` (seção "Ações de linha em listagens").
 
+0d. **Carregamento de página** (REGRA DURA, 2026-11-20) — a tela só aparece quando tudo estiver carregado. O shell cobre o conteúdo com `app-carregando-pagina` durante a navegação e as chamadas iniciais; a tela dispara as cargas no `ngOnInit`, em paralelo, sem `setTimeout`. Detalhe em `.claude/standards/angular/carregamento-de-pagina.md`.
+
 1. **`.claude/standards/angular/template-estrutura.md`** — estrutura obrigatória do wrapper de página, token `bg-primary` (nunca `bg-blue-*` hardcoded), botões, abas, cards, inputs, badges. Violações frequentes: usar `bg-blue-600` em vez de `bg-primary`, tab com `border-blue-600` em vez de `[class.border-primary]`, modal hand-rolled em vez de `<app-modal>`, wrapper sem `bg-background-light dark:bg-background-dark`.
 
 2. **`.claude/standards/angular/listagem-padrao.md`** — `app-listagem-paginada`, `app-modal`, `app-page-header`, `app-btn-icone`, `app-spinner`, `app-drawer`, `app-overlay-progresso`, autosave proibido, PrimeNG first. Criar qualquer desses do zero sem checar aqui é bug — já aconteceu (2026-08-21).

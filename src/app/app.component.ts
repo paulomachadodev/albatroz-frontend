@@ -3,6 +3,7 @@ import { RouterOutlet } from '@angular/router';
 import { SessaoInatividadeService } from './core/auth/sessao-inatividade.service';
 import { ThemeService } from './core/theme/theme.service';
 import { AtualizacaoAppService } from './core/pwa/atualizacao-app.service';
+import { CarregamentoPaginaService } from './core/carregamento/carregamento-pagina.service';
 
 @Component({
   selector: 'app-root',
@@ -17,5 +18,6 @@ export class AppComponent {
     inject(SessaoInatividadeService).iniciar();
     inject(ThemeService);
     inject(AtualizacaoAppService).iniciar();
+    inject(CarregamentoPaginaService).iniciar();
   }
 }

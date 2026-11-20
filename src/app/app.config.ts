@@ -8,6 +8,7 @@ import { routes } from './app.routes';
 import { authInterceptor } from './core/auth/auth.interceptor';
 import { refreshInterceptor } from './core/auth/refresh.interceptor';
 import { provideServiceWorker } from '@angular/service-worker';
+import { carregamentoPaginaInterceptor } from './core/carregamento/carregamento-pagina.interceptor';
 
 registerLocaleData(localePt);
 
@@ -15,7 +16,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
-    provideHttpClient(withInterceptors([authInterceptor, refreshInterceptor])),
+    provideHttpClient(withInterceptors([carregamentoPaginaInterceptor, authInterceptor, refreshInterceptor])),
     providePrimeNG({ theme: 'none' }),
     provideServiceWorker('ngsw-worker.js', {
       enabled: !isDevMode(),

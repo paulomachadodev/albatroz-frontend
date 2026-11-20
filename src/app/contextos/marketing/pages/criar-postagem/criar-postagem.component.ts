@@ -117,6 +117,7 @@ export class CriarPostagemComponent {
   readonly publicadas = signal<Publicacao[]>([]);
   readonly agendadas = signal<Agendamento[]>([]);
   readonly concluido = signal(false);
+  readonly avisosPublicacao = signal<string[]>([]);
 
   readonly opcoesLinha = computed(() => this.linhas().map(l => ({ rotulo: l.nome, valor: l.nome })));
   readonly opcoesQuantidade = [1, 2, 3, 4, 5, 6, 8, 10].map(n => ({ rotulo: n + (n === 1 ? ' produto' : ' produtos'), valor: n }));
@@ -460,7 +461,7 @@ export class CriarPostagemComponent {
         const artes = this.artesAprovadas().slice(0, 10).map(a => a.id);
         for (const destino of escolhidos) {
           const res = await firstValueFrom(this.publicacoes.publicar(atual.id, { ativoId: destino.id, arteIds: artes, marcarProdutos: marcar && destino.tipo === 2 }));
-          for (const aviso of res.dados?.avisos ?? []) this.toast.aviso(aviso);
+          for (const aviso of res.dados?.avisos ?? []) { this.toast.aviso(aviso); this.avisosPublicacao.update(lista => [...lista, aviso]); }
           if (!res.sucesso) throw new Error('Não foi possível publicar em ' + destino.rotulo + '.');
         }
         const lista = await firstValueFrom(this.publicacoes.listar(atual.id));

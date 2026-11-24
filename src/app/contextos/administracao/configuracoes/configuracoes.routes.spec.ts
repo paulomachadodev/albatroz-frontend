@@ -41,9 +41,9 @@ describe('Central de Configurações e formulários existentes', () => {
     expect(api.get).not.toHaveBeenCalled();
   });
 
-  it('abre por link direto todos os nove formulários sem a faixa de abas', async () => {
+  it('abre por link direto todos os oito formulários sem a faixa de abas', async () => {
     const harness = await RouterTestingHarness.create();
-    for (const rota of ['email', 'listas-preco', 'metas', 'condicoes-comerciais', 'estoque', 'fiscal', 'catalogos', 'busca-imagens', 'alertas-sincronizacao']) {
+    for (const rota of ['email', 'listas-preco', 'metas', 'condicoes-comerciais', 'estoque', 'fiscal', 'catalogos', 'alertas-sincronizacao']) {
       await harness.navigateByUrl(`/configuracoes/${rota}`);
       expect(TestBed.inject(Router).url).toBe(`/configuracoes/${rota}`);
       expect(harness.routeNativeElement?.textContent).toContain('Voltar às configurações');

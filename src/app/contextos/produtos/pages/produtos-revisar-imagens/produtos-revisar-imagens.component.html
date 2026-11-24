@@ -61,8 +61,18 @@
             <p class="text-xs text-slate-400">{{ item.codigo }}</p>
           </td>
           <td class="px-6 py-4 text-xs text-slate-500 dark:text-slate-400 max-w-xs">
-            <p class="font-bold">{{ item.fonte }}</p>
-            @if (item.motivoIa) { <p>{{ item.motivoIa }}</p> }
+            <p class="font-bold">{{ rotuloFonte(item.fonte) }}</p>
+            @if (item.fonte === 'mercado_livre') {
+              <span class="inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-bold"
+                    [class]="item.gtinConfirmado ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400'">
+                {{ item.gtinConfirmado ? 'GTIN confirmado' : 'GTIN não confirmado' }}
+              </span>
+            }
+            @if (item.motivoIa) { <p class="mt-1">{{ item.motivoIa }}</p> }
+            @if (item.linkAnuncio) {
+              <a data-acao-informativa [href]="item.linkAnuncio" target="_blank" rel="noopener noreferrer"
+                 class="inline-block mt-1 font-bold text-primary hover:underline">Ver no Mercado Livre</a>
+            }
           </td>
           <td class="px-6 py-4 text-center">
             <span class="px-2 py-0.5 rounded-full text-xs font-bold" [class]="classeStatus(item.status)">{{ rotuloStatus(item.status) }}</span>

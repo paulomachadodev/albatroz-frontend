@@ -46,7 +46,6 @@ export const CONFIGURACOES_GRUPOS: GrupoConfiguracao[] = [
     { id: 'banco-imagens', titulo: 'Banco de imagens', descricao: 'Chave do Unsplash para os fundos das artes de marketing.', rota: '/configuracoes/banco-imagens', permissao: 'integracoes_sociais:ler', termos: 'unsplash fotos fundo imagem chave marketing' },
     { id: 'email', titulo: 'E-mail e SMTP', descricao: 'Servidor de envio e remetente.', rota: '/configuracoes/email', permissao: 'configuracoes:ler', termos: 'smtp comunicação email' },
     { id: 'integracoes', titulo: 'Catálogos e site', descricao: 'Google Merchant, catálogo Meta e endereço do site.', rota: '/configuracoes/catalogos', permissao: 'configuracoes:ler', termos: 'feed facebook instagram integração' },
-    { id: 'busca-imagens', titulo: 'Busca de imagens', descricao: 'Google Search e limite diário de consultas.', rota: '/configuracoes/busca-imagens', permissao: 'configuracoes:ler', termos: 'google pesquisa search chave' },
     { id: 'tiny-etl', titulo: 'Alertas de sincronização', descricao: 'E-mail para alertas do Tiny e ETL.', rota: '/configuracoes/alertas-sincronizacao', permissao: 'configuracoes:ler', apenasComTiny: true },
     { id: 'tiny', titulo: 'ERP Tiny', descricao: 'Acompanhar integração e sincronização.', rota: '/integracoes/tiny', permissao: 'configuracoes:ler', apenasComTiny: true, termos: 'etl' }
   ] }

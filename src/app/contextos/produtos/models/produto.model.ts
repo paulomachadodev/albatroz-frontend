@@ -36,6 +36,8 @@ export interface ImagemCandidata {
   fonte: string;
   scoreIa?: number;
   motivoIa?: string;
+  linkAnuncio?: string;
+  gtinConfirmado: boolean;
   status: number;
   criadoEm: string;
 }

@@ -21,6 +21,5 @@ export const CONFIGURACOES_ROUTES: Routes = [
   { path: 'estoque', ...editarConfiguracao, title: 'Parâmetros de estoque', loadComponent: () => import('./pages/configuracoes-pagina/estoque-configuracao.component').then(m => m.EstoqueConfiguracaoComponent) },
   { path: 'fiscal', ...editarConfiguracao, title: 'Fiscal e bancos CNAB', loadComponent: () => import('./pages/configuracoes-pagina/fiscal-configuracao.component').then(m => m.FiscalConfiguracaoComponent) },
   { path: 'catalogos', ...editarConfiguracao, title: 'Catálogos e site', loadComponent: () => import('./pages/configuracoes-pagina/integracoes-configuracao.component').then(m => m.IntegracoesConfiguracaoComponent) },
-  { path: 'busca-imagens', ...editarConfiguracao, title: 'Busca de imagens', loadComponent: () => import('./pages/configuracoes-pagina/busca-imagens-configuracao.component').then(m => m.BuscaImagensConfiguracaoComponent) },
   { path: 'alertas-sincronizacao', ...editarConfiguracao, title: 'Alertas de sincronização', loadComponent: () => import('./pages/configuracoes-pagina/tiny-etl-configuracao.component').then(m => m.TinyEtlConfiguracaoComponent) }
 ];

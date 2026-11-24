@@ -29,7 +29,6 @@ export class ProdutosRevisarImagensComponent implements OnInit {
   processandoId = signal<number | null>(null);
 
   texto = '';
-  // Nasce filtrada só por pendente — rejeitada/aprovada só aparecem se o usuário marcar.
   incluirPendente = true;
   incluirAprovada = false;
   incluirRejeitada = false;
@@ -121,6 +120,10 @@ export class ProdutosRevisarImagensComponent implements OnInit {
         this.toast.erroServidor(err, 'Não foi possível alterar o status da imagem.');
       }
     });
+  }
+
+  rotuloFonte(fonte: string): string {
+    return fonte === 'mercado_livre' ? 'Mercado Livre' : fonte;
   }
 
   rotuloStatus(status: number): string {

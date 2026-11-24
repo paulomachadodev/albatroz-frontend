@@ -5,8 +5,9 @@ Criado em 2026-11-24. App no Mercado Livre pedido em 2026-11-24 (aguardando apro
 ## Estado
 - **Fase 1 construída e testada (2026-11-24), falta validar com credenciais reais.** Backend: tabelas `integracao_marketplace_*` (script `20261124_1000_integracao_marketplace_mercado_livre.sql`, ainda não aplicado no banco de produção), `MercadoLivreController`, `MercadoLivreConexaoServico`, cliente HTTP do ML, renovação de token sob demanda (`ObterTokenValidoAsync`). Frontend: tela Configurações > Mercado Livre.
 - Pendente da Fase 1: aplicar o script SQL no banco, cadastrar a URI de retorno no DevCenter, testar com App ID e Secret reais, e job periódico de renovação (hoje a renovação só ocorre quando algo pede o token).
-- Agendamento `buscar-imagens-produto` (Albatroz.IA, `ApplicationExtensions.cs`) desligado em 2026-11-24 com `RecurringJob.RemoveIfExists`, porque o Google retorna 403. **Religar na Fase 2** (`AddOrUpdate`, "30 1 * * *"), já com o provedor do ML e só para empresas com a integração conectada.
-- Fases 2 a 6: só planejadas.
+- **Fase 2 construída e testada com mocks (2026-11-24), falta validar com credenciais reais.** Decisão: a busca roda no **ERP** (job Hangfire `buscar-imagens-produto-mercado-livre`, 01:30, `BuscarImagensProdutoMercadoLivreAppServico`), não no Albatroz.IA, porque token e cifra do ML moram no ERP. Todo o código do Google saiu do Albatroz.IA, e o job antigo `buscar-imagens-produto` é removido do Hangfire da IA (`RemoveIfExists`). Tela Busca de imagens (Google) removida. Revisão de candidatas mostra origem, selo de GTIN e link. Script `20261124_1100_busca_imagens_mercado_livre.sql` (colunas `link_anuncio`, `gtin_confirmado`, tabela `produto_imagem_busca`, apaga chaves do Google) **ainda não aplicado**.
+- Pendente da Fase 2: aplicar o script, validar a forma real das respostas de `products/search` e `products/{id}` com credenciais (parser tolerante, mas não testado contra a API), limite diário hoje é global (`Marketplaces:LimiteDiarioBuscaImagens`, 100), falta campo por empresa no passo da integração; decidir se o enriquecimento por IA deixa de exigir foto.
+- Fases 3 a 6: só planejadas.
 
 Regra do CLAUDE.md: cada fase só conta como entregue com backend (`albatroz-backend`) e tela (`albatroz-frontend`) prontos. Parar no meio exige registrar aqui.
 

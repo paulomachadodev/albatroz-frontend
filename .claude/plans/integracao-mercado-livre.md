@@ -35,6 +35,7 @@ Backend (Albatroz.IA)
 - Novo provedor de busca de imagens por GTIN no catálogo do ML (token de aplicativo, sem OAuth de vendedor). Sem GTIN ou sem match: busca por marca+nome, marcada como "não confirmada".
 - Foto mínima 800px; grava em `produto_imagem_candidata` com motivo e link do anúncio de origem. Nunca grava direto no produto.
 - Provedor escolhido por empresa; Google Custom Search sai do caminho.
+- **Remover o Google Custom Search no mesmo commit em que o ML entra** (decidido em 2026-11-24, a API retorna 403 em produção e está sendo descontinuada pelo Google): `GoogleCustomSearchServico` e `IGoogleCustomSearchServico`, o verificador de página ligado a ele, a tela Configurações > Busca de imagens (`busca-imagens-configuracao`, rota e entrada no catálogo), e as chaves `google_custom_search_api_key`, `google_custom_search_engine_id` e `google_custom_search_limite_diario` (apagar também o valor guardado no banco). Manter o job `buscar-imagens-produto`, a tabela `produto_imagem_candidata` e a tela de revisão. Atualizar o manual em `.claude/manual` e o limite diário passa para o passo de integração do ML.
 - Decidir à parte: enriquecimento por IA do texto não depender de foto (ou rodar logo após aprovar a foto).
 Frontend
 - Tela de revisão de candidatas existente passa a mostrar origem (ML), se o GTIN foi confirmado e o link do anúncio.

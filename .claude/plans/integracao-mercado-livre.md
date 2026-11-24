@@ -74,3 +74,19 @@ Frontend: tela de regras simples, simulação antes de ativar, histórico de alt
 - Redirect URL do formulário foi `https://albatrozpapelaria.com.br`. O OAuth da Fase 1 precisa de callback do ERP; ajustar no DevCenter depois da criação do app.
 - Confirmar se o Tiny já integra o Mercado Livre (afeta Fases 3 e 5).
 - Definir se o enriquecimento por IA deixa de exigir foto.
+
+## Decisões de 2026-11-24 (usuário)
+- O Tiny integra o ML da loja hoje, e a intenção é **desligar a integração do Tiny depois que a nossa estiver pronta**. Então as Fases 3 e 5 esperam as credenciais do ML. Antes de ligar pedidos (Fase 5), definir o corte: nunca os dois ligados ao mesmo tempo, para não duplicar pedido.
+- Enriquecimento por IA continua como está (exige foto).
+
+## Desenho: de/para de categorias e atributos obrigatórios (Fase 3)
+Objetivo: o usuário confirma uma vez por categoria, não por produto.
+
+1. **Categoria sugerida.** Para o produto, consultar o previsor de categoria do ML (nome + marca) e pedir à IA que ordene as sugestões. Mostrar até 3 opções com o caminho completo. O usuário confirma a categoria do ERP (grupo do produto) uma vez e fica salva.
+2. **Tabela de mapa de categoria** por empresa: categoria do ERP, categoria do ML, quem confirmou, quando. Produto novo da mesma categoria herda sem perguntar.
+3. **Atributos obrigatórios por categoria.** Ler do ML a lista de atributos da categoria escolhida (obrigatórios, condicionais, tipo, valores permitidos) e guardar em cache com data. Revalidar a cada anúncio, porque o ML muda exigências.
+4. **Preenchimento em cascata, do mais confiável ao menos:** (a) dado do ERP (marca, GTIN, peso, medidas, NCM); (b) atributos do produto do catálogo do ML quando o GTIN bate; (c) IA extraindo do nome e descrição, sempre marcado "sugerido pela IA"; (d) pergunta ao usuário.
+5. **Tabela de mapa de atributo** por empresa e categoria do ML: atributo do ML, origem (campo do ERP, valor fixo ou pergunta), valor padrão. Resposta do usuário vira padrão da categoria.
+6. **Tela de prontidão** por produto: "Pronto", "Falta 2 campos" ou "Sem categoria", com os campos faltando editáveis ali mesmo. Só produto "Pronto" publica.
+7. **Campos novos no produto do ERP, só se faltar:** modelo, cor, garantia, quantidade por embalagem, condição. Levantar quais a categoria real pede antes de criar coluna.
+8. **Peso e medidas.** O ERP já recebe peso bruto, peso líquido, largura, altura e comprimento do Tiny. Usar esses. O catálogo do ML descreve o produto, mas peso e medidas de embalagem de envio normalmente são do vendedor. Se o catálogo trouxer, entra só como sugestão quando o ERP estiver vazio. Confirmar com credenciais.

@@ -1,0 +1,509 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f7fb">
+  <title>Albatroz ERP — Conceito de dashboard</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --canvas: #f5f7fb;
+      --surface: #ffffff;
+      --surface-muted: #f8f9fc;
+      --ink: #172033;
+      --muted: #68748a;
+      --quiet: #96a0b1;
+      --line: #e7ebf2;
+      --brand: #3159d9;
+      --brand-soft: #edf2ff;
+      --nav: #17243a;
+      --nav-muted: #a9b4c7;
+      --green: #17865d;
+      --green-soft: #e8f6ef;
+      --amber: #a86510;
+      --amber-soft: #fff3df;
+      --red: #b84048;
+      --red-soft: #fff0f0;
+      --shadow: 0 2px 8px rgb(23 32 51 / 4%), 0 1px 2px rgb(23 32 51 / 3%);
+      --radius: 12px;
+    }
+    html.dark-preview {
+      color-scheme: dark;
+      --canvas: #0f1724;
+      --surface: #151f2e;
+      --surface-muted: #111b2a;
+      --ink: #e7edf7;
+      --muted: #a2aec0;
+      --quiet: #77869c;
+      --line: #263449;
+      --brand: #829cff;
+      --brand-soft: #1d2c50;
+      --nav: #0a111d;
+      --nav-muted: #9ca9bc;
+      --green: #50c18d;
+      --green-soft: #18382d;
+      --amber: #e9b86c;
+      --amber-soft: #3a2c19;
+      --red: #f08085;
+      --red-soft: #3d2228;
+      --shadow: 0 2px 8px rgb(0 0 0 / 14%), 0 1px 2px rgb(0 0 0 / 12%);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--canvas);
+      color: var(--ink);
+      font: 14px/1.45 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+    .app { min-height: 100vh; }
+    .sidebar {
+      position: fixed;
+      inset: 0 auto 0 0;
+      z-index: 5;
+      display: flex;
+      width: 244px;
+      flex-direction: column;
+      background: var(--nav);
+      color: #fff;
+    }
+    .brand {
+      display: flex;
+      height: 76px;
+      align-items: center;
+      gap: 11px;
+      padding: 0 22px;
+      border-bottom: 1px solid rgb(255 255 255 / 8%);
+    }
+    .brand-mark {
+      display: grid;
+      width: 34px;
+      height: 34px;
+      place-items: center;
+      border-radius: 10px;
+      background: #4468e7;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 750;
+      letter-spacing: -.06em;
+    }
+    .brand-name { font-size: 15px; font-weight: 650; letter-spacing: -.02em; }
+    .brand-sub { margin-top: 1px; color: var(--nav-muted); font-size: 11px; }
+    .nav-scroll { flex: 1; overflow: auto; padding: 20px 12px; }
+    .nav-label {
+      margin: 19px 10px 8px;
+      color: #8390a5;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .095em;
+      text-transform: uppercase;
+    }
+    .nav-label:first-child { margin-top: 0; }
+    .nav-item {
+      display: flex;
+      min-height: 40px;
+      align-items: center;
+      gap: 11px;
+      margin: 3px 0;
+      padding: 0 11px;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      color: #c6cfdd;
+      text-decoration: none;
+      transition: background .16s ease, color .16s ease, border-color .16s ease;
+    }
+    .nav-item:hover { background: rgb(255 255 255 / 6%); color: white; }
+    .nav-item.active {
+      border-color: rgb(139 164 255 / 16%);
+      background: rgb(76 111 229 / 20%);
+      color: white;
+      font-weight: 600;
+    }
+    .nav-icon { width: 19px; color: #9eabc0; text-align: center; font-size: 15px; }
+    .nav-item.active .nav-icon { color: #aebfff; }
+    .nav-count {
+      margin-left: auto;
+      padding: 1px 7px;
+      border-radius: 999px;
+      background: rgb(255 255 255 / 10%);
+      color: #e7ebf3;
+      font-size: 11px;
+    }
+    .account {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 15px 17px;
+      border-top: 1px solid rgb(255 255 255 / 8%);
+    }
+    .avatar {
+      display: grid;
+      width: 34px;
+      height: 34px;
+      flex: 0 0 auto;
+      place-items: center;
+      border-radius: 50%;
+      background: #dce6ff;
+      color: #294aab;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .account-name { font-size: 12px; font-weight: 600; }
+    .account-role { color: var(--nav-muted); font-size: 11px; }
+    .account-more { margin-left: auto; color: #9eabc0; }
+
+    .main { min-height: 100vh; margin-left: 244px; }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 3;
+      display: flex;
+      height: 64px;
+      align-items: center;
+      gap: 18px;
+      padding: 0 34px;
+      border-bottom: 1px solid var(--line);
+      background: rgb(255 255 255 / 94%);
+      backdrop-filter: blur(12px);
+    }
+    .crumb { color: var(--muted); font-size: 12px; }
+    .crumb strong { color: var(--ink); font-weight: 600; }
+    .search {
+      display: flex;
+      width: min(340px, 34vw);
+      height: 36px;
+      align-items: center;
+      gap: 9px;
+      margin-left: auto;
+      padding: 0 11px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface-muted);
+      color: var(--quiet);
+      font-size: 12px;
+    }
+    .shortcut { margin-left: auto; padding: 2px 5px; border: 1px solid var(--line); border-radius: 4px; color: var(--muted); font-size: 10px; }
+    .icon-button {
+      display: grid;
+      width: 36px;
+      height: 36px;
+      flex: 0 0 auto;
+      place-items: center;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--muted);
+    }
+    .icon-button:hover { border-color: var(--line); background: var(--surface-muted); color: var(--ink); }
+    .content { max-width: 1600px; margin: 0 auto; padding: 30px 34px 48px; }
+    .eyebrow { margin: 0 0 5px; color: var(--muted); font-size: 12px; }
+    .heading-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 18px; margin-bottom: 23px; }
+    h1 { margin: 0; font-size: 25px; font-weight: 650; letter-spacing: -.035em; line-height: 1.2; }
+    .subtitle { margin: 7px 0 0; color: var(--muted); font-size: 13px; }
+    .heading-actions { display: flex; align-items: center; gap: 9px; }
+    .date-button, .primary-button {
+      display: inline-flex;
+      min-height: 37px;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 0 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 550;
+      transition: border-color .15s ease, background .15s ease, transform .15s ease;
+    }
+    .date-button:hover { border-color: #c5cde0; background: var(--surface-muted); }
+    .primary-button { border-color: var(--brand); background: var(--brand); color: white; }
+    .primary-button:hover { border-color: #2449c4; background: #2449c4; transform: translateY(-1px); }
+    .button-icon { font-size: 15px; line-height: 1; }
+
+    .kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-bottom: 16px; }
+    .kpi {
+      position: relative;
+      min-height: 125px;
+      padding: 17px 18px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+      box-shadow: var(--shadow);
+      transition: border-color .16s ease, box-shadow .16s ease, transform .16s ease;
+    }
+    .kpi:hover { transform: translateY(-2px); border-color: #d3daea; box-shadow: 0 7px 18px rgb(23 32 51 / 7%); }
+    .kpi.primary { border-top: 2px solid var(--brand); padding-top: 16px; }
+    .kpi-label { display: flex; align-items: center; justify-content: space-between; gap: 8px; color: var(--muted); font-size: 12px; font-weight: 550; }
+    .kpi-symbol { color: #9aa5b7; font-size: 15px; }
+    .kpi-value { margin-top: 13px; font-size: clamp(21px, 2vw, 27px); font-weight: 650; letter-spacing: -.04em; line-height: 1.1; font-variant-numeric: tabular-nums; }
+    .kpi-foot { display: flex; align-items: center; gap: 6px; margin-top: 10px; color: var(--muted); font-size: 11px; }
+    .delta { color: var(--green); font-weight: 650; }
+    .delta.down { color: var(--red); }
+    .period-note { color: var(--quiet); }
+
+    .grid-main { display: grid; grid-template-columns: minmax(0, 1.75fr) minmax(270px, .85fr); gap: 16px; }
+    .panel {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+    .panel-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; padding: 18px 19px 0; }
+    .panel-title { margin: 0; font-size: 14px; font-weight: 650; letter-spacing: -.01em; }
+    .panel-caption { margin: 4px 0 0; color: var(--muted); font-size: 11px; }
+    .segmented { display: flex; gap: 2px; padding: 3px; border: 1px solid var(--line); border-radius: 7px; background: var(--surface-muted); }
+    .segment { padding: 5px 9px; border: 0; border-radius: 5px; background: transparent; color: var(--muted); font-size: 10px; }
+    .segment.active { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgb(23 32 51 / 12%); font-weight: 600; }
+    .chart-summary { display: flex; align-items: baseline; gap: 9px; margin: 17px 19px 0; }
+    .chart-total { font-size: 23px; font-weight: 650; letter-spacing: -.04em; font-variant-numeric: tabular-nums; }
+    .chart-change { color: var(--green); font-size: 11px; font-weight: 650; }
+    .chart-wrap { height: 225px; padding: 4px 13px 0; }
+    .chart-wrap svg { width: 100%; height: 100%; overflow: visible; }
+    .chart-legend { display: flex; align-items: center; gap: 18px; padding: 0 20px 16px; color: var(--muted); font-size: 10px; }
+    .legend-item { display: inline-flex; align-items: center; gap: 6px; }
+    .legend-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--brand); }
+    .legend-dot.previous { background: #bdc6d5; }
+    .chart-axis { fill: #8792a5; font-size: 10px; }
+    .chart-grid { stroke: #edf0f5; stroke-width: 1; }
+    .chart-current { fill: none; stroke: var(--brand); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+    .chart-prev { fill: none; stroke: #bdc6d5; stroke-width: 2; stroke-dasharray: 5 5; stroke-linecap: round; }
+    .chart-area { fill: url(#sales-fill); }
+    html.dark-preview .chart-grid { stroke: #263449; }
+    html.dark-preview .chart-prev { stroke: #64738a; }
+    html.dark-preview .chart-area { opacity: .35; }
+    html.dark-preview td { border-color: var(--line); }
+
+    .attention-list { padding: 5px 18px 13px; }
+    .attention-item { display: flex; align-items: flex-start; gap: 10px; padding: 13px 0; border-bottom: 1px solid var(--line); }
+    .attention-item:last-child { border-bottom: 0; }
+    .attention-icon { display: grid; width: 29px; height: 29px; flex: 0 0 auto; place-items: center; border-radius: 8px; font-size: 13px; }
+    .attention-icon.amber { background: var(--amber-soft); color: var(--amber); }
+    .attention-icon.red { background: var(--red-soft); color: var(--red); }
+    .attention-icon.blue { background: var(--brand-soft); color: var(--brand); }
+    .attention-text { min-width: 0; flex: 1; }
+    .attention-title { font-size: 11px; font-weight: 600; }
+    .attention-meta { margin-top: 3px; color: var(--muted); font-size: 10px; }
+    .attention-link { display: inline-flex; margin: 0 18px 17px; color: var(--brand); font-size: 11px; font-weight: 600; text-decoration: none; }
+    .attention-link:hover { text-decoration: underline; }
+
+    .grid-lower { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(270px, 1fr); gap: 16px; margin-top: 16px; }
+    .table-wrap { overflow: auto; padding: 7px 18px 13px; }
+    table { width: 100%; border-collapse: collapse; white-space: nowrap; }
+    th { padding: 9px 7px; color: var(--quiet); font-size: 9px; font-weight: 650; letter-spacing: .07em; text-align: left; text-transform: uppercase; }
+    td { padding: 11px 7px; border-top: 1px solid #eff1f5; font-size: 11px; }
+    .order-id { color: var(--brand); font-weight: 650; }
+    .customer { font-weight: 550; }
+    .table-muted { color: var(--muted); }
+    .money { font-weight: 600; font-variant-numeric: tabular-nums; text-align: right; }
+    .status { display: inline-flex; align-items: center; gap: 5px; padding: 3px 7px; border-radius: 999px; font-size: 9px; font-weight: 600; }
+    .status::before { width: 5px; height: 5px; border-radius: 50%; background: currentColor; content: ""; }
+    .status.green { background: var(--green-soft); color: var(--green); }
+    .status.amber { background: var(--amber-soft); color: var(--amber); }
+    .target-content { padding: 17px 19px 19px; }
+    .target-top { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+    .target-value { font-size: 24px; font-weight: 650; letter-spacing: -.04em; font-variant-numeric: tabular-nums; }
+    .target-percent { color: var(--green); font-size: 11px; font-weight: 650; }
+    .progress { height: 7px; margin: 13px 0 8px; overflow: hidden; border-radius: 99px; background: #edf0f5; }
+    .progress-fill { width: 72%; height: 100%; border-radius: inherit; background: var(--brand); }
+    .target-ends { display: flex; justify-content: space-between; color: var(--muted); font-size: 10px; }
+    .target-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 17px; padding-top: 15px; border-top: 1px solid var(--line); }
+    .stat-label { color: var(--muted); font-size: 10px; }
+    .stat-value { margin-top: 4px; font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
+    .panel-footer { display: flex; justify-content: flex-end; padding: 0 19px 16px; }
+    .panel-footer a { color: var(--brand); font-size: 10px; font-weight: 600; text-decoration: none; }
+    .sample-note { padding-top: 14px; color: var(--quiet); font-size: 10px; text-align: right; }
+
+    :focus-visible { outline: 3px solid rgb(49 89 217 / 35%); outline-offset: 2px; }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
+    }
+    @media (max-width: 1120px) {
+      .content { padding-right: 23px; padding-left: 23px; }
+      .topbar { padding-right: 23px; padding-left: 23px; }
+      .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .grid-main { grid-template-columns: minmax(0, 1.5fr) minmax(250px, .9fr); }
+    }
+    @media (max-width: 850px) {
+      .sidebar { width: 68px; }
+      .brand { justify-content: center; padding: 0; }
+      .brand-copy, .nav-label, .nav-item span:not(.nav-icon), .account-copy, .account-more { display: none; }
+      .nav-scroll { padding-right: 9px; padding-left: 9px; }
+      .nav-item { justify-content: center; padding: 0; }
+      .nav-icon { width: auto; }
+      .account { justify-content: center; padding-right: 0; padding-left: 0; }
+      .main { margin-left: 68px; }
+      .grid-main, .grid-lower { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 560px) {
+      .topbar { height: 56px; gap: 7px; padding: 0 13px; }
+      .search { width: auto; flex: 1; }
+      .crumb { display: none; }
+      .content { padding: 22px 13px 32px; }
+      .heading-row { align-items: flex-start; flex-direction: column; margin-bottom: 17px; }
+      h1 { font-size: 22px; }
+      .heading-actions { width: 100%; }
+      .date-button { flex: 1; }
+      .kpis { gap: 9px; }
+      .kpi { min-height: 112px; padding: 13px; }
+      .kpi.primary { padding-top: 12px; }
+      .kpi-value { margin-top: 11px; font-size: 21px; }
+      .kpi-foot { flex-wrap: wrap; gap: 3px 5px; }
+      .panel-head { padding: 15px 14px 0; }
+      .chart-summary { margin-right: 14px; margin-left: 14px; }
+      .chart-wrap { height: 195px; padding-right: 4px; padding-left: 4px; }
+      .chart-legend { padding-right: 14px; padding-left: 14px; }
+      .table-wrap { padding-right: 10px; padding-left: 10px; }
+      .target-content { padding-right: 14px; padding-left: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" aria-label="Navegação principal">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">A</div>
+        <div class="brand-copy"><div class="brand-name">Albatroz</div><div class="brand-sub">ERP · Papelaria Central</div></div>
+      </div>
+      <nav class="nav-scroll">
+        <div class="nav-label">Visão geral</div>
+        <a class="nav-item active" href="#dashboard"><span class="nav-icon">⌂</span><span>Dashboard</span></a>
+        <div class="nav-label">Operação</div>
+        <a class="nav-item" href="#vendas"><span class="nav-icon">▤</span><span>Vendas</span><span class="nav-count">12</span></a>
+        <a class="nav-item" href="#compras"><span class="nav-icon">⇄</span><span>Compras</span></a>
+        <a class="nav-item" href="#estoque"><span class="nav-icon">▦</span><span>Estoque</span><span class="nav-count">4</span></a>
+        <a class="nav-item" href="#listas"><span class="nav-icon">☷</span><span>Listas escolares</span></a>
+        <div class="nav-label">Gestão</div>
+        <a class="nav-item" href="#financeiro"><span class="nav-icon">◫</span><span>Financeiro</span></a>
+        <a class="nav-item" href="#cadastros"><span class="nav-icon">♙</span><span>Cadastros</span></a>
+        <a class="nav-item" href="#relatorios"><span class="nav-icon">▥</span><span>Relatórios</span></a>
+        <div class="nav-label">Sistema</div>
+        <a class="nav-item" href="#configuracoes"><span class="nav-icon">⚙</span><span>Configurações</span></a>
+      </nav>
+      <div class="account">
+        <div class="avatar">PM</div>
+        <div class="account-copy"><div class="account-name">Paulo Machado</div><div class="account-role">Administrador</div></div>
+        <span class="account-more">⌄</span>
+      </div>
+    </aside>
+
+    <main class="main" id="dashboard">
+      <header class="topbar">
+        <div class="crumb">Visão geral <span aria-hidden="true">/</span> <strong>Dashboard</strong></div>
+        <div class="search" role="search"><span aria-hidden="true">⌕</span><span>Buscar qualquer coisa...</span><span class="shortcut">⌘ K</span></div>
+        <button class="icon-button" type="button" aria-label="Notificações">♧</button>
+        <button class="icon-button" type="button" aria-label="Alternar tema" onclick="document.documentElement.classList.toggle('dark-preview')">◐</button>
+      </header>
+
+      <section class="content">
+        <div class="heading-row">
+          <div>
+            <p class="eyebrow">Terça-feira, 4 de novembro de 2026</p>
+            <h1>Bom dia, Paulo</h1>
+            <p class="subtitle">Aqui está o resumo da operação da sua empresa.</p>
+          </div>
+          <div class="heading-actions">
+            <button class="date-button" type="button"><span class="button-icon">▦</span> 1–31 out, 2026 <span aria-hidden="true">⌄</span></button>
+            <button class="primary-button" type="button"><span class="button-icon">＋</span> Nova venda</button>
+          </div>
+        </div>
+
+        <div class="kpis" aria-label="Indicadores principais">
+          <article class="kpi primary">
+            <div class="kpi-label">Faturamento <span class="kpi-symbol">↗</span></div>
+            <div class="kpi-value">R$ 184.250</div>
+            <div class="kpi-foot"><span class="delta">↑ 8,4%</span><span class="period-note">vs. mesmo período anterior</span></div>
+          </article>
+          <article class="kpi">
+            <div class="kpi-label">Pedidos no período <span class="kpi-symbol">▤</span></div>
+            <div class="kpi-value">1.247</div>
+            <div class="kpi-foot"><span class="delta">↑ 5,2%</span><span class="period-note">vs. mesmo período anterior</span></div>
+          </article>
+          <article class="kpi">
+            <div class="kpi-label">Ticket médio <span class="kpi-symbol">◫</span></div>
+            <div class="kpi-value">R$ 147,75</div>
+            <div class="kpi-foot"><span class="delta">↑ 2,1%</span><span class="period-note">vs. mesmo período anterior</span></div>
+          </article>
+          <article class="kpi">
+            <div class="kpi-label">Estoque crítico <span class="kpi-symbol">△</span></div>
+            <div class="kpi-value">18 <span style="font-size:13px;font-weight:500;letter-spacing:0;color:var(--muted)">produtos</span></div>
+            <div class="kpi-foot"><span class="delta down">4 precisam de compra</span></div>
+          </article>
+        </div>
+
+        <div class="grid-main">
+          <section class="panel" aria-labelledby="sales-title">
+            <div class="panel-head">
+              <div><h2 class="panel-title" id="sales-title">Vendas ao longo do tempo</h2><p class="panel-caption">Acompanhe a evolução do faturamento</p></div>
+              <div class="segmented" aria-label="Granularidade do gráfico">
+                <button class="segment" type="button">Dia</button><button class="segment active" type="button">Mês</button><button class="segment" type="button">Ano</button>
+              </div>
+            </div>
+            <div class="chart-summary"><span class="chart-total">R$ 184.250</span><span class="chart-change">↑ 8,4%</span></div>
+            <div class="chart-wrap">
+              <svg viewBox="0 0 760 235" role="img" aria-label="Gráfico de faturamento mensal comparado ao período anterior">
+                <defs><linearGradient id="sales-fill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#3159d9" stop-opacity=".15"/><stop offset="1" stop-color="#3159d9" stop-opacity="0"/></linearGradient></defs>
+                <line class="chart-grid" x1="48" y1="22" x2="740" y2="22"/><line class="chart-grid" x1="48" y1="66" x2="740" y2="66"/><line class="chart-grid" x1="48" y1="110" x2="740" y2="110"/><line class="chart-grid" x1="48" y1="154" x2="740" y2="154"/><line class="chart-grid" x1="48" y1="198" x2="740" y2="198"/>
+                <text class="chart-axis" x="1" y="25">R$ 50k</text><text class="chart-axis" x="7" y="69">R$ 38k</text><text class="chart-axis" x="7" y="113">R$ 25k</text><text class="chart-axis" x="7" y="157">R$ 13k</text><text class="chart-axis" x="25" y="201">R$ 0</text>
+                <path class="chart-prev" d="M50 156 C90 145 104 165 132 149 S178 126 205 141 S249 151 276 121 S324 139 350 116 S398 134 425 108 S466 129 493 96 S540 119 566 87 S612 103 638 70 S690 88 738 56"/>
+                <path class="chart-area" d="M50 174 C87 158 104 148 132 159 S178 117 205 133 S249 145 276 111 S324 123 350 94 S398 108 425 83 S466 103 493 65 S540 92 566 58 S612 78 638 43 S690 61 738 28 L738 198 L50 198 Z"/>
+                <path class="chart-current" d="M50 174 C87 158 104 148 132 159 S178 117 205 133 S249 145 276 111 S324 123 350 94 S398 108 425 83 S466 103 493 65 S540 92 566 58 S612 78 638 43 S690 61 738 28"/>
+                <text class="chart-axis" x="48" y="221">01 out</text><text class="chart-axis" x="176" y="221">05 out</text><text class="chart-axis" x="305" y="221">10 out</text><text class="chart-axis" x="436" y="221">15 out</text><text class="chart-axis" x="564" y="221">20 out</text><text class="chart-axis" x="691" y="221">31 out</text>
+              </svg>
+            </div>
+            <div class="chart-legend"><span class="legend-item"><i class="legend-dot"></i> Este período</span><span class="legend-item"><i class="legend-dot previous"></i> Período anterior</span></div>
+          </section>
+
+          <section class="panel" aria-labelledby="attention-title">
+            <div class="panel-head"><div><h2 class="panel-title" id="attention-title">Precisa de atenção</h2><p class="panel-caption">Pendências que podem travar a operação</p></div></div>
+            <div class="attention-list">
+              <div class="attention-item"><span class="attention-icon red">△</span><div class="attention-text"><div class="attention-title">Produtos abaixo do estoque mínimo</div><div class="attention-meta">4 produtos · ver lista de compras</div></div></div>
+              <div class="attention-item"><span class="attention-icon amber">◷</span><div class="attention-text"><div class="attention-title">Contas vencendo esta semana</div><div class="attention-meta">7 títulos · R$ 12.480,00</div></div></div>
+              <div class="attention-item"><span class="attention-icon blue">▤</span><div class="attention-text"><div class="attention-title">Notas aguardando conferência</div><div class="attention-meta">3 notas de entrada</div></div></div>
+            </div>
+            <a class="attention-link" href="#pendencias">Ver todas as pendências <span aria-hidden="true">→</span></a>
+          </section>
+        </div>
+
+        <div class="grid-lower">
+          <section class="panel" aria-labelledby="orders-title">
+            <div class="panel-head"><div><h2 class="panel-title" id="orders-title">Vendas recentes</h2><p class="panel-caption">Últimos pedidos registrados</p></div><a class="attention-link" style="margin:2px 0 0" href="#vendas">Ver vendas →</a></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Pedido</th><th>Cliente</th><th>Data</th><th>Status</th><th style="text-align:right">Valor</th></tr></thead>
+                <tbody>
+                  <tr><td class="order-id">#10482</td><td class="customer">Colégio Horizonte</td><td class="table-muted">Hoje, 10:42</td><td><span class="status green">Concluído</span></td><td class="money">R$ 2.480,00</td></tr>
+                  <tr><td class="order-id">#10481</td><td class="customer">Mariana Alves</td><td class="table-muted">Hoje, 10:18</td><td><span class="status amber">Aguardando</span></td><td class="money">R$ 348,90</td></tr>
+                  <tr><td class="order-id">#10480</td><td class="customer">Escola Caminhos</td><td class="table-muted">Hoje, 09:56</td><td><span class="status green">Concluído</span></td><td class="money">R$ 1.125,50</td></tr>
+                  <tr><td class="order-id">#10479</td><td class="customer">Rafael Costa</td><td class="table-muted">Hoje, 09:31</td><td><span class="status green">Concluído</span></td><td class="money">R$ 89,90</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="panel" aria-labelledby="target-title">
+            <div class="panel-head"><div><h2 class="panel-title" id="target-title">Meta de faturamento</h2><p class="panel-caption">Novembro · meta mensal da empresa</p></div><span class="kpi-symbol">↗</span></div>
+            <div class="target-content">
+              <div class="target-top"><span class="target-value">R$ 184.250</span><span class="target-percent">72% da meta</span></div>
+              <div class="progress"><div class="progress-fill"></div></div>
+              <div class="target-ends"><span>Realizado</span><span>Meta R$ 255.000</span></div>
+              <div class="target-stats">
+                <div><div class="stat-label">Projeção no mês</div><div class="stat-value">R$ 268.300</div></div>
+                <div><div class="stat-label">Ritmo necessário</div><div class="stat-value">R$ 3.540/dia</div></div>
+              </div>
+            </div>
+            <div class="panel-footer"><a href="#metas">Abrir análise da meta →</a></div>
+          </section>
+        </div>
+        <div class="sample-note">Mockup de conceito · valores e nomes ilustrativos</div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

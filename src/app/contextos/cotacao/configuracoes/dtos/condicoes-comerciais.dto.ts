@@ -8,6 +8,7 @@ export interface CondicoesComerciaisAtualizarRequisicao {
   textoRetirada: string | null;
   textoObservacaoCores: string;
   textoAvisoPrecoEstoque: string;
+  rotuloPagamentoDebito: string;
   whatsappAtendimento: string;
   textoHorarioAtendimento: string;
   reconferirPorPreco: boolean;

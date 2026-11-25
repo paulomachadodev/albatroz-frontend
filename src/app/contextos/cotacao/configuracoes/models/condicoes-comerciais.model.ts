@@ -8,6 +8,7 @@ export interface CondicoesComerciais {
   textoRetirada: string | null;
   textoObservacaoCores: string;
   textoAvisoPrecoEstoque: string;
+  rotuloPagamentoDebito: string;
   whatsappAtendimento: string;
   textoHorarioAtendimento: string;
   reconferirPorPreco: boolean;

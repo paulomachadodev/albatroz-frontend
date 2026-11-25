@@ -26,6 +26,7 @@ export class CondicoesComerciaisConfiguracaoComponent extends ConfiguracaoFormul
     textoRetirada = '';
     textoObservacaoCores = '';
     textoAvisoPrecoEstoque = '';
+    rotuloPagamentoDebito = '';
     whatsappAtendimento = '';
     textoHorarioAtendimento = '';
     reconferirPorPreco = false;
@@ -46,6 +47,7 @@ export class CondicoesComerciaisConfiguracaoComponent extends ConfiguracaoFormul
                     this.textoRetirada = dados.textoRetirada ?? '';
                     this.textoObservacaoCores = dados.textoObservacaoCores;
                     this.textoAvisoPrecoEstoque = dados.textoAvisoPrecoEstoque;
+                    this.rotuloPagamentoDebito = dados.rotuloPagamentoDebito;
                     this.whatsappAtendimento = dados.whatsappAtendimento;
                     this.textoHorarioAtendimento = dados.textoHorarioAtendimento;
                     this.reconferirPorPreco = dados.reconferirPorPreco;
@@ -74,6 +76,7 @@ export class CondicoesComerciaisConfiguracaoComponent extends ConfiguracaoFormul
             textoRetirada: this.textoRetirada.trim() || null,
             textoObservacaoCores: this.textoObservacaoCores,
             textoAvisoPrecoEstoque: this.textoAvisoPrecoEstoque,
+            rotuloPagamentoDebito: this.rotuloPagamentoDebito,
             whatsappAtendimento: this.whatsappAtendimento,
             textoHorarioAtendimento: this.textoHorarioAtendimento,
             reconferirPorPreco: this.reconferirPorPreco,

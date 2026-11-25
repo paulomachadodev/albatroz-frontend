@@ -95,22 +95,22 @@
           <p class="text-sm font-bold text-slate-900 dark:text-slate-100">Reconferência automática das listas liberadas</p>
           <p class="text-xs text-slate-400">
             Roda a cada hora. Com as chaves desligadas, a lista continua no site mesmo que o preço ou o estoque de um produto mude (o PDF e o site já avisam isso ao cliente).
-            Ligada, a lista volta para conferência, o PDF é apagado e ela sai do site até ser liberada de novo — só os itens alterados precisam ser revistos.
+            Ligadas, o preço alterado atualiza a lista e gera um PDF novo sozinho, e a falta de estoque só deixa um aviso para você trocar o produto. A lista nunca sai do site.
           </p>
 
           <label class="flex items-start gap-3 cursor-pointer">
             <input type="checkbox" [(ngModel)]="reconferirPorPreco" class="mt-1 w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary/30"/>
             <span class="text-sm">
-              <span class="font-semibold text-slate-700 dark:text-slate-200">Quando o preço de um produto mudar</span>
-              <span class="block text-xs text-slate-400">Qualquer variação entre o preço da lista e o preço atual do produto.</span>
+              <span class="font-semibold text-slate-700 dark:text-slate-200">Quando o preço de um produto mudar: atualizar a lista</span>
+              <span class="block text-xs text-slate-400">O preço e o total da lista são atualizados, o PDF antigo é apagado e um novo é gerado. A lista continua no site.</span>
             </span>
           </label>
 
           <label class="flex items-start gap-3 cursor-pointer">
             <input type="checkbox" [(ngModel)]="reconferirPorEstoque" class="mt-1 w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary/30"/>
             <span class="text-sm">
-              <span class="font-semibold text-slate-700 dark:text-slate-200">Quando o estoque não cobrir a quantidade da lista</span>
-              <span class="block text-xs text-slate-400">O item passa a "sem estoque" e sai do total até ser trocado ou liberado de novo.</span>
+              <span class="font-semibold text-slate-700 dark:text-slate-200">Quando o estoque não cobrir a quantidade da lista: avisar</span>
+              <span class="block text-xs text-slate-400">A lista continua liberada e aparece com aviso na listagem e no dashboard para você trocar o produto por um similar.</span>
             </span>
           </label>
         </div>

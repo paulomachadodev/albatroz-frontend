@@ -48,7 +48,7 @@
             </button>
           } @else {
             <button (click)="liberarLista()" [disabled]="liberandoLista() || !todosItensResolvidos()"
-                    [title]="!todosItensResolvidos() ? 'Todos os itens precisam estar liberados ou marcados como não vendemos' : ''"
+                    [title]="!todosItensResolvidos() ? 'Todos os itens precisam estar liberados ou marcados como não vendemos / não temos' : ''"
                     class="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-emerald-600 text-white font-bold text-sm hover:bg-emerald-700 shadow-lg shadow-emerald-600/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
               <span class="material-symbols-outlined text-sm">check_circle</span>
               {{ liberandoLista() ? 'Liberando...' : 'Liberar lista' }}
@@ -179,6 +179,13 @@
                       <button (click)="abrirBuscaProduto(item)" [disabled]="item.liberado" title="Trocar produto"
                               class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-400 hover:bg-primary/10 hover:text-primary transition-all disabled:opacity-50">
                         <span class="material-symbols-outlined text-base">edit</span>
+                      </button>
+                      <button (click)="marcarNaoTemos(item)" [disabled]="item.liberado || item.statusItem === statusItem.NaoTemos" title="Não temos (vendemos, mas está em falta)"
+                              class="w-8 h-8 flex items-center justify-center rounded-lg transition-all disabled:opacity-50"
+                              [class]="item.statusItem === statusItem.NaoTemos
+                                ? 'bg-amber-500 text-white'
+                                : 'bg-slate-100 dark:bg-slate-800 text-slate-400 hover:bg-amber-50 hover:text-amber-600 dark:hover:bg-amber-900/30 dark:hover:text-amber-400'">
+                        <span class="material-symbols-outlined text-base">production_quantity_limits</span>
                       </button>
                       <button (click)="marcarNaoVendemos(item)" [disabled]="item.liberado || item.statusItem === statusItem.NaoEncontrado" title="Não vendemos"
                               class="w-8 h-8 flex items-center justify-center rounded-lg transition-all disabled:opacity-50"

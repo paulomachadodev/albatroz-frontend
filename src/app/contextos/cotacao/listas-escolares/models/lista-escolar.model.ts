@@ -10,6 +10,9 @@ export interface ListaEscolarResumo {
   totalEstimado?: number;
   totalItens: number;
   itensLiberados: number;
+  itensNaoTemos: number;
+  itensNaoTemosComEstoque: number;
+  itensTrocarSimilar: number;
   criadoEm: string;
 }
 

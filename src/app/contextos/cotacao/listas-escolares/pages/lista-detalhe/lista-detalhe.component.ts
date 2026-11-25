@@ -59,7 +59,8 @@ export class ListaDetalheComponent implements OnInit {
 
   semProdutoParaVender(item: ListaEscolarItem): boolean {
     return item.statusItem === StatusItemListaEscolar.NaoEncontrado
-      || item.statusItem === StatusItemListaEscolar.SemEstoque;
+      || item.statusItem === StatusItemListaEscolar.SemEstoque
+      || item.statusItem === StatusItemListaEscolar.NaoTemos;
   }
 
   podeConfirmarItem(item: ListaEscolarItem): boolean {
@@ -348,6 +349,19 @@ export class ListaDetalheComponent implements OnInit {
     });
   }
 
+  marcarNaoTemos(item: ListaEscolarItem) {
+    this.listasService.atualizarItem(this.idLista, item.id, {
+      naoVendemos: false,
+      naoTemos: true
+    }).subscribe({
+      next: () => {
+        this.toast.sucesso('Item marcado como "não temos". A lista vai avisar quando o produto voltar ao estoque.');
+        this.recarregarSilencioso();
+      },
+      error: err => this.toast.erroServidor(err, 'Não foi possível atualizar o item.')
+    });
+  }
+
   marcarNaoVendemos(item: ListaEscolarItem) {
     this.listasService.atualizarItem(this.idLista, item.id, {
       naoVendemos: true
@@ -422,7 +436,8 @@ export class ListaDetalheComponent implements OnInit {
       [StatusItemListaEscolar.Encontrado]:       'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400',
       [StatusItemListaEscolar.NaoEncontrado]:    'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-400',
       [StatusItemListaEscolar.MarcaSubstituida]: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400',
-      [StatusItemListaEscolar.SemEstoque]:       'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-400'
+      [StatusItemListaEscolar.SemEstoque]:       'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-400',
+      [StatusItemListaEscolar.NaoTemos]:         'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400'
     };
     return mapa[status] ?? 'bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400';
   }

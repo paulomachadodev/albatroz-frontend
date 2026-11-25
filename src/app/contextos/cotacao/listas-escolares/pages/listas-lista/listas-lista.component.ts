@@ -1,7 +1,7 @@
 import { ROTULO_STATUS_LISTA, StatusListaEscolar } from '../../models/lista-escolar-status';
 import { Component, OnDestroy, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { firstValueFrom, map } from 'rxjs';
 import { ListasEscolaresService, ListaEscolarFiltro } from '../../services/listas-escolares.service';
@@ -71,10 +71,13 @@ export class ListasListaComponent implements OnInit, OnDestroy {
     private listasService: ListasEscolaresService,
     private toast: ToastService,
     private confirm: ConfirmService,
-    private auth: AuthService
+    private auth: AuthService,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit() {
+    const aviso = Number(this.route.snapshot.queryParamMap.get('aviso'));
+    if (aviso === 1 || aviso === 2) this.filtro.aviso = aviso;
     this.intervaloAtualizacao = setInterval(() => this.recarregarSilencioso(), ListasListaComponent.INTERVALO_ATUALIZACAO_MS);
     this.listasService.listarAnosLetivos().subscribe({
       next: res => {

@@ -390,6 +390,37 @@
               </ul>
             </div>
           }
+
+          @if (resumo()!.listasLiberadasComAviso.comTrocarSimilar > 0 || resumo()!.listasLiberadasComAviso.comItensFaltantes > 0) {
+            <div class="mt-4 space-y-3">
+              @if (resumo()!.listasLiberadasComAviso.comTrocarSimilar > 0) {
+                <div class="p-4 rounded-lg bg-orange-50 dark:bg-orange-900/20 cursor-pointer hover:opacity-90 transition-opacity"
+                     [routerLink]="['/cotacoes/listas-escolares']" [queryParams]="{ aviso: 1 }">
+                  <div class="flex items-center gap-1.5 mb-1">
+                    <span class="material-symbols-outlined text-orange-600 text-[18px]">swap_horiz</span>
+                    <p class="text-[11px] font-semibold uppercase text-orange-600">Trocar por similar</p>
+                  </div>
+                  <p class="text-lg font-bold text-orange-600">{{ resumo()!.listasLiberadasComAviso.comTrocarSimilar }} lista(s) liberada(s)</p>
+                  <p class="text-[11px] text-slate-400 mt-0.5">Estoque não cobre a quantidade da lista. Reavalie e troque o produto.</p>
+                </div>
+              }
+              @if (resumo()!.listasLiberadasComAviso.comItensFaltantes > 0) {
+                <div class="p-4 rounded-lg bg-amber-50 dark:bg-amber-900/20 cursor-pointer hover:opacity-90 transition-opacity"
+                     [routerLink]="['/cotacoes/listas-escolares']" [queryParams]="{ aviso: 2 }">
+                  <div class="flex items-center gap-1.5 mb-1">
+                    <span class="material-symbols-outlined text-amber-600 text-[18px]">production_quantity_limits</span>
+                    <p class="text-[11px] font-semibold uppercase text-amber-600">Itens em falta</p>
+                  </div>
+                  <p class="text-lg font-bold text-amber-600">{{ resumo()!.listasLiberadasComAviso.comItensFaltantes }} lista(s) liberada(s)</p>
+                  @if (resumo()!.listasLiberadasComAviso.faltantesJaChegaram > 0) {
+                    <p class="text-[11px] font-semibold text-emerald-600 mt-0.5">{{ resumo()!.listasLiberadasComAviso.faltantesJaChegaram }} já com o produto em estoque: atualize a lista.</p>
+                  } @else {
+                    <p class="text-[11px] text-slate-400 mt-0.5">Aguardando chegada de material.</p>
+                  }
+                </div>
+              }
+            </div>
+          }
         </div>
 
       </div>

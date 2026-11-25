@@ -66,6 +66,12 @@ export interface ListasEmConferenciaResumo {
   diasMaisAntiga: number;
 }
 
+export interface ListasLiberadasComAvisoResumo {
+  comTrocarSimilar: number;
+  comItensFaltantes: number;
+  faltantesJaChegaram: number;
+}
+
 export interface ContasAPagarResumo {
   valorVencido: number;
   quantidadeVencidas: number;
@@ -113,6 +119,7 @@ export interface DashboardResumo {
   contagemEstoque: ContagemEstoqueResumo;
   melhoresDiasSemana: MelhorDiaSemana[];
   listasEmConferencia: ListasEmConferenciaResumo;
+  listasLiberadasComAviso: ListasLiberadasComAvisoResumo;
 }
 
 @Injectable({ providedIn: 'root' })

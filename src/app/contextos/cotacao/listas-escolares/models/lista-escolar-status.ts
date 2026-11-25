@@ -10,7 +10,8 @@ export enum StatusItemListaEscolar {
   Encontrado = 1,
   NaoEncontrado = 2,
   MarcaSubstituida = 3,
-  SemEstoque = 4
+  SemEstoque = 4,
+  NaoTemos = 5
 }
 
 export enum MotivoPendenciaItem {
@@ -30,7 +31,8 @@ export const ROTULO_STATUS_ITEM: Record<StatusItemListaEscolar, string> = {
   [StatusItemListaEscolar.Encontrado]: 'encontrado',
   [StatusItemListaEscolar.NaoEncontrado]: 'não encontrado',
   [StatusItemListaEscolar.MarcaSubstituida]: 'marca substituída',
-  [StatusItemListaEscolar.SemEstoque]: 'sem estoque'
+  [StatusItemListaEscolar.SemEstoque]: 'sem estoque',
+  [StatusItemListaEscolar.NaoTemos]: 'não temos'
 };
 
 export const ROTULO_MOTIVO_PENDENCIA: Record<MotivoPendenciaItem, string> = {

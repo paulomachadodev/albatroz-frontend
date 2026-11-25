@@ -13,6 +13,7 @@ export interface ListaEscolarFiltro {
   idSerie?: number;
   anoLetivo?: number;
   status?: StatusListaEscolar;
+  aviso?: number;
   de?: string;
   ate?: string;
   ordenarPor?: string;

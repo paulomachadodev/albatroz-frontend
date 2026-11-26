@@ -28,11 +28,12 @@ interface ItemPedidoEdicao {
   precoCustoUnitario: number | null;
   valorTotal: number | null;
 }
+import { MascaraPipe } from '../../../../shared/pipes/formatacao.pipes';
 
 @Component({
   selector: 'app-pedido-compra-detalhe',
   standalone: true,
-  imports: [BtnIconeComponent, FormsModule, SelectBuscaComponent, BreadcrumbComponent, ListagemPaginadaComponent],
+  imports: [MascaraPipe, BtnIconeComponent, FormsModule, SelectBuscaComponent, BreadcrumbComponent, ListagemPaginadaComponent],
   templateUrl: './pedido-compra-detalhe.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })

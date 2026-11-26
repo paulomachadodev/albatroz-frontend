@@ -16,11 +16,13 @@ type Aba = 'geral' | 'enderecos' | 'compras' | 'representantes' | 'produtos';
 
 const TODOS_TIPOS: TipoContato[] = ['Cliente', 'Fornecedor', 'Transportador', 'Portador', 'Outro'];
 const ROTULOS_TIPO_ENDERECO: Record<number, string> = { 1: 'Principal', 2: 'Cobrança', 3: 'Entrega', 4: 'Outro' };
+import { CampoMascaraComponent } from '../../../../../shared/components/campo-mascara/campo-mascara.component';
+import { MascaraPipe } from '../../../../../shared/pipes/formatacao.pipes';
 
 @Component({
   selector: 'app-contatos-detalhe',
   standalone: true,
-  imports: [FormsModule, DatePipe, ModalComponent, ToggleComponent, BreadcrumbComponent],
+  imports: [MascaraPipe, CampoMascaraComponent, FormsModule, DatePipe, ModalComponent, ToggleComponent, BreadcrumbComponent],
   templateUrl: './contatos-detalhe.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })

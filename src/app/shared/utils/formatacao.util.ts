@@ -65,6 +65,19 @@ export function formatarTelefone(valor: string | null | undefined): string {
   return aplicarPadrao(digitos, digitos.length > 10 ? '(00) 00000-0000' : '(00) 0000-0000');
 }
 
+export function exibirTelefone(valor: string | null | undefined): string {
+  const texto = (valor ?? '').trim();
+  const semDominio = texto.replace(/@(c\.us|s\.whatsapp\.net)$/i, '');
+  if (!/^[\d\s()+.-]+$/.test(semDominio)) return texto;
+  const digitos = somenteDigitos(semDominio);
+  const local = (digitos.length === 12 || digitos.length === 13) && digitos.startsWith('55') ? digitos.slice(2) : digitos;
+  return local.length === 10 || local.length === 11 ? formatarTelefone(local) : texto;
+}
+
+export function formatarValorSalvo(tipo: TipoMascara, valor: string | null | undefined): string {
+  return tipo === 'telefone' ? exibirTelefone(valor) : formatarPorTipo(tipo, valor);
+}
+
 export function formatarPorTipo(tipo: TipoMascara, valor: string | null | undefined): string {
   switch (tipo) {
     case 'cpf': return formatarCpf(valor);

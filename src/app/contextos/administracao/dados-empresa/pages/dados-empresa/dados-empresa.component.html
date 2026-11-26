@@ -129,15 +129,15 @@
 
         <div>
           <label class="text-xs font-semibold text-slate-500">Fone</label>
-          <input type="text" class="input-modern mt-1" [(ngModel)]="empresa.telefone" maxlength="20"/>
+          <app-campo-mascara inputId="empresa-telefone" tipo="telefone" emitir="formatado" [(ngModel)]="empresa.telefone" placeholder="(00) 00000-0000" class="mt-1" />
         </div>
         <div>
           <label class="text-xs font-semibold text-slate-500">Fax</label>
-          <input type="text" class="input-modern mt-1" [(ngModel)]="empresa.fax" maxlength="20"/>
+          <app-campo-mascara inputId="empresa-fax" tipo="telefone" emitir="formatado" [(ngModel)]="empresa.fax" placeholder="(00) 00000-0000" class="mt-1" />
         </div>
         <div>
           <label class="text-xs font-semibold text-slate-500">Celular</label>
-          <input type="text" class="input-modern mt-1" [(ngModel)]="empresa.celular" maxlength="20"/>
+          <app-campo-mascara inputId="empresa-celular" tipo="telefone" emitir="formatado" [(ngModel)]="empresa.celular" placeholder="(00) 00000-0000" class="mt-1" />
         </div>
 
         <div class="md:col-span-2">
@@ -242,7 +242,7 @@
         </div>
         <div>
           <label class="text-xs font-semibold text-slate-500">Celular</label>
-          <input type="text" class="input-modern mt-1" [(ngModel)]="empresa.adminCelular" maxlength="20"/>
+          <app-campo-mascara inputId="empresa-admin-celular" tipo="telefone" emitir="formatado" [(ngModel)]="empresa.adminCelular" placeholder="(00) 00000-0000" class="mt-1" />
         </div>
       </div>
 

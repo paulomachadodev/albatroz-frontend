@@ -1,6 +1,6 @@
 import { Component, ElementRef, forwardRef, input, signal, viewChild } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { TipoMascara, formatarPorTipo, maximoDigitos, somenteDigitos } from '../../utils/formatacao.util';
+import { TipoMascara, formatarPorTipo, formatarValorSalvo, maximoDigitos, somenteDigitos } from '../../utils/formatacao.util';
 
 @Component({
   selector: 'app-campo-mascara',
@@ -27,7 +27,7 @@ export class CampoMascaraComponent implements ControlValueAccessor {
   private aoTocar: () => void = () => undefined;
 
   writeValue(valor: string | null | undefined): void {
-    this.texto.set(formatarPorTipo(this.tipo(), valor));
+    this.texto.set(formatarValorSalvo(this.tipo(), valor));
   }
 
   registerOnChange(funcao: (valor: string) => void): void {

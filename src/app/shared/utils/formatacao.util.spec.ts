@@ -1,6 +1,6 @@
 import { cepValido, cnpjValido, cpfValido } from './validadores-documento';
 import {
-  digitosParaValor, formatarCep, formatarCnpj, formatarCpf, formatarCpfCnpj, formatarMoeda, formatarTelefone, somenteDigitos, valorParaDigitos
+  digitosParaValor, exibirTelefone, formatarCep, formatarCnpj, formatarCpf, formatarCpfCnpj, formatarMoeda, formatarTelefone, somenteDigitos, valorParaDigitos
 } from './formatacao.util';
 
 describe('formatação', () => {
@@ -52,5 +52,23 @@ describe('formatação', () => {
     expect(cnpjValido('00000000000000')).toBeFalse();
     expect(cepValido('28970-000')).toBeTrue();
     expect(cepValido('2897')).toBeFalse();
+  });
+});
+
+describe('exibirTelefone', () => {
+  it('formata fixo, celular, com DDI 55 e identificador de telefone do WhatsApp', () => {
+    expect(exibirTelefone('2233334444')).toBe('(22) 3333-4444');
+    expect(exibirTelefone('22999998888')).toBe('(22) 99999-8888');
+    expect(exibirTelefone('+55 22 99999-8888')).toBe('(22) 99999-8888');
+    expect(exibirTelefone('5522999998888@c.us')).toBe('(22) 99999-8888');
+  });
+
+  it('mantém como está o que não é um telefone brasileiro completo', () => {
+    expect(exibirTelefone('26651234')).toBe('26651234');
+    expect(exibirTelefone('(22) 2665-1234 / 99999-8888')).toBe('(22) 2665-1234 / 99999-8888');
+    expect(exibirTelefone('+1 415 555 012 345')).toBe('+1 415 555 012 345');
+    expect(exibirTelefone('241587699323124@lid')).toBe('241587699323124@lid');
+    expect(exibirTelefone('ramal 12')).toBe('ramal 12');
+    expect(exibirTelefone(null)).toBe('');
   });
 });

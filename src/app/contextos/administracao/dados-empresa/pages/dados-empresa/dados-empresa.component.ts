@@ -5,11 +5,12 @@ import { DadosEmpresa, SubstitutoTributario } from '../../models/dados-empresa.m
 import { ToastService } from '../../../../../core/feedback/toast.service';
 import { PageHeaderComponent } from '../../../../../shared/components/page-header/page-header.component';
 import { BreadcrumbComponent } from '../../../../../shared/components/breadcrumb/breadcrumb.component';
+import { CampoMascaraComponent } from '../../../../../shared/components/campo-mascara/campo-mascara.component';
 
 @Component({
   selector: 'app-dados-empresa',
   standalone: true,
-  imports: [FormsModule, PageHeaderComponent, BreadcrumbComponent],
+  imports: [CampoMascaraComponent, FormsModule, PageHeaderComponent, BreadcrumbComponent],
   templateUrl: './dados-empresa.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })

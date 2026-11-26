@@ -18,7 +18,7 @@
           <h1 class="text-2xl font-bold text-slate-900 dark:text-slate-100">Pedido de Compra #{{ pedido()!.id }}</h1>
           <p class="text-sm text-slate-500 dark:text-slate-400">
             {{ pedido()!.fornecedor }}
-            @if (pedido()!.telefoneFornecedor) { · {{ pedido()!.telefoneFornecedor }} }
+            @if (pedido()!.telefoneFornecedor) { · {{ pedido()!.telefoneFornecedor | mascara:'telefone' }} }
             @if (pedido()!.emailFornecedor) { · {{ pedido()!.emailFornecedor }} }
           </p>
         </div>

@@ -14,11 +14,12 @@ import { BreadcrumbComponent } from '../../../../../shared/components/breadcrumb
 type ModoDrawer = 'criar' | 'editar';
 
 const TODOS_TIPOS: TipoContato[] = ['Cliente', 'Fornecedor', 'Transportador', 'Portador', 'Outro'];
+import { CampoMascaraComponent } from '../../../../../shared/components/campo-mascara/campo-mascara.component';
 
 @Component({
   selector: 'app-contatos-lista',
   standalone: true,
-  imports: [FormsModule, ListagemPaginadaComponent, DrawerComponent, PageHeaderComponent, ToggleComponent, ThOrdenavelComponent, BreadcrumbComponent],
+  imports: [CampoMascaraComponent, FormsModule, ListagemPaginadaComponent, DrawerComponent, PageHeaderComponent, ToggleComponent, ThOrdenavelComponent, BreadcrumbComponent],
   templateUrl: './contatos-lista.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })

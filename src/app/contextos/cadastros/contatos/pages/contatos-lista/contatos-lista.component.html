@@ -127,13 +127,11 @@
     <div class="grid grid-cols-2 gap-3">
       <div>
         <label class="text-xs font-semibold text-slate-500">Telefone</label>
-        <input type="text" [(ngModel)]="telefone" placeholder="Telefone"
-               class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+        <app-campo-mascara inputId="lista-contato-telefone" tipo="telefone" emitir="formatado" [(ngModel)]="telefone" placeholder="(00) 00000-0000" class="mt-1" />
       </div>
       <div>
         <label class="text-xs font-semibold text-slate-500">Celular</label>
-        <input type="text" [(ngModel)]="celular" placeholder="Celular"
-               class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"/>
+        <app-campo-mascara inputId="lista-contato-celular" tipo="telefone" emitir="formatado" [(ngModel)]="celular" placeholder="(00) 00000-0000" class="mt-1" />
       </div>
     </div>
     <div>

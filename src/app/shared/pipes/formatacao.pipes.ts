@@ -1,5 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { Moeda, TipoMascara, formatarMoeda, formatarPorTipo } from '../utils/formatacao.util';
+import { Moeda, TipoMascara, formatarMoeda, formatarValorSalvo } from '../utils/formatacao.util';
 
 @Pipe({ name: 'moeda', standalone: true })
 export class MoedaPipe implements PipeTransform {
@@ -11,6 +11,6 @@ export class MoedaPipe implements PipeTransform {
 @Pipe({ name: 'mascara', standalone: true })
 export class MascaraPipe implements PipeTransform {
   transform(valor: string | null | undefined, tipo: TipoMascara): string {
-    return formatarPorTipo(tipo, valor);
+    return formatarValorSalvo(tipo, valor);
   }
 }

@@ -44,11 +44,12 @@ const REMETENTE_BOLHA_CLASSES: Record<string, string> = {
   'Atendente': 'bg-blue-50 text-slate-800 dark:bg-blue-900/30 dark:text-blue-50',
   'Sistema': 'bg-slate-100 text-slate-500 dark:bg-slate-800/60 dark:text-slate-400'
 };
+import { MascaraPipe } from '../../../../../shared/pipes/formatacao.pipes';
 
 @Component({
   selector: 'app-atendimentos-dashboard',
   standalone: true,
-  imports: [BtnIconeComponent, 
+  imports: [MascaraPipe, BtnIconeComponent, 
     CommonModule,
     FormsModule,
     ModalComponent,

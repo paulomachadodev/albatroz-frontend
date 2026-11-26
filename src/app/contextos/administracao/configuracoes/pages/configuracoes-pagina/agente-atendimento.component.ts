@@ -15,7 +15,7 @@ import { ModalComponent } from '../../../../../shared/components/modal/modal.com
 import { PageHeaderComponent } from '../../../../../shared/components/page-header/page-header.component';
 import { ToggleComponent } from '../../../../../shared/components/toggle/toggle.component';
 import {
-  AgenteConfig, ContatoBloqueado, ESPERA_RESPOSTA_MAXIMA_SEG, ESPERA_RESPOSTA_PADRAO_SEG, PAUSA_HUMANO_MAXIMA_MIN, PAUSA_HUMANO_PADRAO_MIN, descreverEspera
+  AgenteConfig, ContatoBloqueado, ESPERA_RESPOSTA_MAXIMA_SEG, ESPERA_RESPOSTA_PADRAO_SEG, PAUSA_HUMANO_MAXIMA_MIN, PAUSA_HUMANO_PADRAO_MIN, descreverEspera, telefoneParaEdicao
 } from '../../models/agente-atendimento.model';
 import { formatarNumeroWaha, normalizarTelefoneBloqueio } from '../../models/waha.model';
 import { AgenteAtendimentoService } from '../../services/agente-atendimento.service';
@@ -43,6 +43,7 @@ export class AgenteAtendimentoComponent extends ConfiguracaoFormularioBase imple
   readonly agente = signal<AgenteConfig | null>(null);
   readonly bloqueados = signal<ContatoBloqueado[]>([]);
   readonly modalBloqueado = signal(false);
+  readonly emEdicao = signal<ContatoBloqueado | null>(null);
   readonly tipoIdentificador = signal<TipoIdentificador>('telefone');
   readonly podeExcluir = computed(() => this.contextoValido() && this.auth.temPermissao('atendimento:excluir'));
   readonly maximoEspera = ESPERA_RESPOSTA_MAXIMA_SEG;
@@ -122,9 +123,17 @@ export class AgenteAtendimentoComponent extends ConfiguracaoFormularioBase imple
       });
   }
 
-  abrirBloqueado(): void {
-    this.tipoIdentificador.set('telefone');
-    this.formBloqueado.reset({ telefone: '', lid: '', nome: '', motivo: '' });
+  abrirBloqueado(contato: ContatoBloqueado | null = null): void {
+    if (!this.podeEditar()) return;
+    const lid = contato?.identificador.endsWith('@lid') ?? false;
+    this.emEdicao.set(contato);
+    this.tipoIdentificador.set(lid ? 'lid' : 'telefone');
+    this.formBloqueado.reset({
+      telefone: contato && !lid ? telefoneParaEdicao(contato.identificador) : '',
+      lid: contato && lid ? contato.identificador : '',
+      nome: contato?.nome ?? '',
+      motivo: contato?.motivo ?? ''
+    });
     this.modalBloqueado.set(true);
   }
 
@@ -140,15 +149,19 @@ export class AgenteAtendimentoComponent extends ConfiguracaoFormularioBase imple
     const valido = this.tipoIdentificador() === 'telefone' ? identificador.length >= 12 : PADRAO_LID.test(identificador);
     if (!valido) { this.toast.erro(this.tipoIdentificador() === 'telefone' ? 'Informe o telefone com DDD.' : 'Informe o identificador no formato 123456789@lid.'); return; }
     this.processando.set(true);
-    this.service.adicionarBloqueado({ identificador, nome: valores.nome.trim(), motivo: valores.motivo.trim() || null })
+    const contato = this.emEdicao();
+    const requisicao = { identificador, nome: valores.nome.trim(), motivo: valores.motivo.trim() || null };
+    const operacao = contato ? this.service.alterarBloqueado(contato.id, requisicao) : this.service.adicionarBloqueado(requisicao);
+    const falha = contato ? 'Não foi possível salvar o número.' : 'Não foi possível adicionar o número.';
+    operacao
       .pipe(takeUntil(this.contextoEncerrado), takeUntilDestroyed(this.destroyRef), finalize(() => this.processando.set(false))).subscribe({
         next: resposta => {
-          if (!resposta.sucesso) { this.toast.erro('Não foi possível adicionar o número.'); return; }
+          if (!resposta.sucesso) { this.toast.erro(falha); return; }
           this.modalBloqueado.set(false);
           this.carregarBloqueados();
-          this.toast.sucesso('Número adicionado. A Albia não atenderá esta pessoa.');
+          this.toast.sucesso(contato ? 'Número atualizado.' : 'Número adicionado. A Albia não atenderá esta pessoa.');
         },
-        error: erro => this.toast.erroServidor(erro, 'Não foi possível adicionar o número.')
+        error: erro => this.toast.erroServidor(erro, falha)
       });
   }
 

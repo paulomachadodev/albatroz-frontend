@@ -25,6 +25,10 @@ export class AgenteAtendimentoService {
     return this.api.post(`${this.base}/contatos-bloqueados`, requisicao);
   }
 
+  alterarBloqueado(id: number, requisicao: ContatoBloqueadoRequisicao): Observable<Resultado<ContatoBloqueado>> {
+    return this.api.put(`${this.base}/contatos-bloqueados/${id}`, requisicao);
+  }
+
   removerBloqueado(id: number): Observable<Resultado<void>> {
     return this.api.delete(`${this.base}/contatos-bloqueados/${id}`);
   }

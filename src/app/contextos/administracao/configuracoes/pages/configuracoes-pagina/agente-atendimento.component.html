@@ -69,8 +69,11 @@
                     <td class="px-3 py-3 text-slate-600 dark:text-slate-300">{{ contato.motivo ?? '-' }}</td>
                     <td class="px-3 py-3 text-right">
                       <div class="flex justify-end gap-2">
+                        @if (podeEditar()) {
+                          <app-btn-icone icone="edit" titulo="Editar" [desabilitado]="processando()" (clicar)="abrirBloqueado(contato)" />
+                        }
                         @if (podeExcluir()) {
-                          <app-btn-icone icone="delete" titulo="Remover da lista" variante="perigo" [desabilitado]="processando()" (clicar)="removerBloqueado(contato)" />
+                          <app-btn-icone icone="delete" titulo="Excluir" variante="perigo" [desabilitado]="processando()" (clicar)="removerBloqueado(contato)" />
                         }
                       </div>
                     </td>
@@ -85,7 +88,7 @@
   </div>
 </div>
 
-<app-modal [aberto]="modalBloqueado()" titulo="Adicionar número" subtitulo="A Albia não vai atender esta pessoa." tamanho="md" (fechar)="modalBloqueado.set(false)">
+<app-modal [aberto]="modalBloqueado()" [titulo]="emEdicao() ? 'Editar número' : 'Adicionar número'" subtitulo="A Albia não vai atender esta pessoa." tamanho="md" (fechar)="modalBloqueado.set(false)">
   <form [formGroup]="formBloqueado" (ngSubmit)="salvarBloqueado()" class="space-y-4" id="form-bloqueado">
     <div class="grid grid-cols-2 gap-2 p-1 rounded-lg bg-slate-100 dark:bg-slate-800">
       <button type="button" (click)="trocarTipoIdentificador('telefone')" class="px-3 py-2 rounded-md text-sm font-bold transition-colors"
@@ -117,6 +120,6 @@
   </form>
   <div modalRodape>
     <button type="button" (click)="modalBloqueado.set(false)" class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-sm">Cancelar</button>
-    <button type="submit" form="form-bloqueado" [disabled]="processando()" class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all">Adicionar</button>
+    <button type="submit" form="form-bloqueado" [disabled]="processando()" class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all">{{ emEdicao() ? 'Salvar' : 'Adicionar' }}</button>
   </div>
 </app-modal>

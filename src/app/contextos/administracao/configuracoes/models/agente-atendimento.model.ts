@@ -32,6 +32,11 @@ export const ESPERA_RESPOSTA_MAXIMA_SEG = 300;
 export const PAUSA_HUMANO_PADRAO_MIN = 60;
 export const PAUSA_HUMANO_MAXIMA_MIN = 1440;
 
+export function telefoneParaEdicao(identificador: string): string {
+  const comDdi = (identificador.length === 12 || identificador.length === 13) && identificador.startsWith('55');
+  return comDdi ? identificador.slice(2) : identificador;
+}
+
 export function descreverEspera(segundos: number): string {
   if (segundos <= 0) return 'A Albia responde assim que a mensagem chega.';
   if (segundos < 60) return `A Albia espera ${segundos} segundos depois da última mensagem para juntar o que o cliente escrever em sequência.`;

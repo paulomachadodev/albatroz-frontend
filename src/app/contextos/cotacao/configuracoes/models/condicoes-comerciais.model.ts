@@ -13,4 +13,5 @@ export interface CondicoesComerciais {
   textoHorarioAtendimento: string;
   reconferirPorPreco: boolean;
   reconferirPorEstoque: boolean;
+  mesViradaAnoLetivo: number;
 }

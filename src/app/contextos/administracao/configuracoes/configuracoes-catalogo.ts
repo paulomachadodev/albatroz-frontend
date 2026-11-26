@@ -27,7 +27,7 @@ export const CONFIGURACOES_GRUPOS: GrupoConfiguracao[] = [
   { id: 'comercial', titulo: 'Comercial e operação', destinos: [
     { id: 'venda', titulo: 'Listas de preço', descricao: 'Tabelas e regras de cálculo.', rota: '/configuracoes/listas-preco', permissao: 'produtos:ler', termos: 'venda valores percentual' },
     { id: 'metas', titulo: 'Metas e vendedores', descricao: 'Objetivos mensais e regras por vendedor.', rota: '/configuracoes/metas', permissao: 'configuracoes:ler' },
-    { id: 'condicoes-comerciais', titulo: 'Condições comerciais', descricao: 'Pagamento, validade e condições das propostas.', rota: '/configuracoes/condicoes-comerciais', permissao: 'cotacoes:ler', termos: 'cotação orçamento parcelas descontos' },
+    { id: 'condicoes-comerciais', titulo: 'Condições comerciais', descricao: 'Pagamento, validade e condições das propostas.', rota: '/configuracoes/condicoes-comerciais', permissao: 'cotacoes:ler', termos: 'cotação orçamento parcelas descontos ano letivo virada lista escolar site' },
     { id: 'estoque', titulo: 'Parâmetros de estoque', descricao: 'Meta diária de contagem.', rota: '/configuracoes/estoque', permissao: 'configuracoes:ler', termos: 'balanço inventário' }
   ] },
   { id: 'fiscal', titulo: 'Fiscal e financeiro', destinos: [

@@ -1,4 +1,5 @@
 import { takeUntil } from 'rxjs';
+import { SelectModule } from 'primeng/select';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CondicoesComerciaisService } from '../../../../cotacao/configuracoes/services/condicoes-comerciais.service';
@@ -8,7 +9,7 @@ import { BreadcrumbComponent } from '../../../../../shared/components/breadcrumb
 import { RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ConfiguracaoFormularioBase } from './configuracao-formulario.base';
-@Component({ selector: 'app-configuracao-condicoes-comerciais', standalone: true, imports: [FormsModule, RouterLink, BreadcrumbComponent, PageHeaderComponent], templateUrl: './condicoes-comerciais-configuracao.component.html', host: { class: 'flex-1 flex flex-col min-h-0' } })
+@Component({ selector: 'app-configuracao-condicoes-comerciais', standalone: true, imports: [SelectModule, FormsModule, RouterLink, BreadcrumbComponent, PageHeaderComponent], templateUrl: './condicoes-comerciais-configuracao.component.html', host: { class: 'flex-1 flex flex-col min-h-0' } })
 export class CondicoesComerciaisConfiguracaoComponent extends ConfiguracaoFormularioBase implements OnInit {
     protected override permissaoEdicao = 'cotacoes:editar';
     private readonly condicoesComerciaisService = inject(CondicoesComerciaisService);
@@ -31,6 +32,8 @@ export class CondicoesComerciaisConfiguracaoComponent extends ConfiguracaoFormul
     textoHorarioAtendimento = '';
     reconferirPorPreco = false;
     reconferirPorEstoque = false;
+    mesViradaAnoLetivo = 11;
+    readonly mesesDeVirada = ['julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'].map((nome, indice) => ({ valor: indice + 7, rotulo: `1º de ${nome}` }));
     carregarCondicoesComerciais() {
         this.carregandoCondicoesComerciais.set(true);
         this.condicoesComerciaisService.obter().pipe(takeUntil(this.contextoEncerrado), takeUntilDestroyed(this.destroyRef)).subscribe({
@@ -52,6 +55,7 @@ export class CondicoesComerciaisConfiguracaoComponent extends ConfiguracaoFormul
                     this.textoHorarioAtendimento = dados.textoHorarioAtendimento;
                     this.reconferirPorPreco = dados.reconferirPorPreco;
                     this.reconferirPorEstoque = dados.reconferirPorEstoque;
+                    this.mesViradaAnoLetivo = dados.mesViradaAnoLetivo;
                 }
                 else {
                     this.condicoesComerciaisCadastradas.set(false);
@@ -80,7 +84,8 @@ export class CondicoesComerciaisConfiguracaoComponent extends ConfiguracaoFormul
             whatsappAtendimento: this.whatsappAtendimento,
             textoHorarioAtendimento: this.textoHorarioAtendimento,
             reconferirPorPreco: this.reconferirPorPreco,
-            reconferirPorEstoque: this.reconferirPorEstoque
+            reconferirPorEstoque: this.reconferirPorEstoque,
+            mesViradaAnoLetivo: this.mesViradaAnoLetivo
         }).pipe(takeUntil(this.contextoEncerrado), takeUntilDestroyed(this.destroyRef)).subscribe({
             next: () => {
                 this.salvandoCondicoesComerciais.set(false);

@@ -91,6 +91,13 @@
           </div>
         </div>
 
+        <div class="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+          <p class="text-sm font-bold text-slate-900 dark:text-slate-100">Ano letivo no site</p>
+          <label for="mes-virada" class="text-xs font-semibold text-slate-500">A partir de quando o site mostra somente as listas do ano seguinte</label>
+          <p-select inputId="mes-virada" [options]="mesesDeVirada" optionLabel="rotulo" optionValue="valor" [(ngModel)]="mesViradaAnoLetivo" (onChange)="registrarAlteracao()" [disabled]="!podeEditar()" appendTo="body" styleClass="w-full sm:w-72" />
+          <p class="text-xs text-slate-400">Exemplo: em 1º de novembro de 2026 o site passa a mostrar 2027. Enquanto não houver lista liberada do ano seguinte, continua aparecendo o ano mais recente.</p>
+        </div>
+
         <div class="space-y-3 pt-2 border-t border-slate-100 dark:border-slate-800">
           <p class="text-sm font-bold text-slate-900 dark:text-slate-100">Reconferência automática das listas liberadas</p>
           <p class="text-xs text-slate-400">

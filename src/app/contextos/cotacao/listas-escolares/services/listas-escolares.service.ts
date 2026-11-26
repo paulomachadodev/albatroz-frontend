@@ -62,6 +62,14 @@ export class ListasEscolaresService {
     return this.api.post<{ whatsappIdsParaNotificar: string[] }>(`${this.endpoint}/${idLista}/liberar`, {});
   }
 
+  obterModeloWhatsapp(idLista: number): Observable<Resultado<{ podeEnviar: boolean; motivo: string | null; mensagem: string }>> {
+    return this.api.get(`${this.endpoint}/${idLista}/whatsapp`);
+  }
+
+  enviarPorWhatsapp(idLista: number, requisicao: { telefone: string; mensagem: string }): Observable<Resultado<void>> {
+    return this.api.post(`${this.endpoint}/${idLista}/whatsapp`, requisicao);
+  }
+
   excluirLista(idLista: number): Observable<Resultado<void>> {
     return this.api.delete<void>(`${this.endpoint}/${idLista}`);
   }

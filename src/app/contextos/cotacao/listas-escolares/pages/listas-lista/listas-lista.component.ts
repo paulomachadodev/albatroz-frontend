@@ -16,6 +16,8 @@ import { BreadcrumbComponent } from '../../../../../shared/components/breadcrumb
 import { BtnIconeComponent } from '../../../../../shared/components/btn-icone/btn-icone.component';
 import { AuthService } from '../../../../../core/auth/auth.service';
 
+import { EnviarListaWhatsappComponent } from './enviar-lista-whatsapp.component';
+
 type EstadoEnvio = 'fila' | 'enviando' | 'pronta' | 'duplicada' | 'erro';
 
 interface ItemEnvio {
@@ -28,11 +30,17 @@ interface ItemEnvio {
 @Component({
   selector: 'app-listas-lista',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, ListagemPaginadaComponent, PageHeaderComponent, SelectBuscaComponent, ThOrdenavelComponent, BreadcrumbComponent, BtnIconeComponent],
+  imports: [CommonModule, RouterLink, FormsModule, ListagemPaginadaComponent, PageHeaderComponent, SelectBuscaComponent, ThOrdenavelComponent, BreadcrumbComponent, BtnIconeComponent, EnviarListaWhatsappComponent],
   templateUrl: './listas-lista.component.html',
   host: { class: 'flex-1 flex flex-col min-h-0' }
 })
 export class ListasListaComponent implements OnInit, OnDestroy {
+  readonly listaParaEnviar = signal<ListaEscolarResumo | null>(null);
+
+  podeEnviarPorWhatsapp(): boolean {
+    return this.auth.temPermissao('cotacoes:editar');
+  }
+
   carregando = signal(true);
   itens = signal<ListaEscolarResumo[]>([]);
   totalRegistros = signal(0);

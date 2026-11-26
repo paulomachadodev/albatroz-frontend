@@ -1,5 +1,6 @@
 import { Component, computed, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { NgTemplateOutlet } from '@angular/common';
 
 export type VarianteBtnIcone = 'neutro' | 'perigo' | 'primario' | 'sucesso';
 
@@ -14,7 +15,7 @@ const CLASSES_VARIANTE: Record<VarianteBtnIcone, string> = {
 @Component({
   selector: 'app-btn-icone',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, NgTemplateOutlet],
   templateUrl: './btn-icone.component.html',
   host: { class: 'inline-block' }
 })

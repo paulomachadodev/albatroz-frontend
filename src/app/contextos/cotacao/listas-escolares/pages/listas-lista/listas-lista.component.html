@@ -161,7 +161,7 @@
           </td>
           <td class="px-6 py-4 text-right" (click)="$event.stopPropagation()">
             @if (podeEnviarPorWhatsapp() && item.status === statusLista.Liberada) {
-              <app-btn-icone icone="send" titulo="Enviar pelo WhatsApp" variante="sucesso" (clicar)="listaParaEnviar.set(item)"></app-btn-icone>
+              <app-btn-icone icone="pi-whatsapp" titulo="Enviar pelo WhatsApp" variante="sucesso" (clicar)="listaParaEnviar.set(item)"></app-btn-icone>
             }
             @if (podeExcluirLista()) {
               <app-btn-icone icone="delete" titulo="Excluir lista" variante="perigo"

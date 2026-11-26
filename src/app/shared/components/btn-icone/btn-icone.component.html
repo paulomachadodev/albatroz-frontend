@@ -1,6 +1,6 @@
 @if (link() !== null) {
   <a [routerLink]="link()" [queryParams]="parametros()" [title]="titulo()" [attr.aria-label]="titulo()" [class]="classes()" (click)="$event.stopPropagation()">
-    <span class="material-symbols-outlined text-base">{{ icone() }}</span>
+    <ng-container *ngTemplateOutlet="desenho" />
   </a>
 } @else {
   <button type="button"
@@ -9,6 +9,14 @@
           [disabled]="desabilitado()"
           (click)="clicar.emit()"
           [class]="classes()">
-    <span class="material-symbols-outlined text-base">{{ icone() }}</span>
+    <ng-container *ngTemplateOutlet="desenho" />
   </button>
 }
+
+<ng-template #desenho>
+  @if (icone().startsWith('pi-')) {
+    <i [class]="'pi text-base leading-none ' + icone()" aria-hidden="true"></i>
+  } @else {
+    <span class="material-symbols-outlined text-base">{{ icone() }}</span>
+  }
+</ng-template>

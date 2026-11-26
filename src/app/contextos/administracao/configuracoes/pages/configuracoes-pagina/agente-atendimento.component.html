@@ -1,11 +1,23 @@
 <div class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark px-4 sm:px-6 lg:px-8 xl:px-10 py-6 lg:py-8">
   <div class="w-full space-y-6">
     <app-breadcrumb [itens]="[{label:'Início',rota:'/dashboard'},{label:'Configurações',rota:'/configuracoes'},{label:'Agente de Atendimento IA'}]" />
-    <app-page-header titulo="Agente de Atendimento IA" subtitulo="A Albia atende os clientes pelo WhatsApp. Aqui você liga, desliga e escolhe quando ela responde." />
+    <app-page-header titulo="Agente de Atendimento IA" subtitulo="A Albia atende os clientes pelo WhatsApp. Aqui você define quando e como ela atende." />
     <div class="flex flex-wrap gap-4">
       <a routerLink="/configuracoes" class="inline-block text-sm font-semibold text-primary hover:underline">Voltar às configurações</a>
     </div>
 
+    <div class="border-b border-slate-200 dark:border-slate-800">
+      <nav class="flex gap-6 overflow-x-auto" role="tablist">
+        @for (item of abas; track item.id) {
+          <button type="button" role="tab" [attr.aria-selected]="aba() === item.id" (click)="trocarAba(item.id)"
+                  class="pb-3 text-sm font-bold whitespace-nowrap border-b-2 transition-colors"
+                  [class.border-primary]="aba() === item.id" [class.text-primary]="aba() === item.id"
+                  [class.border-transparent]="aba() !== item.id" [class.text-slate-500]="aba() !== item.id">{{ item.titulo }}</button>
+        }
+      </nav>
+    </div>
+
+    <div class="space-y-6" [class.hidden]="aba() !== 'geral'">
     @if (carregando()) {
       <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 h-96 animate-pulse" aria-label="Carregando o agente de atendimento"></div>
     } @else if (agente(); as a) {
@@ -84,6 +96,11 @@
           </div>
         }
       </section>
+    }
+    </div>
+
+    @if (secoesAbertas()) {
+      <app-agente-secoes [class.hidden]="aba() === 'geral'" [aba]="aba() === 'geral' ? 'identidade' : aba()" [podeEditar]="podeEditar()" (pendente)="secoesPendentes($event)" />
     }
   </div>
 </div>

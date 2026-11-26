@@ -21,13 +21,16 @@ import { formatarNumeroWaha, normalizarTelefoneBloqueio } from '../../models/wah
 import { AgenteAtendimentoService } from '../../services/agente-atendimento.service';
 import { ConfiguracaoFormularioBase } from './configuracao-formulario.base';
 
+import { ABAS_AGENTE, AbaAgente } from '../../models/agente-secoes.model';
+import { AgenteSecoesComponent } from './agente-secoes.component';
+
 type TipoIdentificador = 'telefone' | 'lid';
 
 const PADRAO_LID = /^\d{5,30}@lid$/i;
 
 @Component({
   selector: 'app-agente-atendimento', standalone: true,
-  imports: [ReactiveFormsModule, RouterLink, DatePipe, InputTextModule, BreadcrumbComponent, PageHeaderComponent, ModalComponent, ToggleComponent, BtnIconeComponent, CampoMascaraComponent],
+  imports: [ReactiveFormsModule, RouterLink, DatePipe, InputTextModule, BreadcrumbComponent, PageHeaderComponent, ModalComponent, ToggleComponent, BtnIconeComponent, CampoMascaraComponent, AgenteSecoesComponent],
   templateUrl: './agente-atendimento.component.html', host: { class: 'flex-1 flex flex-col min-h-0' }
 })
 export class AgenteAtendimentoComponent extends ConfiguracaoFormularioBase implements OnInit {
@@ -38,6 +41,9 @@ export class AgenteAtendimentoComponent extends ConfiguracaoFormularioBase imple
   private readonly fb = inject(FormBuilder);
   protected override permissaoEdicao = 'atendimento:editar';
 
+  readonly abas = ABAS_AGENTE;
+  readonly aba = signal<AbaAgente>('geral');
+  readonly secoesAbertas = signal(false);
   readonly carregando = signal(true);
   readonly processando = signal(false);
   readonly agente = signal<AgenteConfig | null>(null);
@@ -65,6 +71,15 @@ export class AgenteAtendimentoComponent extends ConfiguracaoFormularioBase imple
   ngOnInit(): void {
     this.carregarConfiguracao();
     this.carregarBloqueados();
+  }
+
+  trocarAba(aba: AbaAgente): void {
+    this.aba.set(aba);
+    if (aba !== 'geral') this.secoesAbertas.set(true);
+  }
+
+  secoesPendentes(pendente: boolean): void {
+    this.alterado.set(pendente);
   }
 
   private carregarConfiguracao(): void {

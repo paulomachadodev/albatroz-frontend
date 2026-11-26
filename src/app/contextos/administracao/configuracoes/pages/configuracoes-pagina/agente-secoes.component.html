@@ -1,0 +1,149 @@
+@if (carregando()) {
+  <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 h-96 animate-pulse" aria-label="Carregando as configurações"></div>
+} @else if (falhou()) {
+  <section class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-3">
+    <p class="text-sm text-slate-600 dark:text-slate-300">Não foi possível carregar as configurações do agente.</p>
+    <button type="button" (click)="carregar()" class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm">Tentar de novo</button>
+  </section>
+} @else if (semConfiguracao()) {
+  <section class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6">
+    <p class="text-sm text-slate-600 dark:text-slate-300">Esta empresa ainda não tem a configuração desta aba. A carga inicial é feita por quem administra o sistema.</p>
+  </section>
+} @else {
+  <form class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-5" (ngSubmit)="salvar()" (input)="marcarAlterada()">
+    <fieldset class="space-y-5 min-w-0" [disabled]="!podeEditar()">
+      @if (aba() === 'identidade' || aba() === 'vendas') {
+        <p class="text-sm text-slate-500 dark:text-slate-400">
+          Estas são as instruções que a Albia segue. Mudar um texto muda o comportamento dela nas próximas conversas. Um campo vazio deixa a instrução de fora. As regras técnicas do sistema não aparecem aqui.
+        </p>
+        @for (bloco of blocos(); track bloco.chave) {
+          <div>
+            <label [for]="'instrucao-' + bloco.chave" class="text-xs font-semibold text-slate-500">{{ bloco.titulo }}</label>
+            <textarea [id]="'instrucao-' + bloco.chave" [name]="bloco.chave" [(ngModel)]="bloco.texto" rows="4" maxlength="4000" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20"></textarea>
+          </div>
+        }
+      }
+
+      @if (aba() === 'loja' && loja) {
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="min-w-0 sm:col-span-2">
+            <label for="loja-endereco" class="text-xs font-semibold text-slate-500">Endereço, como é dito ao cliente</label>
+            <input pInputText id="loja-endereco" name="endereco" [(ngModel)]="loja.endereco" maxlength="300" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm" />
+          </div>
+          <div class="min-w-0 sm:col-span-2">
+            <label for="loja-horario" class="text-xs font-semibold text-slate-500">Horário, como é dito ao cliente</label>
+            <input pInputText id="loja-horario" name="horarioTexto" [(ngModel)]="loja.horarioTexto" maxlength="300" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm" />
+          </div>
+          <div class="min-w-0">
+            <label for="loja-pagamento" class="text-xs font-semibold text-slate-500">Formas de pagamento</label>
+            <input pInputText id="loja-pagamento" name="pagamento" [(ngModel)]="loja.pagamento" maxlength="300" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm" />
+          </div>
+          <div class="min-w-0">
+            <label for="loja-entregas" class="text-xs font-semibold text-slate-500">Entregas</label>
+            <input pInputText id="loja-entregas" name="entregas" [(ngModel)]="loja.entregas" maxlength="300" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm" />
+          </div>
+        </div>
+        <div class="space-y-2">
+          <h3 class="font-bold text-slate-900 dark:text-white">Aberta ou fechada</h3>
+          <p class="text-xs text-slate-500">A Albia usa estes horários para saber se a loja está aberta agora. Mantenha o texto do horário igual ao da grade.</p>
+          @for (dia of dias; track dia.dia) {
+            <div class="flex flex-wrap items-center gap-3">
+              <span class="w-20 text-sm text-slate-700 dark:text-slate-200">{{ nomesDias[dia.dia] }}</span>
+              <app-toggle [valor]="dia.aberto" [desabilitado]="!podeEditar()" [label]="'Abre ' + nomesDias[dia.dia]" (valorMudou)="dia.aberto = $event; marcarAlterada()" />
+              @if (dia.aberto) {
+                <input type="time" [name]="'abre' + dia.dia" [(ngModel)]="dia.abre" [attr.aria-label]="'Abre ' + nomesDias[dia.dia]" class="px-3 py-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-sm" />
+                <span class="text-sm text-slate-500">às</span>
+                <input type="time" [name]="'fecha' + dia.dia" [(ngModel)]="dia.fecha" [attr.aria-label]="'Fecha ' + nomesDias[dia.dia]" class="px-3 py-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-sm" />
+              } @else {
+                <span class="text-sm text-slate-500">Fechada</span>
+              }
+            </div>
+          }
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="min-w-0">
+            <label for="loja-titulo-mapa" class="text-xs font-semibold text-slate-500">Título no mapa</label>
+            <input pInputText id="loja-titulo-mapa" name="tituloMapa" [(ngModel)]="loja.tituloMapa" maxlength="100" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm" />
+          </div>
+          <div class="min-w-0">
+            <label for="loja-latitude" class="text-xs font-semibold text-slate-500">Latitude</label>
+            <input pInputText id="loja-latitude" type="number" step="any" name="latitude" [(ngModel)]="loja.latitude" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm" />
+          </div>
+          <div class="min-w-0">
+            <label for="loja-longitude" class="text-xs font-semibold text-slate-500">Longitude</label>
+            <input pInputText id="loja-longitude" type="number" step="any" name="longitude" [(ngModel)]="loja.longitude" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm" />
+          </div>
+        </div>
+        <div>
+          <label for="loja-palavras" class="text-xs font-semibold text-slate-500">Trechos que fazem a Albia enviar o mapa (separados por vírgula)</label>
+          <input pInputText id="loja-palavras" name="palavrasMapa" [(ngModel)]="palavrasMapa" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm" />
+        </div>
+      }
+
+      @if (aba() === 'arquivos' && arquivos) {
+        <p class="text-sm text-slate-500 dark:text-slate-400">Mensagens quando o cliente manda foto ou PDF. <strong>{{ '{link}' }}</strong> vira o endereço do PDF e <strong>{{ '{idLista}' }}</strong> vira o número da lista.</p>
+        <div><label for="arq-pergunta" class="text-xs font-semibold text-slate-500">Pergunta: cotar ou só imprimir</label>
+          <textarea id="arq-pergunta" name="perguntaCotarOuImprimir" [(ngModel)]="arquivos.perguntaCotarOuImprimir" rows="5" maxlength="1000" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-sm"></textarea></div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="min-w-0"><label for="arq-cotar" class="text-xs font-semibold text-slate-500">Respostas que significam cotar</label>
+            <input pInputText id="arq-cotar" name="respostasCotar" [(ngModel)]="respostasCotar" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm" /></div>
+          <div class="min-w-0"><label for="arq-imprimir" class="text-xs font-semibold text-slate-500">Respostas que significam imprimir</label>
+            <input pInputText id="arq-imprimir" name="respostasImprimir" [(ngModel)]="respostasImprimir" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm" /></div>
+        </div>
+        <div><label for="arq-aviso" class="text-xs font-semibold text-slate-500">Arquivo para impressão recebido</label>
+          <textarea id="arq-aviso" name="avisoImpressao" [(ngModel)]="arquivos.avisoImpressao" rows="3" maxlength="1000" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-sm"></textarea></div>
+        <div><label for="arq-colega" class="text-xs font-semibold text-slate-500">Cliente respondeu que é para imprimir</label>
+          <textarea id="arq-colega" name="colegaImprime" [(ngModel)]="arquivos.colegaImprime" rows="2" maxlength="1000" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-sm"></textarea></div>
+        <div><label for="arq-varios" class="text-xs font-semibold text-slate-500">Vários arquivos de uma vez</label>
+          <textarea id="arq-varios" name="variosArquivos" [(ngModel)]="arquivos.variosArquivos" rows="5" maxlength="1000" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-sm"></textarea></div>
+        <div><label for="arq-pronta" class="text-xs font-semibold text-slate-500">Cotação pronta</label>
+          <textarea id="arq-pronta" name="cotacaoPronta" [(ngModel)]="arquivos.cotacaoPronta" rows="5" maxlength="1000" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-sm"></textarea></div>
+        <div><label for="arq-revisao" class="text-xs font-semibold text-slate-500">Cotação em revisão pela equipe</label>
+          <textarea id="arq-revisao" name="cotacaoEmRevisao" [(ngModel)]="arquivos.cotacaoEmRevisao" rows="3" maxlength="1000" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-sm"></textarea></div>
+        <div><label for="arq-alta" class="text-xs font-semibold text-slate-500">Cotação em alta temporada</label>
+          <textarea id="arq-alta" name="cotacaoAltaTemporada" [(ngModel)]="arquivos.cotacaoAltaTemporada" rows="3" maxlength="1000" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-sm"></textarea></div>
+        <div><label for="arq-meses" class="text-xs font-semibold text-slate-500">Meses de alta temporada (1 a 12, separados por vírgula)</label>
+          <input pInputText id="arq-meses" name="meses" [(ngModel)]="meses" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm" /></div>
+        <div><label for="arq-liberada" class="text-xs font-semibold text-slate-500">Aviso de lista liberada</label>
+          <textarea id="arq-liberada" name="listaLiberada" [(ngModel)]="arquivos.listaLiberada" rows="5" maxlength="1000" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-sm"></textarea></div>
+        <div><label for="arq-classificador" class="text-xs font-semibold text-slate-500">Como a IA decide se o arquivo é lista ou impressão</label>
+          <textarea id="arq-classificador" name="instrucaoClassificador" [(ngModel)]="arquivos.instrucaoClassificador" rows="7" maxlength="3000" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-sm"></textarea></div>
+      }
+
+      @if (aba() === 'encerramento' && encerramento) {
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="min-w-0"><label for="enc-horas" class="text-xs font-semibold text-slate-500">Encerrar após quantas horas sem atividade</label>
+            <input pInputText id="enc-horas" type="number" min="1" max="168" name="horasInatividade" [(ngModel)]="encerramento.horasInatividade" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm" /></div>
+          <div class="min-w-0"><label for="enc-cada" class="text-xs font-semibold text-slate-500">Enviar um link a cada quantos encerramentos (0 não envia)</label>
+            <input pInputText id="enc-cada" type="number" min="0" max="100" name="linkACada" [(ngModel)]="encerramento.linkACada" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm" /></div>
+        </div>
+        <div><label for="enc-mensagem" class="text-xs font-semibold text-slate-500">Mensagem de encerramento</label>
+          <textarea id="enc-mensagem" name="mensagem" [(ngModel)]="encerramento.mensagem" rows="3" maxlength="1000" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-sm"></textarea></div>
+        <div class="space-y-3">
+          <h3 class="font-bold text-slate-900 dark:text-white">Links sorteados</h3>
+          @for (link of encerramento.links; track $index) {
+            <div class="grid grid-cols-1 md:grid-cols-[14rem_1fr_1fr_auto] gap-2 items-center">
+              <p-select [name]="'tipo' + $index" [options]="tiposLink" optionLabel="rotulo" optionValue="valor" [(ngModel)]="link.tipo" (onChange)="marcarAlterada()" appendTo="body" styleClass="w-full" [attr.aria-label]="'Tipo do link ' + ($index + 1)" />
+              <input pInputText [name]="'texto' + $index" [(ngModel)]="link.texto" placeholder="Texto antes do link" aria-label="Texto do link" class="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm" />
+              <input pInputText [name]="'url' + $index" [(ngModel)]="link.url" placeholder="https://" aria-label="Endereço do link" class="w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm" />
+              @if (podeEditar()) { <app-btn-icone icone="delete" titulo="Excluir" variante="perigo" (clicar)="removerLink($index)" /> }
+            </div>
+          }
+          @if (podeEditar()) {
+            <button type="button" (click)="adicionarLink()" class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-sm">Adicionar link</button>
+          }
+        </div>
+      }
+
+      @if (aba() === 'protecoes' && protecoes) {
+        <div><label for="prot-limite" class="text-xs font-semibold text-slate-500">Avisar quando o cliente mandar mais de quantas mensagens em 5 segundos</label>
+          <input pInputText id="prot-limite" type="number" min="1" max="30" name="limiteMensagens" [(ngModel)]="protecoes.limiteMensagens" class="mt-1 w-full sm:w-40 px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm" /></div>
+        <div><label for="prot-mensagem" class="text-xs font-semibold text-slate-500">Mensagem enviada</label>
+          <textarea id="prot-mensagem" name="mensagemMuitasMensagens" [(ngModel)]="protecoes.mensagemMuitasMensagens" rows="3" maxlength="500" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-sm"></textarea></div>
+      }
+    </fieldset>
+    @if (podeEditar()) {
+      <button type="submit" [disabled]="salvando()" class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all">{{ salvando() ? 'Salvando...' : 'Salvar' }}</button>
+    }
+  </form>
+}

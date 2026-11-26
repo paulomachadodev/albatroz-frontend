@@ -12,6 +12,7 @@ export interface AtendimentoWhatsappResumo {
   cotacoesLista: number;
   inicio: string;
   fim?: string;
+  ultimaMensagem: string;
   status: AtendimentoWhatsappStatus;
 }
 

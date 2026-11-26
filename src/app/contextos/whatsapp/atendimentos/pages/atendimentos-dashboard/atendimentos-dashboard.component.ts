@@ -82,7 +82,8 @@ export class AtendimentosDashboardComponent implements OnInit {
 
   anoAtual = new Date().getFullYear();
   mesAtual = new Date().getMonth() + 1;
-  filtro: AtendimentoWhatsappFiltro = { ano: this.anoAtual };
+  anoMensal = this.anoAtual;
+  filtro: AtendimentoWhatsappFiltro = this.filtroDeHoje();
 
   ordenacaoAtual = signal<Ordenacao | null>(null);
 
@@ -130,7 +131,7 @@ export class AtendimentosDashboardComponent implements OnInit {
   }
 
   carregarMensal() {
-    this.atendimentosService.porMes(this.filtro.ano ?? this.anoAtual).subscribe({
+    this.atendimentosService.porMes(this.anoMensal).subscribe({
       next: res => this.mensal.set(res.dados ?? [])
     });
   }
@@ -149,7 +150,8 @@ export class AtendimentosDashboardComponent implements OnInit {
 
   carregar(pagina = 1) {
     this.carregando.set(true);
-    this.atendimentosService.listar({ pagina, tamanho: this.tamanhoPagina() }, this.filtro).subscribe({
+    const filtro = { ...this.filtro, de: this.filtro.de || undefined, ate: this.filtro.ate || undefined };
+    this.atendimentosService.listar({ pagina, tamanho: this.tamanhoPagina() }, filtro).subscribe({
       next: res => {
         this.itens.set(res.dados?.dados ?? []);
         this.totalRegistros.set(res.dados?.totalRegistros ?? 0);
@@ -172,15 +174,24 @@ export class AtendimentosDashboardComponent implements OnInit {
   }
 
   aplicarFiltros() {
-    this.carregarMensal();
+    if (this.filtro.de && this.filtro.ate && this.filtro.de > this.filtro.ate) {
+      this.toast.erro('A data inicial não pode ser maior que a final.');
+      return;
+    }
     this.carregar(1);
   }
 
   limparFiltros() {
-    this.filtro = { ano: this.anoAtual };
+    this.filtro = this.filtroDeHoje();
     this.ordenacaoAtual.set(null);
-    this.carregarMensal();
     this.carregar(1);
+  }
+
+  private filtroDeHoje(): AtendimentoWhatsappFiltro {
+    const agora = new Date();
+    const doisDigitos = (valor: number) => String(valor).padStart(2, '0');
+    const hoje = `${agora.getFullYear()}-${doisDigitos(agora.getMonth() + 1)}-${doisDigitos(agora.getDate())}`;
+    return { de: hoje, ate: hoje };
   }
 
   aoMudarPagina(pagina: number) {

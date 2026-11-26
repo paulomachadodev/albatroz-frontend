@@ -1,9 +1,10 @@
 <div class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark px-4 sm:px-6 lg:px-8 xl:px-10 py-6 lg:py-8">
   <div class="w-full space-y-6">
     <app-breadcrumb [itens]="[{label:'Início',rota:'/dashboard'},{label:'Configurações',rota:'/configuracoes'},{label:'Integração WAHA (WhatsApp)'}]" />
-    <app-page-header titulo="Integração WAHA (WhatsApp)" subtitulo="Conecte o número da loja e controle quem a Albia atende." />
+    <app-page-header titulo="Integração WAHA (WhatsApp)" subtitulo="Conecte o número da loja ao WhatsApp e escolha para onde as mensagens vão." />
     <div class="flex flex-wrap gap-4">
       <a routerLink="/configuracoes" class="inline-block text-sm font-semibold text-primary hover:underline">Voltar às configurações</a>
+      <a routerLink="/configuracoes/agente-atendimento" class="inline-block text-sm font-semibold text-primary hover:underline">Ligar ou desligar a Albia</a>
     </div>
 
     @if (carregando()) {
@@ -25,9 +26,6 @@
           </div>
         </div>
         <div class="flex flex-wrap items-center gap-3">
-          @if (albia(); as a) {
-            <app-toggle [valor]="a.ativa" [desabilitado]="!podeEditar() || processando()" label="Albia atendendo clientes" (valorMudou)="alternarAlbia($event)" />
-          }
           @if (podeEditar() && configurada()) {
             @if (!conectado()) {
               <button type="button" (click)="conectar()" [disabled]="processando()" class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all">Conectar WhatsApp</button>
@@ -44,10 +42,10 @@
                   class="pb-3 text-sm font-bold border-b-2 transition-colors whitespace-nowrap"
                   [class.border-primary]="aba() === 'conexao'" [class.text-primary]="aba() === 'conexao'"
                   [class.border-transparent]="aba() !== 'conexao'" [class.text-slate-500]="aba() !== 'conexao'">Conexão</button>
-          <button type="button" role="tab" [attr.aria-selected]="aba() === 'albia'" (click)="trocarAba('albia')"
+          <button type="button" role="tab" [attr.aria-selected]="aba() === 'recebimento'" (click)="trocarAba('recebimento')"
                   class="pb-3 text-sm font-bold border-b-2 transition-colors whitespace-nowrap"
-                  [class.border-primary]="aba() === 'albia'" [class.text-primary]="aba() === 'albia'"
-                  [class.border-transparent]="aba() !== 'albia'" [class.text-slate-500]="aba() !== 'albia'">Atendimento da Albia</button>
+                  [class.border-primary]="aba() === 'recebimento'" [class.text-primary]="aba() === 'recebimento'"
+                  [class.border-transparent]="aba() !== 'recebimento'" [class.text-slate-500]="aba() !== 'recebimento'">Recebimento</button>
           @if (podeEditar()) {
             <button type="button" role="tab" [attr.aria-selected]="aba() === 'avancado'" (click)="trocarAba('avancado')"
                     class="pb-3 text-sm font-bold border-b-2 transition-colors whitespace-nowrap"
@@ -76,57 +74,80 @@
         </section>
       }
 
-      @if (aba() === 'albia') {
+      @if (aba() === 'recebimento') {
         <section class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-6">
           <div class="space-y-1">
-            <h2 class="font-bold text-slate-900 dark:text-white">Números que a Albia não atende</h2>
-            <p class="text-sm text-slate-500 dark:text-slate-400">Equipe, dono e testes. A Albia ignora estes números e quem escreve não recebe resposta automática.</p>
-            @if (albia(); as a) {
-              @if (!a.ativa) { <p class="text-sm font-semibold text-amber-600">A Albia está desligada: nenhum cliente recebe resposta automática agora.</p> }
-            }
+            <h2 class="font-bold text-slate-900 dark:text-white">Para onde o WhatsApp envia as mensagens</h2>
+            <p class="text-sm text-slate-500 dark:text-slate-400">Cada mensagem que chega (ou sai) é entregue neste endereço. Hoje é o fluxo da Albia no n8n.</p>
           </div>
-          @if (podeEditar()) {
-            <button type="button" (click)="abrirBloqueado()" class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all">Adicionar número</button>
-          }
-          @if (bloqueados().length === 0) {
-            <p class="text-sm text-slate-500">Nenhum número na lista. A Albia atende todos os contatos.</p>
-          } @else {
-            <div class="overflow-x-auto">
-              <table class="w-full text-sm text-left">
-                <thead class="text-xs uppercase text-slate-500">
-                  <tr><th class="px-3 py-3">Nome</th><th class="px-3 py-3">Número</th><th class="px-3 py-3">Motivo</th><th class="px-3 py-3 text-right">Ações</th></tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-                  @for (contato of bloqueados(); track contato.id) {
-                    <tr>
-                      <td class="px-3 py-3 font-semibold text-slate-900 dark:text-slate-100">{{ contato.nome }}</td>
-                      <td class="px-3 py-3 text-slate-600 dark:text-slate-300 break-all">{{ rotuloIdentificador(contato) }}</td>
-                      <td class="px-3 py-3 text-slate-600 dark:text-slate-300">{{ contato.motivo ?? '-' }}</td>
-                      <td class="px-3 py-3 text-right">
-                        <div class="flex justify-end gap-2">
-                          @if (podeExcluir()) {
-                            <app-btn-icone icone="delete" titulo="Remover da lista" variante="perigo" [desabilitado]="processando()" (clicar)="removerBloqueado(contato)" />
-                          }
-                        </div>
-                      </td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
+          @if (!configurada()) {
+            <p class="text-sm text-slate-600 dark:text-slate-300">Cadastre o servidor na aba Avançado para ver e mudar estas configurações.</p>
+          } @else if (carregandoRecebimento() && !recebimento()) {
+            <div class="h-48 rounded-lg bg-slate-100 dark:bg-slate-800 animate-pulse" aria-label="Lendo as configurações do WhatsApp"></div>
+          } @else if (!recebimento()) {
+            <div class="space-y-3">
+              <p class="text-sm text-slate-600 dark:text-slate-300">Não consegui ler as configurações do WhatsApp agora.</p>
+              <button type="button" (click)="carregarRecebimento()" class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-sm">Tentar de novo</button>
             </div>
-          }
-          @if (albia(); as a) {
-            <form [formGroup]="formPausa" (ngSubmit)="salvarPausa()" class="space-y-3 border-t border-slate-200 dark:border-slate-800 pt-6">
-              <div class="max-w-xs">
-                <label for="waha-pausa" class="text-xs font-semibold text-slate-500">Silêncio após resposta de uma pessoa (minutos)</label>
-                <input pInputText id="waha-pausa" type="number" min="1" max="1440" formControlName="minutos" [attr.disabled]="podeEditar() ? null : true" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20" />
-                @if (formPausa.controls.minutos.touched && formPausa.controls.minutos.invalid) { <p class="text-xs text-red-600">Informe de 1 a 1440 minutos.</p> }
-              </div>
-              <p class="text-xs text-slate-500">Quando alguém da loja responde, a Albia fica quieta por este tempo para não atrapalhar a conversa.</p>
+          } @else {
+            <form [formGroup]="formRecebimento" (ngSubmit)="salvarRecebimento()" class="space-y-6">
+              <fieldset [disabled]="!podeEditar() || processando()" class="space-y-6 min-w-0">
+                <div class="min-w-0">
+                  <label for="rec-url" class="text-xs font-semibold text-slate-500">Endereço de destino</label>
+                  <input pInputText id="rec-url" type="text" formControlName="urlDestino" placeholder="https://n8n.albatrozpapelaria.com.br/webhook/albatroz-bot" spellcheck="false" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20" />
+                  @if (formRecebimento.controls.urlDestino.touched && formRecebimento.controls.urlDestino.invalid) { <p class="text-xs text-red-600">Informe o endereço começando com http:// ou https://.</p> }
+                  @if (recebimento()?.outrosDestinos; as outros) { <p class="text-xs text-slate-500 mt-1">Há mais {{ outros }} destino(s) configurado(s) no servidor, que esta tela não altera.</p> }
+                </div>
+
+                <div class="space-y-3">
+                  <h3 class="text-xs font-semibold text-slate-500">O que enviar</h3>
+                  @for (evento of eventosDisponiveis; track evento.valor) {
+                    <label class="flex items-start gap-3 text-sm cursor-pointer">
+                      <input type="checkbox" class="mt-1 size-4 rounded border-slate-300 text-primary focus:ring-primary/30" [checked]="eventosEscolhidos().includes(evento.valor)" (change)="alternarEvento(evento.valor, $any($event.target).checked)" />
+                      <span><span class="font-semibold text-slate-900 dark:text-slate-100">{{ evento.nome }}</span><span class="block text-xs text-slate-500">{{ evento.ajuda }}</span></span>
+                    </label>
+                  }
+                </div>
+
+                <div class="space-y-3">
+                  <h3 class="text-xs font-semibold text-slate-500">O que ignorar</h3>
+                  <app-toggle [valor]="ignorarGrupos()" label="Conversas em grupo" (valorMudou)="alterarIgnorar(ignorarGrupos, $event)" [desabilitado]="!podeEditar() || processando()" />
+                  <app-toggle [valor]="ignorarStatus()" label="Status (stories)" (valorMudou)="alterarIgnorar(ignorarStatus, $event)" [desabilitado]="!podeEditar() || processando()" />
+                  <app-toggle [valor]="ignorarCanais()" label="Canais" (valorMudou)="alterarIgnorar(ignorarCanais, $event)" [desabilitado]="!podeEditar() || processando()" />
+                  <app-toggle [valor]="ignorarBroadcast()" label="Listas de transmissão" (valorMudou)="alterarIgnorar(ignorarBroadcast, $event)" [desabilitado]="!podeEditar() || processando()" />
+                  <p class="text-xs text-slate-500">Ligado significa que o WhatsApp não envia esse tipo de mensagem para o destino.</p>
+                </div>
+
+                <div class="space-y-3">
+                  <h3 class="text-xs font-semibold text-slate-500">Se o destino estiver fora do ar</h3>
+                  <p class="text-xs text-slate-500">O WhatsApp tenta entregar de novo sozinho, para nenhuma mensagem se perder.</p>
+                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="min-w-0">
+                      <label for="rec-tentativas" class="text-xs font-semibold text-slate-500">Tentativas</label>
+                      <input pInputText id="rec-tentativas" type="number" min="1" max="30" formControlName="tentativas" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20" />
+                      @if (formRecebimento.controls.tentativas.touched && formRecebimento.controls.tentativas.invalid) { <p class="text-xs text-red-600">De 1 a 30.</p> }
+                    </div>
+                    <div class="min-w-0">
+                      <label for="rec-intervalo" class="text-xs font-semibold text-slate-500">Espera inicial (segundos)</label>
+                      <input pInputText id="rec-intervalo" type="number" min="1" max="300" formControlName="intervaloSegundos" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20" />
+                      @if (formRecebimento.controls.intervaloSegundos.touched && formRecebimento.controls.intervaloSegundos.invalid) { <p class="text-xs text-red-600">De 1 a 300.</p> }
+                    </div>
+                    <div class="min-w-0">
+                      <label for="rec-politica" class="text-xs font-semibold text-slate-500">Intervalo entre tentativas</label>
+                      <select id="rec-politica" formControlName="politica" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20">
+                        @for (politica of politicas; track politica.valor) { <option [value]="politica.valor">{{ politica.nome }}</option> }
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </fieldset>
               @if (podeEditar()) {
-                <button type="submit" [disabled]="processando() || formPausa.invalid" class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-sm disabled:opacity-50">Salvar pausa</button>
+                <div class="flex flex-wrap items-center gap-3">
+                  <button type="submit" [disabled]="processando() || formRecebimento.invalid || eventosEscolhidos().length === 0" class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all">{{ processando() ? 'Aplicando...' : 'Aplicar no WhatsApp' }}</button>
+                  <button type="button" (click)="carregarRecebimento()" [disabled]="processando() || carregandoRecebimento()" class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-sm disabled:opacity-50">Descartar mudanças</button>
+                  <p class="text-xs text-slate-500">A conexão reinicia por alguns segundos ao aplicar.</p>
+                </div>
               }
-              @if (a.desligadaEm) { <p class="text-xs text-slate-500">Última vez desligada em {{ a.desligadaEm | date:'dd/MM/yyyy HH:mm' }}.</p> }
             </form>
           }
         </section>
@@ -212,41 +233,5 @@
   </div>
   <div modalRodape>
     <button type="button" (click)="fecharConectar()" class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-sm">Fechar</button>
-  </div>
-</app-modal>
-
-<app-modal [aberto]="modalBloqueado()" titulo="Adicionar número" subtitulo="A Albia não vai atender esta pessoa." tamanho="md" (fechar)="modalBloqueado.set(false)">
-  <form [formGroup]="formBloqueado" (ngSubmit)="salvarBloqueado()" class="space-y-4" id="form-bloqueado">
-    <div class="grid grid-cols-2 gap-2 p-1 rounded-lg bg-slate-100 dark:bg-slate-800">
-      <button type="button" (click)="trocarTipoIdentificador('telefone')" class="px-3 py-2 rounded-md text-sm font-bold transition-colors"
-              [class.bg-white]="tipoIdentificador() === 'telefone'" [class.dark:bg-slate-900]="tipoIdentificador() === 'telefone'" [class.text-primary]="tipoIdentificador() === 'telefone'" [class.text-slate-500]="tipoIdentificador() !== 'telefone'">Telefone</button>
-      <button type="button" (click)="trocarTipoIdentificador('lid')" class="px-3 py-2 rounded-md text-sm font-bold transition-colors"
-              [class.bg-white]="tipoIdentificador() === 'lid'" [class.dark:bg-slate-900]="tipoIdentificador() === 'lid'" [class.text-primary]="tipoIdentificador() === 'lid'" [class.text-slate-500]="tipoIdentificador() !== 'lid'">Identificador @lid</button>
-    </div>
-    @if (tipoIdentificador() === 'telefone') {
-      <div>
-        <label for="bloq-telefone" class="text-xs font-semibold text-slate-500">Telefone com DDD</label>
-        <app-campo-mascara inputId="bloq-telefone" tipo="telefone" formControlName="telefone" placeholder="(22) 99999-8888" class="mt-1" />
-      </div>
-    } @else {
-      <div>
-        <label for="bloq-lid" class="text-xs font-semibold text-slate-500">Identificador do WhatsApp</label>
-        <input pInputText id="bloq-lid" type="text" formControlName="lid" placeholder="241587699323124@lid" spellcheck="false" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20" />
-        <p class="text-xs text-slate-500 mt-1">Use quando o WhatsApp não mostra o telefone da pessoa.</p>
-      </div>
-    }
-    <div>
-      <label for="bloq-nome" class="text-xs font-semibold text-slate-500">Nome</label>
-      <input pInputText id="bloq-nome" type="text" formControlName="nome" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20" />
-      @if (formBloqueado.controls.nome.touched && formBloqueado.controls.nome.invalid) { <p class="text-xs text-red-600">Informe o nome da pessoa.</p> }
-    </div>
-    <div>
-      <label for="bloq-motivo" class="text-xs font-semibold text-slate-500">Motivo (opcional)</label>
-      <input pInputText id="bloq-motivo" type="text" formControlName="motivo" placeholder="Funcionária, dono, teste" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20" />
-    </div>
-  </form>
-  <div modalRodape>
-    <button type="button" (click)="modalBloqueado.set(false)" class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-sm">Cancelar</button>
-    <button type="submit" form="form-bloqueado" [disabled]="processando()" class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all">Adicionar</button>
   </div>
 </app-modal>

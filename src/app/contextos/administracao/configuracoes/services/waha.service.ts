@@ -3,8 +3,7 @@ import { Observable } from 'rxjs';
 import { ApiService } from '../../../../core/http/api.service';
 import { Resultado } from '../../../../core/models';
 import {
-  AlbiaConfig, AlbiaConfigRequisicao, ContatoBloqueado, ContatoBloqueadoRequisicao,
-  WahaCodigo, WahaConexao, WahaConexaoRequisicao, WahaQr, WahaStatus
+  WahaCodigo, WahaConexao, WahaConexaoRequisicao, WahaQr, WahaRecebimento, WahaRecebimentoRequisicao, WahaStatus
 } from '../models/waha.model';
 
 @Injectable({ providedIn: 'root' })
@@ -44,23 +43,11 @@ export class WahaService {
     return this.api.post(`${this.base}/conexao/codigo-telefone`, { telefone });
   }
 
-  obterAlbia(): Observable<Resultado<AlbiaConfig>> {
-    return this.api.get(`${this.base}/albia`);
+  obterRecebimento(): Observable<Resultado<WahaRecebimento>> {
+    return this.api.get(`${this.base}/recebimento`);
   }
 
-  salvarAlbia(requisicao: AlbiaConfigRequisicao): Observable<Resultado<AlbiaConfig>> {
-    return this.api.put(`${this.base}/albia`, requisicao);
-  }
-
-  listarBloqueados(): Observable<Resultado<ContatoBloqueado[]>> {
-    return this.api.get(`${this.base}/albia/contatos-bloqueados`);
-  }
-
-  adicionarBloqueado(requisicao: ContatoBloqueadoRequisicao): Observable<Resultado<ContatoBloqueado>> {
-    return this.api.post(`${this.base}/albia/contatos-bloqueados`, requisicao);
-  }
-
-  removerBloqueado(id: number): Observable<Resultado<void>> {
-    return this.api.delete(`${this.base}/albia/contatos-bloqueados/${id}`);
+  salvarRecebimento(requisicao: WahaRecebimentoRequisicao): Observable<Resultado<WahaRecebimento>> {
+    return this.api.put(`${this.base}/recebimento`, requisicao);
   }
 }

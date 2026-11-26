@@ -9,30 +9,28 @@ import { AuthService } from '../../../../../core/auth/auth.service';
 import { ConfirmService } from '../../../../../core/feedback/confirm.service';
 import { ToastService } from '../../../../../core/feedback/toast.service';
 import { BreadcrumbComponent } from '../../../../../shared/components/breadcrumb/breadcrumb.component';
-import { BtnIconeComponent } from '../../../../../shared/components/btn-icone/btn-icone.component';
 import { CampoMascaraComponent } from '../../../../../shared/components/campo-mascara/campo-mascara.component';
 import { ModalComponent } from '../../../../../shared/components/modal/modal.component';
 import { PageHeaderComponent } from '../../../../../shared/components/page-header/page-header.component';
 import { ToggleComponent } from '../../../../../shared/components/toggle/toggle.component';
 import {
-  AlbiaConfig, ContatoBloqueado, MOTOR_WAHA, MotorWaha, SITUACAO_WAHA, WahaConexao, WahaStatus,
+  EVENTOS_WAHA, MOTOR_WAHA, MotorWaha, POLITICAS_WAHA, SITUACAO_WAHA, WahaConexao, WahaRecebimento, WahaStatus,
   apresentarStatusWaha, formatarNumeroWaha, normalizarTelefoneBloqueio
 } from '../../models/waha.model';
 import { WahaService } from '../../services/waha.service';
 import { ConfiguracaoFormularioBase } from './configuracao-formulario.base';
 
-type AbaWaha = 'conexao' | 'albia' | 'avancado';
+type AbaWaha = 'conexao' | 'recebimento' | 'avancado';
 type ModoConexao = 'qr' | 'codigo';
-type TipoIdentificador = 'telefone' | 'lid';
 
+const URL_PADRAO_WAHA = 'http://192.168.0.180:3000';
 const INTERVALO_MS = 3000;
 const TICKS_STATUS_EM_REPOUSO = 5;
 const TICKS_QR = 3;
-const PADRAO_LID = /^\d{5,30}@lid$/i;
 
 @Component({
   selector: 'app-configuracao-waha', standalone: true,
-  imports: [ReactiveFormsModule, RouterLink, DatePipe, InputTextModule, BreadcrumbComponent, PageHeaderComponent, ModalComponent, ToggleComponent, BtnIconeComponent, CampoMascaraComponent],
+  imports: [ReactiveFormsModule, RouterLink, DatePipe, InputTextModule, BreadcrumbComponent, PageHeaderComponent, ModalComponent, ToggleComponent, CampoMascaraComponent],
   templateUrl: './waha-configuracao.component.html', host: { class: 'flex-1 flex flex-col min-h-0' }
 })
 export class WahaConfiguracaoComponent extends ConfiguracaoFormularioBase implements OnInit {
@@ -46,20 +44,25 @@ export class WahaConfiguracaoComponent extends ConfiguracaoFormularioBase implem
 
   readonly motores = [{ valor: MOTOR_WAHA.Noweb, nome: 'NOWEB (recomendado)' }, { valor: MOTOR_WAHA.Webjs, nome: 'WEBJS (navegador)' }];
   readonly SITUACAO = SITUACAO_WAHA;
+  readonly eventosDisponiveis = EVENTOS_WAHA;
+  readonly politicas = POLITICAS_WAHA;
   readonly aba = signal<AbaWaha>('conexao');
   readonly carregando = signal(true);
   readonly processando = signal(false);
   readonly conexao = signal<WahaConexao | null>(null);
   readonly status = signal<WahaStatus | null>(null);
-  readonly albia = signal<AlbiaConfig | null>(null);
-  readonly bloqueados = signal<ContatoBloqueado[]>([]);
+  readonly recebimento = signal<WahaRecebimento | null>(null);
+  readonly carregandoRecebimento = signal(false);
+  readonly eventosEscolhidos = signal<string[]>([]);
+  readonly ignorarStatus = signal(true);
+  readonly ignorarGrupos = signal(true);
+  readonly ignorarCanais = signal(true);
+  readonly ignorarBroadcast = signal(true);
   readonly modalConectar = signal(false);
   readonly modoConexao = signal<ModoConexao>('qr');
   readonly qrImagem = signal<string | null>(null);
   readonly qrMensagem = signal<string | null>(null);
   readonly codigo = signal<string | null>(null);
-  readonly modalBloqueado = signal(false);
-  readonly tipoIdentificador = signal<TipoIdentificador>('telefone');
   readonly apresentacao = computed(() => apresentarStatusWaha(this.status()));
   readonly conectado = computed(() => this.status()?.situacao === SITUACAO_WAHA.Conectado && this.status()?.configurada === true);
   readonly configurada = computed(() => this.conexao()?.configurada === true);
@@ -67,25 +70,24 @@ export class WahaConfiguracaoComponent extends ConfiguracaoFormularioBase implem
   readonly numeroFormatado = formatarNumeroWaha;
 
   readonly formAvancado = this.fb.nonNullable.group({
-    urlBase: ['', [Validators.required, Validators.maxLength(200), Validators.pattern(/^https?:\/\/\S+$/i)]],
+    urlBase: [URL_PADRAO_WAHA, [Validators.required, Validators.maxLength(200), Validators.pattern(/^https?:\/\/\S+$/i)]],
     sessao: ['default', [Validators.required, Validators.maxLength(60), Validators.pattern(/^[A-Za-z0-9_-]+$/)]],
     chaveApi: ['', [Validators.minLength(8), Validators.maxLength(128), Validators.pattern(/^\S+$/)]],
     motor: [MOTOR_WAHA.Noweb as MotorWaha]
   });
-  readonly formTelefone = this.fb.nonNullable.group({ telefone: ['', [Validators.required, Validators.minLength(10)]] });
-  readonly formPausa = this.fb.nonNullable.group({ minutos: [60, [Validators.required, Validators.min(1), Validators.max(1440)]] });
-  readonly formBloqueado = this.fb.nonNullable.group({
-    telefone: [''],
-    lid: [''],
-    nome: ['', [Validators.required, Validators.maxLength(120)]],
-    motivo: ['', [Validators.maxLength(200)]]
+  readonly formRecebimento = this.fb.nonNullable.group({
+    urlDestino: ['', [Validators.required, Validators.maxLength(300), Validators.pattern(/^https?:\/\/\S+$/i)]],
+    tentativas: [15, [Validators.required, Validators.min(1), Validators.max(30)]],
+    intervaloSegundos: [2, [Validators.required, Validators.min(1), Validators.max(300)]],
+    politica: ['exponential']
   });
+  readonly formTelefone = this.fb.nonNullable.group({ telefone: ['', [Validators.required, Validators.minLength(10)]] });
 
   constructor() {
     super();
     effect(() => {
       if (!this.contextoValido()) {
-        this.formAvancado.reset({ urlBase: '', sessao: 'default', chaveApi: '', motor: MOTOR_WAHA.Noweb });
+        this.formAvancado.reset({ urlBase: URL_PADRAO_WAHA, sessao: 'default', chaveApi: '', motor: MOTOR_WAHA.Noweb });
         this.conexao.set(null);
         this.status.set(null);
       }
@@ -100,6 +102,63 @@ export class WahaConfiguracaoComponent extends ConfiguracaoFormularioBase implem
 
   trocarAba(aba: AbaWaha): void {
     this.aba.set(aba);
+    if (aba === 'recebimento' && !this.recebimento() && this.configurada()) this.carregarRecebimento();
+  }
+
+  carregarRecebimento(): void {
+    if (this.carregandoRecebimento()) return;
+    this.carregandoRecebimento.set(true);
+    this.service.obterRecebimento().pipe(takeUntil(this.contextoEncerrado), takeUntilDestroyed(this.destroyRef), finalize(() => this.carregandoRecebimento.set(false))).subscribe({
+      next: resposta => {
+        if (!resposta.sucesso || !resposta.dados) { this.toast.erro('Não foi possível ler as configurações do WhatsApp.'); return; }
+        this.aplicarRecebimento(resposta.dados);
+      },
+      error: erro => this.toast.erroServidor(erro, 'Não foi possível ler as configurações do WhatsApp.')
+    });
+  }
+
+  private aplicarRecebimento(dados: WahaRecebimento): void {
+    this.recebimento.set(dados);
+    this.formRecebimento.reset({ urlDestino: dados.urlDestino ?? '', tentativas: dados.tentativas, intervaloSegundos: dados.intervaloSegundos, politica: dados.politica });
+    this.eventosEscolhidos.set(dados.eventos);
+    this.ignorarStatus.set(dados.ignorarStatus);
+    this.ignorarGrupos.set(dados.ignorarGrupos);
+    this.ignorarCanais.set(dados.ignorarCanais);
+    this.ignorarBroadcast.set(dados.ignorarBroadcast);
+    this.marcarSalvo();
+  }
+
+  alternarEvento(valor: string, marcado: boolean): void {
+    const atuais = this.eventosEscolhidos();
+    this.eventosEscolhidos.set(marcado ? [...atuais.filter(e => e !== valor), valor] : atuais.filter(e => e !== valor));
+    this.alterado.set(true);
+  }
+
+  alterarIgnorar(sinal: { set(valor: boolean): void }, valor: boolean): void {
+    sinal.set(valor);
+    this.alterado.set(true);
+  }
+
+  async salvarRecebimento(): Promise<void> {
+    this.formRecebimento.markAllAsTouched();
+    if (!this.podeEditar() || this.processando() || this.formRecebimento.invalid) return;
+    if (this.eventosEscolhidos().length === 0) { this.toast.erro('Escolha pelo menos um tipo de evento para enviar.'); return; }
+    const confirmado = await this.confirm.confirmar('Aplicar no WhatsApp?', 'A conexão reinicia por alguns segundos e o WhatsApp passa a usar estas configurações.', { textoConfirmar: 'Aplicar' });
+    if (!confirmado || !this.podeEditar() || this.processando()) return;
+    const valores = this.formRecebimento.getRawValue();
+    this.processando.set(true);
+    this.service.salvarRecebimento({
+      urlDestino: valores.urlDestino.trim(), eventos: this.eventosEscolhidos(), tentativas: valores.tentativas, intervaloSegundos: valores.intervaloSegundos,
+      politica: valores.politica, ignorarStatus: this.ignorarStatus(), ignorarGrupos: this.ignorarGrupos(), ignorarCanais: this.ignorarCanais(), ignorarBroadcast: this.ignorarBroadcast()
+    }).pipe(takeUntil(this.contextoEncerrado), takeUntilDestroyed(this.destroyRef), finalize(() => this.processando.set(false))).subscribe({
+      next: resposta => {
+        if (!resposta.sucesso || !resposta.dados) { this.toast.erro('Não foi possível aplicar as configurações.'); return; }
+        this.aplicarRecebimento(resposta.dados);
+        this.atualizarStatus();
+        this.toast.sucesso('Configurações aplicadas no WhatsApp.');
+      },
+      error: erro => this.toast.erroServidor(erro, 'Não foi possível aplicar as configurações.')
+    });
   }
 
   private carregarTudo(): void {
@@ -111,13 +170,11 @@ export class WahaConfiguracaoComponent extends ConfiguracaoFormularioBase implem
       error: erro => this.toast.erroServidor(erro, 'Não foi possível carregar a conexão do WhatsApp.')
     });
     this.atualizarStatus();
-    this.carregarAlbia();
-    this.carregarBloqueados();
   }
 
   private aplicarConexao(dados: WahaConexao): void {
     this.conexao.set(dados);
-    this.formAvancado.reset({ urlBase: dados.urlBase ?? '', sessao: dados.sessao, chaveApi: '', motor: dados.motor });
+    this.formAvancado.reset({ urlBase: dados.urlBase ?? URL_PADRAO_WAHA, sessao: dados.sessao, chaveApi: '', motor: dados.motor });
     this.marcarSalvo();
   }
 
@@ -256,106 +313,5 @@ export class WahaConfiguracaoComponent extends ConfiguracaoFormularioBase implem
       },
       error: erro => { this.formAvancado.controls.chaveApi.reset(''); this.toast.erroServidor(erro, 'Não foi possível validar e salvar o servidor.'); }
     });
-  }
-
-  private carregarAlbia(): void {
-    this.service.obterAlbia().pipe(takeUntil(this.contextoEncerrado), takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: resposta => {
-        if (!resposta.sucesso || !resposta.dados) return;
-        this.albia.set(resposta.dados);
-        this.formPausa.reset({ minutos: resposta.dados.pausaHumanoMin });
-      },
-      error: erro => this.toast.erroServidor(erro, 'Não foi possível carregar a configuração da Albia.')
-    });
-  }
-
-  private carregarBloqueados(): void {
-    this.service.listarBloqueados().pipe(takeUntil(this.contextoEncerrado), takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: resposta => { if (resposta.sucesso && resposta.dados) this.bloqueados.set(resposta.dados); },
-      error: erro => this.toast.erroServidor(erro, 'Não foi possível carregar a lista de números.')
-    });
-  }
-
-  async alternarAlbia(ativa: boolean): Promise<void> {
-    const atual = this.albia();
-    if (!atual || !this.podeEditar() || this.processando()) return;
-    if (!ativa) {
-      const confirmado = await this.confirm.confirmar('Desligar a Albia?', 'Os clientes deixam de receber resposta automática. O WhatsApp continua conectado.', { textoConfirmar: 'Desligar a Albia' });
-      if (!confirmado) return;
-    }
-    this.gravarAlbia(ativa, atual.pausaHumanoMin, ativa ? 'Albia ligada.' : 'Albia desligada.');
-  }
-
-  salvarPausa(): void {
-    this.formPausa.markAllAsTouched();
-    const atual = this.albia();
-    if (!atual || !this.podeEditar() || this.processando() || this.formPausa.invalid) return;
-    this.gravarAlbia(atual.ativa, this.formPausa.getRawValue().minutos, 'Pausa salva.');
-  }
-
-  private gravarAlbia(ativa: boolean, pausaHumanoMin: number, sucesso: string): void {
-    const atual = this.albia();
-    if (!atual) return;
-    this.processando.set(true);
-    this.service.salvarAlbia({ ativa, pausaHumanoMin, versaoEsperada: atual.versao })
-      .pipe(takeUntil(this.contextoEncerrado), takeUntilDestroyed(this.destroyRef), finalize(() => this.processando.set(false))).subscribe({
-        next: resposta => {
-          if (!resposta.sucesso || !resposta.dados) { this.toast.erro('Não foi possível salvar a configuração da Albia.'); return; }
-          this.albia.set(resposta.dados);
-          this.formPausa.reset({ minutos: resposta.dados.pausaHumanoMin });
-          this.marcarSalvo();
-          this.toast.sucesso(sucesso);
-        },
-        error: erro => { this.toast.erroServidor(erro, 'Não foi possível salvar a configuração da Albia.'); this.carregarAlbia(); }
-      });
-  }
-
-  abrirBloqueado(): void {
-    this.tipoIdentificador.set('telefone');
-    this.formBloqueado.reset({ telefone: '', lid: '', nome: '', motivo: '' });
-    this.modalBloqueado.set(true);
-  }
-
-  trocarTipoIdentificador(tipo: TipoIdentificador): void {
-    this.tipoIdentificador.set(tipo);
-  }
-
-  salvarBloqueado(): void {
-    this.formBloqueado.markAllAsTouched();
-    if (!this.podeEditar() || this.processando() || this.formBloqueado.controls.nome.invalid || this.formBloqueado.controls.motivo.invalid) return;
-    const valores = this.formBloqueado.getRawValue();
-    const identificador = this.tipoIdentificador() === 'telefone' ? normalizarTelefoneBloqueio(valores.telefone) : valores.lid.trim();
-    const valido = this.tipoIdentificador() === 'telefone' ? identificador.length >= 12 : PADRAO_LID.test(identificador);
-    if (!valido) { this.toast.erro(this.tipoIdentificador() === 'telefone' ? 'Informe o telefone com DDD.' : 'Informe o identificador no formato 123456789@lid.'); return; }
-    this.processando.set(true);
-    this.service.adicionarBloqueado({ identificador, nome: valores.nome.trim(), motivo: valores.motivo.trim() || null })
-      .pipe(takeUntil(this.contextoEncerrado), takeUntilDestroyed(this.destroyRef), finalize(() => this.processando.set(false))).subscribe({
-        next: resposta => {
-          if (!resposta.sucesso) { this.toast.erro('Não foi possível adicionar o número.'); return; }
-          this.modalBloqueado.set(false);
-          this.carregarBloqueados();
-          this.toast.sucesso('Número adicionado. A Albia não atenderá esta pessoa.');
-        },
-        error: erro => this.toast.erroServidor(erro, 'Não foi possível adicionar o número.')
-      });
-  }
-
-  async removerBloqueado(contato: ContatoBloqueado): Promise<void> {
-    if (!this.podeExcluir() || this.processando()) return;
-    const confirmado = await this.confirm.confirmar(`Remover ${contato.nome}?`, 'A Albia volta a atender este número.', { textoConfirmar: 'Remover' });
-    if (!confirmado || !this.podeExcluir() || this.processando()) return;
-    this.processando.set(true);
-    this.service.removerBloqueado(contato.id).pipe(takeUntil(this.contextoEncerrado), takeUntilDestroyed(this.destroyRef), finalize(() => this.processando.set(false))).subscribe({
-      next: resposta => {
-        if (!resposta.sucesso) { this.toast.erro('Não foi possível remover o número.'); return; }
-        this.carregarBloqueados();
-        this.toast.sucesso('Número removido da lista.');
-      },
-      error: erro => this.toast.erroServidor(erro, 'Não foi possível remover o número.')
-    });
-  }
-
-  rotuloIdentificador(contato: ContatoBloqueado): string {
-    return contato.identificador.endsWith('@lid') ? contato.identificador : formatarNumeroWaha(contato.identificador);
   }
 }

@@ -1,0 +1,122 @@
+<div class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark px-4 sm:px-6 lg:px-8 xl:px-10 py-6 lg:py-8">
+  <div class="w-full space-y-6">
+    <app-breadcrumb [itens]="[{label:'Início',rota:'/dashboard'},{label:'Configurações',rota:'/configuracoes'},{label:'Agente de Atendimento IA'}]" />
+    <app-page-header titulo="Agente de Atendimento IA" subtitulo="A Albia atende os clientes pelo WhatsApp. Aqui você liga, desliga e escolhe quando ela responde." />
+    <div class="flex flex-wrap gap-4">
+      <a routerLink="/configuracoes" class="inline-block text-sm font-semibold text-primary hover:underline">Voltar às configurações</a>
+    </div>
+
+    @if (carregando()) {
+      <div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 h-96 animate-pulse" aria-label="Carregando o agente de atendimento"></div>
+    } @else if (agente(); as a) {
+      <section class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 flex flex-wrap items-center justify-between gap-4" aria-live="polite">
+        <div class="min-w-0">
+          <h2 class="text-lg font-bold text-slate-900 dark:text-white">{{ a.ativa ? 'Albia atendendo clientes' : 'Albia desligada' }}</h2>
+          <p class="text-sm text-slate-500 dark:text-slate-400">
+            {{ a.ativa ? 'Os clientes recebem resposta automática no WhatsApp.' : 'Nenhum cliente recebe resposta automática agora.' }}
+            @if (a.desligadaEm) { Última vez desligada em {{ a.desligadaEm | date:'dd/MM/yyyy HH:mm' }}. }
+          </p>
+        </div>
+        <app-toggle [valor]="a.ativa" [desabilitado]="!podeEditar() || processando()" label="Albia atendendo clientes" (valorMudou)="alternarAtendimento($event)" />
+      </section>
+
+      <section class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-4">
+        <div class="space-y-1">
+          <h2 class="font-bold text-slate-900 dark:text-white">Quando a Albia responde</h2>
+          <p class="text-sm text-slate-500 dark:text-slate-400">{{ descricaoEspera() }}</p>
+        </div>
+        <form [formGroup]="formTempos" (ngSubmit)="salvarTempos()" class="space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="min-w-0">
+              <label for="agente-espera" class="text-xs font-semibold text-slate-500">Espera antes de responder (segundos)</label>
+              <input pInputText id="agente-espera" type="number" min="0" [max]="maximoEspera" formControlName="espera" [attr.disabled]="podeEditar() ? null : true" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20" />
+              @if (formTempos.controls.espera.touched && formTempos.controls.espera.invalid) { <p class="text-xs text-red-600">Informe de 0 a 300 segundos.</p> }
+            </div>
+            <div class="min-w-0">
+              <label for="agente-pausa" class="text-xs font-semibold text-slate-500">Silêncio após resposta de uma pessoa (minutos)</label>
+              <input pInputText id="agente-pausa" type="number" min="1" [max]="maximoPausa" formControlName="pausa" [attr.disabled]="podeEditar() ? null : true" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20" />
+              @if (formTempos.controls.pausa.touched && formTempos.controls.pausa.invalid) { <p class="text-xs text-red-600">Informe de 1 a 1440 minutos.</p> }
+            </div>
+          </div>
+          <p class="text-xs text-slate-500">Quando alguém da loja responde, a Albia fica quieta pelo tempo do silêncio para não atrapalhar a conversa.</p>
+          @if (podeEditar()) {
+            <button type="submit" [disabled]="processando() || formTempos.invalid" class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all">{{ processando() ? 'Salvando...' : 'Salvar tempos' }}</button>
+          }
+        </form>
+      </section>
+
+      <section class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 space-y-4">
+        <div class="space-y-1">
+          <h2 class="font-bold text-slate-900 dark:text-white">Números que a Albia não atende</h2>
+          <p class="text-sm text-slate-500 dark:text-slate-400">Equipe, dono e testes. A Albia ignora estes números e quem escreve não recebe resposta automática.</p>
+        </div>
+        @if (podeEditar()) {
+          <button type="button" (click)="abrirBloqueado()" class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 transition-all">Adicionar número</button>
+        }
+        @if (bloqueados().length === 0) {
+          <p class="text-sm text-slate-500">Nenhum número na lista. A Albia atende todos os contatos.</p>
+        } @else {
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left">
+              <thead class="text-xs uppercase text-slate-500">
+                <tr><th class="px-3 py-3">Nome</th><th class="px-3 py-3">Número</th><th class="px-3 py-3">Motivo</th><th class="px-3 py-3 text-right">Ações</th></tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                @for (contato of bloqueados(); track contato.id) {
+                  <tr>
+                    <td class="px-3 py-3 font-semibold text-slate-900 dark:text-slate-100">{{ contato.nome }}</td>
+                    <td class="px-3 py-3 text-slate-600 dark:text-slate-300 break-all">{{ rotuloIdentificador(contato) }}</td>
+                    <td class="px-3 py-3 text-slate-600 dark:text-slate-300">{{ contato.motivo ?? '-' }}</td>
+                    <td class="px-3 py-3 text-right">
+                      <div class="flex justify-end gap-2">
+                        @if (podeExcluir()) {
+                          <app-btn-icone icone="delete" titulo="Remover da lista" variante="perigo" [desabilitado]="processando()" (clicar)="removerBloqueado(contato)" />
+                        }
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </section>
+    }
+  </div>
+</div>
+
+<app-modal [aberto]="modalBloqueado()" titulo="Adicionar número" subtitulo="A Albia não vai atender esta pessoa." tamanho="md" (fechar)="modalBloqueado.set(false)">
+  <form [formGroup]="formBloqueado" (ngSubmit)="salvarBloqueado()" class="space-y-4" id="form-bloqueado">
+    <div class="grid grid-cols-2 gap-2 p-1 rounded-lg bg-slate-100 dark:bg-slate-800">
+      <button type="button" (click)="trocarTipoIdentificador('telefone')" class="px-3 py-2 rounded-md text-sm font-bold transition-colors"
+              [class.bg-white]="tipoIdentificador() === 'telefone'" [class.dark:bg-slate-900]="tipoIdentificador() === 'telefone'" [class.text-primary]="tipoIdentificador() === 'telefone'" [class.text-slate-500]="tipoIdentificador() !== 'telefone'">Telefone</button>
+      <button type="button" (click)="trocarTipoIdentificador('lid')" class="px-3 py-2 rounded-md text-sm font-bold transition-colors"
+              [class.bg-white]="tipoIdentificador() === 'lid'" [class.dark:bg-slate-900]="tipoIdentificador() === 'lid'" [class.text-primary]="tipoIdentificador() === 'lid'" [class.text-slate-500]="tipoIdentificador() !== 'lid'">Identificador @lid</button>
+    </div>
+    @if (tipoIdentificador() === 'telefone') {
+      <div>
+        <label for="bloq-telefone" class="text-xs font-semibold text-slate-500">Telefone com DDD</label>
+        <app-campo-mascara inputId="bloq-telefone" tipo="telefone" formControlName="telefone" placeholder="(22) 99999-8888" class="mt-1" />
+      </div>
+    } @else {
+      <div>
+        <label for="bloq-lid" class="text-xs font-semibold text-slate-500">Identificador do WhatsApp</label>
+        <input pInputText id="bloq-lid" type="text" formControlName="lid" placeholder="241587699323124@lid" spellcheck="false" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20" />
+        <p class="text-xs text-slate-500 mt-1">Use quando o WhatsApp não mostra o telefone da pessoa.</p>
+      </div>
+    }
+    <div>
+      <label for="bloq-nome" class="text-xs font-semibold text-slate-500">Nome</label>
+      <input pInputText id="bloq-nome" type="text" formControlName="nome" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20" />
+      @if (formBloqueado.controls.nome.touched && formBloqueado.controls.nome.invalid) { <p class="text-xs text-red-600">Informe o nome da pessoa.</p> }
+    </div>
+    <div>
+      <label for="bloq-motivo" class="text-xs font-semibold text-slate-500">Motivo (opcional)</label>
+      <input pInputText id="bloq-motivo" type="text" formControlName="motivo" placeholder="Funcionária, dono, teste" class="mt-1 w-full px-3 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm outline-none focus:ring-2 focus:ring-primary/20" />
+    </div>
+  </form>
+  <div modalRodape>
+    <button type="button" (click)="modalBloqueado.set(false)" class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-sm">Cancelar</button>
+    <button type="submit" form="form-bloqueado" [disabled]="processando()" class="px-4 py-2 rounded-lg bg-primary text-white font-bold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all">Adicionar</button>
+  </div>
+</app-modal>

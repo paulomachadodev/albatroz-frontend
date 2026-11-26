@@ -38,33 +38,6 @@ export interface WahaCodigo {
   codigo: string;
 }
 
-export interface AlbiaConfig {
-  ativa: boolean;
-  pausaHumanoMin: number;
-  desligadaEm: string | null;
-  versao: string;
-}
-
-export interface AlbiaConfigRequisicao {
-  ativa: boolean;
-  pausaHumanoMin: number;
-  versaoEsperada: string;
-}
-
-export interface ContatoBloqueado {
-  id: number;
-  identificador: string;
-  nome: string;
-  motivo: string | null;
-  criadoEm: string;
-}
-
-export interface ContatoBloqueadoRequisicao {
-  identificador: string;
-  nome: string;
-  motivo: string | null;
-}
-
 export interface ApresentacaoStatusWaha {
   titulo: string;
   detalhe: string;
@@ -102,3 +75,31 @@ export function normalizarTelefoneBloqueio(digitos: string): string {
   const limpos = digitos.replace(/\D/g, '');
   return limpos.length === 10 || limpos.length === 11 ? `55${limpos}` : limpos;
 }
+
+export interface WahaRecebimento {
+  urlDestino: string | null;
+  eventos: string[];
+  tentativas: number;
+  intervaloSegundos: number;
+  politica: string;
+  ignorarStatus: boolean;
+  ignorarGrupos: boolean;
+  ignorarCanais: boolean;
+  ignorarBroadcast: boolean;
+  outrosDestinos: number;
+}
+
+export type WahaRecebimentoRequisicao = Omit<WahaRecebimento, 'outrosDestinos'> & { urlDestino: string };
+
+export const EVENTOS_WAHA = [
+  { valor: 'message.any', nome: 'Toda mensagem (recebida e enviada)', ajuda: 'Recomendado: a Albia precisa ver também o que a loja envia.' },
+  { valor: 'message', nome: 'Só mensagens recebidas', ajuda: 'Não inclui o que a loja envia.' },
+  { valor: 'message.ack', nome: 'Confirmações de entrega e leitura', ajuda: 'Avisa quando a mensagem foi entregue ou lida.' },
+  { valor: 'session.status', nome: 'Mudanças na conexão', ajuda: 'Avisa quando o WhatsApp conecta ou cai.' }
+] as const;
+
+export const POLITICAS_WAHA = [
+  { valor: 'exponential', nome: 'Cada vez mais espaçadas (recomendado)' },
+  { valor: 'linear', nome: 'Aumentando um pouco a cada vez' },
+  { valor: 'constant', nome: 'Sempre o mesmo intervalo' }
+] as const;
